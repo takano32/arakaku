@@ -3,9 +3,10 @@
   --bg: #f6f3ee;
   --panel: #ffffff;
   --ink: #1f1f1f;
-  --muted: #666;
+  --muted: #666666;
   --line: #ddd6cc;
   --accent: #8b2f20;
+  --accent-dark: #632216;
 }
 
 * {
@@ -17,6 +18,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--ink);
+  line-height: 1.65;
 }
 
 .site-header {
@@ -27,7 +29,7 @@ body {
 
 .site-header h1 {
   margin: 0;
-  font-size: 2.2rem;
+  font-size: clamp(2rem, 6vw, 3rem);
   letter-spacing: 0.08em;
 }
 
@@ -43,7 +45,7 @@ main {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -60,9 +62,12 @@ main {
 .summary-card strong {
   display: block;
   font-size: 1.8rem;
+  line-height: 1.2;
 }
 
-.summary-card span {
+.summary-card span,
+.meta,
+dd {
   color: var(--muted);
 }
 
@@ -77,6 +82,12 @@ input[type="search"] {
   border-radius: 999px;
   font-size: 1rem;
   background: white;
+  color: var(--ink);
+}
+
+input[type="search"]:focus {
+  outline: 3px solid rgb(139 47 32 / 0.22);
+  border-color: var(--accent);
 }
 
 .tabs {
@@ -91,7 +102,13 @@ input[type="search"] {
   border-radius: 999px;
   padding: 10px 14px;
   background: white;
+  color: var(--ink);
   cursor: pointer;
+  font-weight: 700;
+}
+
+.tab:hover {
+  border-color: var(--accent);
 }
 
 .tab.active {
@@ -108,10 +125,14 @@ input[type="search"] {
 .card h2,
 .card h3 {
   margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.card p {
+  margin: 8px 0;
 }
 
 .meta {
-  color: var(--muted);
   font-size: 0.92rem;
 }
 
@@ -130,7 +151,36 @@ dt {
 
 dd {
   margin: 2px 0 0;
-  color: var(--muted);
+}
+
+.lineage-list {
+  display: grid;
+  gap: 0;
+  padding-left: 0;
+  margin: 12px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.lineage-list li {
+  display: grid;
+  grid-template-columns: minmax(5rem, 8rem) 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.reign-label {
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.fighter-name {
+  font-weight: 600;
+}
+
+.title-card h2 {
+  line-height: 1.35;
 }
 
 footer {
@@ -143,32 +193,27 @@ a {
   color: var(--accent);
 }
 
-.lineage-list {
-  display: grid;
-  gap: 8px;
-  padding-left: 1.4rem;
-  margin: 12px 0 0;
-}
+@media (max-width: 560px) {
+  .site-header {
+    padding: 24px 16px;
+  }
 
-.lineage-list li {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-}
+  main,
+  footer {
+    width: min(100% - 24px, 1100px);
+  }
 
-.lineage-list li:last-child {
-  border-bottom: 0;
-}
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-.reign-label {
-  display: inline-block;
-  min-width: 4.5rem;
-  font-weight: 700;
-}
+  .tab {
+    flex: 1 1 auto;
+    text-align: center;
+  }
 
-.fighter-name {
-  font-weight: 600;
-}
-
-.title-card h2 {
-  line-height: 1.35;
+  .lineage-list li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }
