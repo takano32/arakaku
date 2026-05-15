@@ -64,6 +64,47 @@ def build_titles() -> list[dict[str, Any]]:
     return list(g.values())
 def build_fighter_snapshots() -> list[dict[str, Any]]:
     return [{"snapshot_id":r["snapshot_id"],"fighter_id":r["fighter_id"],"event_id":none_if_empty(r.get("event_id")),"source_article_id":none_if_empty(r.get("source_article_id")),"age":none_if_empty(r.get("age")),"height":none_if_empty(r.get("height")),"gym":none_if_empty(r.get("gym")),"record_text":none_if_empty(r.get("record_text")),"main_promotion_id":none_if_empty(r.get("main_promotion_id")),"titles_text":none_if_empty(r.get("titles_text")),"catchphrase":none_if_empty(r.get("catchphrase"))} for r in read_csv(DATA_SRC/"fighter_snapshots.csv")]
+def build_videos() -> list[dict[str, Any]]:
+    rows = read_csv(DATA_SRC / "videos.csv")
+
+    return [
+        {
+            "video_id": row["video_id"],
+            "platform": none_if_empty(row.get("platform")) or "youtube",
+            "platform_video_id": none_if_empty(row.get("platform_video_id")),
+            "url": row["url"],
+            "title": row["title"],
+            "channel_name": none_if_empty(row.get("channel_name")),
+            "published_at": none_if_empty(row.get("published_at")),
+            "official_status": none_if_empty(row.get("official_status")) or "unknown",
+            "video_type": none_if_empty(row.get("video_type")) or "reference",
+            "link_status": none_if_empty(row.get("link_status")) or "unlinked",
+            "duplicate_group_id": none_if_empty(row.get("duplicate_group_id")),
+            "duplicate_note": none_if_empty(row.get("duplicate_note")),
+            "notes": none_if_empty(row.get("notes")) or "",
+            "source_article_ids": split_list(row.get("source_article_ids")),
+        }
+        for row in rows
+    ]
+
+
+def build_video_links() -> list[dict[str, Any]]:
+    rows = read_csv(DATA_SRC / "video_links.csv")
+
+    return [
+        {
+            "video_id": row["video_id"],
+            "entity_type": row["entity_type"],
+            "entity_id": row["entity_id"],
+            "relation_type": none_if_empty(row.get("relation_type")) or "reference",
+            "start_time": none_if_empty(row.get("start_time")),
+            "end_time": none_if_empty(row.get("end_time")),
+            "notes": none_if_empty(row.get("notes")) or "",
+        }
+        for row in rows
+    ]
+
+
 def build_aliases() -> dict[str, Any]:
     a={"fighters":{},"promotions":{},"methods":{}}
     for r in read_csv(DATA_SRC/"aliases.csv"):
