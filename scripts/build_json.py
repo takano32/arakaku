@@ -112,6 +112,6 @@ def build_aliases() -> dict[str, Any]:
     return a
 def main() -> None:
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    for fn,b in {"metadata.json":build_metadata,"articles.json":build_articles,"promotions.json":build_promotions,"events.json":build_events,"bouts.json":build_bouts,"fighters.json":build_fighters,"titles.json":build_titles,"fighter_snapshots.json":build_fighter_snapshots,"aliases.json":build_aliases}.items(): write_json(DOCS_DATA/fn,b())
+    for fn,b in {"metadata.json":build_metadata,"articles.json":build_articles,"promotions.json":build_promotions,"events.json":build_events,"bouts.json":build_bouts,"fighters.json":build_fighters,"titles.json":build_titles,"fighter_snapshots.json":build_fighter_snapshots,"videos.json":build_videos,"video_links.json":build_video_links,"aliases.json":build_aliases}.items(): write_json(DOCS_DATA/fn,b())
     print("[done] JSON build completed")
 if __name__ == "__main__": main()
