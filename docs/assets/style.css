@@ -316,3 +316,43 @@ a {
 .related-bouts li:last-child {
   border-bottom: 0;
 }
+
+.video-links {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.video-links h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.video-links ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.video-links li {
+  display: grid;
+  gap: 4px;
+}
+
+.video-links a {
+  font-weight: 800;
+}
+
+.video-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--accent-dark);
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+  font-weight: 700;
+}

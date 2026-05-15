@@ -6,6 +6,8 @@ const DATA_FILES = {
   bouts: "./data/bouts.json",
   fighters: "./data/fighters.json",
   titles: "./data/titles.json",
+  videos: "./data/videos.json",
+  videoLinks: "./data/video_links.json",
   fighterSnapshots: "./data/fighter_snapshots.json",
   aliases: "./data/aliases.json",
 };
@@ -69,6 +71,72 @@ function eventName(eventId) {
 function promotionName(promotionId) {
   return state.data.promotions.find((promotion) => promotion.promotion_id === promotionId)?.name ?? promotionId;
 }
+
+function videoById(videoId) {
+  return state.data.videos.find((video) => video.video_id === videoId);
+}
+
+function videosForEntity(entityType, entityId) {
+  return state.data.videoLinks
+    .filter((link) => link.entity_type === entityType && link.entity_id === entityId)
+    .map((link) => ({
+      link,
+      video: videoById(link.video_id),
+    }))
+    .filter((item) => item.video);
+}
+
+function videoTypeLabel(videoType) {
+  return {
+    full_fight: "Full Fight",
+    highlight: "ハイライト",
+    short: "Short",
+    stream_archive: "配信",
+    preview: "煽り",
+    interview: "インタビュー",
+    commentary: "解説",
+    reference: "参考",
+  }[videoType] ?? videoType ?? "動画";
+}
+
+function relationTypeLabel(relationType) {
+  return {
+    full_fight: "Full Fight",
+    highlight: "ハイライト",
+    short: "Short",
+    stream_archive: "配信",
+    preview: "煽り",
+    interview: "インタビュー",
+    commentary: "解説",
+    reference: "参考",
+  }[relationType] ?? relationType ?? "動画";
+}
+
+function renderVideoLinks(entityType, entityId) {
+  const items = videosForEntity(entityType, entityId);
+
+  if (items.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="video-links">
+      <h3>動画</h3>
+      <ul>
+        ${items.map(({ link, video }) => `
+          <li>
+            <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
+              ${escapeHtml(video.title)}
+            </a>
+            <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type || video.video_type))}</span>
+            ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
+}
+
 
 function titleDisplayName(title) {
   const promotion = promotionName(title.promotion_id);
@@ -148,6 +216,7 @@ function renderRelatedBouts(fighterId) {
               ${escapeHtml(bout.result?.time ?? "")}
               ${escapeHtml(bout.result?.method_raw ?? "")}
             </span>
+            ${renderVideoLinks("bout", bout.bout_id)}
           </li>
         `).join("")}
       </ul>
@@ -233,6 +302,7 @@ function renderBouts() {
         ${escapeHtml(bout.result?.method_raw ?? "")}
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
+      ${renderVideoLinks("bout", bout.bout_id)}
     </article>
   `).join("") || emptyMessage();
 }
@@ -279,6 +349,7 @@ function renderEvents() {
       <h2>${escapeHtml(event.name)}</h2>
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
+      ${renderVideoLinks("event", event.event_id)}
     </article>
   `).join("") || emptyMessage();
 }
