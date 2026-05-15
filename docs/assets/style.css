@@ -279,3 +279,10 @@ a {
   font-weight: 700;
   word-break: break-word;
 }
+
+.title-card .meta {
+  margin-top: -2px;
+  margin-bottom: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+}

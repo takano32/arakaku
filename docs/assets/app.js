@@ -70,6 +70,22 @@ function promotionName(promotionId) {
   return state.data.promotions.find((promotion) => promotion.promotion_id === promotionId)?.name ?? promotionId;
 }
 
+function titleDisplayName(title) {
+  const promotion = promotionName(title.promotion_id);
+  const division = title.division ?? "階級未設定";
+  const id = title.title_id ?? "";
+
+  if (id.includes("tournament")) {
+    return `${promotion} ${division}トーナメント`;
+  }
+
+  if (title.promotion_id === "max_bout") {
+    return `${promotion} ${division}`;
+  }
+
+  return `${promotion} ${division}王座`;
+}
+
 function fighterName(fighterId) {
   return state.data.fighters.find((fighter) => fighter.fighter_id === fighterId)?.display_name ?? fighterId;
 }
@@ -311,7 +327,8 @@ function renderTitles() {
     return `
       ${groupHeader}
       <article class="card title-card">
-        <h3>${escapeHtml(title.title_id)}</h3>
+        <h3>${escapeHtml(titleDisplayName(title))}</h3>
+        <p class="meta">${escapeHtml(title.title_id)}</p>
         <ol class="lineage-list">
           ${lineage}
         </ol>
