@@ -4,6 +4,9 @@
 [![Deploy Pages](https://github.com/takano32/arakaku/actions/workflows/pages.yml/badge.svg)](https://github.com/takano32/arakaku/actions/workflows/pages.yml)
 
 
+
+公開ページ: https://takano32.github.io/arakaku/
+
 ARAKAKU は、[アラカク通信のーと](https://note.com/xyz1090) などの公開情報をもとに、アラカクの団体・大会・試合結果・選手情報を整理する非公式データベースです。
 
 CSV で管理しているソースデータを、GitHub Pages で利用しやすい静的 JSON に変換することを目的としています。
