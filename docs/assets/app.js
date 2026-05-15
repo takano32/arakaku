@@ -13,6 +13,8 @@ const DATA_FILES = {
 const state = {
   tab: "bouts",
   query: "",
+  titlePromotion: "",
+  titleDivision: "",
   data: null,
 };
 
@@ -54,6 +56,12 @@ function includesQuery(values) {
     .includes(q);
 }
 
+function uniqueSorted(values) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) =>
+    String(a).localeCompare(String(b), "ja")
+  );
+}
+
 function eventName(eventId) {
   return state.data.events.find((event) => event.event_id === eventId)?.name ?? eventId;
 }
@@ -81,6 +89,39 @@ function renderSummary() {
       </article>
     `)
     .join("");
+}
+
+function renderTitleFilters() {
+  const filters = document.querySelector("#title-filters");
+  if (!filters) return;
+
+  filters.hidden = state.tab !== "titles";
+
+  const promotionSelect = document.querySelector("#title-promotion-filter");
+  const divisionSelect = document.querySelector("#title-division-filter");
+
+  if (!promotionSelect || !divisionSelect || !state.data) return;
+
+  const promotionIds = uniqueSorted(state.data.titles.map((title) => title.promotion_id));
+  const divisions = uniqueSorted(state.data.titles.map((title) => title.division));
+
+  promotionSelect.innerHTML = [
+    `<option value="">すべての団体</option>`,
+    ...promotionIds.map((promotionId) => `
+      <option value="${escapeHtml(promotionId)}" ${promotionId === state.titlePromotion ? "selected" : ""}>
+        ${escapeHtml(promotionName(promotionId))}
+      </option>
+    `),
+  ].join("");
+
+  divisionSelect.innerHTML = [
+    `<option value="">すべての階級</option>`,
+    ...divisions.map((division) => `
+      <option value="${escapeHtml(division)}" ${division === state.titleDivision ? "selected" : ""}>
+        ${escapeHtml(division)}
+      </option>
+    `),
+  ].join("");
 }
 
 function renderBouts() {
@@ -184,8 +225,16 @@ function renderPromotions() {
 }
 
 function renderTitles() {
-  const titles = state.data.titles.filter((title) =>
-    includesQuery([
+  const titles = state.data.titles.filter((title) => {
+    if (state.titlePromotion && title.promotion_id !== state.titlePromotion) {
+      return false;
+    }
+
+    if (state.titleDivision && title.division !== state.titleDivision) {
+      return false;
+    }
+
+    return includesQuery([
       title.title_id,
       title.division,
       promotionName(title.promotion_id),
@@ -193,8 +242,8 @@ function renderTitles() {
         reign.fighter_name,
         reign.reign_label,
       ]),
-    ])
-  );
+    ]);
+  });
 
   return titles.map((title) => {
     const lineage = [...(title.lineage ?? [])]
@@ -247,11 +296,22 @@ function render() {
 
   renderSummary();
   renderTabs();
+  renderTitleFilters();
   renderContent();
 }
 
 document.querySelector("#search").addEventListener("input", (event) => {
   state.query = event.target.value;
+  renderContent();
+});
+
+document.querySelector("#title-promotion-filter")?.addEventListener("change", (event) => {
+  state.titlePromotion = event.target.value;
+  renderContent();
+});
+
+document.querySelector("#title-division-filter")?.addEventListener("change", (event) => {
+  state.titleDivision = event.target.value;
   renderContent();
 });
 
