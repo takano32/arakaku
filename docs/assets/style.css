@@ -286,3 +286,33 @@ a {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.82rem;
 }
+
+.related-bouts {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.related-bouts h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.related-bouts ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.related-bouts li {
+  display: grid;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.related-bouts li:last-child {
+  border-bottom: 0;
+}

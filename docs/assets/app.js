@@ -114,6 +114,47 @@ function jumpToFighter(fighterId, fighterNameValue) {
   render();
 }
 
+function relatedBoutsForFighter(fighterId) {
+  if (!fighterId) return [];
+
+  return state.data.bouts
+    .filter((bout) =>
+      (bout.fighters ?? []).some((fighter) => fighter.fighter_id === fighterId)
+    )
+    .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
+}
+
+function renderRelatedBouts(fighterId) {
+  const bouts = relatedBoutsForFighter(fighterId);
+
+  if (bouts.length === 0) {
+    return `<p class="meta">関連試合はまだ登録されていません。</p>`;
+  }
+
+  return `
+    <section class="related-bouts">
+      <h3>関連試合</h3>
+      <ul>
+        ${bouts.map((bout) => `
+          <li>
+            <span class="meta">${escapeHtml(eventName(bout.event_id))}</span>
+            <span>
+              ${fighterLink(bout.winner_id, bout.winner)}
+              def.
+              ${fighterLink(bout.loser_id, bout.loser)}
+            </span>
+            <span class="meta">
+              ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
+              ${escapeHtml(bout.result?.time ?? "")}
+              ${escapeHtml(bout.result?.method_raw ?? "")}
+            </span>
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
+}
+
 function renderSummary() {
   const d = state.data;
 
@@ -219,6 +260,7 @@ function renderFighters() {
         <dt>概要</dt>
         <dd>${escapeHtml(fighter.summary || "未入力")}</dd>
       </dl>
+      ${renderRelatedBouts(fighter.fighter_id)}
     </article>
   `).join("") || emptyMessage();
 }
