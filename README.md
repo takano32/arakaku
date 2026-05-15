@@ -91,7 +91,7 @@ master
 ## Repository
 
 ```text
-takano32/ARAKAKU
+takano32/arakaku
 ```
 
 ## Naming notes
