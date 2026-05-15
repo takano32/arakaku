@@ -199,6 +199,18 @@ OAI_IS_JUPYTER_KERNEL=0 python -m pytest -q
 
 GitHub Actions や通常のローカル Python 環境では、この回避策は不要なはずです。
 
+## Roadmap
+
+今後の予定です。
+
+- GitHub Pages viewer の表示改善
+- ターゲット以外の団体データ追加
+- ターゲットの王座変遷データ拡充
+- 大会ごとの試合結果追加
+- 選手プロフィールと戦績スナップショットの拡充
+- 検索・絞り込み UI の改善
+- データ出典の整理と参照性向上
+
 ## Status
 
 初期構築段階です。
