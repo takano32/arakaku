@@ -1,0 +1,478 @@
+{
+  "name": "arakaku-max-csv",
+  "description": "Maximum expanded event/bout/fighter CSV bundle generated from official YouTube video title extraction plus existing source CSVs.",
+  "important_notes": [
+    "This ZIP intentionally prioritizes maximum coverage.",
+    "data-src/bouts.csv includes inferred matchup rows with result_status=unknown where winner/loser/result are not known.",
+    "Current repository build_json.py/validate_json.py may need schema changes before this full data-src can replace the current source directly.",
+    "No fake winners or methods were generated.",
+    "review/parse_skips.csv lists video titles that could not be parsed into fighter matchups."
+  ],
+  "counts": {
+    "data-src": {
+      "aliases.csv": {
+        "rows": 49,
+        "columns": [
+          "alias_type",
+          "alias",
+          "canonical_id"
+        ]
+      },
+      "articles.csv": {
+        "rows": 6,
+        "columns": [
+          "article_id",
+          "title",
+          "url",
+          "source_type",
+          "article_type",
+          "promotion_id",
+          "published_at",
+          "last_checked_at",
+          "status",
+          "notes"
+        ]
+      },
+      "bouts.csv": {
+        "rows": 274,
+        "columns": [
+          "bout_id",
+          "event_id",
+          "promotion_id",
+          "bout_order",
+          "division",
+          "weight_class_id",
+          "bout_type",
+          "fighter_a_id",
+          "fighter_a",
+          "fighter_a_corner",
+          "fighter_b_id",
+          "fighter_b",
+          "fighter_b_corner",
+          "winner_id",
+          "winner",
+          "loser_id",
+          "loser",
+          "round",
+          "time",
+          "method_raw",
+          "method_normalized",
+          "technique",
+          "decision_score",
+          "is_title_bout",
+          "title_id",
+          "title_result",
+          "title_note",
+          "source_article_id",
+          "notes",
+          "result_status",
+          "inferred_from_video_id",
+          "inferred_from_video_title",
+          "inferred_confidence"
+        ]
+      },
+      "events.csv": {
+        "rows": 54,
+        "columns": [
+          "event_id",
+          "name",
+          "promotion_id",
+          "event_number",
+          "event_type",
+          "event_date",
+          "published_at",
+          "source_article_id",
+          "summary",
+          "source_video_ids",
+          "inferred_from",
+          "inferred_confidence"
+        ]
+      },
+      "fighter_snapshots.csv": {
+        "rows": 10,
+        "columns": [
+          "snapshot_id",
+          "fighter_id",
+          "event_id",
+          "source_article_id",
+          "age",
+          "height",
+          "gym",
+          "record_text",
+          "main_promotion_id",
+          "titles_text",
+          "catchphrase"
+        ]
+      },
+      "fighters.csv": {
+        "rows": 146,
+        "columns": [
+          "fighter_id",
+          "display_name",
+          "aliases",
+          "main_division",
+          "main_promotion_id",
+          "height",
+          "age",
+          "gym",
+          "summary",
+          "source_article_ids",
+          "inferred_from_video_ids",
+          "inferred_confidence"
+        ]
+      },
+      "promotions.csv": {
+        "rows": 7,
+        "columns": [
+          "promotion_id",
+          "name",
+          "name_en",
+          "category",
+          "country_scope",
+          "summary",
+          "rule_venue",
+          "rule_rounds",
+          "rule_judging",
+          "rule_glove",
+          "rule_elbows",
+          "rule_soccer_kicks",
+          "rule_stomps",
+          "rule_four_point_head_kicks",
+          "rule_four_point_head_knees",
+          "source_article_ids"
+        ]
+      },
+      "titles.csv": {
+        "rows": 68,
+        "columns": [
+          "title_id",
+          "promotion_id",
+          "division",
+          "order",
+          "fighter_id",
+          "fighter_name",
+          "reign_label",
+          "won_at_event_id",
+          "lost_at_event_id",
+          "source_article_id"
+        ]
+      },
+      "video_links.csv": {
+        "rows": 273,
+        "columns": [
+          "video_id",
+          "entity_type",
+          "entity_id",
+          "relation_type",
+          "start_time",
+          "end_time",
+          "notes"
+        ]
+      },
+      "videos.csv": {
+        "rows": 360,
+        "columns": [
+          "video_id",
+          "platform",
+          "platform_video_id",
+          "url",
+          "title",
+          "original_title",
+          "channel_name",
+          "published_at",
+          "official_status",
+          "video_type",
+          "link_status",
+          "duplicate_group_id",
+          "duplicate_note",
+          "notes",
+          "source_article_ids"
+        ]
+      }
+    },
+    "original-data-src": {
+      "aliases.csv": {
+        "rows": 49,
+        "columns": [
+          "alias_type",
+          "alias",
+          "canonical_id"
+        ]
+      },
+      "articles.csv": {
+        "rows": 6,
+        "columns": [
+          "article_id",
+          "title",
+          "url",
+          "source_type",
+          "article_type",
+          "promotion_id",
+          "published_at",
+          "last_checked_at",
+          "status",
+          "notes"
+        ]
+      },
+      "bouts.csv": {
+        "rows": 5,
+        "columns": [
+          "bout_id",
+          "event_id",
+          "promotion_id",
+          "bout_order",
+          "division",
+          "weight_class_id",
+          "bout_type",
+          "fighter_a_id",
+          "fighter_a",
+          "fighter_a_corner",
+          "fighter_b_id",
+          "fighter_b",
+          "fighter_b_corner",
+          "winner_id",
+          "winner",
+          "loser_id",
+          "loser",
+          "round",
+          "time",
+          "method_raw",
+          "method_normalized",
+          "technique",
+          "decision_score",
+          "is_title_bout",
+          "title_id",
+          "title_result",
+          "title_note",
+          "source_article_id",
+          "notes"
+        ]
+      },
+      "events.csv": {
+        "rows": 1,
+        "columns": [
+          "event_id",
+          "name",
+          "promotion_id",
+          "event_number",
+          "event_type",
+          "event_date",
+          "published_at",
+          "source_article_id",
+          "summary"
+        ]
+      },
+      "fighter_snapshots.csv": {
+        "rows": 10,
+        "columns": [
+          "snapshot_id",
+          "fighter_id",
+          "event_id",
+          "source_article_id",
+          "age",
+          "height",
+          "gym",
+          "record_text",
+          "main_promotion_id",
+          "titles_text",
+          "catchphrase"
+        ]
+      },
+      "fighters.csv": {
+        "rows": 40,
+        "columns": [
+          "fighter_id",
+          "display_name",
+          "aliases",
+          "main_division",
+          "main_promotion_id",
+          "height",
+          "age",
+          "gym",
+          "summary",
+          "source_article_ids"
+        ]
+      },
+      "promotions.csv": {
+        "rows": 4,
+        "columns": [
+          "promotion_id",
+          "name",
+          "name_en",
+          "category",
+          "country_scope",
+          "summary",
+          "rule_venue",
+          "rule_rounds",
+          "rule_judging",
+          "rule_glove",
+          "rule_elbows",
+          "rule_soccer_kicks",
+          "rule_stomps",
+          "rule_four_point_head_kicks",
+          "rule_four_point_head_knees",
+          "source_article_ids"
+        ]
+      },
+      "titles.csv": {
+        "rows": 68,
+        "columns": [
+          "title_id",
+          "promotion_id",
+          "division",
+          "order",
+          "fighter_id",
+          "fighter_name",
+          "reign_label",
+          "won_at_event_id",
+          "lost_at_event_id",
+          "source_article_id"
+        ]
+      },
+      "video_links.csv": {
+        "rows": 4,
+        "columns": [
+          "video_id",
+          "entity_type",
+          "entity_id",
+          "relation_type",
+          "start_time",
+          "end_time",
+          "notes"
+        ]
+      },
+      "videos.csv": {
+        "rows": 360,
+        "columns": [
+          "video_id",
+          "platform",
+          "platform_video_id",
+          "url",
+          "title",
+          "original_title",
+          "channel_name",
+          "published_at",
+          "official_status",
+          "video_type",
+          "link_status",
+          "duplicate_group_id",
+          "duplicate_note",
+          "notes",
+          "source_article_ids"
+        ]
+      }
+    },
+    "review": {
+      "inferred_bouts_from_video_titles.csv": {
+        "rows": 269,
+        "columns": [
+          "bout_id",
+          "event_id",
+          "promotion_id",
+          "bout_order",
+          "division",
+          "weight_class_id",
+          "bout_type",
+          "fighter_a_id",
+          "fighter_a",
+          "fighter_a_corner",
+          "fighter_b_id",
+          "fighter_b",
+          "fighter_b_corner",
+          "winner_id",
+          "winner",
+          "loser_id",
+          "loser",
+          "round",
+          "time",
+          "method_raw",
+          "method_normalized",
+          "technique",
+          "decision_score",
+          "is_title_bout",
+          "title_id",
+          "title_result",
+          "title_note",
+          "source_article_id",
+          "notes",
+          "result_status",
+          "inferred_from_video_id",
+          "inferred_from_video_title",
+          "inferred_confidence"
+        ]
+      },
+      "inferred_events_from_video_titles.csv": {
+        "rows": 54,
+        "columns": [
+          "event_id",
+          "name",
+          "promotion_id",
+          "event_number",
+          "event_type",
+          "event_date",
+          "published_at",
+          "source_article_id",
+          "summary",
+          "source_video_ids",
+          "inferred_from",
+          "inferred_confidence"
+        ]
+      },
+      "inferred_fighters_from_video_titles.csv": {
+        "rows": 106,
+        "columns": [
+          "fighter_id",
+          "display_name",
+          "aliases",
+          "main_division",
+          "main_promotion_id",
+          "height",
+          "age",
+          "gym",
+          "summary",
+          "source_article_ids",
+          "inferred_from_video_ids",
+          "inferred_confidence"
+        ]
+      },
+      "parse_skips.csv": {
+        "rows": 1,
+        "columns": [
+          "platform_video_id",
+          "video_id",
+          "title",
+          "reason"
+        ]
+      }
+    }
+  },
+  "summary": {
+    "events_total": 54,
+    "bouts_total": 274,
+    "fighters_total": 146,
+    "video_links_total": 273,
+    "inferred_bouts_added": 269,
+    "parse_skips": 1,
+    "promotions_total": 7,
+    "bout_result_status_counts": {
+      "known": 5,
+      "unknown": 269
+    },
+    "event_promotion_counts": {
+      "target": 18,
+      "mh": 14,
+      "max_bout": 7,
+      "video_catalog": 2,
+      "emperor": 12,
+      "elite_spirits": 1
+    },
+    "bout_promotion_counts": {
+      "target": 83,
+      "mh": 60,
+      "max_bout": 76,
+      "video_catalog": 2,
+      "emperor": 46,
+      "elite_spirits": 7
+    }
+  }
+}
