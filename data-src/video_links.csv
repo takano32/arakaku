@@ -1,5 +1,7 @@
 video_id,entity_type,entity_id,relation_type,start_time,end_time,notes
+youtube_qecknlomyoy,bout,target-103-01,reference,,,わく vs つくりはら。配信枠に含まれる可能性。個別Full Fight未確認。
 youtube_vdb8qzkxcy,bout,target-103-02,full_fight,,,公式YouTube個別Full Fight。
 youtube_a2gy9ardmwu,bout,target-103-03,full_fight,,,公式YouTube個別Full Fight。
 youtube_1meeptyfns,bout,target-103-04,full_fight,,,公式YouTube個別Full Fight。
 youtube_0vt0j0l9jja,bout,target-103-05,full_fight,,,公式YouTube個別Full Fight。
+youtube_qecknlomyoy,event,target-103,stream_archive,,,アラカク試合配信23。ターゲットNo.103カードを含む可能性。
