@@ -253,27 +253,51 @@ function renderPromotions() {
 }
 
 function renderTitles() {
-  const titles = state.data.titles.filter((title) => {
-    if (state.titlePromotion && title.promotion_id !== state.titlePromotion) {
-      return false;
-    }
+  const titles = state.data.titles
+    .filter((title) => {
+      if (state.titlePromotion && title.promotion_id !== state.titlePromotion) {
+        return false;
+      }
 
-    if (state.titleDivision && title.division !== state.titleDivision) {
-      return false;
-    }
+      if (state.titleDivision && title.division !== state.titleDivision) {
+        return false;
+      }
 
-    return includesQuery([
-      title.title_id,
-      title.division,
-      promotionName(title.promotion_id),
-      ...(title.lineage ?? []).flatMap((reign) => [
-        reign.fighter_name,
-        reign.reign_label,
-      ]),
-    ]);
-  });
+      return includesQuery([
+        title.title_id,
+        title.division,
+        promotionName(title.promotion_id),
+        ...(title.lineage ?? []).flatMap((reign) => [
+          reign.fighter_name,
+          reign.reign_label,
+        ]),
+      ]);
+    })
+    .sort((a, b) => {
+      const promotionCompare = promotionName(a.promotion_id).localeCompare(
+        promotionName(b.promotion_id),
+        "ja"
+      );
+
+      if (promotionCompare !== 0) return promotionCompare;
+
+      return String(a.division ?? "").localeCompare(String(b.division ?? ""), "ja");
+    });
+
+  if (titles.length === 0) {
+    return emptyMessage();
+  }
+
+  let previousGroup = "";
 
   return titles.map((title) => {
+    const group = `${promotionName(title.promotion_id)} / ${title.division ?? "階級未設定"}`;
+    const groupHeader = group !== previousGroup
+      ? `<h2 class="title-group-heading">${escapeHtml(group)}</h2>`
+      : "";
+
+    previousGroup = group;
+
     const lineage = [...(title.lineage ?? [])]
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((reign) => `
@@ -285,15 +309,15 @@ function renderTitles() {
       .join("");
 
     return `
+      ${groupHeader}
       <article class="card title-card">
-        <h2>${escapeHtml(promotionName(title.promotion_id))} / ${escapeHtml(title.division ?? "")}</h2>
-        <p class="meta">${escapeHtml(title.title_id)}</p>
+        <h3>${escapeHtml(title.title_id)}</h3>
         <ol class="lineage-list">
           ${lineage}
         </ol>
       </article>
     `;
-  }).join("") || emptyMessage();
+  }).join("");
 }
 
 function emptyMessage() {

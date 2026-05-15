@@ -265,3 +265,17 @@ a {
 .result .link-button {
   font-weight: 800;
 }
+
+.title-group-heading {
+  margin: 24px 0 4px;
+  padding: 8px 2px;
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.title-card h3 {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 700;
+  word-break: break-word;
+}
