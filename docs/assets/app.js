@@ -233,6 +233,7 @@ function renderSummary() {
     ["試合", d.bouts.length],
     ["選手", d.fighters.length],
     ["王座", d.titles.length],
+    ["動画", d.videos.length],
   ];
 
   document.querySelector("#summary").innerHTML = items
@@ -381,6 +382,78 @@ function renderPromotions() {
   `).join("") || emptyMessage();
 }
 
+
+function linkStatusLabel(status) {
+  return {
+    linked: "紐づけ済み",
+    partially_linked: "一部紐づけ",
+    unlinked: "未紐づけ",
+    needs_review: "要確認",
+  }[status] ?? status ?? "未設定";
+}
+
+function renderVideos() {
+  const videos = state.data.videos.filter((video) =>
+    includesQuery([
+      video.title,
+      video.url,
+      video.channel_name,
+      video.video_type,
+      video.link_status,
+      video.notes,
+      video.duplicate_group_id,
+      video.duplicate_note,
+    ])
+  );
+
+  if (videos.length === 0) {
+    return emptyMessage();
+  }
+
+  return videos.map((video) => `
+    <article class="card video-card">
+      <h2>
+        <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
+          ${escapeHtml(video.title)}
+        </a>
+      </h2>
+
+      <p class="meta">
+        ${escapeHtml(video.channel_name ?? "")}
+        ${video.published_at ? ` / ${escapeHtml(video.published_at)}` : ""}
+      </p>
+
+      <div class="video-badges">
+        <span class="video-badge">${escapeHtml(videoTypeLabel(video.video_type))}</span>
+        <span class="video-badge">${escapeHtml(linkStatusLabel(video.link_status))}</span>
+      </div>
+
+      <dl>
+        <dt>URL</dt>
+        <dd><a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.url)}</a></dd>
+
+        <dt>platform_video_id</dt>
+        <dd>${escapeHtml(video.platform_video_id ?? "")}</dd>
+
+        ${video.duplicate_group_id ? `
+          <dt>重複候補</dt>
+          <dd>${escapeHtml(video.duplicate_group_id)}</dd>
+        ` : ""}
+
+        ${video.duplicate_note ? `
+          <dt>重複メモ</dt>
+          <dd>${escapeHtml(video.duplicate_note)}</dd>
+        ` : ""}
+
+        ${video.notes ? `
+          <dt>メモ</dt>
+          <dd>${escapeHtml(video.notes)}</dd>
+        ` : ""}
+      </dl>
+    </article>
+  `).join("");
+}
+
 function renderTitles() {
   const titles = state.data.titles
     .filter((title) => {
@@ -461,6 +534,7 @@ function renderContent() {
     events: renderEvents,
     promotions: renderPromotions,
     titles: renderTitles,
+    videos: renderVideos,
   };
 
   const renderer = renderers[state.tab] ?? renderBouts;
