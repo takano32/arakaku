@@ -10,7 +10,7 @@ const DATA_FILES = {
   aliases: "./data/aliases.json",
 };
 
-let state = {
+const state = {
   tab: "bouts",
   query: "",
   data: null,
@@ -25,13 +25,22 @@ async function fetchJson(path, fallback) {
 async function loadData() {
   const entries = await Promise.all(
     Object.entries(DATA_FILES).map(async ([key, path]) => {
-      const fallback = key === "aliases" ? {} : key === "metadata" ? {} : [];
+      const fallback = key === "aliases" || key === "metadata" ? {} : [];
       return [key, await fetchJson(path, fallback)];
     })
   );
 
   state.data = Object.fromEntries(entries);
   render();
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function includesQuery(values) {
@@ -43,6 +52,14 @@ function includesQuery(values) {
     .join(" ")
     .toLowerCase()
     .includes(q);
+}
+
+function eventName(eventId) {
+  return state.data.events.find((event) => event.event_id === eventId)?.name ?? eventId;
+}
+
+function promotionName(promotionId) {
+  return state.data.promotions.find((promotion) => promotion.promotion_id === promotionId)?.name ?? promotionId;
 }
 
 function renderSummary() {
@@ -59,19 +76,11 @@ function renderSummary() {
   document.querySelector("#summary").innerHTML = items
     .map(([label, count]) => `
       <article class="summary-card">
-        <strong>${count}</strong>
-        <span>${label}</span>
+        <strong>${escapeHtml(count)}</strong>
+        <span>${escapeHtml(label)}</span>
       </article>
     `)
     .join("");
-}
-
-function eventName(eventId) {
-  return state.data.events.find((event) => event.event_id === eventId)?.name ?? eventId;
-}
-
-function promotionName(promotionId) {
-  return state.data.promotions.find((promotion) => promotion.promotion_id === promotionId)?.name ?? promotionId;
 }
 
 function renderBouts() {
@@ -89,15 +98,15 @@ function renderBouts() {
 
   return bouts.map((bout) => `
     <article class="card">
-      <h2>${bout.winner} vs ${bout.loser}</h2>
-      <p class="meta">${eventName(bout.event_id)} / ${bout.division ?? ""}</p>
+      <h2>${escapeHtml(bout.winner)} vs ${escapeHtml(bout.loser)}</h2>
+      <p class="meta">${escapeHtml(eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
       <p class="result">
-        ${bout.winner} def. ${bout.loser}
-        ${bout.result?.round ? `${bout.result.round}R` : ""}
-        ${bout.result?.time ?? ""}
-        ${bout.result?.method_raw ?? ""}
+        ${escapeHtml(bout.winner)} def. ${escapeHtml(bout.loser)}
+        ${bout.result?.round ? `${escapeHtml(bout.result.round)}R` : ""}
+        ${escapeHtml(bout.result?.time ?? "")}
+        ${escapeHtml(bout.result?.method_raw ?? "")}
       </p>
-      ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${bout.title.note}</p>` : ""}
+      ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
     </article>
   `).join("") || emptyMessage();
 }
@@ -115,15 +124,15 @@ function renderFighters() {
 
   return fighters.map((fighter) => `
     <article class="card">
-      <h2>${fighter.display_name}</h2>
-      <p class="meta">${fighter.main_division ?? ""} / ${promotionName(fighter.main_promotion_id)}</p>
+      <h2>${escapeHtml(fighter.display_name)}</h2>
+      <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(promotionName(fighter.main_promotion_id))}</p>
       <dl>
         <dt>所属</dt>
-        <dd>${fighter.profile?.gym ?? "不明"}</dd>
+        <dd>${escapeHtml(fighter.profile?.gym ?? "不明")}</dd>
         <dt>身長・年齢</dt>
-        <dd>${fighter.profile?.height ?? "不明"} / ${fighter.profile?.age ?? "不明"}</dd>
+        <dd>${escapeHtml(fighter.profile?.height ?? "不明")} / ${escapeHtml(fighter.profile?.age ?? "不明")}</dd>
         <dt>概要</dt>
-        <dd>${fighter.summary || "未入力"}</dd>
+        <dd>${escapeHtml(fighter.summary || "未入力")}</dd>
       </dl>
     </article>
   `).join("") || emptyMessage();
@@ -140,9 +149,9 @@ function renderEvents() {
 
   return events.map((event) => `
     <article class="card">
-      <h2>${event.name}</h2>
-      <p class="meta">${promotionName(event.promotion_id)} / ${event.published_at ?? ""}</p>
-      <p>${event.summary || "概要未入力"}</p>
+      <h2>${escapeHtml(event.name)}</h2>
+      <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
+      <p>${escapeHtml(event.summary || "概要未入力")}</p>
     </article>
   `).join("") || emptyMessage();
 }
@@ -159,21 +168,20 @@ function renderPromotions() {
 
   return promotions.map((promotion) => `
     <article class="card">
-      <h2>${promotion.name}</h2>
-      <p class="meta">${promotion.name_en ?? ""} / ${promotion.category ?? ""}</p>
-      <p>${promotion.summary || "概要未入力"}</p>
+      <h2>${escapeHtml(promotion.name)}</h2>
+      <p class="meta">${escapeHtml(promotion.name_en ?? "")} / ${escapeHtml(promotion.category ?? "")}</p>
+      <p>${escapeHtml(promotion.summary || "概要未入力")}</p>
       <dl>
         <dt>会場</dt>
-        <dd>${promotion.rules?.venue ?? "不明"}</dd>
+        <dd>${escapeHtml(promotion.rules?.venue ?? "不明")}</dd>
         <dt>ラウンド</dt>
-        <dd>${promotion.rules?.rounds ?? "不明"}</dd>
+        <dd>${escapeHtml(promotion.rules?.rounds ?? "不明")}</dd>
         <dt>判定</dt>
-        <dd>${promotion.rules?.judging ?? "不明"}</dd>
+        <dd>${escapeHtml(promotion.rules?.judging ?? "不明")}</dd>
       </dl>
     </article>
   `).join("") || emptyMessage();
 }
-
 
 function renderTitles() {
   const titles = state.data.titles.filter((title) =>
@@ -193,16 +201,16 @@ function renderTitles() {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((reign) => `
         <li>
-          <span class="reign-label">${reign.reign_label ?? `${reign.order}代`}</span>
-          <span class="fighter-name">${reign.fighter_name ?? reign.fighter_id}</span>
+          <span class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</span>
+          <span class="fighter-name">${escapeHtml(reign.fighter_name ?? reign.fighter_id)}</span>
         </li>
       `)
       .join("");
 
     return `
       <article class="card title-card">
-        <h2>${promotionName(title.promotion_id)} / ${title.division ?? ""}</h2>
-        <p class="meta">${title.title_id}</p>
+        <h2>${escapeHtml(promotionName(title.promotion_id))} / ${escapeHtml(title.division ?? "")}</h2>
+        <p class="meta">${escapeHtml(title.title_id)}</p>
         <ol class="lineage-list">
           ${lineage}
         </ol>
@@ -216,14 +224,15 @@ function emptyMessage() {
 }
 
 function renderContent() {
-  const renderer = {
+  const renderers = {
     bouts: renderBouts,
     fighters: renderFighters,
     events: renderEvents,
     promotions: renderPromotions,
     titles: renderTitles,
-  }[state.tab];
+  };
 
+  const renderer = renderers[state.tab] ?? renderBouts;
   document.querySelector("#content").innerHTML = renderer();
 }
 
@@ -234,6 +243,8 @@ function renderTabs() {
 }
 
 function render() {
+  if (!state.data) return;
+
   renderSummary();
   renderTabs();
   renderContent();
@@ -246,7 +257,10 @@ document.querySelector("#search").addEventListener("input", (event) => {
 
 document.querySelectorAll(".tab").forEach((button) => {
   button.addEventListener("click", () => {
-    state.tab = button.dataset.tab;
+    const tab = button.dataset.tab;
+    if (!tab) return;
+
+    state.tab = tab;
     render();
   });
 });
@@ -255,7 +269,7 @@ loadData().catch((error) => {
   document.querySelector("#content").innerHTML = `
     <article class="card">
       <h2>読み込みに失敗しました</h2>
-      <p>${error.message}</p>
+      <p>${escapeHtml(error.message)}</p>
     </article>
   `;
 });
