@@ -352,13 +352,6 @@ document.querySelector("#title-division-filter")?.addEventListener("change", (ev
 });
 
 
-document.querySelector("#content").addEventListener("click", (event) => {
-  const button = event.target.closest(".fighter-link");
-  if (!button) return;
-
-  jumpToFighter(button.dataset.fighterId, button.dataset.fighterName);
-});
-
 document.querySelectorAll(".tab").forEach((button) => {
   button.addEventListener("click", () => {
     const tab = button.dataset.tab;
