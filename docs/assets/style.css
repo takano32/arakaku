@@ -243,3 +243,25 @@ a {
   outline: 3px solid rgb(139 47 32 / 0.22);
   border-color: var(--accent);
 }
+
+.link-button {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+.link-button:hover {
+  color: var(--accent-dark);
+}
+
+.result .link-button {
+  font-weight: 800;
+}

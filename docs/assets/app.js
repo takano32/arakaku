@@ -70,6 +70,34 @@ function promotionName(promotionId) {
   return state.data.promotions.find((promotion) => promotion.promotion_id === promotionId)?.name ?? promotionId;
 }
 
+function fighterName(fighterId) {
+  return state.data.fighters.find((fighter) => fighter.fighter_id === fighterId)?.display_name ?? fighterId;
+}
+
+function fighterLink(fighterId, fallbackName) {
+  const name = fighterName(fighterId) || fallbackName || fighterId;
+
+  return `
+    <button type="button" class="link-button fighter-link" data-fighter-id="${escapeHtml(fighterId)}" data-fighter-name="${escapeHtml(name)}">
+      ${escapeHtml(name)}
+    </button>
+  `;
+}
+
+function jumpToFighter(fighterId, fighterNameValue) {
+  const name = fighterName(fighterId) || fighterNameValue || fighterId;
+
+  state.tab = "fighters";
+  state.query = name;
+
+  const search = document.querySelector("#search");
+  if (search) {
+    search.value = name;
+  }
+
+  render();
+}
+
 function renderSummary() {
   const d = state.data;
 
@@ -139,10 +167,10 @@ function renderBouts() {
 
   return bouts.map((bout) => `
     <article class="card">
-      <h2>${escapeHtml(bout.winner)} vs ${escapeHtml(bout.loser)}</h2>
+      <h2>${fighterLink(bout.winner_id, bout.winner)} vs ${fighterLink(bout.loser_id, bout.loser)}</h2>
       <p class="meta">${escapeHtml(eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
       <p class="result">
-        ${escapeHtml(bout.winner)} def. ${escapeHtml(bout.loser)}
+        ${fighterLink(bout.winner_id, bout.winner)} def. ${fighterLink(bout.loser_id, bout.loser)}
         ${bout.result?.round ? `${escapeHtml(bout.result.round)}R` : ""}
         ${escapeHtml(bout.result?.time ?? "")}
         ${escapeHtml(bout.result?.method_raw ?? "")}
@@ -251,7 +279,7 @@ function renderTitles() {
       .map((reign) => `
         <li>
           <span class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</span>
-          <span class="fighter-name">${escapeHtml(reign.fighter_name ?? reign.fighter_id)}</span>
+          <span class="fighter-name">${fighterLink(reign.fighter_id, reign.fighter_name)}</span>
         </li>
       `)
       .join("");
@@ -286,7 +314,15 @@ function renderContent() {
 }
 
 function renderTabs() {
-  document.querySelectorAll(".tab").forEach((button) => {
+  
+document.querySelector("#content").addEventListener("click", (event) => {
+  const button = event.target.closest(".fighter-link");
+  if (!button) return;
+
+  jumpToFighter(button.dataset.fighterId, button.dataset.fighterName);
+});
+
+document.querySelectorAll(".tab").forEach((button) => {
     button.classList.toggle("active", button.dataset.tab === state.tab);
   });
 }
@@ -313,6 +349,14 @@ document.querySelector("#title-promotion-filter")?.addEventListener("change", (e
 document.querySelector("#title-division-filter")?.addEventListener("change", (event) => {
   state.titleDivision = event.target.value;
   renderContent();
+});
+
+
+document.querySelector("#content").addEventListener("click", (event) => {
+  const button = event.target.closest(".fighter-link");
+  if (!button) return;
+
+  jumpToFighter(button.dataset.fighterId, button.dataset.fighterName);
 });
 
 document.querySelectorAll(".tab").forEach((button) => {
