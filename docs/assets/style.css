@@ -142,3 +142,33 @@ footer {
 a {
   color: var(--accent);
 }
+
+.lineage-list {
+  display: grid;
+  gap: 8px;
+  padding-left: 1.4rem;
+  margin: 12px 0 0;
+}
+
+.lineage-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.lineage-list li:last-child {
+  border-bottom: 0;
+}
+
+.reign-label {
+  display: inline-block;
+  min-width: 4.5rem;
+  font-weight: 700;
+}
+
+.fighter-name {
+  font-weight: 600;
+}
+
+.title-card h2 {
+  line-height: 1.35;
+}

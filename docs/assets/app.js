@@ -53,6 +53,7 @@ function renderSummary() {
     ["大会", d.events.length],
     ["試合", d.bouts.length],
     ["選手", d.fighters.length],
+    ["王座", d.titles.length],
   ];
 
   document.querySelector("#summary").innerHTML = items
@@ -173,6 +174,43 @@ function renderPromotions() {
   `).join("") || emptyMessage();
 }
 
+
+function renderTitles() {
+  const titles = state.data.titles.filter((title) =>
+    includesQuery([
+      title.title_id,
+      title.division,
+      promotionName(title.promotion_id),
+      ...(title.lineage ?? []).flatMap((reign) => [
+        reign.fighter_name,
+        reign.reign_label,
+      ]),
+    ])
+  );
+
+  return titles.map((title) => {
+    const lineage = [...(title.lineage ?? [])]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((reign) => `
+        <li>
+          <span class="reign-label">${reign.reign_label ?? `${reign.order}代`}</span>
+          <span class="fighter-name">${reign.fighter_name ?? reign.fighter_id}</span>
+        </li>
+      `)
+      .join("");
+
+    return `
+      <article class="card title-card">
+        <h2>${promotionName(title.promotion_id)} / ${title.division ?? ""}</h2>
+        <p class="meta">${title.title_id}</p>
+        <ol class="lineage-list">
+          ${lineage}
+        </ol>
+      </article>
+    `;
+  }).join("") || emptyMessage();
+}
+
 function emptyMessage() {
   return `<article class="card"><p>該当するデータがありません。</p></article>`;
 }
@@ -183,6 +221,7 @@ function renderContent() {
     fighters: renderFighters,
     events: renderEvents,
     promotions: renderPromotions,
+    titles: renderTitles,
   }[state.tab];
 
   document.querySelector("#content").innerHTML = renderer();
