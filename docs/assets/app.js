@@ -402,6 +402,38 @@ function renderFighters() {
   `).join("") || emptyMessage();
 }
 
+
+function renderEventBouts(eventId) {
+  const bouts = state.data.bouts
+    .filter((bout) => bout.event_id === eventId)
+    .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
+
+  if (bouts.length === 0) {
+    return `<p class="meta">関連試合はまだ登録されていません。</p>`;
+  }
+
+  return `
+    <section class="related-bouts">
+      <h3>関連試合</h3>
+      <ul>
+        ${bouts.map((bout) => `
+          <li>
+            <span class="meta">第${escapeHtml(bout.bout_order ?? "?")}試合</span>
+            <span>${boutMatchup(bout)}</span>
+            <span class="meta">${renderBoutResultSummary(bout)}</span>
+            <span class="meta">
+              ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
+              ${escapeHtml(bout.result?.time ?? "")}
+              ${escapeHtml(bout.result?.method_raw ?? "")}
+            </span>
+            ${renderVideoLinks("bout", bout.bout_id)}
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
+}
+
 function renderEvents() {
   const events = state.data.events.filter((event) =>
     includesQuery([
