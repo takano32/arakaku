@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import re
+from difflib import SequenceMatcher
 from pathlib import Path
 
 
@@ -17,14 +18,61 @@ def normalize_name(value: str) -> str:
     value = re.sub(r"\s+", "", value)
     value = value.replace("・", "")
     value = value.replace("　", "")
-    return value.lower()
+    value = value.replace(".", "")
+    value = value.replace("．", "")
+    value = value.lower()
+
+    replacements = {
+        "ローリングjr": "ローリングjr",
+        "ローリングjr.": "ローリングjr",
+        "rollingjr": "ローリングjr",
+        "rollingjr": "ローリングjr",
+    }
+
+    return replacements.get(value, value)
 
 
-def same_pair(a1: str, b1: str, a2: str, b2: str) -> bool:
-    a1n, b1n = normalize_name(a1), normalize_name(b1)
-    a2n, b2n = normalize_name(a2), normalize_name(b2)
+def name_score(left: str, right: str) -> float:
+    left_n = normalize_name(left)
+    right_n = normalize_name(right)
 
-    return (a1n == a2n and b1n == b2n) or (a1n == b2n and b1n == a2n)
+    if not left_n or not right_n:
+        return 0.0
+
+    if left_n == right_n:
+        return 1.0
+
+    if left_n in right_n or right_n in left_n:
+        return 0.88
+
+    return SequenceMatcher(None, left_n, right_n).ratio()
+
+
+def pair_score(
+    bout_a: str,
+    bout_b: str,
+    result_a: str,
+    result_b: str,
+) -> tuple[float, bool]:
+    direct = (
+        name_score(bout_a, result_a) + name_score(bout_b, result_b)
+    ) / 2
+
+    reverse = (
+        name_score(bout_a, result_b) + name_score(bout_b, result_a)
+    ) / 2
+
+    if reverse > direct:
+        return reverse, True
+
+    return direct, False
+
+
+def result_quality(row: dict[str, str]) -> tuple[bool, bool, bool]:
+    has_winner = bool(row.get("winner") and row.get("loser"))
+    has_method = bool(row.get("method_normalized"))
+    has_time = bool(row.get("round") or row.get("time"))
+    return has_winner, has_method, has_time
 
 
 def main() -> int:
@@ -47,39 +95,66 @@ def main() -> int:
         if not event_id or not fighter_a or not fighter_b:
             continue
 
-        candidates = [
+        event_bouts = [
             bout for bout in bouts
             if bout.get("event_id") == event_id
-            and same_pair(
+        ]
+
+        if not event_bouts:
+            continue
+
+        scored: list[tuple[float, str, bool, dict[str, str]]] = []
+
+        for bout in event_bouts:
+            score, reversed_pair = pair_score(
                 bout.get("fighter_a", ""),
                 bout.get("fighter_b", ""),
                 fighter_a,
                 fighter_b,
             )
-        ]
 
-        if not candidates:
+            match_reason = "name_pair"
+
+            # Fallback: same event + same bout_order.
+            if score < 0.75 and result.get("bout_order") and bout.get("bout_order"):
+                if result["bout_order"] == bout["bout_order"]:
+                    score = max(score, 0.70)
+                    match_reason = "event_and_bout_order"
+
+            if score >= 0.70:
+                scored.append((score, match_reason, reversed_pair, bout))
+
+        if not scored:
             continue
 
-        for bout in candidates:
-            result_has_winner = bool(result.get("winner") and result.get("loser"))
-            result_has_method = bool(result.get("method_normalized"))
-            result_has_time = bool(result.get("round") or result.get("time"))
+        scored.sort(key=lambda item: item[0], reverse=True)
 
-            confidence = result.get("confidence", "low")
-            if result_has_winner and result_has_method:
+        # Keep best few candidates, because this is review CSV.
+        for score, match_reason, reversed_pair, bout in scored[:3]:
+            has_winner, has_method, has_time = result_quality(result)
+
+            confidence = "low"
+            if score >= 0.95 and has_winner and has_method:
                 confidence = "high"
-            elif result_has_method or result_has_time:
+            elif score >= 0.85 and (has_method or has_time or has_winner):
+                confidence = "medium"
+            elif match_reason == "event_and_bout_order" and (has_method or has_time):
                 confidence = "medium"
 
             rows.append(
                 {
                     "apply": "false",
                     "confidence": confidence,
+                    "match_score": f"{score:.3f}",
+                    "match_reason": match_reason,
+                    "reversed_pair": "true" if reversed_pair else "false",
                     "bout_id": bout.get("bout_id", ""),
                     "event_id": bout.get("event_id", ""),
+                    "bout_order": bout.get("bout_order", ""),
                     "fighter_a": bout.get("fighter_a", ""),
                     "fighter_b": bout.get("fighter_b", ""),
+                    "structured_fighter_a": fighter_a,
+                    "structured_fighter_b": fighter_b,
                     "winner": result.get("winner", ""),
                     "loser": result.get("loser", ""),
                     "round": result.get("round", ""),
@@ -100,10 +175,16 @@ def main() -> int:
     fieldnames = [
         "apply",
         "confidence",
+        "match_score",
+        "match_reason",
+        "reversed_pair",
         "bout_id",
         "event_id",
+        "bout_order",
         "fighter_a",
         "fighter_b",
+        "structured_fighter_a",
+        "structured_fighter_b",
         "winner",
         "loser",
         "round",
