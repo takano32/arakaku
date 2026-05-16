@@ -174,6 +174,20 @@ function fighterName(fighterId) {
 }
 
 
+
+function fighterMatchesQuery(fighter) {
+  return includesQuery([
+    fighter.display_name,
+    fighter.aliases?.join(" "),
+    fighter.main_division,
+    fighter.main_promotion_id,
+    fighter.profile?.height,
+    fighter.profile?.age,
+    fighter.profile?.gym,
+    fighter.summary,
+  ]);
+}
+
 function boutMatchup(bout) {
   const fighterA = bout.fighters?.[0];
   const fighterB = bout.fighters?.[1];
@@ -349,15 +363,7 @@ function renderBouts() {
 }
 
 function renderFighters() {
-  const fighters = state.data.fighters.filter((fighter) =>
-    includesQuery([
-      fighter.display_name,
-      fighter.main_division,
-      fighter.main_promotion_id,
-      fighter.profile?.gym,
-      fighter.summary,
-    ])
-  );
+  const fighters = state.data.fighters.filter((fighter) => fighterMatchesQuery(fighter));
 
   return fighters.map((fighter) => `
     <article class="card">
