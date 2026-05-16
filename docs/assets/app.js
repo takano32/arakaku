@@ -15,6 +15,7 @@ const DATA_FILES = {
 const state = {
   tab: "bouts",
   query: "",
+  focusFighterId: "",
   titlePromotion: "",
   titleDivision: "",
   data: null,
@@ -260,11 +261,8 @@ function renderRelatedBouts(fighterId) {
         ${bouts.map((bout) => `
           <li>
             <span class="meta">${escapeHtml(eventName(bout.event_id))}</span>
-            <span>
-              ${fighterLink(bout.winner_id, bout.winner)}
-              def.
-              ${fighterLink(bout.loser_id, bout.loser)}
-            </span>
+            <span>${boutMatchup(bout)}</span>
+            <span class="meta">${renderBoutResultSummary(bout)}</span>
             <span class="meta">
               ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
               ${escapeHtml(bout.result?.time ?? "")}
@@ -614,6 +612,7 @@ function render() {
 
 document.querySelector("#search").addEventListener("input", (event) => {
   state.query = event.target.value;
+  state.focusFighterId = "";
   renderContent();
 });
 
@@ -634,6 +633,7 @@ document.querySelectorAll(".tab").forEach((button) => {
     if (!tab) return;
 
     state.tab = tab;
+    state.focusFighterId = "";
     render();
   });
 });
