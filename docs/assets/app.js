@@ -360,7 +360,9 @@ function renderTitleFilters() {
 }
 
 function renderBouts() {
-  const bouts = state.data.bouts.filter((bout) => includesQuery(boutSearchText(bout)));
+  const bouts = state.focusEventId
+    ? state.data.bouts.filter((bout) => bout.event_id === state.focusEventId)
+    : state.data.bouts.filter((bout) => includesQuery(boutSearchText(bout)));
 
   return bouts.map((bout) => `
     <article class="card">
