@@ -114,6 +114,30 @@ function relationTypeLabel(relationType) {
 }
 
 
+
+function boutSearchText(bout) {
+  const fighterNames = (bout.fighters ?? [])
+    .map((fighter) => fighter.name)
+    .filter(Boolean)
+    .join(" ");
+
+  return [
+    bout.bout_id,
+    bout.matchup,
+    fighterNames,
+    bout.winner,
+    bout.loser,
+    bout.division,
+    bout.weight_class_id,
+    bout.bout_type,
+    eventName(bout.event_id),
+    promotionName(bout.promotion_id),
+    bout.result?.method_raw,
+    bout.result?.method_normalized,
+    bout.notes,
+  ];
+}
+
 function renderBoutResultSummary(bout) {
   const resultStatus = bout.result_status ?? "known";
 
@@ -336,17 +360,7 @@ function renderTitleFilters() {
 }
 
 function renderBouts() {
-  const bouts = state.data.bouts.filter((bout) =>
-    includesQuery([
-      bout.winner,
-      bout.loser,
-      bout.division,
-      eventName(bout.event_id),
-      promotionName(bout.promotion_id),
-      bout.result?.method_raw,
-      bout.result?.technique,
-    ])
-  );
+  const bouts = state.data.bouts.filter((bout) => includesQuery(boutSearchText(bout)));
 
   return bouts.map((bout) => `
     <article class="card">
