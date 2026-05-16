@@ -16,6 +16,7 @@ const state = {
   tab: "bouts",
   query: "",
   focusFighterId: "",
+  focusEventId: "",
   titlePromotion: "",
   titleDivision: "",
   data: null,
@@ -237,6 +238,36 @@ function boutMatchup(bout) {
   return escapeHtml(bout.bout_id);
 }
 
+
+function eventLink(eventId, fallbackName) {
+  const name = eventName(eventId) || fallbackName || eventId;
+
+  return `
+    <button type="button" class="link-button event-link" data-event-id="${escapeHtml(eventId)}" data-event-name="${escapeHtml(name)}">
+      ${escapeHtml(name)}
+    </button>
+  `;
+}
+
+function jumpToEvent(eventId, eventNameValue) {
+  state.tab = "events";
+  state.focusEventId = eventId || "";
+  state.focusFighterId = "";
+  state.query = eventNameValue || "";
+
+  const searchInput = document.querySelector("#search");
+  if (searchInput) {
+    searchInput.value = state.query;
+  }
+
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === state.tab);
+  });
+
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function fighterLink(fighterId, fallbackName) {
   const name = fighterName(fighterId) || fallbackName || fighterId;
 
@@ -288,7 +319,7 @@ function renderRelatedBouts(fighterId) {
       <ul>
         ${bouts.map((bout) => `
           <li>
-            <span class="meta">${escapeHtml(eventName(bout.event_id))}</span>
+            <span class="meta">${eventLink(bout.event_id, eventName(bout.event_id))}</span>
             <span>${boutMatchup(bout)}</span>
             <span class="meta">${renderBoutResultSummary(bout)}</span>
             <span class="meta">
@@ -367,7 +398,7 @@ function renderBouts() {
   return bouts.map((bout) => `
     <article class="card">
       <h2>${boutMatchup(bout)}</h2>
-      <p class="meta">${escapeHtml(eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
+      <p class="meta">${eventLink(bout.event_id, eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
       <p class="result">
         ${renderBoutResultSummary(bout)}
         ${bout.result?.round ? `${escapeHtml(bout.result.round)}R` : ""}
@@ -435,13 +466,15 @@ function renderEventBouts(eventId) {
 }
 
 function renderEvents() {
-  const events = state.data.events.filter((event) =>
-    includesQuery([
-      event.name,
-      promotionName(event.promotion_id),
-      event.summary,
-    ])
-  );
+  const events = state.focusEventId
+    ? state.data.events.filter((event) => event.event_id === state.focusEventId)
+    : state.data.events.filter((event) =>
+        includesQuery([
+          event.name,
+          promotionName(event.promotion_id),
+          event.summary,
+        ])
+      );
 
   return events.map((event) => `
     <article class="card">
@@ -648,6 +681,13 @@ document.querySelector("#content").addEventListener("click", (event) => {
   jumpToFighter(button.dataset.fighterId, button.dataset.fighterName);
 });
 
+document.querySelector("#content").addEventListener("click", (event) => {
+  const button = event.target.closest(".event-link");
+  if (!button) return;
+
+  jumpToEvent(button.dataset.eventId, button.dataset.eventName);
+});
+
 document.querySelectorAll(".tab").forEach((button) => {
     button.classList.toggle("active", button.dataset.tab === state.tab);
   });
@@ -665,6 +705,7 @@ function render() {
 document.querySelector("#search").addEventListener("input", (event) => {
   state.query = event.target.value;
   state.focusFighterId = "";
+  state.focusEventId = "";
   renderContent();
 });
 
@@ -686,6 +727,7 @@ document.querySelectorAll(".tab").forEach((button) => {
 
     state.tab = tab;
     state.focusFighterId = "";
+    state.focusEventId = "";
     render();
   });
 });
