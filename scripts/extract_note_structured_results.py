@@ -224,17 +224,51 @@ def infer_winner(context: str, fighter_a: str, fighter_b: str) -> tuple[str, str
     a = compact_name(fighter_a)
     b = compact_name(fighter_b)
 
+    win_tokens = [
+        "勝ち",
+        "勝利",
+        "一本勝ち",
+        "判定勝ち",
+        "ko勝ち",
+        "tko勝ち",
+        "防衛成功",
+        "王座獲得",
+        "王者に",
+        "新王者",
+    ]
+
     for name, norm in [(fighter_a, a), (fighter_b, b)]:
+        if not norm:
+            continue
+
         pos = compact.find(norm)
         if pos < 0:
             continue
 
-        tail = compact[pos:pos + 100]
-        if any(token in tail for token in ["勝ち", "勝利", "防衛成功", "王座獲得"]):
+        tail = compact[pos:pos + 160]
+        head = compact[max(0, pos - 80):pos]
+
+        if any(token in tail for token in win_tokens):
             loser = fighter_b if name == fighter_a else fighter_a
             return name, loser
 
-    # If line says A def. B style after Japanese stripping, not currently common.
+        if any(token in head for token in ["勝者", "勝ったのは"]):
+            loser = fighter_b if name == fighter_a else fighter_a
+            return name, loser
+
+    # Pattern: Aが... / Aは... + result words
+    for name, norm in [(fighter_a, a), (fighter_b, b)]:
+        if not norm:
+            continue
+
+        for marker in [f"{norm}が", f"{norm}は"]:
+            pos = compact.find(marker)
+            if pos >= 0:
+                tail = compact[pos:pos + 160]
+                if any(token in tail for token in win_tokens):
+                    loser = fighter_b if name == fighter_a else fighter_a
+                    return name, loser
+
     return "", ""
 
 
@@ -277,7 +311,7 @@ def parse_article(article: dict[str, str]) -> list[dict[str, str]]:
         nearby = [
             (j, other)
             for j, other in lines
-            if idx <= j <= idx + 8
+            if idx - 2 <= j <= idx + 12
         ]
 
         source_text = " / ".join(other for _, other in nearby)
@@ -291,8 +325,13 @@ def parse_article(article: dict[str, str]) -> list[dict[str, str]]:
         confidence = "low"
         if winner and method:
             confidence = "high"
+        elif method and (round_value or time_value):
+            confidence = "medium"
         elif method or winner:
             confidence = "medium"
+
+        if article.get("article_type") == "event_result" and confidence == "medium":
+            confidence = "high" if winner and method else "medium"
 
         rows.append(
             {
