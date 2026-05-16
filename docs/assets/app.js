@@ -223,17 +223,17 @@ function fighterLink(fighterId, fallbackName) {
 }
 
 function jumpToFighter(fighterId, fighterNameValue) {
-  const name = fighterName(fighterId) || fighterNameValue || fighterId;
-
   state.tab = "fighters";
-  state.query = name;
+  state.focusFighterId = fighterId || "";
+  state.query = fighterNameValue || "";
+  searchInput.value = state.query;
 
-  const search = document.querySelector("#search");
-  if (search) {
-    search.value = name;
-  }
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === state.tab);
+  });
 
   render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function relatedBoutsForFighter(fighterId) {
@@ -363,7 +363,9 @@ function renderBouts() {
 }
 
 function renderFighters() {
-  const fighters = state.data.fighters.filter((fighter) => fighterMatchesQuery(fighter));
+  const fighters = state.focusFighterId
+    ? state.data.fighters.filter((fighter) => fighter.fighter_id === state.focusFighterId)
+    : state.data.fighters.filter((fighter) => fighterMatchesQuery(fighter));
 
   return fighters.map((fighter) => `
     <article class="card">
