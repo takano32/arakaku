@@ -482,6 +482,7 @@ function renderEvents() {
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
       ${renderVideoLinks("event", event.event_id)}
+      ${renderEventBouts(event.event_id)}
     </article>
   `).join("") || emptyMessage();
 }
