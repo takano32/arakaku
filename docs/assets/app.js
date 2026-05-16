@@ -112,6 +112,21 @@ function relationTypeLabel(relationType) {
   }[relationType] ?? relationType ?? "動画";
 }
 
+
+function renderBoutResultSummary(bout) {
+  const resultStatus = bout.result_status ?? "known";
+
+  if (resultStatus === "unknown") {
+    return "勝敗未入力";
+  }
+
+  if (bout.winner && bout.loser) {
+    return `${fighterLink(bout.winner_id, bout.winner)} def. ${fighterLink(bout.loser_id, bout.loser)}`;
+  }
+
+  return "結果未入力";
+}
+
 function renderVideoLinks(entityType, entityId) {
   const items = videosForEntity(entityType, entityId);
 
@@ -156,6 +171,26 @@ function titleDisplayName(title) {
 
 function fighterName(fighterId) {
   return state.data.fighters.find((fighter) => fighter.fighter_id === fighterId)?.display_name ?? fighterId;
+}
+
+
+function boutMatchup(bout) {
+  if (bout.matchup) {
+    return escapeHtml(bout.matchup);
+  }
+
+  const fighterA = bout.fighters?.[0]?.name ?? bout.fighter_a ?? "";
+  const fighterB = bout.fighters?.[1]?.name ?? bout.fighter_b ?? "";
+
+  if (fighterA && fighterB) {
+    return `${escapeHtml(fighterA)} vs ${escapeHtml(fighterB)}`;
+  }
+
+  if (bout.winner && bout.loser) {
+    return `${escapeHtml(bout.winner)} vs ${escapeHtml(bout.loser)}`;
+  }
+
+  return escapeHtml(bout.bout_id);
 }
 
 function fighterLink(fighterId, fallbackName) {
@@ -294,10 +329,10 @@ function renderBouts() {
 
   return bouts.map((bout) => `
     <article class="card">
-      <h2>${fighterLink(bout.winner_id, bout.winner)} vs ${fighterLink(bout.loser_id, bout.loser)}</h2>
+      <h2>${boutMatchup(bout)}</h2>
       <p class="meta">${escapeHtml(eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
       <p class="result">
-        ${fighterLink(bout.winner_id, bout.winner)} def. ${fighterLink(bout.loser_id, bout.loser)}
+        ${renderBoutResultSummary(bout)}
         ${bout.result?.round ? `${escapeHtml(bout.result.round)}R` : ""}
         ${escapeHtml(bout.result?.time ?? "")}
         ${escapeHtml(bout.result?.method_raw ?? "")}
