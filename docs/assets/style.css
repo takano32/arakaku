@@ -373,3 +373,24 @@ a {
   flex-wrap: wrap;
   margin: 8px 0 12px;
 }
+
+.related-bout-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.related-bout-card {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: var(--card);
+}
+
+.related-bout-card h4 {
+  margin: 0.25rem 0;
+}
+
+.related-bout-card p {
+  margin: 0.25rem 0;
+}

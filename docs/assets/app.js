@@ -446,21 +446,21 @@ function renderEventBouts(eventId) {
   return `
     <section class="related-bouts">
       <h3>関連試合</h3>
-      <ul>
+      <div class="related-bout-grid">
         ${bouts.map((bout) => `
-          <li>
-            <span class="meta">第${escapeHtml(bout.bout_order ?? "?")}試合</span>
-            <span>${boutMatchup(bout)}</span>
-            <span class="meta">${renderBoutResultSummary(bout)}</span>
-            <span class="meta">
+          <article class="related-bout-card">
+            <p class="meta">第${escapeHtml(bout.bout_order ?? "?")}試合</p>
+            <h4>${boutMatchup(bout)}</h4>
+            <p>${renderBoutResultSummary(bout)}</p>
+            <p class="meta">
               ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
               ${escapeHtml(bout.result?.time ?? "")}
               ${escapeHtml(bout.result?.method_raw ?? "")}
-            </span>
+            </p>
             ${renderVideoLinks("bout", bout.bout_id)}
-          </li>
+          </article>
         `).join("")}
-      </ul>
+      </div>
     </section>
   `;
 }
