@@ -227,7 +227,11 @@ function jumpToFighter(fighterId, fighterNameValue) {
   state.tab = "fighters";
   state.focusFighterId = fighterId || "";
   state.query = fighterNameValue || "";
-  searchInput.value = state.query;
+
+  const searchInput = document.querySelector("#search");
+  if (searchInput) {
+    searchInput.value = state.query;
+  }
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.toggle("active", tab.dataset.tab === state.tab);
