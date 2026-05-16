@@ -175,19 +175,24 @@ function fighterName(fighterId) {
 
 
 function boutMatchup(bout) {
-  if (bout.matchup) {
-    return escapeHtml(bout.matchup);
-  }
+  const fighterA = bout.fighters?.[0];
+  const fighterB = bout.fighters?.[1];
 
-  const fighterA = bout.fighters?.[0]?.name ?? bout.fighter_a ?? "";
-  const fighterB = bout.fighters?.[1]?.name ?? bout.fighter_b ?? "";
+  const fighterAName = fighterA?.name ?? bout.fighter_a ?? "";
+  const fighterBName = fighterB?.name ?? bout.fighter_b ?? "";
+  const fighterAId = fighterA?.fighter_id ?? bout.fighter_a_id ?? "";
+  const fighterBId = fighterB?.fighter_id ?? bout.fighter_b_id ?? "";
 
-  if (fighterA && fighterB) {
-    return `${escapeHtml(fighterA)} vs ${escapeHtml(fighterB)}`;
+  if (fighterAName && fighterBName) {
+    return `${fighterLink(fighterAId, fighterAName)} vs ${fighterLink(fighterBId, fighterBName)}`;
   }
 
   if (bout.winner && bout.loser) {
-    return `${escapeHtml(bout.winner)} vs ${escapeHtml(bout.loser)}`;
+    return `${fighterLink(bout.winner_id, bout.winner)} vs ${fighterLink(bout.loser_id, bout.loser)}`;
+  }
+
+  if (bout.matchup) {
+    return escapeHtml(bout.matchup);
   }
 
   return escapeHtml(bout.bout_id);
