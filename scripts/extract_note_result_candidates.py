@@ -14,11 +14,13 @@ OUT_CSV = ROOT / "review" / "note_result_candidates.csv"
 CACHE_DIR = ROOT / "tmp" / "note-html"
 
 RESULT_RE = re.compile(
-    r"(KO|TKO|一本|判定|ドロー|ノーコンテスト|NC|失格|DQ|勝利|敗北|防衛|王座|タイトル|一本勝ち|判定勝ち|KO勝ち|TKO勝ち)",
+    r"(KO|TKO|一本|判定|ドロー|ノーコンテスト|NC|失格|DQ|勝利|勝ち|敗北|防衛|王座|タイトル|一本勝ち|判定勝ち|KO勝ち|TKO勝ち)",
     re.IGNORECASE,
 )
 VS_RE = re.compile(r"(?i)\bvs\.?\b|ＶＳ|ｖｓ|対")
-TIME_RE = re.compile(r"(\d+R|[0-9０-９]+ラウンド|[0-9０-９]+分[0-9０-９]+秒|[0-9０-９]+:[0-9０-９]{2})")
+TIME_RE = re.compile(
+    r"(\d+R|[0-9０-９]+ラウンド|[0-9０-９]+分[0-9０-９]+秒|[0-9０-９]+:[0-9０-９]{2})"
+)
 
 
 def strip_tags(text: str) -> str:
@@ -39,7 +41,7 @@ def fetch(url: str, cache_path: Path) -> str:
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "Mozilla/5.0 arakaku-data-review/1.0",
+            "User-Agent": "Mozilla/5.0 arakaku-note-result-extractor/1.0",
         },
     )
 
@@ -68,6 +70,12 @@ def classify_line(line: str) -> str:
     return ""
 
 
+def cache_name_for_article(article_id: str, url: str) -> str:
+    raw = article_id or url
+    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw).strip("_")
+    return f"{safe}.html"
+
+
 def main() -> int:
     with ARTICLES_CSV.open("r", encoding="utf-8-sig", newline="") as f:
         articles = list(csv.DictReader(f))
@@ -81,8 +89,7 @@ def main() -> int:
         if "note.com" not in url:
             continue
 
-        cache_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", article_id or url) + ".html"
-        cache_path = CACHE_DIR / cache_name
+        cache_path = CACHE_DIR / cache_name_for_article(article_id, url)
 
         print(f"[fetch] {article_id} {url}")
 

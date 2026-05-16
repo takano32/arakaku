@@ -13,8 +13,8 @@ OUT_CSV = ROOT / "review" / "bout_result_patch_candidates.csv"
 
 
 METHOD_PATTERNS = [
-    ("KO", re.compile(r"\bKO\b|ＫＯ|KO勝ち", re.IGNORECASE)),
     ("TKO", re.compile(r"\bTKO\b|ＴＫＯ|TKO勝ち", re.IGNORECASE)),
+    ("KO", re.compile(r"\bKO\b|ＫＯ|KO勝ち", re.IGNORECASE)),
     ("SUB", re.compile(r"一本|一本勝ち|サブミッション|チョーク|腕十字|関節", re.IGNORECASE)),
     ("DEC", re.compile(r"判定|判定勝ち", re.IGNORECASE)),
     ("DQ", re.compile(r"失格|DQ", re.IGNORECASE)),
@@ -22,7 +22,9 @@ METHOD_PATTERNS = [
 ]
 
 ROUND_RE = re.compile(r"([1-5１-５])\s*(?:R|Ｒ|ラウンド)")
-TIME_RE = re.compile(r"([0-9０-９]+)\s*分\s*([0-9０-９]+)\s*秒|([0-9０-９]+):([0-9０-９]{2})")
+TIME_RE = re.compile(
+    r"([0-9０-９]+)\s*分\s*([0-9０-９]+)\s*秒|([0-9０-９]+):([0-9０-９]{2})"
+)
 
 
 def normalize_digits(value: str) -> str:
@@ -76,7 +78,6 @@ def infer_winner_from_line(line: str, fighter_a: str, fighter_b: str) -> tuple[s
     b_norm = normalize_name(fighter_b)
     compact = normalize_name(line)
 
-    # Pattern: A が B に KO勝ち / A wins
     for name, norm in [(fighter_a, a_norm), (fighter_b, b_norm)]:
         if norm and norm in compact:
             name_pos = compact.find(norm)
@@ -86,7 +87,6 @@ def infer_winner_from_line(line: str, fighter_a: str, fighter_b: str) -> tuple[s
                 loser = fighter_b if name == fighter_a else fighter_a
                 return name, loser, "winner_name_near_win_word"
 
-    # Pattern around explicit winner words.
     for token in ["勝者", "勝ち", "勝利"]:
         pos = compact.find(token)
         if pos >= 0:
@@ -97,6 +97,31 @@ def infer_winner_from_line(line: str, fighter_a: str, fighter_b: str) -> tuple[s
                 return fighter_b, fighter_a, "winner_before_result_word"
 
     return "", "", ""
+
+
+def candidate_window(candidates: list[dict[str, str]], index: int) -> list[dict[str, str]]:
+    # Same article, nearby lines. Useful when matchup and result are split across adjacent lines.
+    current = candidates[index]
+    article_id = current.get("article_id", "")
+    try:
+        line_number = int(current.get("line_number") or 0)
+    except ValueError:
+        line_number = 0
+
+    out = []
+    for row in candidates:
+        if row.get("article_id") != article_id:
+            continue
+
+        try:
+            other_line_number = int(row.get("line_number") or 0)
+        except ValueError:
+            continue
+
+        if abs(other_line_number - line_number) <= 8:
+            out.append(row)
+
+    return out
 
 
 def main() -> int:
@@ -130,13 +155,33 @@ def main() -> int:
             line = candidate.get("line_text", "")
             compact = normalize_name(line)
 
-            if a_norm not in compact or b_norm not in compact:
+            direct_match = a_norm in compact and b_norm in compact
+
+            # Allow nearby-line context, but only as low/medium confidence.
+            nearby_text = ""
+            if not direct_match:
+                try:
+                    candidate_index = candidates.index(candidate)
+                except ValueError:
+                    candidate_index = -1
+
+                if candidate_index >= 0:
+                    nearby_text = " ".join(
+                        row.get("line_text", "")
+                        for row in candidate_window(candidates, candidate_index)
+                    )
+                    nearby_compact = normalize_name(nearby_text)
+                    direct_match = a_norm in nearby_compact and b_norm in nearby_compact
+
+            if not direct_match:
                 continue
+
+            combined_line = line if a_norm in compact and b_norm in compact else nearby_text
 
             method, method_raw = infer_method(line)
             round_value = infer_round(line)
             time_value = infer_time(line)
-            winner, loser, winner_reason = infer_winner_from_line(line, fighter_a, fighter_b)
+            winner, loser, winner_reason = infer_winner_from_line(combined_line, fighter_a, fighter_b)
 
             confidence = "low"
             if winner and method:
