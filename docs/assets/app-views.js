@@ -165,6 +165,19 @@ function renderDefinitionList(rows) {
   `;
 }
 
+function renderDetailDisclosure(content) {
+  if (!content) {
+    return "";
+  }
+
+  return `
+    <details class="detail-disclosure">
+      <summary>▶︎詳細を開く</summary>
+      ${content}
+    </details>
+  `;
+}
+
 function renderFighterRows(bout) {
   return (bout.fighters ?? []).map((fighter) => `
     <li>
@@ -196,7 +209,7 @@ function renderFighterSnapshots(fighterId) {
               ${snapshot.event_id ? eventLink(snapshot.event_id, eventName(snapshot.event_id)) : "大会未設定"}
               / ${renderArticleRefs(snapshot.source_article_id)}
             </span>
-            ${renderDefinitionList([
+            ${renderDetailDisclosure(renderDefinitionList([
               ["snapshot_id", `<code>${escapeHtml(snapshot.snapshot_id)}</code>`],
               ["所属", renderValue(snapshot.gym)],
               ["身長・年齢", renderValue([snapshot.height, snapshot.age].filter(Boolean).join(" / "))],
@@ -277,7 +290,7 @@ function renderBouts() {
         ${escapeHtml(bout.result?.method_raw ?? "")}
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
-      ${renderDefinitionList([
+      ${renderDetailDisclosure(renderDefinitionList([
         ["bout_id", `<code>${escapeHtml(bout.bout_id)}</code>`],
         ["大会", eventLink(bout.event_id, eventName(bout.event_id))],
         ["団体", escapeHtml(promotionName(bout.promotion_id))],
@@ -299,7 +312,7 @@ function renderBouts() {
         ["推定元動画", renderIdList([bout.inferred_from_video_id])],
         ["推定信頼度", renderValue(bout.inferred_confidence)],
         ["メモ", renderValue(bout.notes)],
-      ])}
+      ]))}
       ${renderVideoLinks("bout", bout.bout_id)}
       ${renderSourceReferences(sourceReferencesForBout(bout))}
     </article>
@@ -315,7 +328,7 @@ function renderFighters() {
     <article class="card record-card fighter-card">
       <h2>${escapeHtml(fighter.display_name)}</h2>
       <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(promotionName(fighter.main_promotion_id))}</p>
-      ${renderDefinitionList([
+      ${renderDetailDisclosure(renderDefinitionList([
         ["fighter_id", `<code>${escapeHtml(fighter.fighter_id)}</code>`],
         ["別名", renderTextList(fighter.aliases)],
         ["主階級", renderValue(fighter.main_division)],
@@ -326,7 +339,7 @@ function renderFighters() {
         ["推定元動画", renderIdList(fighter.inferred_from_video_ids)],
         ["推定信頼度", renderValue(fighter.inferred_confidence)],
         ["概要", renderValue(fighter.summary)],
-      ])}
+      ]))}
       ${renderFighterSnapshots(fighter.fighter_id)}
       ${renderRelatedBouts(fighter.fighter_id)}
     </article>
@@ -356,7 +369,7 @@ function renderEvents() {
       <h2>${escapeHtml(event.name)}</h2>
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
-      ${renderDefinitionList([
+      ${renderDetailDisclosure(renderDefinitionList([
         ["event_id", `<code>${escapeHtml(event.event_id)}</code>`],
         ["団体", escapeHtml(promotionName(event.promotion_id))],
         ["大会番号", renderValue(event.event_number)],
@@ -367,7 +380,7 @@ function renderEvents() {
         ["出典動画", renderVideoRefs(event.source_video_ids)],
         ["推定元", renderValue(event.inferred_from)],
         ["推定信頼度", renderValue(event.inferred_confidence)],
-      ])}
+      ]))}
       ${renderVideoLinks("event", event.event_id)}
       ${renderSourceReferences(sourceReferencesForEvent(event))}
       ${renderEventBouts(event.event_id)}
@@ -399,7 +412,7 @@ function renderPromotions() {
       <h2>${escapeHtml(promotion.name)}</h2>
       <p class="meta">${escapeHtml(promotion.name_en ?? "")} / ${escapeHtml(promotion.category ?? "")}</p>
       <p>${escapeHtml(promotion.summary || "概要未入力")}</p>
-      ${renderDefinitionList([
+      ${renderDetailDisclosure(renderDefinitionList([
         ["promotion_id", `<code>${escapeHtml(promotion.promotion_id)}</code>`],
         ["英字名", renderValue(promotion.name_en)],
         ["カテゴリ", renderValue(promotion.category)],
@@ -414,7 +427,7 @@ function renderPromotions() {
         ["4点頭部キック", renderValue(promotion.rules?.four_point_head_kicks === null ? "" : promotion.rules?.four_point_head_kicks ? "あり" : "なし")],
         ["4点頭部膝", renderValue(promotion.rules?.four_point_head_knees === null ? "" : promotion.rules?.four_point_head_knees ? "あり" : "なし")],
         ["出典記事", renderArticleRefs(promotion.source_article_ids)],
-      ])}
+      ]))}
       ${renderVideoLinks("promotion", promotion.promotion_id)}
       ${renderPromotionEvents(promotion.promotion_id)}
       ${renderPromotionTitles(promotion.promotion_id)}
@@ -614,12 +627,12 @@ function renderTitles() {
       ${groupHeader}
       <article class="card title-card">
         <h3>${escapeHtml(titleDisplayName(title))}</h3>
-        ${renderDefinitionList([
+        ${renderDetailDisclosure(renderDefinitionList([
           ["title_id", `<code>${escapeHtml(title.title_id)}</code>`],
           ["団体", escapeHtml(promotionName(title.promotion_id))],
           ["階級", renderValue(title.division)],
           ["変遷数", renderValue((title.lineage ?? []).length)],
-        ])}
+        ]))}
         <ol class="lineage-list">
           ${lineage}
         </ol>
