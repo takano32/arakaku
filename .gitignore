@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Generated JSON data
+docs/data/*.json
+
+# Keep output directory
+!docs/data/.gitkeep

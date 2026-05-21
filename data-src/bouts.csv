@@ -1,0 +1,6 @@
+bout_id,event_id,promotion_id,bout_order,division,weight_class_id,bout_type,fighter_a_id,fighter_a,fighter_a_corner,fighter_b_id,fighter_b,fighter_b_corner,winner_id,winner,loser_id,loser,round,time,method_raw,method_normalized,technique,decision_score,is_title_bout,title_id,title_result,title_note,source_article_id,notes
+target-103-01,target-103,target,1,ライト級,lightweight,title_match,waku,わく,,tsukurihara,つくりはら,,waku,わく,tsukurihara,つくりはら,2R,2分16秒,KO カウンターフック,KO,カウンターフック,,true,target-lightweight,defense,わくがタイトル防衛成功（防衛3度目）,note-target-103-result,
+target-103-02,target-103,target,2,ミドル級,middleweight,one_match,otosawa,おとさわ,,aurora_devil,オーロラデビル,,aurora_devil,オーロラデビル,otosawa,おとさわ,3R,2分32秒,アナコンダチョーク,SUB,アナコンダチョーク,,false,,,,note-target-103-result,
+target-103-03,target-103,target,3,ミドル級,middleweight,one_match,kintoki,きんとき,,zamon,ザモン,,zamon,ザモン,kintoki,きんとき,1R,3分06秒,KO マウントパンチ連打,KO,マウントパンチ連打,,false,,,,note-target-103-result,
+target-103-04,target-103,target,4,ミドル級,middleweight,one_match,kabei,かべい,,frank_dakuta,フランク・ダクタ,,kabei,かべい,frank_dakuta,フランク・ダクタ,2R,3分09秒,KO パウンド,KO,パウンド,,false,,,,note-target-103-result,
+target-103-05,target-103,target,5,ミドル級,middleweight,one_match,aribel_aribera,アリベル・アリベラ,,washikaga,わしかが,,washikaga,わしかが,aribel_aribera,アリベル・アリベラ,1R,1分37秒,KO 大外刈り,KO,大外刈り,,false,,,,note-target-103-result,

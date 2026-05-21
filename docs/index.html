@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARAKAKU</title>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <h1>ARAKAKU</h1>
+      <p>アラカク非公式データベース</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary-grid" id="summary"></section>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="選手名・大会名・団体名で検索">
+    </section>
+
+    <nav class="tabs" aria-label="表示切替">
+      <button class="tab active" data-tab="bouts">試合</button>
+      <button class="tab" data-tab="fighters">選手</button>
+      <button class="tab" data-tab="events">大会</button>
+      <button class="tab" data-tab="promotions">団体</button>
+    </nav>
+
+    <section id="content" class="content"></section>
+  </main>
+
+  <footer>
+    <p>
+      Source:
+      <a href="https://note.com/xyz1090">アラカク通信のーと</a>
+    </p>
+  </footer>
+
+  <script src="./assets/app.js"></script>
+</body>
+</html>

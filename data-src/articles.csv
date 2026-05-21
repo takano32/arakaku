@@ -1,0 +1,4 @@
+article_id,title,url,source_type,article_type,promotion_id,published_at,last_checked_at,status,notes
+note-target,ターゲット,https://note.com/xyz1090/n/n958613cec8a5,official_note,promotion_profile,target,2025-04-28,2026-05-15,parsed,団体設定・ルール・歴代王者
+note-target-103-card,ターゲットNo.103対戦カード,https://note.com/xyz1090/n/n9782736d400d,official_note,event_card,target,2026-04-09,2026-05-15,parsed,ターゲットNo.103の対戦カードと選手プロフィール
+note-target-103-result,ターゲットNo.103試合結果,https://note.com/xyz1090/n/n8b5fb1f69636,official_note,event_result,target,2026-05-02,2026-05-15,parsed,ターゲットNo.103の試合結果

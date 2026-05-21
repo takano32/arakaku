@@ -1,0 +1,39 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+
+      - name: Build JSON
+        run: |
+          python scripts/build_json.py
+
+      - name: Validate JSON
+        run: |
+          python scripts/validate_json.py
+
+      - name: Run tests
+        run: |
+          python -m pytest
