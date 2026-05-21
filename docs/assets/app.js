@@ -15,6 +15,8 @@ const DATA_FILES = {
 const state = {
   tab: "bouts",
   query: "",
+  focusFighterId: "",
+  focusEventId: "",
   titlePromotion: "",
   titleDivision: "",
   data: null,
@@ -112,6 +114,45 @@ function relationTypeLabel(relationType) {
   }[relationType] ?? relationType ?? "動画";
 }
 
+
+
+function boutSearchText(bout) {
+  const fighterNames = (bout.fighters ?? [])
+    .map((fighter) => fighter.name)
+    .filter(Boolean)
+    .join(" ");
+
+  return [
+    bout.bout_id,
+    bout.matchup,
+    fighterNames,
+    bout.winner,
+    bout.loser,
+    bout.division,
+    bout.weight_class_id,
+    bout.bout_type,
+    eventName(bout.event_id),
+    promotionName(bout.promotion_id),
+    bout.result?.method_raw,
+    bout.result?.method_normalized,
+    bout.notes,
+  ];
+}
+
+function renderBoutResultSummary(bout) {
+  const resultStatus = bout.result_status ?? "known";
+
+  if (resultStatus === "unknown") {
+    return "勝敗未入力";
+  }
+
+  if (bout.winner && bout.loser) {
+    return `${fighterLink(bout.winner_id, bout.winner)} def. ${fighterLink(bout.loser_id, bout.loser)}`;
+  }
+
+  return "結果未入力";
+}
+
 function renderVideoLinks(entityType, entityId) {
   const items = videosForEntity(entityType, entityId);
 
@@ -158,6 +199,75 @@ function fighterName(fighterId) {
   return state.data.fighters.find((fighter) => fighter.fighter_id === fighterId)?.display_name ?? fighterId;
 }
 
+
+
+function fighterMatchesQuery(fighter) {
+  return includesQuery([
+    fighter.display_name,
+    fighter.aliases?.join(" "),
+    fighter.main_division,
+    fighter.main_promotion_id,
+    fighter.profile?.height,
+    fighter.profile?.age,
+    fighter.profile?.gym,
+    fighter.summary,
+  ]);
+}
+
+function boutMatchup(bout) {
+  const fighterA = bout.fighters?.[0];
+  const fighterB = bout.fighters?.[1];
+
+  const fighterAName = fighterA?.name ?? bout.fighter_a ?? "";
+  const fighterBName = fighterB?.name ?? bout.fighter_b ?? "";
+  const fighterAId = fighterA?.fighter_id ?? bout.fighter_a_id ?? "";
+  const fighterBId = fighterB?.fighter_id ?? bout.fighter_b_id ?? "";
+
+  if (fighterAName && fighterBName) {
+    return `${fighterLink(fighterAId, fighterAName)} vs ${fighterLink(fighterBId, fighterBName)}`;
+  }
+
+  if (bout.winner && bout.loser) {
+    return `${fighterLink(bout.winner_id, bout.winner)} vs ${fighterLink(bout.loser_id, bout.loser)}`;
+  }
+
+  if (bout.matchup) {
+    return escapeHtml(bout.matchup);
+  }
+
+  return escapeHtml(bout.bout_id);
+}
+
+
+function eventLink(eventId, fallbackName) {
+  const name = eventName(eventId) || fallbackName || eventId;
+
+  return `
+    <button type="button" class="link-button event-link" data-event-id="${escapeHtml(eventId)}" data-event-name="${escapeHtml(name)}">
+      ${escapeHtml(name)}
+    </button>
+  `;
+}
+
+function jumpToEvent(eventId, eventNameValue) {
+  state.tab = "events";
+  state.focusEventId = eventId || "";
+  state.focusFighterId = "";
+  state.query = eventNameValue || "";
+
+  const searchInput = document.querySelector("#search");
+  if (searchInput) {
+    searchInput.value = state.query;
+  }
+
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === state.tab);
+  });
+
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function fighterLink(fighterId, fallbackName) {
   const name = fighterName(fighterId) || fallbackName || fighterId;
 
@@ -169,17 +279,21 @@ function fighterLink(fighterId, fallbackName) {
 }
 
 function jumpToFighter(fighterId, fighterNameValue) {
-  const name = fighterName(fighterId) || fighterNameValue || fighterId;
-
   state.tab = "fighters";
-  state.query = name;
+  state.focusFighterId = fighterId || "";
+  state.query = fighterNameValue || "";
 
-  const search = document.querySelector("#search");
-  if (search) {
-    search.value = name;
+  const searchInput = document.querySelector("#search");
+  if (searchInput) {
+    searchInput.value = state.query;
   }
 
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === state.tab);
+  });
+
   render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function relatedBoutsForFighter(fighterId) {
@@ -205,12 +319,9 @@ function renderRelatedBouts(fighterId) {
       <ul>
         ${bouts.map((bout) => `
           <li>
-            <span class="meta">${escapeHtml(eventName(bout.event_id))}</span>
-            <span>
-              ${fighterLink(bout.winner_id, bout.winner)}
-              def.
-              ${fighterLink(bout.loser_id, bout.loser)}
-            </span>
+            <span class="meta">${eventLink(bout.event_id, eventName(bout.event_id))}</span>
+            <span>${boutMatchup(bout)}</span>
+            <span class="meta">${renderBoutResultSummary(bout)}</span>
             <span class="meta">
               ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
               ${escapeHtml(bout.result?.time ?? "")}
@@ -280,24 +391,16 @@ function renderTitleFilters() {
 }
 
 function renderBouts() {
-  const bouts = state.data.bouts.filter((bout) =>
-    includesQuery([
-      bout.winner,
-      bout.loser,
-      bout.division,
-      eventName(bout.event_id),
-      promotionName(bout.promotion_id),
-      bout.result?.method_raw,
-      bout.result?.technique,
-    ])
-  );
+  const bouts = state.focusEventId
+    ? state.data.bouts.filter((bout) => bout.event_id === state.focusEventId)
+    : state.data.bouts.filter((bout) => includesQuery(boutSearchText(bout)));
 
   return bouts.map((bout) => `
     <article class="card">
-      <h2>${fighterLink(bout.winner_id, bout.winner)} vs ${fighterLink(bout.loser_id, bout.loser)}</h2>
-      <p class="meta">${escapeHtml(eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
+      <h2>${boutMatchup(bout)}</h2>
+      <p class="meta">${eventLink(bout.event_id, eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
       <p class="result">
-        ${fighterLink(bout.winner_id, bout.winner)} def. ${fighterLink(bout.loser_id, bout.loser)}
+        ${renderBoutResultSummary(bout)}
         ${bout.result?.round ? `${escapeHtml(bout.result.round)}R` : ""}
         ${escapeHtml(bout.result?.time ?? "")}
         ${escapeHtml(bout.result?.method_raw ?? "")}
@@ -309,15 +412,9 @@ function renderBouts() {
 }
 
 function renderFighters() {
-  const fighters = state.data.fighters.filter((fighter) =>
-    includesQuery([
-      fighter.display_name,
-      fighter.main_division,
-      fighter.main_promotion_id,
-      fighter.profile?.gym,
-      fighter.summary,
-    ])
-  );
+  const fighters = state.focusFighterId
+    ? state.data.fighters.filter((fighter) => fighter.fighter_id === state.focusFighterId)
+    : state.data.fighters.filter((fighter) => fighterMatchesQuery(fighter));
 
   return fighters.map((fighter) => `
     <article class="card">
@@ -336,14 +433,48 @@ function renderFighters() {
   `).join("") || emptyMessage();
 }
 
+
+function renderEventBouts(eventId) {
+  const bouts = state.data.bouts
+    .filter((bout) => bout.event_id === eventId)
+    .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
+
+  if (bouts.length === 0) {
+    return `<p class="meta">関連試合はまだ登録されていません。</p>`;
+  }
+
+  return `
+    <section class="related-bouts">
+      <h3>関連試合</h3>
+      <div class="related-bout-grid">
+        ${bouts.map((bout) => `
+          <article class="related-bout-card">
+            <p class="meta">第${escapeHtml(bout.bout_order ?? "?")}試合</p>
+            <h4>${boutMatchup(bout)}</h4>
+            <p>${renderBoutResultSummary(bout)}</p>
+            <p class="meta">
+              ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
+              ${escapeHtml(bout.result?.time ?? "")}
+              ${escapeHtml(bout.result?.method_raw ?? "")}
+            </p>
+            ${renderVideoLinks("bout", bout.bout_id)}
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
 function renderEvents() {
-  const events = state.data.events.filter((event) =>
-    includesQuery([
-      event.name,
-      promotionName(event.promotion_id),
-      event.summary,
-    ])
-  );
+  const events = state.focusEventId
+    ? state.data.events.filter((event) => event.event_id === state.focusEventId)
+    : state.data.events.filter((event) =>
+        includesQuery([
+          event.name,
+          promotionName(event.promotion_id),
+          event.summary,
+        ])
+      );
 
   return events.map((event) => `
     <article class="card">
@@ -351,6 +482,7 @@ function renderEvents() {
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
       ${renderVideoLinks("event", event.event_id)}
+      ${renderEventBouts(event.event_id)}
     </article>
   `).join("") || emptyMessage();
 }
@@ -550,6 +682,13 @@ document.querySelector("#content").addEventListener("click", (event) => {
   jumpToFighter(button.dataset.fighterId, button.dataset.fighterName);
 });
 
+document.querySelector("#content").addEventListener("click", (event) => {
+  const button = event.target.closest(".event-link");
+  if (!button) return;
+
+  jumpToEvent(button.dataset.eventId, button.dataset.eventName);
+});
+
 document.querySelectorAll(".tab").forEach((button) => {
     button.classList.toggle("active", button.dataset.tab === state.tab);
   });
@@ -566,6 +705,8 @@ function render() {
 
 document.querySelector("#search").addEventListener("input", (event) => {
   state.query = event.target.value;
+  state.focusFighterId = "";
+  state.focusEventId = "";
   renderContent();
 });
 
@@ -586,6 +727,8 @@ document.querySelectorAll(".tab").forEach((button) => {
     if (!tab) return;
 
     state.tab = tab;
+    state.focusFighterId = "";
+    state.focusEventId = "";
     render();
   });
 });
