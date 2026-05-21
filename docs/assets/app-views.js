@@ -165,6 +165,18 @@ function renderDefinitionList(rows) {
   `;
 }
 
+function renderCollapsibleSection(title, content, { open = false } = {}) {
+  if (!content) return "";
+  return `
+    <details class="collapsible-section" ${open ? "open" : ""}>
+      <summary>${escapeHtml(title)}</summary>
+      <div class="collapsible-body">
+        ${content}
+      </div>
+    </details>
+  `;
+}
+
 function renderFighterRows(bout) {
   return (bout.fighters ?? []).map((fighter) => `
     <li>
@@ -277,7 +289,7 @@ function renderBouts() {
         ${escapeHtml(bout.result?.method_raw ?? "")}
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
-      ${renderDefinitionList([
+      ${renderCollapsibleSection("詳細情報", renderDefinitionList([
         ["bout_id", `<code>${escapeHtml(bout.bout_id)}</code>`],
         ["大会", eventLink(bout.event_id, eventName(bout.event_id))],
         ["団体", escapeHtml(promotionName(bout.promotion_id))],
@@ -299,9 +311,11 @@ function renderBouts() {
         ["推定元動画", renderIdList([bout.inferred_from_video_id])],
         ["推定信頼度", renderValue(bout.inferred_confidence)],
         ["メモ", renderValue(bout.notes)],
-      ])}
-      ${renderVideoLinks("bout", bout.bout_id)}
-      ${renderSourceReferences(sourceReferencesForBout(bout))}
+      ]))}
+      ${renderCollapsibleSection("関連動画・出典", `
+        ${renderVideoLinks("bout", bout.bout_id)}
+        ${renderSourceReferences(sourceReferencesForBout(bout))}
+      `)}
     </article>
   `).join("") || emptyMessage();
 }
@@ -315,7 +329,7 @@ function renderFighters() {
     <article class="card record-card fighter-card">
       <h2>${escapeHtml(fighter.display_name)}</h2>
       <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(promotionName(fighter.main_promotion_id))}</p>
-      ${renderDefinitionList([
+      ${renderCollapsibleSection("詳細情報", renderDefinitionList([
         ["fighter_id", `<code>${escapeHtml(fighter.fighter_id)}</code>`],
         ["別名", renderTextList(fighter.aliases)],
         ["主階級", renderValue(fighter.main_division)],
@@ -326,9 +340,11 @@ function renderFighters() {
         ["推定元動画", renderIdList(fighter.inferred_from_video_ids)],
         ["推定信頼度", renderValue(fighter.inferred_confidence)],
         ["概要", renderValue(fighter.summary)],
-      ])}
-      ${renderFighterSnapshots(fighter.fighter_id)}
-      ${renderRelatedBouts(fighter.fighter_id)}
+      ]))}
+      ${renderCollapsibleSection("プロフィール出典・関連試合", `
+        ${renderFighterSnapshots(fighter.fighter_id)}
+        ${renderRelatedBouts(fighter.fighter_id)}
+      `)}
     </article>
   `).join("") || emptyMessage();
 }
@@ -356,7 +372,7 @@ function renderEvents() {
       <h2>${escapeHtml(event.name)}</h2>
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
-      ${renderDefinitionList([
+      ${renderCollapsibleSection("詳細情報", renderDefinitionList([
         ["event_id", `<code>${escapeHtml(event.event_id)}</code>`],
         ["団体", escapeHtml(promotionName(event.promotion_id))],
         ["大会番号", renderValue(event.event_number)],
@@ -367,10 +383,12 @@ function renderEvents() {
         ["出典動画", renderVideoRefs(event.source_video_ids)],
         ["推定元", renderValue(event.inferred_from)],
         ["推定信頼度", renderValue(event.inferred_confidence)],
-      ])}
-      ${renderVideoLinks("event", event.event_id)}
-      ${renderSourceReferences(sourceReferencesForEvent(event))}
-      ${renderEventBouts(event.event_id)}
+      ]))}
+      ${renderCollapsibleSection("関連試合・動画・出典", `
+        ${renderVideoLinks("event", event.event_id)}
+        ${renderSourceReferences(sourceReferencesForEvent(event))}
+        ${renderEventBouts(event.event_id)}
+      `)}
     </article>
   `).join("") || emptyMessage();
 }
@@ -399,7 +417,7 @@ function renderPromotions() {
       <h2>${escapeHtml(promotion.name)}</h2>
       <p class="meta">${escapeHtml(promotion.name_en ?? "")} / ${escapeHtml(promotion.category ?? "")}</p>
       <p>${escapeHtml(promotion.summary || "概要未入力")}</p>
-      ${renderDefinitionList([
+      ${renderCollapsibleSection("詳細情報", renderDefinitionList([
         ["promotion_id", `<code>${escapeHtml(promotion.promotion_id)}</code>`],
         ["英字名", renderValue(promotion.name_en)],
         ["カテゴリ", renderValue(promotion.category)],
@@ -414,10 +432,12 @@ function renderPromotions() {
         ["4点頭部キック", renderValue(promotion.rules?.four_point_head_kicks === null ? "" : promotion.rules?.four_point_head_kicks ? "あり" : "なし")],
         ["4点頭部膝", renderValue(promotion.rules?.four_point_head_knees === null ? "" : promotion.rules?.four_point_head_knees ? "あり" : "なし")],
         ["出典記事", renderArticleRefs(promotion.source_article_ids)],
-      ])}
-      ${renderVideoLinks("promotion", promotion.promotion_id)}
-      ${renderPromotionEvents(promotion.promotion_id)}
-      ${renderPromotionTitles(promotion.promotion_id)}
+      ]))}
+      ${renderCollapsibleSection("大会・王座・関連動画", `
+        ${renderVideoLinks("promotion", promotion.promotion_id)}
+        ${renderPromotionEvents(promotion.promotion_id)}
+        ${renderPromotionTitles(promotion.promotion_id)}
+      `)}
     </article>
   `).join("") || emptyMessage();
 }
@@ -507,6 +527,7 @@ function renderVideos() {
         <span class="video-badge">${escapeHtml(linkStatusLabel(video.link_status))}</span>
       </div>
 
+      ${renderCollapsibleSection("詳細情報", `
       <dl>
         <dt>URL</dt>
         <dd><a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.url)}</a></dd>
@@ -537,9 +558,11 @@ function renderVideos() {
         ["動画種別", renderValue(videoTypeLabel(video.video_type))],
         ["紐づけ状態", renderValue(linkStatusLabel(video.link_status))],
         ["出典記事", renderArticleRefs(video.source_article_ids)],
-      ])}
-      ${renderVideoLinkedEntities(video)}
-      ${renderVideoDescriptionPreview(video)}
+      ])}`)}
+      ${renderCollapsibleSection("紐づけ・概要欄プレビュー", `
+        ${renderVideoLinkedEntities(video)}
+        ${renderVideoDescriptionPreview(video)}
+      `)}
     </article>
   `).join("");
 }
@@ -614,15 +637,17 @@ function renderTitles() {
       ${groupHeader}
       <article class="card title-card">
         <h3>${escapeHtml(titleDisplayName(title))}</h3>
-        ${renderDefinitionList([
+        ${renderCollapsibleSection("詳細情報", renderDefinitionList([
           ["title_id", `<code>${escapeHtml(title.title_id)}</code>`],
           ["団体", escapeHtml(promotionName(title.promotion_id))],
           ["階級", renderValue(title.division)],
           ["変遷数", renderValue((title.lineage ?? []).length)],
-        ])}
-        <ol class="lineage-list">
-          ${lineage}
-        </ol>
+        ]))}
+        ${renderCollapsibleSection("王座変遷", `
+          <ol class="lineage-list">
+            ${lineage}
+          </ol>
+        `)}
       </article>
     `;
   }).join("");
@@ -635,12 +660,7 @@ function renderSourceBody(document) {
     return `<p class="meta">本文は空です。</p>`;
   }
 
-  return `
-    <details class="source-body">
-      <summary>本文を表示</summary>
-      <pre>${escapeHtml(body)}</pre>
-    </details>
-  `;
+  return `<pre class="source-body-pre">${escapeHtml(body)}</pre>`;
 }
 
 
@@ -704,11 +724,10 @@ function renderMentions() {
 
       <p>${escapeHtml(mention.matched_text || "本文なし")}</p>
 
-      <details class="source-body">
-        <summary>文脈を表示</summary>
+      ${renderCollapsibleSection("文脈", `
         <pre>${escapeHtml(mention.context || mention.matched_text || "")}</pre>
-      </details>
-
+      `)}
+      ${renderCollapsibleSection("詳細情報", `
       <dl>
         <dt>mention_id</dt>
         <dd>${escapeHtml(mention.mention_id)}</dd>
@@ -731,6 +750,7 @@ function renderMentions() {
         <dt>notes</dt>
         <dd>${escapeHtml(mention.notes || "未入力")}</dd>
       </dl>
+      `)}
     </article>
   `).join("");
 }
@@ -769,6 +789,7 @@ function renderSources() {
       ` : ""}
       <p>${escapeHtml(document.content_preview || "プレビュー未入力")}</p>
       ${renderSourceReferenceCounts(document.source_id)}
+      ${renderCollapsibleSection("詳細情報", `
       <dl>
         <dt>source_id</dt>
         <dd>${escapeHtml(document.source_id)}</dd>
@@ -781,7 +802,8 @@ function renderSources() {
         <dt>notes</dt>
         <dd>${escapeHtml(document.notes || "未入力")}</dd>
       </dl>
-      ${renderSourceBody(document)}
+      `)}
+      ${renderCollapsibleSection("本文", renderSourceBody(document))}
     </article>
   `).join("");
 }
