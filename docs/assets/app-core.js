@@ -13,7 +13,14 @@ async function loadData() {
   );
 
   state.data = Object.fromEntries(entries);
-  render();
+  safeRender();
+}
+
+function safeRender() {
+  const renderFn = globalThis.render;
+  if (typeof renderFn === "function") {
+    renderFn();
+  }
 }
 
 function escapeHtml(value) {
@@ -213,7 +220,7 @@ function jumpToEvent(eventId, eventNameValue) {
     searchInput.value = state.query;
   }
 
-  render();
+  safeRender();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -238,7 +245,7 @@ function jumpToFighter(fighterId, fighterNameValue) {
     searchInput.value = state.query;
   }
 
-  render();
+  safeRender();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
