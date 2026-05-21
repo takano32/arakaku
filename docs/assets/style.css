@@ -490,7 +490,17 @@ a {
   font-size: 0.9rem;
 }
 
-.source-body-pre {
+.source-card details {
+  margin-top: 0.75rem;
+}
+
+.source-body summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.source-body pre {
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 28rem;
@@ -508,36 +518,6 @@ a {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-}
-
-.collapsible-section {
-  margin-top: 12px;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-}
-
-.collapsible-section > summary {
-  cursor: pointer;
-  color: var(--accent);
-  font-weight: 700;
-  list-style: none;
-}
-
-.collapsible-section > summary::-webkit-details-marker {
-  display: none;
-}
-
-.collapsible-section > summary::before {
-  content: "▶ ";
-  font-size: 0.8rem;
-}
-
-.collapsible-section[open] > summary::before {
-  content: "▼ ";
-}
-
-.collapsible-body {
-  margin-top: 10px;
 }
 
 .source-mention-card details {
