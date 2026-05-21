@@ -66,6 +66,26 @@ for path in [
 PY
 ```
 
+本文DBからレビュー用の出典参照候補を作る場合:
+
+```bash
+make source-reference-candidates
+```
+
+生成される候補:
+
+```text
+review/source_event_reference_candidates.csv
+review/source_bout_reference_candidates.csv
+review/source_video_reference_candidates.csv
+```
+
+注意:
+
+- これらはレビュー候補です。
+- 試合結果や勝敗として確定反映しないでください。
+- `data-src/bouts.csv` へ反映する前に本文文脈を確認してください。
+
 ---
 
 ## GitHub Actions 更新時

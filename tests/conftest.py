@@ -15,6 +15,8 @@ def validate_json_module(repo_root: Path): return load_module('validate_json', r
 @pytest.fixture
 def source_result_candidates_module(repo_root: Path): return load_module('source_result_candidates', repo_root/'scripts'/'make_source_mention_result_candidates.py')
 @pytest.fixture
+def source_reference_candidates_module(repo_root: Path): return load_module('source_reference_candidates', repo_root/'scripts'/'make_source_reference_candidates.py')
+@pytest.fixture
 def docs_data(repo_root: Path) -> Path: return repo_root/'docs'/'data'
 @pytest.fixture
 def json_file():

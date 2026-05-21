@@ -100,6 +100,39 @@ notes
 
 ---
 
+## P1: source_documents / source_mentions から出典参照候補CSVを作る
+
+### 目的
+
+note本文とYouTube概要欄から、大会・試合・動画ごとに確認すべき出典候補を作る。
+
+### 出力先
+
+```text
+review/source_event_reference_candidates.csv
+review/source_bout_reference_candidates.csv
+review/source_video_reference_candidates.csv
+```
+
+### コマンド
+
+```bash
+make source-reference-candidates
+```
+
+### 重要ルール
+
+候補CSVはレビュー支援用です。  
+勝敗・決着方法・ラウンド・タイムを確定反映する前に、必ず本文文脈を確認してください。
+
+### 完了条件
+
+- 大会・試合・動画の出典候補CSVが生成される
+- 件数と confidence 分布が確認できる
+- `make check` が通る
+
+---
+
 ## P2: 試合 view に関連出典候補を表示
 
 ### 目的
