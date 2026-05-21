@@ -636,10 +636,10 @@ function renderSourceBody(document) {
   }
 
   return `
-    <details class="source-body">
-      <summary>本文を表示</summary>
+    <section class="source-body">
+      <p class="source-body-label">本文</p>
       <pre>${escapeHtml(body)}</pre>
-    </details>
+    </section>
   `;
 }
 
@@ -704,10 +704,10 @@ function renderMentions() {
 
       <p>${escapeHtml(mention.matched_text || "本文なし")}</p>
 
-      <details class="source-body">
-        <summary>文脈を表示</summary>
+      <section class="source-body">
+        <p class="source-body-label">文脈</p>
         <pre>${escapeHtml(mention.context || mention.matched_text || "")}</pre>
-      </details>
+      </section>
 
       <dl>
         <dt>mention_id</dt>

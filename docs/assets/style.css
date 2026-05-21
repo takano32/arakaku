@@ -490,12 +490,12 @@ a {
   font-size: 0.9rem;
 }
 
-.source-card details {
+.source-body {
   margin-top: 0.75rem;
 }
 
-.source-body summary {
-  cursor: pointer;
+.source-body-label {
+  margin: 0 0 0.5rem;
   color: var(--accent);
   font-weight: 700;
 }
@@ -520,6 +520,3 @@ a {
   align-items: center;
 }
 
-.source-mention-card details {
-  margin-top: 0.75rem;
-}
