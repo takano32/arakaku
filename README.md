@@ -3,8 +3,6 @@
 [![Test](https://github.com/takano32/arakaku/actions/workflows/test.yml/badge.svg)](https://github.com/takano32/arakaku/actions/workflows/test.yml)
 [![Deploy Pages](https://github.com/takano32/arakaku/actions/workflows/pages.yml/badge.svg)](https://github.com/takano32/arakaku/actions/workflows/pages.yml)
 
-
-
 公開ページ: https://takano32.github.io/arakaku/
 
 ARAKAKU は、[アラカク通信のーと](https://note.com/xyz1090) などの公開情報をもとに、アラカクの団体・大会・試合結果・選手情報を整理する非公式データベースです。
@@ -44,10 +42,27 @@ docs/data/.gitkeep
 
 GitHub Pages では、生成後の `docs/data/` 配下の JSON を読み込みます。
 
+## Local commands
+
+ローカル確認には `Makefile` を使います。
+
+```bash
+make check
+make clean-generated
+```
+
+`make check` は以下を順に実行します。
+
+```text
+build → validate → pytest
+```
+
+`make clean-generated` は生成済みの `docs/data/*.json` を削除し、`docs/data/.gitkeep` を戻します。
+
 ## Build
 
 ```bash
-python scripts/build_json.py
+make build
 ```
 
 `docs/data/` 配下に JSON を生成します。
@@ -57,27 +72,17 @@ python scripts/build_json.py
 ## Validate
 
 ```bash
-python scripts/validate_json.py
+make validate
 ```
 
 生成された JSON の構造と参照関係を検証します。  
-対象は articles、promotions、events、bouts、fighters、titles、fighter snapshots などです。
+対象は articles、promotions、events、bouts、fighters、titles、fighter snapshots、videos、video links などです。
 
 ## Test
 
-以下の順番で実行します。
-
 ```bash
-python scripts/build_json.py
-python scripts/validate_json.py
-python -m pytest
+make test
 ```
-
-順番には意味があります。
-
-1. JSON を生成する
-2. 生成 JSON を検証する
-3. pytest を実行する
 
 ## GitHub Actions
 
@@ -88,8 +93,6 @@ build → validate → pytest
 ```
 
 ## Branch
-
-このリポジトリでは以下のブランチを使います。
 
 ```text
 master
@@ -127,17 +130,10 @@ takano32/arakaku
 ```text
 tests/test_10_build_json.py
 tests/test_20_validate_json.py
+tests/test_30_validate_videos.py
 ```
 
 `10`, `20`, `30` のように間隔を空けることで、あとから新しいテスト段階を差し込めるようにします。
-
-CI 全体の順序は以下です。
-
-```text
-build → validate → pytest
-```
-
-pytest 内でも、ファイル名から概念上の順序が分かるようにします。
 
 ## Test suite
 
@@ -148,19 +144,12 @@ tests/
   conftest.py
   test_10_build_json.py
   test_20_validate_json.py
+  test_30_validate_videos.py
 ```
 
-`test_10_build_json.py` は、空値処理、真偽値変換、リスト分割など、build helper を検証します。
-
-`test_20_validate_json.py` は、ID 重複検出、記事参照、alias 構造、未知の決着方法 warning など、JSON 検証ロジックを検証します。
-
-全体の build → validate は pytest 内で重複実行せず、以下のコマンド列で確認します。
-
-```bash
-python scripts/build_json.py
-python scripts/validate_json.py
-python -m pytest
-```
+- `test_10_build_json.py`: build helper の検証
+- `test_20_validate_json.py`: JSON 検証ロジックの検証
+- `test_30_validate_videos.py`: video / video_links 検証ロジックの検証
 
 ## Generated data policy
 
@@ -180,22 +169,138 @@ docs/data/*.json
 JSON はローカルまたは CI で再生成します。
 
 ```bash
-python scripts/build_json.py
+make build
+```
+
+## Video data policy
+
+動画URLは、試合・大会データに直接持たせず、専用CSVで管理します。
+
+理由は、動画と対象データの関係が 1 対 1 とは限らないためです。
+
+想定するケース:
+
+- 1試合に複数動画がある
+- 1動画に複数試合が含まれる
+- 大会全体の配信アーカイブがある
+- 選手紹介、煽りV、ハイライト、ショート動画がある
+- YouTube以外の動画プラットフォームが出る
+- 公式、非公式、削除済み、未確認などの状態を管理したい
+
+そのため、動画そのものは `videos.csv`、動画と対象データの関係は `video_links.csv` に分けます。
+
+```text
+data-src/videos.csv
+data-src/video_links.csv
+```
+
+### videos.csv
+
+動画そのものを管理します。
+
+```csv
+video_id,platform,platform_video_id,url,title,channel_name,published_at,official_status,video_type,link_status,duplicate_group_id,duplicate_note,notes,source_article_ids
+```
+
+主な列の意味:
+
+`video_id`
+: リポジトリ内で使う動画ID。
+
+`platform`
+: `youtube` などの動画プラットフォーム。
+
+`platform_video_id`
+: YouTube の動画IDなど、プラットフォーム側の動画ID。
+
+`url`
+: 動画URL。
+
+`video_type`
+: `full_fight`、`highlight`、`stream_archive`、`preview`、`reference` など。
+
+`link_status`
+: `linked`、`partially_linked`、`unlinked`、`needs_review` など。
+
+`duplicate_group_id`
+: 同じ動画・同じ試合の候補を束ねるための任意ID。
+
+`duplicate_note`
+: 重複候補に関するメモ。
+
+### video_links.csv
+
+動画がどのデータに紐づくかを管理します。
+
+```csv
+video_id,entity_type,entity_id,relation_type,start_time,end_time,notes
+```
+
+`entity_type` は当面、以下を想定します。
+
+```text
+event
+bout
+fighter
+promotion
+title
+```
+
+`relation_type` は当面、以下を想定します。
+
+```text
+full_fight
+highlight
+short
+stream_archive
+preview
+interview
+commentary
+reference
+```
+
+この設計により、以下の関係を扱えるようにします。
+
+- 1動画 → 複数試合
+- 1試合 → 複数動画
+- 1動画 → 大会にも試合にも紐づく
+- 1動画 → 選手紹介やインタビューとして紐づく
+
+`bouts.csv` や `events.csv` には、動画URL列を直接追加しません。
+
+URLまたは `platform_video_id` が異なる動画は、タイトルが似ていても `videos.csv` では別行として保持します。  
+同一動画や重複投稿の可能性があるものは削除せず、`duplicate_group_id` と `duplicate_note` で管理します。
+
+## YouTube import
+
+公式YouTubeチャンネルの一覧は `yt-dlp` で TSV に出力し、`scripts/import_youtube_videos.py` で `videos.csv` に変換します。
+
+```bash
+mkdir -p tmp
+
+yt-dlp \
+  --flat-playlist \
+  --skip-download \
+  --print "%(id)s	%(webpage_url)s	%(title)s	%(channel)s	%(upload_date)s	%(duration_string)s" \
+  "https://www.youtube.com/@アラカク通信/videos" \
+  > tmp/arakaku-youtube-videos.tsv
+
+python scripts/import_youtube_videos.py
+```
+
+既存の `videos.csv` にある `link_status` や `duplicate_note` などの手作業情報は、通常は保持します。
+
+完全に作り直す場合だけ、以下を使います。
+
+```bash
+python scripts/import_youtube_videos.py --replace
 ```
 
 ## Local environment note
 
 一部の notebook 系実行環境では、Python 起動時に `artifact_tool` の spreadsheet warmup 警告が出ることがあります。
 
-これは実行環境固有の警告で、このリポジトリの問題ではありません。
-
-必要な場合は、以下のように実行します。
-
-```bash
-OAI_IS_JUPYTER_KERNEL=0 python scripts/build_json.py
-OAI_IS_JUPYTER_KERNEL=0 python scripts/validate_json.py
-OAI_IS_JUPYTER_KERNEL=0 python -m pytest -q
-```
+このリポジトリの `Makefile` では `OAI_IS_JUPYTER_KERNEL=0` を付けて実行するため、ローカル確認時の警告を抑制します。
 
 GitHub Actions や通常のローカル Python 環境では、この回避策は不要なはずです。
 
@@ -210,6 +315,7 @@ GitHub Actions や通常のローカル Python 環境では、この回避策は
 - 選手プロフィールと戦績スナップショットの拡充
 - 検索・絞り込み UI の改善
 - データ出典の整理と参照性向上
+- 動画データの追加と viewer 表示
 
 ## Status
 
