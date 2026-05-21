@@ -159,6 +159,9 @@ function boutSearchText(bout) {
     bout.result?.method_raw,
     bout.result?.method_normalized,
     bout.notes,
+    ...(typeof sourceReferencesForBout === "function"
+      ? sourceReferencesForBout(bout).map(sourceReferenceSearchText)
+      : []),
   ];
 }
 
@@ -249,4 +252,3 @@ function renderBoutResultSummary(bout) {
 
   return "結果未入力";
 }
-

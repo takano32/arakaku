@@ -152,6 +152,140 @@ function renderGroupedSourceMentions(mentions, title = "出典候補") {
   `;
 }
 
+function referenceSortValue(reference) {
+  const confidenceOrder = { high: "0", medium: "1", low: "2" };
+
+  return [
+    confidenceOrder[reference.confidence] ?? "3",
+    reference.source_title ?? "",
+    reference.candidate_id ?? "",
+  ].join(":");
+}
+
+function splitReferenceTokens(value) {
+  return String(value ?? "")
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function referenceMentionBadges(reference) {
+  return splitReferenceTokens(reference.mention_types)
+    .map((token) => {
+      const [mentionType, count] = token.split(":").map((item) => item.trim());
+      const label = mentionTypeLabel(mentionType);
+      return `<span class="video-badge">${escapeHtml(count ? `${label} ${count}` : label)}</span>`;
+    })
+    .join("");
+}
+
+function sourceReferenceSummary(reference) {
+  const title = reference.source_title || reference.source_ref_id || reference.source_id;
+  const matchedTexts = splitReferenceTokens(reference.matched_texts).slice(0, 3).join(" / ");
+
+  return `
+    <li>
+      <span class="meta">
+        ${escapeHtml(sourceTypeLabel(reference.source_type))}
+        /
+        <a href="${escapeHtml(reference.source_url)}" target="_blank" rel="noopener noreferrer">
+          ${escapeHtml(title)}
+        </a>
+      </span>
+      <div class="video-badges">
+        <span class="video-badge">候補 ${escapeHtml(reference.confidence || "unknown")}</span>
+        ${referenceMentionBadges(reference)}
+      </div>
+      ${matchedTexts ? `<span>${escapeHtml(matchedTexts)}</span>` : ""}
+      ${reference.line_numbers ? `<p class="meta">line ${escapeHtml(reference.line_numbers)}</p>` : ""}
+    </li>
+  `;
+}
+
+function sourceReferenceSearchText(reference) {
+  return [
+    reference.candidate_id,
+    reference.source_id,
+    reference.source_type,
+    reference.source_ref_id,
+    reference.source_title,
+    reference.source_url,
+    reference.line_numbers,
+    reference.mention_types,
+    reference.matched_texts,
+    reference.content_preview,
+    reference.confidence,
+    reference.notes,
+  ].filter(Boolean).join(" ");
+}
+
+function renderSourceReferences(references, title = "出典候補") {
+  const uniqueReferences = [...new Map(
+    references.map((reference) => [reference.candidate_id, reference])
+  ).values()]
+    .sort((a, b) => referenceSortValue(a).localeCompare(referenceSortValue(b), "ja"))
+    .slice(0, 5);
+
+  if (uniqueReferences.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>
+        ${uniqueReferences.map(sourceReferenceSummary).join("")}
+      </ul>
+    </section>
+  `;
+}
+
+function sourceReferencesForBout(bout) {
+  return (state.data.sourceBoutReferences ?? []).filter((reference) =>
+    reference.bout_id === bout.bout_id
+  );
+}
+
+function sourceReferencesForEvent(event) {
+  return (state.data.sourceEventReferences ?? []).filter((reference) =>
+    reference.event_id === event.event_id
+  );
+}
+
+function sourceReferenceForVideo(video) {
+  return (state.data.sourceVideoReferences ?? []).find((reference) =>
+    reference.video_id === video.video_id
+  );
+}
+
+function sourceReferenceCountsForDocument(sourceId) {
+  const countBySource = (references) =>
+    references.filter((reference) => reference.source_id === sourceId).length;
+
+  return {
+    events: countBySource(state.data.sourceEventReferences ?? []),
+    bouts: countBySource(state.data.sourceBoutReferences ?? []),
+    videos: countBySource(state.data.sourceVideoReferences ?? []),
+  };
+}
+
+function renderSourceReferenceCounts(sourceId) {
+  const counts = sourceReferenceCountsForDocument(sourceId);
+  const total = counts.events + counts.bouts + counts.videos;
+
+  if (total === 0) {
+    return "";
+  }
+
+  return `
+    <div class="video-badges">
+      <span class="video-badge">大会候補 ${escapeHtml(counts.events)}</span>
+      <span class="video-badge">試合候補 ${escapeHtml(counts.bouts)}</span>
+      <span class="video-badge">動画候補 ${escapeHtml(counts.videos)}</span>
+    </div>
+  `;
+}
+
 function sourceMentionsForBout(bout) {
   const mentionTypes = new Set(["matchup", "result"]);
   const fighterNames = (bout.fighters ?? [])
@@ -216,22 +350,29 @@ function sourceMentionCountsForDocument(sourceId) {
 }
 
 function renderVideoDescriptionPreview(video) {
+  const reference = sourceReferenceForVideo(video);
   const document = sourceDocumentForVideo(video);
 
-  if (!document) {
+  if (!reference && !document) {
     return "";
   }
 
-  const counts = sourceMentionCountsForDocument(document.source_id);
+  const counts = document ? sourceMentionCountsForDocument(document.source_id) : {};
+  const preview = reference?.content_preview || document?.content_preview || "プレビュー未入力";
+  const mentionBadges = reference
+    ? referenceMentionBadges(reference)
+    : `
+        <span class="video-badge">note URL ${escapeHtml(counts.note_url ?? 0)}</span>
+        <span class="video-badge">対戦カード ${escapeHtml(counts.matchup ?? 0)}</span>
+        <span class="video-badge">結果 ${escapeHtml(counts.result ?? 0)}</span>
+      `;
 
   return `
     <section class="video-description-preview">
       <h3>YouTube概要欄</h3>
-      <p>${escapeHtml(document.content_preview || "プレビュー未入力")}</p>
+      <p>${escapeHtml(preview)}</p>
       <div class="video-badges">
-        <span class="video-badge">note URL ${escapeHtml(counts.note_url)}</span>
-        <span class="video-badge">対戦カード ${escapeHtml(counts.matchup)}</span>
-        <span class="video-badge">結果 ${escapeHtml(counts.result)}</span>
+        ${mentionBadges}
       </div>
     </section>
   `;

@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DATA_SRC = ROOT / "data-src"
+REVIEW = ROOT / "review"
 DOCS_DATA = ROOT / "docs" / "data"
 JST = timezone(timedelta(hours=9))
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -119,10 +120,25 @@ def build_source_mentions():
     return list(read_csv(DATA_SRC / "source_mentions.csv"))
 
 
+def build_source_event_references():
+    return list(read_csv(REVIEW / "source_event_reference_candidates.csv"))
+
+
+def build_source_bout_references():
+    return list(read_csv(REVIEW / "source_bout_reference_candidates.csv"))
+
+
+def build_source_video_references():
+    return list(read_csv(REVIEW / "source_video_reference_candidates.csv"))
+
+
 def main() -> None:
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
     for fn,b in {"metadata.json":build_metadata,"articles.json":build_articles,"promotions.json":build_promotions,"events.json":build_events,"bouts.json":build_bouts,"fighters.json":build_fighters,"titles.json":build_titles,"fighter_snapshots.json":build_fighter_snapshots,"videos.json":build_videos,"video_links.json":build_video_links,"aliases.json":build_aliases}.items(): write_json(DOCS_DATA/fn,b())
     write_json(DOCS_DATA / "source_documents.json", build_source_documents())
     write_json(DOCS_DATA / "source_mentions.json", build_source_mentions())
+    write_json(DOCS_DATA / "source_event_references.json", build_source_event_references())
+    write_json(DOCS_DATA / "source_bout_references.json", build_source_bout_references())
+    write_json(DOCS_DATA / "source_video_references.json", build_source_video_references())
     print("[done] JSON build completed")
 if __name__ == "__main__": main()

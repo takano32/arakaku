@@ -9,6 +9,12 @@ function renderSummary() {
     ["王座", d.titles.length],
     ["動画", d.videos.length],
     ["出典", d.sourceDocuments?.length ?? 0],
+    [
+      "出典候補",
+      (d.sourceEventReferences?.length ?? 0) +
+        (d.sourceBoutReferences?.length ?? 0) +
+        (d.sourceVideoReferences?.length ?? 0),
+    ],
   ];
 
   document.querySelector("#summary").innerHTML = items
@@ -102,7 +108,7 @@ function renderBouts() {
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
       ${renderVideoLinks("bout", bout.bout_id)}
-      ${renderGroupedSourceMentions(sourceMentionsForBout(bout))}
+      ${renderSourceReferences(sourceReferencesForBout(bout))}
     </article>
   `).join("") || emptyMessage();
 }
@@ -137,6 +143,7 @@ function renderEvents() {
           event.name,
           promotionName(event.promotion_id),
           event.summary,
+          ...sourceReferencesForEvent(event).map(sourceReferenceSearchText),
         ])
       );
 
@@ -146,7 +153,7 @@ function renderEvents() {
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
       ${renderVideoLinks("event", event.event_id)}
-      ${renderRelatedSourceMentions(sourceMentionsForEvent(event))}
+      ${renderSourceReferences(sourceReferencesForEvent(event))}
       ${renderEventBouts(event.event_id)}
     </article>
   `).join("") || emptyMessage();
@@ -190,6 +197,8 @@ function renderVideos() {
       video.notes,
       video.duplicate_group_id,
       video.duplicate_note,
+      sourceReferenceForVideo(video)?.content_preview,
+      sourceReferenceForVideo(video)?.matched_texts,
       sourceDocumentForVideo(video)?.content_preview,
     ])
   );
@@ -443,6 +452,7 @@ function renderSources() {
         </p>
       ` : ""}
       <p>${escapeHtml(document.content_preview || "プレビュー未入力")}</p>
+      ${renderSourceReferenceCounts(document.source_id)}
       <dl>
         <dt>source_id</dt>
         <dd>${escapeHtml(document.source_id)}</dd>

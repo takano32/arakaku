@@ -12,6 +12,9 @@ var DATA_FILES = {
   aliases: "./data/aliases.json",
   sourceDocuments: "./data/source_documents.json",
   sourceMentions: "./data/source_mentions.json",
+  sourceEventReferences: "./data/source_event_references.json",
+  sourceBoutReferences: "./data/source_bout_references.json",
+  sourceVideoReferences: "./data/source_video_references.json",
 };
 
 var TABS = [
