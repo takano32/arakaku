@@ -371,6 +371,79 @@ function renderRelatedSourceMentions(mentions, title = "出典候補") {
   `;
 }
 
+function sourceMentionDocumentSummary(sourceId) {
+  const document = sourceDocumentById(sourceId);
+
+  if (!document) {
+    return `<span class="meta">${escapeHtml(sourceId)}</span>`;
+  }
+
+  const title = document.title || document.source_ref_id || sourceId;
+
+  return `
+    <span class="meta">
+      ${escapeHtml(sourceTypeLabel(document.source_type))}
+      /
+      <a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">
+        ${escapeHtml(title)}
+      </a>
+    </span>
+  `;
+}
+
+function sourceMentionGroupSummary(sourceId, mentions) {
+  const counts = mentions.reduce((acc, mention) => {
+    acc[mention.mention_type] = (acc[mention.mention_type] ?? 0) + 1;
+    return acc;
+  }, {});
+  const firstMention = [...mentions].sort((a, b) =>
+    mentionSortValue(a).localeCompare(mentionSortValue(b), "ja")
+  )[0];
+  const text = firstMention?.matched_text || firstMention?.context || firstMention?.mention_id || "";
+
+  return `
+    <li>
+      ${sourceMentionDocumentSummary(sourceId)}
+      <div class="video-badges">
+        ${Object.entries(counts).map(([mentionType, count]) => `
+          <span class="video-badge">${escapeHtml(mentionTypeLabel(mentionType))} ${escapeHtml(count)}</span>
+        `).join("")}
+      </div>
+      <span>${escapeHtml(text)}</span>
+    </li>
+  `;
+}
+
+function renderGroupedSourceMentions(mentions, title = "出典候補") {
+  const groups = new Map();
+
+  for (const mention of mentions) {
+    if (!groups.has(mention.source_id)) {
+      groups.set(mention.source_id, []);
+    }
+    groups.get(mention.source_id).push(mention);
+  }
+
+  const groupedMentions = [...groups.entries()]
+    .sort(([, left], [, right]) => mentionSortValue(left[0]).localeCompare(mentionSortValue(right[0]), "ja"))
+    .slice(0, 3);
+
+  if (groupedMentions.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>
+        ${groupedMentions.map(([sourceId, sourceMentions]) =>
+          sourceMentionGroupSummary(sourceId, sourceMentions)
+        ).join("")}
+      </ul>
+    </section>
+  `;
+}
+
 function sourceMentionsForBout(bout) {
   const mentionTypes = new Set(["matchup", "result"]);
   const fighterNames = (bout.fighters ?? [])
@@ -630,7 +703,7 @@ function renderBouts() {
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
       ${renderVideoLinks("bout", bout.bout_id)}
-      ${renderRelatedSourceMentions(sourceMentionsForBout(bout))}
+      ${renderGroupedSourceMentions(sourceMentionsForBout(bout))}
     </article>
   `).join("") || emptyMessage();
 }
