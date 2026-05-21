@@ -15,7 +15,7 @@ clean-generated:
 	rm -f docs/data/*.json
 	touch docs/data/.gitkeep
 
-.PHONY: cache-note-html cache-youtube-info cache-sources build-sources refresh-sources
+.PHONY: cache-note-html cache-youtube-info cache-sources build-sources refresh-sources source-mention-result-candidates
 
 cache-note-html:
 	python scripts/cache_note_html.py
@@ -29,3 +29,6 @@ build-sources:
 	python scripts/build_source_documents.py
 
 refresh-sources: cache-sources build-sources check
+
+source-mention-result-candidates:
+	python scripts/make_source_mention_result_candidates.py

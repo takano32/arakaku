@@ -218,18 +218,21 @@ a {
   }
 }
 
-.title-filters {
+.title-filters,
+.mention-filters {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin: 0 0 16px;
 }
 
-.title-filters[hidden] {
+.title-filters[hidden],
+.mention-filters[hidden] {
   display: none;
 }
 
-.title-filters select {
+.title-filters select,
+.mention-filters select {
   flex: 1 1 220px;
   padding: 10px 12px;
   border: 1px solid var(--line);
@@ -239,7 +242,8 @@ a {
   font-size: 1rem;
 }
 
-.title-filters select:focus {
+.title-filters select:focus,
+.mention-filters select:focus {
   outline: 3px solid rgb(139 47 32 / 0.22);
   border-color: var(--accent);
 }

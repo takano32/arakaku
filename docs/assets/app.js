@@ -25,6 +25,8 @@ const TABS = [
   ["mentions", "出典言及"],
 ];
 
+const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
+
 const state = {
   tab: "bouts",
   query: "",
@@ -32,6 +34,7 @@ const state = {
   focusEventId: "",
   titlePromotion: "",
   titleDivision: "",
+  mentionType: "",
   data: null,
 };
 
@@ -438,6 +441,37 @@ function renderTitleFilters() {
   ].join("");
 }
 
+function renderMentionFilters() {
+  const filters = document.querySelector("#mention-filters");
+  if (!filters) return;
+
+  filters.hidden = state.tab !== "mentions";
+
+  const mentionTypeSelect = document.querySelector("#mention-type-filter");
+  if (!mentionTypeSelect || !state.data) return;
+
+  const mentionTypes = uniqueSorted(
+    (state.data.sourceMentions ?? []).map((mention) => mention.mention_type)
+  ).sort((a, b) => {
+    const orderA = MENTION_TYPE_ORDER.indexOf(a);
+    const orderB = MENTION_TYPE_ORDER.indexOf(b);
+
+    if (orderA === -1 && orderB === -1) return String(a).localeCompare(String(b), "ja");
+    if (orderA === -1) return 1;
+    if (orderB === -1) return -1;
+    return orderA - orderB;
+  });
+
+  mentionTypeSelect.innerHTML = [
+    `<option value="">すべての言及</option>`,
+    ...mentionTypes.map((mentionType) => `
+      <option value="${escapeHtml(mentionType)}" ${mentionType === state.mentionType ? "selected" : ""}>
+        ${escapeHtml(`${mentionTypeLabel(mentionType)} / ${mentionType}`)}
+      </option>
+    `),
+  ].join("");
+}
+
 function renderBouts() {
   const bouts = state.focusEventId
     ? state.data.bouts.filter((bout) => bout.event_id === state.focusEventId)
@@ -718,6 +752,7 @@ function renderSourceMentionLink(mention) {
 
 function renderMentions() {
   const mentions = (state.data.sourceMentions ?? []).filter((mention) =>
+    (!state.mentionType || mention.mention_type === state.mentionType) &&
     includesQuery([
       mention.mention_type,
       mention.entity_type,
@@ -851,6 +886,7 @@ function render() {
   renderSummary();
   renderTabs();
   renderTitleFilters();
+  renderMentionFilters();
   renderContent();
 }
 
@@ -868,6 +904,11 @@ document.querySelector("#title-promotion-filter")?.addEventListener("change", (e
 
 document.querySelector("#title-division-filter")?.addEventListener("change", (event) => {
   state.titleDivision = event.target.value;
+  renderContent();
+});
+
+document.querySelector("#mention-type-filter")?.addEventListener("change", (event) => {
+  state.mentionType = event.target.value;
   renderContent();
 });
 
