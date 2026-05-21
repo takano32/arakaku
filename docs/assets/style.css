@@ -523,3 +523,18 @@ a {
 .source-mention-card details {
   margin-top: 0.75rem;
 }
+
+
+.detail-disclosure {
+  margin-top: 0.75rem;
+}
+
+.detail-disclosure summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.detail-disclosure[open] summary {
+  margin-bottom: 0.5rem;
+}
