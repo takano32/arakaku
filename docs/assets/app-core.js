@@ -136,6 +136,9 @@ function fighterMatchesQuery(fighter) {
     fighter.profile?.age,
     fighter.profile?.gym,
     fighter.summary,
+    fighter.source_article_ids?.join(" "),
+    fighter.inferred_from_video_ids?.join(" "),
+    fighter.inferred_confidence,
   ]);
 }
 
@@ -154,6 +157,15 @@ function boutSearchText(bout) {
     bout.division,
     bout.weight_class_id,
     bout.bout_type,
+    bout.bout_id,
+    bout.source_article_id,
+    bout.result_status,
+    bout.inferred_from_video_id,
+    bout.inferred_from_video_title,
+    bout.inferred_confidence,
+    bout.title?.title_id,
+    bout.title?.title_result,
+    bout.title?.note,
     eventName(bout.event_id),
     promotionName(bout.promotion_id),
     bout.result?.method_raw,

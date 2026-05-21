@@ -91,6 +91,69 @@ function renderMentionFilters() {
   ].join("");
 }
 
+function articleById(articleId) {
+  return state.data.articles.find((article) => article.article_id === articleId);
+}
+
+function renderValue(value) {
+  if (value === null || value === undefined || value === "") {
+    return "未入力";
+  }
+  return escapeHtml(value);
+}
+
+function renderIdList(values) {
+  const items = (values ?? []).filter(Boolean);
+  if (items.length === 0) {
+    return "未入力";
+  }
+  return items.map((value) => `<code>${escapeHtml(value)}</code>`).join(", ");
+}
+
+function renderArticleRefs(articleIds) {
+  const ids = (Array.isArray(articleIds) ? articleIds : [articleIds]).filter(Boolean);
+  if (ids.length === 0) {
+    return "未入力";
+  }
+
+  return ids.map((articleId) => {
+    const article = articleById(articleId);
+    const label = article?.title || articleId;
+    if (!article?.url) {
+      return `<code>${escapeHtml(articleId)}</code>`;
+    }
+    return `<a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+  }).join(", ");
+}
+
+function renderDefinitionList(rows) {
+  const visibleRows = rows.filter(([, value]) => value !== null && value !== undefined && value !== "");
+  if (visibleRows.length === 0) {
+    return "";
+  }
+
+  return `
+    <dl class="record-details">
+      ${visibleRows.map(([label, value]) => `
+        <dt>${escapeHtml(label)}</dt>
+        <dd>${value}</dd>
+      `).join("")}
+    </dl>
+  `;
+}
+
+function renderFighterRows(bout) {
+  return (bout.fighters ?? []).map((fighter) => `
+    <li>
+      <span>${fighterLink(fighter.fighter_id, fighter.name)}</span>
+      <span class="meta">
+        ${fighter.corner ? `${escapeHtml(fighter.corner)} / ` : ""}
+        ${escapeHtml(fighter.result || "unknown")}
+      </span>
+    </li>
+  `).join("");
+}
+
 function renderBouts() {
   const bouts = state.focusEventId
     ? state.data.bouts.filter((bout) => bout.event_id === state.focusEventId)
@@ -107,6 +170,29 @@ function renderBouts() {
         ${escapeHtml(bout.result?.method_raw ?? "")}
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
+      ${renderDefinitionList([
+        ["bout_id", `<code>${escapeHtml(bout.bout_id)}</code>`],
+        ["大会", eventLink(bout.event_id, eventName(bout.event_id))],
+        ["団体", escapeHtml(promotionName(bout.promotion_id))],
+        ["試合順", renderValue(bout.bout_order ? `第${bout.bout_order}試合` : "")],
+        ["階級", renderValue([bout.division, bout.weight_class_id].filter(Boolean).join(" / "))],
+        ["種別", renderValue(bout.bout_type)],
+        ["結果状態", renderValue(bout.result_status)],
+        ["選手", `<ul class="inline-list">${renderFighterRows(bout)}</ul>`],
+        ["決着", renderValue([
+          bout.result?.method_normalized,
+          bout.result?.technique,
+          bout.result?.decision_score,
+        ].filter(Boolean).join(" / "))],
+        ["王座", bout.title?.is_title_bout ? renderValue([
+          bout.title.title_id,
+          bout.title.title_result,
+        ].filter(Boolean).join(" / ")) : ""],
+        ["出典記事", renderArticleRefs(bout.source_article_id)],
+        ["推定元動画", renderIdList([bout.inferred_from_video_id])],
+        ["推定信頼度", renderValue(bout.inferred_confidence)],
+        ["メモ", renderValue(bout.notes)],
+      ])}
       ${renderVideoLinks("bout", bout.bout_id)}
       ${renderSourceReferences(sourceReferencesForBout(bout))}
     </article>
@@ -122,14 +208,18 @@ function renderFighters() {
     <article class="card record-card fighter-card">
       <h2>${escapeHtml(fighter.display_name)}</h2>
       <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(promotionName(fighter.main_promotion_id))}</p>
-      <dl>
-        <dt>所属</dt>
-        <dd>${escapeHtml(fighter.profile?.gym ?? "不明")}</dd>
-        <dt>身長・年齢</dt>
-        <dd>${escapeHtml(fighter.profile?.height ?? "不明")} / ${escapeHtml(fighter.profile?.age ?? "不明")}</dd>
-        <dt>概要</dt>
-        <dd>${escapeHtml(fighter.summary || "未入力")}</dd>
-      </dl>
+      ${renderDefinitionList([
+        ["fighter_id", `<code>${escapeHtml(fighter.fighter_id)}</code>`],
+        ["別名", renderIdList(fighter.aliases)],
+        ["主階級", renderValue(fighter.main_division)],
+        ["主団体", renderValue(promotionName(fighter.main_promotion_id))],
+        ["所属", renderValue(fighter.profile?.gym)],
+        ["身長・年齢", renderValue([fighter.profile?.height, fighter.profile?.age].filter(Boolean).join(" / "))],
+        ["出典記事", renderArticleRefs(fighter.source_article_ids)],
+        ["推定元動画", renderIdList(fighter.inferred_from_video_ids)],
+        ["推定信頼度", renderValue(fighter.inferred_confidence)],
+        ["概要", renderValue(fighter.summary)],
+      ])}
       ${renderRelatedBouts(fighter.fighter_id)}
     </article>
   `).join("") || emptyMessage();
@@ -141,6 +231,12 @@ function renderEvents() {
     : state.data.events.filter((event) =>
         includesQuery([
           event.name,
+          event.event_id,
+          event.event_type,
+          event.source_article_id,
+          event.source_video_ids?.join(" "),
+          event.inferred_from,
+          event.inferred_confidence,
           promotionName(event.promotion_id),
           event.summary,
           ...sourceReferencesForEvent(event).map(sourceReferenceSearchText),
@@ -152,6 +248,18 @@ function renderEvents() {
       <h2>${escapeHtml(event.name)}</h2>
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
+      ${renderDefinitionList([
+        ["event_id", `<code>${escapeHtml(event.event_id)}</code>`],
+        ["団体", escapeHtml(promotionName(event.promotion_id))],
+        ["大会番号", renderValue(event.event_number)],
+        ["大会種別", renderValue(event.event_type)],
+        ["開催日", renderValue(event.event_date)],
+        ["公開日", renderValue(event.published_at)],
+        ["出典記事", renderArticleRefs(event.source_article_id)],
+        ["出典動画", renderIdList(event.source_video_ids)],
+        ["推定元", renderValue(event.inferred_from)],
+        ["推定信頼度", renderValue(event.inferred_confidence)],
+      ])}
       ${renderVideoLinks("event", event.event_id)}
       ${renderSourceReferences(sourceReferencesForEvent(event))}
       ${renderEventBouts(event.event_id)}
@@ -164,8 +272,11 @@ function renderPromotions() {
     includesQuery([
       promotion.name,
       promotion.name_en,
+      promotion.promotion_id,
       promotion.category,
+      promotion.country_scope,
       promotion.summary,
+      promotion.source_article_ids?.join(" "),
     ])
   );
 
@@ -174,29 +285,83 @@ function renderPromotions() {
       <h2>${escapeHtml(promotion.name)}</h2>
       <p class="meta">${escapeHtml(promotion.name_en ?? "")} / ${escapeHtml(promotion.category ?? "")}</p>
       <p>${escapeHtml(promotion.summary || "概要未入力")}</p>
-      <dl>
-        <dt>会場</dt>
-        <dd>${escapeHtml(promotion.rules?.venue ?? "不明")}</dd>
-        <dt>ラウンド</dt>
-        <dd>${escapeHtml(promotion.rules?.rounds ?? "不明")}</dd>
-        <dt>判定</dt>
-        <dd>${escapeHtml(promotion.rules?.judging ?? "不明")}</dd>
-      </dl>
+      ${renderDefinitionList([
+        ["promotion_id", `<code>${escapeHtml(promotion.promotion_id)}</code>`],
+        ["英字名", renderValue(promotion.name_en)],
+        ["カテゴリ", renderValue(promotion.category)],
+        ["範囲", renderValue(promotion.country_scope)],
+        ["会場", renderValue(promotion.rules?.venue)],
+        ["ラウンド", renderValue(promotion.rules?.rounds)],
+        ["判定", renderValue(promotion.rules?.judging)],
+        ["グローブ", renderValue(promotion.rules?.glove)],
+        ["肘", renderValue(promotion.rules?.elbows === null ? "" : promotion.rules?.elbows ? "あり" : "なし")],
+        ["サッカーボールキック", renderValue(promotion.rules?.soccer_kicks === null ? "" : promotion.rules?.soccer_kicks ? "あり" : "なし")],
+        ["踏みつけ", renderValue(promotion.rules?.stomps === null ? "" : promotion.rules?.stomps ? "あり" : "なし")],
+        ["4点頭部キック", renderValue(promotion.rules?.four_point_head_kicks === null ? "" : promotion.rules?.four_point_head_kicks ? "あり" : "なし")],
+        ["4点頭部膝", renderValue(promotion.rules?.four_point_head_knees === null ? "" : promotion.rules?.four_point_head_knees ? "あり" : "なし")],
+        ["出典記事", renderArticleRefs(promotion.source_article_ids)],
+      ])}
     </article>
   `).join("") || emptyMessage();
+}
+
+function renderVideoLinkedEntities(video) {
+  const links = state.data.videoLinks.filter((link) => link.video_id === video.video_id);
+  if (links.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>紐づけ先</h3>
+      <ul>
+        ${links.map((link) => `
+          <li>
+            <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type))}</span>
+            <span>${renderLinkedEntity(link)}</span>
+            ${link.start_time || link.end_time ? `<span class="meta">${escapeHtml([link.start_time, link.end_time].filter(Boolean).join(" - "))}</span>` : ""}
+            ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
+}
+
+function renderLinkedEntity(link) {
+  if (link.entity_type === "event") {
+    return eventLink(link.entity_id, eventName(link.entity_id));
+  }
+  if (link.entity_type === "bout") {
+    const bout = state.data.bouts.find((item) => item.bout_id === link.entity_id);
+    return bout ? boutMatchup(bout) : `<code>${escapeHtml(link.entity_id)}</code>`;
+  }
+  if (link.entity_type === "fighter") {
+    return fighterLink(link.entity_id, fighterName(link.entity_id));
+  }
+  if (link.entity_type === "promotion") {
+    return escapeHtml(promotionName(link.entity_id));
+  }
+  return `<code>${escapeHtml(link.entity_id)}</code>`;
 }
 
 function renderVideos() {
   const videos = state.data.videos.filter((video) =>
     includesQuery([
       video.title,
+      video.original_title,
+      video.video_id,
       video.url,
       video.channel_name,
+      video.platform,
+      video.platform_video_id,
+      video.official_status,
       video.video_type,
       video.link_status,
       video.notes,
       video.duplicate_group_id,
       video.duplicate_note,
+      video.source_article_ids?.join(" "),
       sourceReferenceForVideo(video)?.content_preview,
       sourceReferenceForVideo(video)?.matched_texts,
       sourceDocumentForVideo(video)?.content_preview,
@@ -247,6 +412,16 @@ function renderVideos() {
           <dd>${escapeHtml(video.notes)}</dd>
         ` : ""}
       </dl>
+      ${renderDefinitionList([
+        ["video_id", `<code>${escapeHtml(video.video_id)}</code>`],
+        ["原題", renderValue(video.original_title)],
+        ["platform", renderValue(video.platform)],
+        ["公式状態", renderValue(video.official_status)],
+        ["動画種別", renderValue(videoTypeLabel(video.video_type))],
+        ["紐づけ状態", renderValue(linkStatusLabel(video.link_status))],
+        ["出典記事", renderArticleRefs(video.source_article_ids)],
+      ])}
+      ${renderVideoLinkedEntities(video)}
       ${renderVideoDescriptionPreview(video)}
     </article>
   `).join("");
@@ -270,6 +445,9 @@ function renderTitles() {
         ...(title.lineage ?? []).flatMap((reign) => [
           reign.fighter_name,
           reign.reign_label,
+          reign.won_at_event_id,
+          reign.lost_at_event_id,
+          reign.source_article_id,
         ]),
       ]);
     })
@@ -303,7 +481,14 @@ function renderTitles() {
       .map((reign) => `
         <li>
           <span class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</span>
-          <span class="fighter-name">${fighterLink(reign.fighter_id, reign.fighter_name)}</span>
+          <span class="fighter-name">
+            ${fighterLink(reign.fighter_id, reign.fighter_name)}
+            <span class="meta">
+              ${reign.won_at_event_id ? ` / 獲得: ${eventLink(reign.won_at_event_id, eventName(reign.won_at_event_id))}` : ""}
+              ${reign.lost_at_event_id ? ` / 喪失: ${eventLink(reign.lost_at_event_id, eventName(reign.lost_at_event_id))}` : ""}
+              ${reign.source_article_id ? ` / 出典: ${renderArticleRefs(reign.source_article_id)}` : ""}
+            </span>
+          </span>
         </li>
       `)
       .join("");
@@ -312,7 +497,12 @@ function renderTitles() {
       ${groupHeader}
       <article class="card title-card">
         <h3>${escapeHtml(titleDisplayName(title))}</h3>
-        <p class="meta">${escapeHtml(title.title_id)}</p>
+        ${renderDefinitionList([
+          ["title_id", `<code>${escapeHtml(title.title_id)}</code>`],
+          ["団体", escapeHtml(promotionName(title.promotion_id))],
+          ["階級", renderValue(title.division)],
+          ["変遷数", renderValue((title.lineage ?? []).length)],
+        ])}
         <ol class="lineage-list">
           ${lineage}
         </ol>
@@ -414,6 +604,15 @@ function renderMentions() {
 
         <dt>confidence</dt>
         <dd>${escapeHtml(mention.confidence)}</dd>
+
+        <dt>line_number</dt>
+        <dd>${escapeHtml(mention.line_number)}</dd>
+
+        <dt>source_ref_id</dt>
+        <dd>${escapeHtml(mention.source_ref_id)}</dd>
+
+        <dt>notes</dt>
+        <dd>${escapeHtml(mention.notes || "未入力")}</dd>
       </dl>
     </article>
   `).join("");
@@ -456,8 +655,14 @@ function renderSources() {
       <dl>
         <dt>source_id</dt>
         <dd>${escapeHtml(document.source_id)}</dd>
+        <dt>URL</dt>
+        <dd>${document.url ? `<a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(document.url)}</a>` : "未入力"}</dd>
+        <dt>取得日時</dt>
+        <dd>${escapeHtml(document.fetched_at || "未入力")}</dd>
         <dt>content_hash</dt>
         <dd><code>${escapeHtml(document.content_hash)}</code></dd>
+        <dt>notes</dt>
+        <dd>${escapeHtml(document.notes || "未入力")}</dd>
       </dl>
       ${renderSourceBody(document)}
     </article>

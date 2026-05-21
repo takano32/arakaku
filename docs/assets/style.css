@@ -2,9 +2,11 @@
   color-scheme: light;
   --bg: #f6f3ee;
   --panel: #ffffff;
+  --card: #ffffff;
   --ink: #1f1f1f;
   --muted: #666666;
   --line: #ddd6cc;
+  --border: #ddd6cc;
   --accent: #8b2f20;
   --accent-dark: #632216;
 }
@@ -153,6 +155,32 @@ dd {
   margin: 2px 0 0;
 }
 
+.record-details {
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) 1fr;
+  gap: 4px 12px;
+  margin-top: 12px;
+}
+
+.record-details dt {
+  margin: 0;
+  color: var(--muted);
+}
+
+.record-details dd {
+  margin: 0;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.inline-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
 .lineage-list {
   display: grid;
   gap: 0;
@@ -214,6 +242,11 @@ a {
   }
 
   .lineage-list li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .record-details {
     grid-template-columns: 1fr;
     gap: 2px;
   }
