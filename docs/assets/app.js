@@ -22,6 +22,7 @@ const TABS = [
   ["titles", "王座"],
   ["videos", "動画"],
   ["sources", "出典本文"],
+  ["mentions", "出典言及"],
 ];
 
 const state = {
@@ -675,6 +676,98 @@ function renderSourceBody(document) {
   `;
 }
 
+
+function mentionTypeLabel(mentionType) {
+  const labels = {
+    event: "大会",
+    matchup: "対戦カード",
+    result: "結果",
+    note_url: "note URL",
+    youtube_url: "YouTube URL",
+    match_result: "試合結果",
+  };
+
+  return labels[mentionType] ?? mentionType ?? "言及";
+}
+
+function sourceDocumentById(sourceId) {
+  return (state.data.sourceDocuments ?? []).find((document) => document.source_id === sourceId);
+}
+
+function renderSourceMentionLink(mention) {
+  const document = sourceDocumentById(mention.source_id);
+
+  if (!document) {
+    return `<span class="meta">${escapeHtml(mention.source_id)}</span>`;
+  }
+
+  const title = document.title || document.source_ref_id || mention.source_id;
+
+  return `
+    <span class="meta">
+      ${escapeHtml(sourceTypeLabel(document.source_type))}
+      /
+      <a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">
+        ${escapeHtml(title)}
+      </a>
+      /
+      line ${escapeHtml(mention.line_number)}
+    </span>
+  `;
+}
+
+function renderMentions() {
+  const mentions = (state.data.sourceMentions ?? []).filter((mention) =>
+    includesQuery([
+      mention.mention_type,
+      mention.entity_type,
+      mention.entity_hint,
+      mention.matched_text,
+      mention.context,
+      mention.source_id,
+      mention.source_ref_id,
+      mention.confidence,
+      mention.notes,
+    ])
+  );
+
+  if (mentions.length === 0) {
+    return emptyMessage();
+  }
+
+  return mentions.map((mention) => `
+    <article class="card source-mention-card">
+      <h2>
+        <span class="video-badge">${escapeHtml(mentionTypeLabel(mention.mention_type))}</span>
+        ${escapeHtml(mention.entity_hint || mention.matched_text || mention.mention_id)}
+      </h2>
+
+      ${renderSourceMentionLink(mention)}
+
+      <p>${escapeHtml(mention.matched_text || "本文なし")}</p>
+
+      <details class="source-body">
+        <summary>文脈を表示</summary>
+        <pre>${escapeHtml(mention.context || mention.matched_text || "")}</pre>
+      </details>
+
+      <dl>
+        <dt>mention_id</dt>
+        <dd>${escapeHtml(mention.mention_id)}</dd>
+
+        <dt>source_id</dt>
+        <dd>${escapeHtml(mention.source_id)}</dd>
+
+        <dt>entity_type</dt>
+        <dd>${escapeHtml(mention.entity_type)}</dd>
+
+        <dt>confidence</dt>
+        <dd>${escapeHtml(mention.confidence)}</dd>
+      </dl>
+    </article>
+  `).join("");
+}
+
 function renderSources() {
   const documents = (state.data.sourceDocuments ?? []).filter((document) =>
     includesQuery([
@@ -732,6 +825,7 @@ function renderContent() {
     titles: renderTitles,
     videos: renderVideos,
     sources: renderSources,
+    mentions: renderMentions,
   };
 
   const renderer = renderers[state.tab] ?? renderBouts;
