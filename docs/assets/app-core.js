@@ -127,6 +127,9 @@ function titleDisplayName(title) {
 }
 
 function fighterMatchesQuery(fighter) {
+  const snapshots = (state.data.fighterSnapshots ?? [])
+    .filter((snapshot) => snapshot.fighter_id === fighter.fighter_id);
+
   return includesQuery([
     fighter.display_name,
     fighter.aliases?.join(" "),
@@ -139,6 +142,18 @@ function fighterMatchesQuery(fighter) {
     fighter.source_article_ids?.join(" "),
     fighter.inferred_from_video_ids?.join(" "),
     fighter.inferred_confidence,
+    ...snapshots.flatMap((snapshot) => [
+      snapshot.snapshot_id,
+      snapshot.event_id,
+      snapshot.source_article_id,
+      snapshot.age,
+      snapshot.height,
+      snapshot.gym,
+      snapshot.record_text,
+      snapshot.main_promotion_id,
+      snapshot.titles_text,
+      snapshot.catchphrase,
+    ]),
   ]);
 }
 

@@ -110,6 +110,29 @@ function renderIdList(values) {
   return items.map((value) => `<code>${escapeHtml(value)}</code>`).join(", ");
 }
 
+function renderTextList(values) {
+  const items = (values ?? []).filter(Boolean);
+  if (items.length === 0) {
+    return "未入力";
+  }
+  return items.map((value) => escapeHtml(value)).join(", ");
+}
+
+function renderVideoRefs(videoIds) {
+  const ids = (videoIds ?? []).filter(Boolean);
+  if (ids.length === 0) {
+    return "未入力";
+  }
+
+  return ids.map((videoId) => {
+    const video = videoById(videoId);
+    if (!video?.url) {
+      return `<code>${escapeHtml(videoId)}</code>`;
+    }
+    return `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.title || videoId)}</a>`;
+  }).join(", ");
+}
+
 function renderArticleRefs(articleIds) {
   const ids = (Array.isArray(articleIds) ? articleIds : [articleIds]).filter(Boolean);
   if (ids.length === 0) {
@@ -152,6 +175,90 @@ function renderFighterRows(bout) {
       </span>
     </li>
   `).join("");
+}
+
+function renderFighterSnapshots(fighterId) {
+  const snapshots = (state.data.fighterSnapshots ?? [])
+    .filter((snapshot) => snapshot.fighter_id === fighterId)
+    .sort((a, b) => String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
+
+  if (snapshots.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>出典別プロフィール</h3>
+      <ul>
+        ${snapshots.map((snapshot) => `
+          <li>
+            <span class="meta">
+              ${snapshot.event_id ? eventLink(snapshot.event_id, eventName(snapshot.event_id)) : "大会未設定"}
+              / ${renderArticleRefs(snapshot.source_article_id)}
+            </span>
+            ${renderDefinitionList([
+              ["snapshot_id", `<code>${escapeHtml(snapshot.snapshot_id)}</code>`],
+              ["所属", renderValue(snapshot.gym)],
+              ["身長・年齢", renderValue([snapshot.height, snapshot.age].filter(Boolean).join(" / "))],
+              ["戦績", renderValue(snapshot.record_text)],
+              ["主団体", renderValue(promotionName(snapshot.main_promotion_id))],
+              ["肩書き", renderValue(snapshot.titles_text)],
+              ["キャッチコピー", renderValue(snapshot.catchphrase)],
+            ])}
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
+}
+
+function renderPromotionEvents(promotionId) {
+  const events = state.data.events
+    .filter((event) => event.promotion_id === promotionId)
+    .sort((a, b) => String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja"));
+
+  if (events.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>大会</h3>
+      <ul>
+        ${events.slice(0, 12).map((event) => `
+          <li>
+            <span>${eventLink(event.event_id, event.name)}</span>
+            <span class="meta">
+              ${escapeHtml([event.event_type, event.published_at || event.event_date].filter(Boolean).join(" / "))}
+            </span>
+          </li>
+        `).join("")}
+      </ul>
+      ${events.length > 12 ? `<p class="meta">ほか ${escapeHtml(events.length - 12)} 件</p>` : ""}
+    </section>
+  `;
+}
+
+function renderPromotionTitles(promotionId) {
+  const titles = state.data.titles.filter((title) => title.promotion_id === promotionId);
+
+  if (titles.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>王座</h3>
+      <ul>
+        ${titles.map((title) => `
+          <li>
+            <span>${escapeHtml(titleDisplayName(title))}</span>
+            <span class="meta">${escapeHtml(title.lineage?.length ?? 0)} reigns</span>
+          </li>
+        `).join("")}
+      </ul>
+    </section>
+  `;
 }
 
 function renderBouts() {
@@ -210,7 +317,7 @@ function renderFighters() {
       <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(promotionName(fighter.main_promotion_id))}</p>
       ${renderDefinitionList([
         ["fighter_id", `<code>${escapeHtml(fighter.fighter_id)}</code>`],
-        ["別名", renderIdList(fighter.aliases)],
+        ["別名", renderTextList(fighter.aliases)],
         ["主階級", renderValue(fighter.main_division)],
         ["主団体", renderValue(promotionName(fighter.main_promotion_id))],
         ["所属", renderValue(fighter.profile?.gym)],
@@ -220,6 +327,7 @@ function renderFighters() {
         ["推定信頼度", renderValue(fighter.inferred_confidence)],
         ["概要", renderValue(fighter.summary)],
       ])}
+      ${renderFighterSnapshots(fighter.fighter_id)}
       ${renderRelatedBouts(fighter.fighter_id)}
     </article>
   `).join("") || emptyMessage();
@@ -256,7 +364,7 @@ function renderEvents() {
         ["開催日", renderValue(event.event_date)],
         ["公開日", renderValue(event.published_at)],
         ["出典記事", renderArticleRefs(event.source_article_id)],
-        ["出典動画", renderIdList(event.source_video_ids)],
+        ["出典動画", renderVideoRefs(event.source_video_ids)],
         ["推定元", renderValue(event.inferred_from)],
         ["推定信頼度", renderValue(event.inferred_confidence)],
       ])}
@@ -277,6 +385,12 @@ function renderPromotions() {
       promotion.country_scope,
       promotion.summary,
       promotion.source_article_ids?.join(" "),
+      ...state.data.events
+        .filter((event) => event.promotion_id === promotion.promotion_id)
+        .map((event) => [event.event_id, event.name].join(" ")),
+      ...state.data.titles
+        .filter((title) => title.promotion_id === promotion.promotion_id)
+        .map((title) => titleDisplayName(title)),
     ])
   );
 
@@ -301,6 +415,9 @@ function renderPromotions() {
         ["4点頭部膝", renderValue(promotion.rules?.four_point_head_knees === null ? "" : promotion.rules?.four_point_head_knees ? "あり" : "なし")],
         ["出典記事", renderArticleRefs(promotion.source_article_ids)],
       ])}
+      ${renderVideoLinks("promotion", promotion.promotion_id)}
+      ${renderPromotionEvents(promotion.promotion_id)}
+      ${renderPromotionTitles(promotion.promotion_id)}
     </article>
   `).join("") || emptyMessage();
 }
