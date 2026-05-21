@@ -22,7 +22,7 @@ function renderRelatedBouts(fighterId) {
         ${bouts.map((bout) => `
           <li>
             <span class="meta">${eventLink(bout.event_id, eventName(bout.event_id))}</span>
-            <span>${boutMatchup(bout)}</span>
+            <span class="related-bout-title">${boutMatchup(bout)}</span>
             <span class="meta">${renderBoutResultSummary(bout)}</span>
             <span class="meta">
               ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
@@ -52,7 +52,7 @@ function renderEventBouts(eventId) {
       <div class="related-bout-grid">
         ${bouts.map((bout) => `
           <article class="related-bout-card">
-            <p class="meta">第${escapeHtml(bout.bout_order ?? "?")}試合</p>
+            <p class="meta bout-order">第${escapeHtml(bout.bout_order ?? "?")}試合</p>
             <h4>${boutMatchup(bout)}</h4>
             <p>${renderBoutResultSummary(bout)}</p>
             <p class="meta">

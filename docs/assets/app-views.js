@@ -97,7 +97,7 @@ function renderBouts() {
     : state.data.bouts.filter((bout) => includesQuery(boutSearchText(bout)));
 
   return bouts.map((bout) => `
-    <article class="card">
+    <article class="card record-card bout-card">
       <h2>${boutMatchup(bout)}</h2>
       <p class="meta">${eventLink(bout.event_id, eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
       <p class="result">
@@ -119,7 +119,7 @@ function renderFighters() {
     : state.data.fighters.filter((fighter) => fighterMatchesQuery(fighter));
 
   return fighters.map((fighter) => `
-    <article class="card">
+    <article class="card record-card fighter-card">
       <h2>${escapeHtml(fighter.display_name)}</h2>
       <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(promotionName(fighter.main_promotion_id))}</p>
       <dl>
@@ -148,7 +148,7 @@ function renderEvents() {
       );
 
   return events.map((event) => `
-    <article class="card">
+    <article class="card record-card event-card">
       <h2>${escapeHtml(event.name)}</h2>
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
@@ -170,7 +170,7 @@ function renderPromotions() {
   );
 
   return promotions.map((promotion) => `
-    <article class="card">
+    <article class="card record-card promotion-card">
       <h2>${escapeHtml(promotion.name)}</h2>
       <p class="meta">${escapeHtml(promotion.name_en ?? "")} / ${escapeHtml(promotion.category ?? "")}</p>
       <p>${escapeHtml(promotion.summary || "概要未入力")}</p>
@@ -208,7 +208,7 @@ function renderVideos() {
   }
 
   return videos.map((video) => `
-    <article class="card video-card">
+    <article class="card record-card video-card">
       <h2>
         <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
           ${escapeHtml(video.title)}
@@ -387,7 +387,7 @@ function renderMentions() {
   }
 
   return mentions.map((mention) => `
-    <article class="card source-mention-card">
+    <article class="card record-card source-mention-card">
       <h2>
         <span class="video-badge">${escapeHtml(mentionTypeLabel(mention.mention_type))}</span>
         ${escapeHtml(mention.entity_hint || mention.matched_text || mention.mention_id)}
@@ -437,7 +437,7 @@ function renderSources() {
   }
 
   return documents.map((document) => `
-    <article class="card source-card">
+    <article class="card record-card source-card">
       <h2>${escapeHtml(document.title || document.source_ref_id)}</h2>
       <p class="meta">
         ${escapeHtml(sourceTypeLabel(document.source_type))}

@@ -171,6 +171,7 @@ dd {
 }
 
 .reign-label {
+  font-size: 1rem;
   font-weight: 700;
   color: var(--accent-dark);
 }
@@ -273,12 +274,12 @@ a {
 .title-group-heading {
   margin: 24px 0 4px;
   padding: 8px 2px;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   border-bottom: 2px solid var(--accent);
 }
 
 .title-card h3 {
-  font-size: 0.95rem;
+  font-size: 1.12rem;
   color: var(--muted);
   font-weight: 700;
   word-break: break-word;
@@ -429,10 +430,31 @@ a {
 
 .related-bout-card h4 {
   margin: 0.25rem 0;
+  font-size: 1rem;
 }
 
 .related-bout-card p {
   margin: 0.25rem 0;
+}
+
+.record-card > h2 {
+  font-size: 1.55rem;
+}
+
+.record-card > .related-source-mentions h3,
+.record-card > .related-bouts h3,
+.record-card > .video-description-preview h3 {
+  font-size: 1.12rem;
+}
+
+.record-card .related-bout-title,
+.record-card .related-bout-card .bout-order {
+  font-size: 1rem;
+}
+
+.record-card .video-links h3,
+.record-card .video-links a {
+  font-size: 0.9rem;
 }
 
 .source-card details {
