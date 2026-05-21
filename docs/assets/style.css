@@ -3,9 +3,10 @@
   --bg: #f6f3ee;
   --panel: #ffffff;
   --ink: #1f1f1f;
-  --muted: #666;
+  --muted: #666666;
   --line: #ddd6cc;
   --accent: #8b2f20;
+  --accent-dark: #632216;
 }
 
 * {
@@ -17,6 +18,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--ink);
+  line-height: 1.65;
 }
 
 .site-header {
@@ -27,7 +29,7 @@ body {
 
 .site-header h1 {
   margin: 0;
-  font-size: 2.2rem;
+  font-size: clamp(2rem, 6vw, 3rem);
   letter-spacing: 0.08em;
 }
 
@@ -43,7 +45,7 @@ main {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -60,9 +62,12 @@ main {
 .summary-card strong {
   display: block;
   font-size: 1.8rem;
+  line-height: 1.2;
 }
 
-.summary-card span {
+.summary-card span,
+.meta,
+dd {
   color: var(--muted);
 }
 
@@ -77,6 +82,12 @@ input[type="search"] {
   border-radius: 999px;
   font-size: 1rem;
   background: white;
+  color: var(--ink);
+}
+
+input[type="search"]:focus {
+  outline: 3px solid rgb(139 47 32 / 0.22);
+  border-color: var(--accent);
 }
 
 .tabs {
@@ -91,7 +102,13 @@ input[type="search"] {
   border-radius: 999px;
   padding: 10px 14px;
   background: white;
+  color: var(--ink);
   cursor: pointer;
+  font-weight: 700;
+}
+
+.tab:hover {
+  border-color: var(--accent);
 }
 
 .tab.active {
@@ -108,10 +125,14 @@ input[type="search"] {
 .card h2,
 .card h3 {
   margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.card p {
+  margin: 8px 0;
 }
 
 .meta {
-  color: var(--muted);
   font-size: 0.92rem;
 }
 
@@ -130,7 +151,36 @@ dt {
 
 dd {
   margin: 2px 0 0;
-  color: var(--muted);
+}
+
+.lineage-list {
+  display: grid;
+  gap: 0;
+  padding-left: 0;
+  margin: 12px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.lineage-list li {
+  display: grid;
+  grid-template-columns: minmax(5rem, 8rem) 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.reign-label {
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.fighter-name {
+  font-weight: 600;
+}
+
+.title-card h2 {
+  line-height: 1.35;
 }
 
 footer {
@@ -141,4 +191,128 @@ footer {
 
 a {
   color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .site-header {
+    padding: 24px 16px;
+  }
+
+  main,
+  footer {
+    width: min(100% - 24px, 1100px);
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tab {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .lineage-list li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+.title-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+}
+
+.title-filters[hidden] {
+  display: none;
+}
+
+.title-filters select {
+  flex: 1 1 220px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.title-filters select:focus {
+  outline: 3px solid rgb(139 47 32 / 0.22);
+  border-color: var(--accent);
+}
+
+.link-button {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+.link-button:hover {
+  color: var(--accent-dark);
+}
+
+.result .link-button {
+  font-weight: 800;
+}
+
+.title-group-heading {
+  margin: 24px 0 4px;
+  padding: 8px 2px;
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.title-card h3 {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.title-card .meta {
+  margin-top: -2px;
+  margin-bottom: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.related-bouts {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.related-bouts h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.related-bouts ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.related-bouts li {
+  display: grid;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.related-bouts li:last-child {
+  border-bottom: 0;
 }
