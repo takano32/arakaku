@@ -77,10 +77,15 @@ def validate_bouts(bouts:list[Any], event_ids:set[str], promotion_ids:set[str], 
                 if fid and fid not in fighter_ids: add_error(f"bouts.json[{i}].fighters[{j}]: unknown fighter reference: {fid}")
                 if not name: add_error(f"bouts.json[{i}].fighters[{j}]: missing name")
             if len(names)!=2: add_error(f"bouts.json[{i}]: fighter names must be distinct")
-            if sorted(results)!=['loss','win']: add_error(f"bouts.json[{i}]: fighters must have exactly one win and one loss")
+            result_status=x.get('result_status') or ('known' if x.get('winner_id') or x.get('winner') else 'unknown')
+            if result_status=='known' and sorted(results)!=['loss','win']: add_error(f"bouts.json[{i}]: known-result fighters must have exactly one win and one loss")
+            if result_status=='unknown' and any(r not in ('unknown', None, '') for r in results): add_error(f"bouts.json[{i}]: unknown-result fighters must not have win/loss results")
         for key in ['winner_id','loser_id']:
             fid=x.get(key)
             if fid and fid not in fighter_ids: add_error(f"bouts.json[{i}]: unknown fighter reference in {key}: {fid}")
+        result_status=x.get('result_status') or ('known' if x.get('winner_id') or x.get('winner') else 'unknown')
+        if result_status not in {'known','unknown'}: add_warning(f"bouts.json[{i}]: unusual result_status: {result_status}")
+        if result_status=='known' and not (x.get('winner_id') or x.get('winner')): add_error(f"bouts.json[{i}]: known-result bout is missing winner")
         if x.get('winner') and x.get('winner')==x.get('loser'): add_error(f"bouts.json[{i}]: winner and loser are the same: {x.get('winner')}")
         result=x.get('result') or {}; method=result.get('method_normalized') if isinstance(result,dict) else None
         if method and method not in VALID_METHODS: add_warning(f"bouts.json[{i}]: unusual method_normalized: {method}")
