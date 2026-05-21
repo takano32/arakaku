@@ -5,318 +5,626 @@
 
 公開ページ: https://takano32.github.io/arakaku/
 
-ARAKAKU は、[アラカク通信のーと](https://note.com/xyz1090) などの公開情報をもとに、アラカクの団体・大会・試合結果・選手情報を整理する非公式データベースです。
+ARAKAKU は、アラカクの団体・大会・試合・選手・王座・動画・出典本文を整理する非公式データベースです。
 
-CSV で管理しているソースデータを、GitHub Pages で利用しやすい静的 JSON に変換することを目的としています。
+CSV で管理しているソースデータを静的 JSON に変換し、GitHub Pages 上の viewer で検索・閲覧できるようにしています。
 
-## Data policy
+主な情報源は、公開されている note 記事、YouTube 動画、YouTube 概要欄、公開されている大会・試合情報です。
 
-このリポジトリでは、実データをソースとして扱います。
+この README は、人間の利用者だけでなく、別エージェントや自動化ツールが安全に作業を引き継げるように、プロジェクトの構造・データ方針・作業手順を詳しくまとめています。
 
-テストや fixture では、モック CSV を使いません。  
-テストは、実際のデータパイプラインと生成済み JSON の検証を中心にします。
+---
 
-## Source data
+## 目的
 
-CSV ファイルは以下に置きます。
+このリポジトリの目的は、アラカクの情報をあとから追いやすくすることです。
+
+たとえば以下を調べやすくします。
+
+- この大会にはどの試合があったか
+- この選手はどの試合に出ていたか
+- この試合の動画はあるか
+- この大会や試合について、どの note 本文や YouTube 概要欄に言及があるか
+- 動画タイトルや概要欄から、どんな候補情報が拾えるか
+- 勝敗・決着方法・ラウンド・タイムをあとから補完できるか
+- 王座やトーナメントの流れをあとから確認できるか
+
+まだ整理中のデータも多いため、不明な情報は無理に確定せず、`unknown` や `勝敗未入力` として扱います。
+
+---
+
+## 現在の viewer 機能
+
+GitHub Pages の viewer では、現在以下を表示します。
+
+- 試合
+- 選手
+- 大会
+- 団体
+- 王座
+- 動画
+- 出典本文
+- 出典言及
+
+主な導線:
+
+- 試合 view の選手名をクリックすると、選手 view に移動します。
+- 試合 view の大会名をクリックすると、大会 view に移動します。
+- 大会 view には、その大会に含まれる関連試合カードを表示します。
+- 選手 view には、その選手の関連試合を表示します。
+- 出典本文 view では、note 本文と YouTube 概要欄を確認できます。
+- 出典言及 view では、本文中から抽出した大会名・対戦カード・結果・URL などの候補を確認できます。
+- 検索ボックスで各 view の内容を絞り込めます。
+
+---
+
+## 基本方針
+
+### 1. 正規データは CSV
+
+正規データは `data-src/*.csv` に置きます。
+
+JSON は viewer 用の生成物です。  
+`docs/data/*.json` を直接編集してはいけません。
+
+### 2. 実データを使う
+
+テストや build は、実際の `data-src/*.csv` を使います。  
+モックCSVや仮の fixture を中心にしたテストにはしません。
+
+### 3. 抽出候補は review に置く
+
+自動抽出した結果、推定した試合カード、候補選手、候補イベントなどは、まず `review/` に出します。
+
+確認前の候補をいきなり `data-src/` に大量反映しないでください。
+
+### 4. 不明情報を推測で確定しない
+
+未確認の勝敗・決着方法・ラウンド・タイム・選手同定は、推測で確定させないでください。
+
+不明なものは、以下のように扱います。
+
+- `result_status=unknown`
+- `勝敗未入力`
+- `needs_review`
+- `review/*.csv` の候補
+
+### 5. 生成物はコミットしない
+
+`docs/data/*.json` は build で生成される成果物です。  
+原則としてコミットしません。
+
+`tmp/` 配下の HTML や info JSON もローカルキャッシュなのでコミットしません。
+
+---
+
+## ディレクトリ構成
 
 ```text
-data-src/
+.
+├── .github/
+│   └── workflows/          # GitHub Actions
+├── data-src/               # 正規ソースCSV
+├── docs/                   # GitHub Pages 用 viewer
+│   ├── assets/
+│   │   ├── app.js           # viewer 本体
+│   │   └── style.css        # viewer CSS
+│   ├── data/                # 生成JSON出力先。JSONはコミットしない
+│   └── index.html           # viewer HTML
+├── review/                 # 自動抽出・推定・反映前レビュー用CSV
+├── scripts/                # build / validate / import / extraction scripts
+├── tests/                  # pytest
+├── tmp/                    # ローカルキャッシュ
+│   ├── note-html/           # note HTML cache
+│   └── youtube-info/        # yt-dlp info JSON cache
+├── Makefile
+├── SCHEMA_NOTES.md
+└── README.md
 ```
 
-CSV ファイルはソースデータなのでコミットします。
+---
 
-生成された JSON ファイルは以下に出力されます。
+## コミットするもの / しないもの
+
+### コミットするもの
+
+- `data-src/*.csv`
+- `review/*.csv`
+- `docs/data/.gitkeep`
+- `tmp/.gitkeep`
+- `tmp/note-html/.gitkeep`
+- `tmp/youtube-info/.gitkeep`
+- `scripts/*.py`
+- `tests/*.py`
+- `docs/assets/app.js`
+- `docs/assets/style.css`
+- `docs/index.html`
+- `.github/workflows/*.yml`
+- `README.md`
+- `SCHEMA_NOTES.md`
+
+### コミットしないもの
+
+- `docs/data/*.json`
+- `tmp/note-html/*.html`
+- `tmp/youtube-info/*.info.json`
+- `__pycache__/`
+- `.pytest_cache/`
+- ローカル実験用の一時ファイル
+
+---
+
+## data-src の主要CSV
+
+### `data-src/promotions.csv`
+
+団体データです。
+
+例:
+
+- ターゲット
+- エンペラー
+- マウンテン・ヒーローズ
+- MAXバウト
+- エリートスピリッツ
+
+団体名、カテゴリ、ルール、概要などを管理します。
+
+### `data-src/events.csv`
+
+大会データです。
+
+大会ID、団体ID、大会名、開催日、概要、参照記事などを管理します。
+
+`event_id` は、試合・動画リンク・出典言及との結合キーになります。
+
+### `data-src/bouts.csv`
+
+試合データです。
+
+大会内の試合順、選手A/B、`matchup`、勝敗、決着方法、ラウンド、タイム、王座戦情報などを管理します。
+
+勝敗が未確認の試合は、無理に結果を入れず、`result_status=unknown` として扱います。
+
+重要な考え方:
+
+- `fighter_a` / `fighter_b` は対戦カードです。
+- `winner` / `loser` は結果が確認できたときだけ埋めます。
+- `matchup` は viewer 表示用の補助列です。
+- 結果が不明な試合でも `A vs B` として表示できるようにします。
+
+### `data-src/fighters.csv`
+
+選手データです。
+
+選手ID、表示名、階級、所属、概要などを管理します。
+
+選手名クリックや検索の基本データになります。
+
+### `data-src/titles.csv`
+
+王座・トーナメント系データです。
+
+王座ID、団体、階級、王座変遷などを管理します。
+
+王座変遷は viewer の王座 view に表示されます。
+
+### `data-src/fighter_snapshots.csv`
+
+大会や時点ごとの選手状態を保存するためのデータです。
+
+将来的に、当時の階級・所属・肩書き・王座保持状態などを追うために使います。
+
+### `data-src/videos.csv`
+
+動画そのもののデータです。
+
+YouTube などの動画 URL、動画タイトル、公開日、動画種別、リンク状態、重複候補などを管理します。
+
+動画は試合や大会に直接埋め込まず、独立した動画データとして扱います。
+
+### `data-src/video_links.csv`
+
+動画と対象データの関係を管理します。
+
+1動画に複数試合が含まれる場合や、大会全体の配信アーカイブ、選手紹介動画などを扱うため、動画本体とリンク関係を分離しています。
+
+`entity_type` は以下を想定します。
+
+- `event`
+- `bout`
+- `fighter`
+- `promotion`
+- `title`
+
+`relation_type` は以下を想定します。
+
+- `full_fight`
+- `highlight`
+- `short`
+- `stream_archive`
+- `preview`
+- `interview`
+- `commentary`
+- `reference`
+
+### `data-src/articles.csv`
+
+note 記事などの出典記事データです。
+
+記事ID、タイトル、URL、記事種別、団体ID、公開日、状態などを管理します。
+
+削除済み・非公開・404 の記事がある場合でも、必要に応じてレコードは保持します。  
+本文キャッシュに失敗した記事は、`source_documents.csv` には入りません。
+
+### `data-src/source_documents.csv`
+
+note 本文や YouTube 概要欄そのものを保存する本文DBです。
+
+現在の主な `source_type`:
+
+- `note_article`
+- `youtube_description`
+
+主な用途:
+
+- 出典本文 view で本文を確認する
+- 全文検索する
+- source_mentions の抽出元として使う
+- 後続の試合結果候補抽出に使う
+
+### `data-src/source_mentions.csv`
+
+`source_documents.csv` の本文中から抽出した言及候補です。
+
+現在の主な `mention_type`:
+
+- `event`
+- `matchup`
+- `result`
+- `note_url`
+- `youtube_url`
+
+主な用途:
+
+- 出典言及 view で抽出候補を確認する
+- 試合結果候補CSVを作る
+- 大会・試合・動画とのリンク候補を作る
+
+### `data-src/aliases.csv`
+
+表記揺れや別名を管理します。
+
+viewer や抽出処理での検索・照合改善に使います。
+
+---
+
+## review の役割
+
+`review/` は、正規データに反映する前の候補を置く場所です。
+
+例:
+
+- `review/note_result_candidates.csv`
+- `review/note_structured_results.csv`
+- `review/structured_result_patch_candidates.csv`
+- `review/youtube_description_candidates.csv`
+- `review/inferred_bouts_from_video_titles.csv`
+- `review/inferred_events_from_video_titles.csv`
+- `review/inferred_fighters_from_video_titles.csv`
+- `review/parse_skips.csv`
+
+`review/` のデータは、原則として人間が確認してから `data-src/` に反映します。
+
+---
+
+## scripts の役割
+
+### `scripts/build_json.py`
+
+`data-src/*.csv` から `docs/data/*.json` を生成します。
+
+生成対象の例:
+
+- `articles.json`
+- `promotions.json`
+- `events.json`
+- `bouts.json`
+- `fighters.json`
+- `titles.json`
+- `fighter_snapshots.json`
+- `videos.json`
+- `video_links.json`
+- `aliases.json`
+- `source_documents.json`
+- `source_mentions.json`
+- `metadata.json`
+
+### `scripts/validate_json.py`
+
+生成された JSON の構造と参照関係を検証します。
+
+例:
+
+- unknown event reference
+- unknown fighter reference
+- duplicate id
+- invalid video link
+- missing required field
+- duplicate source id
+- duplicate mention id
+
+### `scripts/cache_note_html.py`
+
+`data-src/articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。
+
+404 や削除済み記事は、全体の処理を止めずに警告扱いにします。
+
+### `scripts/cache_youtube_info.py`
+
+`data-src/videos.csv` の YouTube URL から、`yt-dlp` を使って `.info.json` を `tmp/youtube-info/` にキャッシュします。
+
+動画本体はダウンロードしません。
+
+`yt-dlp` の警告が出ても、`.info.json` が生成できている場合は本文DB生成に進めます。
+
+### `scripts/build_source_documents.py`
+
+`tmp/note-html/` と `tmp/youtube-info/` を読み、以下を生成します。
+
+- `data-src/source_documents.csv`
+- `data-src/source_mentions.csv`
+
+note本文・YouTube概要欄を本文DB化し、本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
+
+### `scripts/crawl_note_articles.py`
+
+note の RSS / API / HTML などから記事一覧を探索し、`articles.csv` に追加するためのスクリプトです。
+
+### `scripts/extract_note_result_candidates.py`
+
+note 本文から試合結果っぽい行を抽出します。
+
+### `scripts/extract_note_structured_results.py`
+
+note 本文から、より構造化された試合結果候補を抽出します。
+
+### `scripts/make_structured_result_patch_candidates.py`
+
+構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
+
+### `scripts/apply_structured_result_patches.py`
+
+レビュー済みの structured result patch を `bouts.csv` に反映します。
+
+反映前に必ず候補CSVを確認してください。
+
+### `scripts/import_youtube_videos.py`
+
+YouTube動画情報を `videos.csv` へ取り込むためのスクリプトです。
+
+### `scripts/import_youtube_descriptions.py`
+
+YouTube概要欄を解析するためのスクリプトです。
+
+過去の抽出・検証用に残しています。現在は `build_source_documents.py` のほうが本文DB化の中心です。
+
+---
+
+## Makefile
+
+主なコマンド:
+
+```bash
+make build
+make validate
+make test
+make check
+make clean-generated
+```
+
+本文キャッシュと本文DB生成:
+
+```bash
+make cache-note-html
+make cache-youtube-info
+make cache-sources
+make build-sources
+make refresh-sources
+```
+
+### `make build`
+
+CSV から JSON を生成します。
+
+### `make validate`
+
+生成された JSON を検証します。
+
+### `make test`
+
+pytest を実行します。
+
+### `make check`
+
+以下を順に実行します。
 
 ```text
-docs/data/
+build → validate → pytest
 ```
 
-生成 JSON はビルド成果物なのでコミットしません。
+### `make clean-generated`
 
-空の出力ディレクトリを Git で保持するため、以下のファイルだけを置きます。
+生成済みの `docs/data/*.json` を削除し、`docs/data/.gitkeep` を戻します。
 
-```text
-docs/data/.gitkeep
-```
+### `make refresh-sources`
 
-GitHub Pages では、生成後の `docs/data/` 配下の JSON を読み込みます。
+出典本文のキャッシュ取得、本文DB生成、通常 check をまとめて実行します。
 
-## Local commands
+---
 
-ローカル確認には `Makefile` を使います。
+## 通常の開発手順
+
+通常の変更後:
 
 ```bash
 make check
 make clean-generated
 ```
 
-`make check` は以下を順に実行します。
-
-```text
-build → validate → pytest
-```
-
-`make clean-generated` は生成済みの `docs/data/*.json` を削除し、`docs/data/.gitkeep` を戻します。
-
-## Build
+本文DBを更新する場合:
 
 ```bash
-make build
+make cache-sources
+make build-sources
+make check
+make clean-generated
 ```
 
-`docs/data/` 配下に JSON を生成します。
+push 後:
 
-生成された `docs/data/*.json` はコミットしません。
+- GitHub Actions の test workflow を確認します。
+- GitHub Actions の pages workflow を確認します。
+- GitHub Pages の表示を確認します。
 
-## Validate
-
-```bash
-make validate
-```
-
-生成された JSON の構造と参照関係を検証します。  
-対象は articles、promotions、events、bouts、fighters、titles、fighter snapshots、videos、video links などです。
-
-## Test
-
-```bash
-make test
-```
+---
 
 ## GitHub Actions
 
 CI は `master` への push / pull request で実行します。
 
-```text
-build → validate → pytest
-```
+現在の主な actions:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+- `actions/configure-pages@v6`
+- `actions/upload-pages-artifact@v5`
+- `actions/deploy-pages@v5`
+
+workflow:
+
+- `.github/workflows/test.yml`
+- `.github/workflows/pages.yml`
+
+Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v5 系へ更新しています。
+
+---
 
 ## Branch
+
+既定ブランチは以下です。
 
 ```text
 master
 ```
 
-## Repository
+---
 
-```text
-takano32/arakaku
-```
-
-## Naming notes
+## 命名・表記メモ
 
 本文では `スーパーうんどう` 表記を基本にします。
 
 ただし、引用や出典の表記を保持する必要がある場合は、出典側の表記を尊重します。  
 資料によっては `スーパー運動` と表記される場合があります。
 
-## Current MVP data
+---
 
-初期データは、最小構成として以下のみを含みます。
+## 他エージェント向け作業ルール
 
-- ターゲット
-- ターゲットNo.103
-- ターゲットNo.103 全5試合
-- 出場10選手
-- わくのターゲットライト級王座最小情報
+複数エージェントで作業する場合は、以下を守ってください。
 
-他団体、他大会、王座変遷の詳細は段階的に追加します。
+### 1. 正規データは `data-src/`
 
-## Test file ordering
+正規データは `data-src/*.csv` にあります。
 
-テストファイル名には、意図した順序が分かるように数値プレフィックスを付けます。
+`docs/data/*.json` を直接編集しないでください。  
+JSON は生成物です。
 
-```text
-tests/test_10_build_json.py
-tests/test_20_validate_json.py
-tests/test_30_validate_videos.py
-```
+### 2. 抽出候補はまず `review/`
 
-`10`, `20`, `30` のように間隔を空けることで、あとから新しいテスト段階を差し込めるようにします。
+自動抽出した試合結果・対戦カード・選手候補などは、まず `review/` に出してください。
 
-## Test suite
+レビューなしで `bouts.csv` や `fighters.csv` に大量反映しないでください。
 
-現在の pytest は小さく保ち、ファイル名順で役割を分けています。
+### 3. 不明情報を勝手に確定しない
 
-```text
-tests/
-  conftest.py
-  test_10_build_json.py
-  test_20_validate_json.py
-  test_30_validate_videos.py
-```
+未確認の勝敗・決着方法・ラウンド・タイムは、推測で埋めないでください。
 
-- `test_10_build_json.py`: build helper の検証
-- `test_20_validate_json.py`: JSON 検証ロジックの検証
-- `test_30_validate_videos.py`: video / video_links 検証ロジックの検証
+不明なものは `unknown`、`勝敗未入力`、またはレビュー候補として扱います。
 
-## Generated data policy
+### 4. `tmp/` のキャッシュ本体はコミットしない
 
-コミットするもの:
+以下はコミットしません。
 
-```text
-data-src/*.csv
-docs/data/.gitkeep
-```
+- `tmp/note-html/*.html`
+- `tmp/youtube-info/*.info.json`
 
-コミットしないもの:
+必要なら各自で再生成します。
 
-```text
-docs/data/*.json
-```
+### 5. 変更後は必ず check
 
-JSON はローカルまたは CI で再生成します。
+変更後は必ず以下を実行してください。
 
 ```bash
-make build
+make check
+make clean-generated
 ```
 
-## Video data policy
+### 6. viewer の更新対象
 
-動画URLは、試合・大会データに直接持たせず、専用CSVで管理します。
+viewer の主要ファイルは以下です。
 
-理由は、動画と対象データの関係が 1 対 1 とは限らないためです。
+- `docs/index.html`
+- `docs/assets/app.js`
+- `docs/assets/style.css`
 
-想定するケース:
+### 7. Pages の表示確認
 
-- 1試合に複数動画がある
-- 1動画に複数試合が含まれる
-- 大会全体の配信アーカイブがある
-- 選手紹介、煽りV、ハイライト、ショート動画がある
-- YouTube以外の動画プラットフォームが出る
-- 公式、非公式、削除済み、未確認などの状態を管理したい
-
-そのため、動画そのものは `videos.csv`、動画と対象データの関係は `video_links.csv` に分けます。
+push 後は GitHub Pages を確認してください。
 
 ```text
-data-src/videos.csv
-data-src/video_links.csv
+https://takano32.github.io/arakaku/
 ```
 
-### videos.csv
+### 8. 大きな自動反映は禁止
 
-動画そのものを管理します。
+抽出候補を大量に `data-src/` へ反映する場合は、必ず候補CSVを確認してください。
 
-```csv
-video_id,platform,platform_video_id,url,title,channel_name,published_at,official_status,video_type,link_status,duplicate_group_id,duplicate_note,notes,source_article_ids
-```
+少なくとも以下を確認します。
 
-主な列の意味:
+- event_id が正しいか
+- fighter_id が正しいか
+- 同名・類似名の誤爆がないか
+- result が本当に本文から確認できるか
+- 動画タイトルだけから勝敗を推定していないか
 
-`video_id`
-: リポジトリ内で使う動画ID。
+---
 
-`platform`
-: `youtube` などの動画プラットフォーム。
+## 現在のデータ規模
 
-`platform_video_id`
-: YouTube の動画IDなど、プラットフォーム側の動画ID。
+目安:
 
-`url`
-: 動画URL。
+- `articles.csv`: 122 rows
+- `events.csv`: 54 rows
+- `bouts.csv`: 274 rows
+- `fighters.csv`: 146 rows
+- `videos.csv`: 360 rows
+- `video_links.csv`: 273 rows
+- `source_documents.csv`: 480 rows
+- `source_mentions.csv`: 1801 rows
 
-`video_type`
-: `full_fight`、`highlight`、`stream_archive`、`preview`、`reference` など。
+件数は今後増える可能性があります。
 
-`link_status`
-: `linked`、`partially_linked`、`unlinked`、`needs_review` など。
+---
 
-`duplicate_group_id`
-: 同じ動画・同じ試合の候補を束ねるための任意ID。
+## 次の改善候補
 
-`duplicate_note`
-: 重複候補に関するメモ。
-
-### video_links.csv
-
-動画がどのデータに紐づくかを管理します。
-
-```csv
-video_id,entity_type,entity_id,relation_type,start_time,end_time,notes
-```
-
-`entity_type` は当面、以下を想定します。
-
-```text
-event
-bout
-fighter
-promotion
-title
-```
-
-`relation_type` は当面、以下を想定します。
-
-```text
-full_fight
-highlight
-short
-stream_archive
-preview
-interview
-commentary
-reference
-```
-
-この設計により、以下の関係を扱えるようにします。
-
-- 1動画 → 複数試合
-- 1試合 → 複数動画
-- 1動画 → 大会にも試合にも紐づく
-- 1動画 → 選手紹介やインタビューとして紐づく
-
-`bouts.csv` や `events.csv` には、動画URL列を直接追加しません。
-
-URLまたは `platform_video_id` が異なる動画は、タイトルが似ていても `videos.csv` では別行として保持します。  
-同一動画や重複投稿の可能性があるものは削除せず、`duplicate_group_id` と `duplicate_note` で管理します。
-
-## YouTube import
-
-公式YouTubeチャンネルの一覧は `yt-dlp` で TSV に出力し、`scripts/import_youtube_videos.py` で `videos.csv` に変換します。
-
-```bash
-mkdir -p tmp
-
-yt-dlp \
-  --flat-playlist \
-  --skip-download \
-  --print "%(id)s	%(webpage_url)s	%(title)s	%(channel)s	%(upload_date)s	%(duration_string)s" \
-  "https://www.youtube.com/@アラカク通信/videos" \
-  > tmp/arakaku-youtube-videos.tsv
-
-python scripts/import_youtube_videos.py
-```
-
-既存の `videos.csv` にある `link_status` や `duplicate_note` などの手作業情報は、通常は保持します。
-
-完全に作り直す場合だけ、以下を使います。
-
-```bash
-python scripts/import_youtube_videos.py --replace
-```
-
-## Local environment note
-
-一部の notebook 系実行環境では、Python 起動時に `artifact_tool` の spreadsheet warmup 警告が出ることがあります。
-
-このリポジトリの `Makefile` では `OAI_IS_JUPYTER_KERNEL=0` を付けて実行するため、ローカル確認時の警告を抑制します。
-
-GitHub Actions や通常のローカル Python 環境では、この回避策は不要なはずです。
-
-## Roadmap
-
-今後の予定です。
-
-- GitHub Pages viewer の表示改善
-- ターゲット以外の団体データ追加
-- ターゲットの王座変遷データ拡充
-- 大会ごとの試合結果追加
-- 選手プロフィールと戦績スナップショットの拡充
-- 検索・絞り込み UI の改善
-- データ出典の整理と参照性向上
-- 動画データの追加と viewer 表示
-
-## Status
-
-初期構築段階です。
+- 出典言及を `mention_type` で絞り込むフィルタを追加する
+- `source_mentions` から試合結果候補CSVを作る
+- `source_documents.json` を軽量化する
+- 試合 view に関連出典候補を表示する
+- 大会 view に関連出典候補を表示する
+- 動画 view に YouTube概要欄プレビューを表示する
+- 王座変遷の精度を上げる
+- 選手プロフィールを充実させる
+- unknown 試合の結果補完を進める
