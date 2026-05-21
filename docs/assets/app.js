@@ -315,6 +315,147 @@ function renderVideoLinks(entityType, entityId) {
   `;
 }
 
+function mentionSearchText(mention) {
+  const document = sourceDocumentById(mention.source_id);
+
+  return [
+    mention.mention_type,
+    mention.entity_type,
+    mention.entity_hint,
+    mention.matched_text,
+    mention.context,
+    mention.source_id,
+    mention.source_ref_id,
+    mention.confidence,
+    mention.notes,
+    document?.title,
+    document?.url,
+  ].filter(Boolean).join(" ");
+}
+
+function mentionSortValue(mention) {
+  return `${mention.source_id ?? ""}:${String(mention.line_number ?? "").padStart(6, "0")}`;
+}
+
+function sourceMentionSummary(mention) {
+  const label = mentionTypeLabel(mention.mention_type);
+  const text = mention.matched_text || mention.context || mention.mention_id;
+
+  return `
+    <li>
+      <span class="video-badge">${escapeHtml(label)}</span>
+      <span>${escapeHtml(text)}</span>
+      ${renderSourceMentionLink(mention)}
+    </li>
+  `;
+}
+
+function renderRelatedSourceMentions(mentions, title = "出典候補") {
+  const uniqueMentions = [...new Map(
+    mentions.map((mention) => [mention.mention_id, mention])
+  ).values()]
+    .sort((a, b) => mentionSortValue(a).localeCompare(mentionSortValue(b), "ja"))
+    .slice(0, 5);
+
+  if (uniqueMentions.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="related-source-mentions">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>
+        ${uniqueMentions.map(sourceMentionSummary).join("")}
+      </ul>
+    </section>
+  `;
+}
+
+function sourceMentionsForBout(bout) {
+  const mentionTypes = new Set(["matchup", "result"]);
+  const fighterNames = (bout.fighters ?? [])
+    .map((fighter) => fighter.name)
+    .filter(Boolean);
+  const matchupText = bout.matchup || fighterNames.join(" vs ");
+  const eventText = eventName(bout.event_id);
+
+  return (state.data.sourceMentions ?? []).filter((mention) => {
+    if (!mentionTypes.has(mention.mention_type)) {
+      return false;
+    }
+
+    const text = mentionSearchText(mention);
+    if (matchupText && text.includes(matchupText)) {
+      return true;
+    }
+
+    if (eventText && text.includes(eventText)) {
+      return true;
+    }
+
+    return fighterNames.length >= 2 && fighterNames.every((name) => text.includes(name));
+  });
+}
+
+function sourceMentionsForEvent(event) {
+  const mentionTypes = new Set(["event", "matchup", "result"]);
+  const eventText = event.name || event.event_id;
+
+  return (state.data.sourceMentions ?? []).filter((mention) => {
+    if (!mentionTypes.has(mention.mention_type)) {
+      return false;
+    }
+
+    return eventText && mentionSearchText(mention).includes(eventText);
+  });
+}
+
+function sourceDocumentForVideo(video) {
+  return (state.data.sourceDocuments ?? []).find((document) =>
+    document.source_type === "youtube_description" &&
+    (
+      document.source_ref_id === video.video_id ||
+      document.source_id === `youtube_description:${video.video_id}` ||
+      document.url === video.url
+    )
+  );
+}
+
+function sourceMentionCountsForDocument(sourceId) {
+  const counts = { note_url: 0, matchup: 0, result: 0 };
+
+  for (const mention of state.data.sourceMentions ?? []) {
+    if (mention.source_id !== sourceId || !(mention.mention_type in counts)) {
+      continue;
+    }
+    counts[mention.mention_type] += 1;
+  }
+
+  return counts;
+}
+
+function renderVideoDescriptionPreview(video) {
+  const document = sourceDocumentForVideo(video);
+
+  if (!document) {
+    return "";
+  }
+
+  const counts = sourceMentionCountsForDocument(document.source_id);
+
+  return `
+    <section class="video-description-preview">
+      <h3>YouTube概要欄</h3>
+      <p>${escapeHtml(document.content_preview || "プレビュー未入力")}</p>
+      <div class="video-badges">
+        <span class="video-badge">note URL ${escapeHtml(counts.note_url)}</span>
+        <span class="video-badge">対戦カード ${escapeHtml(counts.matchup)}</span>
+        <span class="video-badge">結果 ${escapeHtml(counts.result)}</span>
+      </div>
+    </section>
+  `;
+}
+
 function relatedBoutsForFighter(fighterId) {
   if (!fighterId) return [];
 
@@ -489,6 +630,7 @@ function renderBouts() {
       </p>
       ${bout.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(bout.title.note)}</p>` : ""}
       ${renderVideoLinks("bout", bout.bout_id)}
+      ${renderRelatedSourceMentions(sourceMentionsForBout(bout))}
     </article>
   `).join("") || emptyMessage();
 }
@@ -532,6 +674,7 @@ function renderEvents() {
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
       ${renderVideoLinks("event", event.event_id)}
+      ${renderRelatedSourceMentions(sourceMentionsForEvent(event))}
       ${renderEventBouts(event.event_id)}
     </article>
   `).join("") || emptyMessage();
@@ -575,6 +718,7 @@ function renderVideos() {
       video.notes,
       video.duplicate_group_id,
       video.duplicate_note,
+      sourceDocumentForVideo(video)?.content_preview,
     ])
   );
 
@@ -622,6 +766,7 @@ function renderVideos() {
           <dd>${escapeHtml(video.notes)}</dd>
         ` : ""}
       </dl>
+      ${renderVideoDescriptionPreview(video)}
     </article>
   `).join("");
 }
@@ -753,17 +898,7 @@ function renderSourceMentionLink(mention) {
 function renderMentions() {
   const mentions = (state.data.sourceMentions ?? []).filter((mention) =>
     (!state.mentionType || mention.mention_type === state.mentionType) &&
-    includesQuery([
-      mention.mention_type,
-      mention.entity_type,
-      mention.entity_hint,
-      mention.matched_text,
-      mention.context,
-      mention.source_id,
-      mention.source_ref_id,
-      mention.confidence,
-      mention.notes,
-    ])
+    includesQuery([mentionSearchText(mention)])
   );
 
   if (mentions.length === 0) {
