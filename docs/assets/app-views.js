@@ -660,7 +660,12 @@ function renderSourceBody(document) {
     return `<p class="meta">本文は空です。</p>`;
   }
 
-  return `<pre class="source-body-pre">${escapeHtml(body)}</pre>`;
+  return `
+    <section class="source-body">
+      <p class="source-body-label">本文</p>
+      <pre>${escapeHtml(body)}</pre>
+    </section>
+  `;
 }
 
 
@@ -724,10 +729,11 @@ function renderMentions() {
 
       <p>${escapeHtml(mention.matched_text || "本文なし")}</p>
 
-      ${renderCollapsibleSection("文脈", `
+      <section class="source-body">
+        <p class="source-body-label">文脈</p>
         <pre>${escapeHtml(mention.context || mention.matched_text || "")}</pre>
-      `)}
-      ${renderCollapsibleSection("詳細情報", `
+      </section>
+
       <dl>
         <dt>mention_id</dt>
         <dd>${escapeHtml(mention.mention_id)}</dd>
