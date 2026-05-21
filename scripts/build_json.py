@@ -110,8 +110,19 @@ def build_aliases() -> dict[str, Any]:
     for r in read_csv(DATA_SRC/"aliases.csv"):
         a.setdefault(r["alias_type"],{})[r["alias"]]=r["canonical_id"]
     return a
+
+def build_source_documents():
+    return list(read_csv(DATA_SRC / "source_documents.csv"))
+
+
+def build_source_mentions():
+    return list(read_csv(DATA_SRC / "source_mentions.csv"))
+
+
 def main() -> None:
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
     for fn,b in {"metadata.json":build_metadata,"articles.json":build_articles,"promotions.json":build_promotions,"events.json":build_events,"bouts.json":build_bouts,"fighters.json":build_fighters,"titles.json":build_titles,"fighter_snapshots.json":build_fighter_snapshots,"videos.json":build_videos,"video_links.json":build_video_links,"aliases.json":build_aliases}.items(): write_json(DOCS_DATA/fn,b())
+    write_json(DOCS_DATA / "source_documents.json", build_source_documents())
+    write_json(DOCS_DATA / "source_mentions.json", build_source_mentions())
     print("[done] JSON build completed")
 if __name__ == "__main__": main()

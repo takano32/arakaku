@@ -146,11 +146,59 @@ def validate_aliases(aliases:Any)->None:
     if not isinstance(aliases,dict): add_error('aliases.json: expected object'); return
     for k,v in aliases.items():
         if not isinstance(v,dict): add_error(f"aliases.json[{k}]: expected object")
+
+def validate_source_documents(data):
+    seen = set()
+
+    for index, row in enumerate(data):
+        source_id = row.get("source_id")
+
+        if not source_id:
+            add_error(f"source_documents.json[{index}]: missing source_id")
+            continue
+
+        if source_id in seen:
+            add_error(f"source_documents.json[{index}]: duplicate source_id: {source_id}")
+
+        seen.add(source_id)
+
+        if not row.get("source_type"):
+            add_error(f"source_documents.json[{index}]: missing source_type")
+
+        if not row.get("source_ref_id"):
+            add_error(f"source_documents.json[{index}]: missing source_ref_id")
+
+        if not row.get("content_hash"):
+            add_error(f"source_documents.json[{index}]: missing content_hash")
+
+
+def validate_source_mentions(data):
+    seen = set()
+
+    for index, row in enumerate(data):
+        mention_id = row.get("mention_id")
+
+        if not mention_id:
+            add_error(f"source_mentions.json[{index}]: missing mention_id")
+            continue
+
+        if mention_id in seen:
+            add_error(f"source_mentions.json[{index}]: duplicate mention_id: {mention_id}")
+
+        seen.add(mention_id)
+
+        if not row.get("source_id"):
+            add_error(f"source_mentions.json[{index}]: missing source_id")
+
+        if not row.get("mention_type"):
+            add_error(f"source_mentions.json[{index}]: missing mention_type")
+
+
 def main()->int:
     ERRORS.clear(); WARNINGS.clear()
     articles=load_json('articles.json',[]); promotions=load_json('promotions.json',[]); events=load_json('events.json',[]); bouts=load_json('bouts.json',[]); fighters=load_json('fighters.json',[]); titles=load_json('titles.json',[]); snapshots=load_json('fighter_snapshots.json',[]); videos=load_json('videos.json',[]); video_links=load_json('video_links.json',[]); aliases=load_json('aliases.json',{}); load_json('metadata.json',{})
     article_ids=validate_articles(articles); promotion_ids=validate_promotions(promotions,article_ids); event_ids=validate_events(events,promotion_ids,article_ids); fighter_ids=validate_fighters(fighters,promotion_ids,article_ids)
-    bout_ids=validate_bouts(bouts,event_ids,promotion_ids,fighter_ids,article_ids); title_ids=collect_ids(titles,'titles.json','title_id'); validate_titles(titles,promotion_ids,fighter_ids,article_ids); validate_fighter_snapshots(snapshots,fighter_ids,event_ids,article_ids,promotion_ids); video_ids=validate_videos(videos,article_ids); validate_video_links(video_links,video_ids,event_ids,bout_ids,fighter_ids,promotion_ids,title_ids); validate_aliases(aliases)
+    bout_ids=validate_bouts(bouts,event_ids,promotion_ids,fighter_ids,article_ids); title_ids=collect_ids(titles,'titles.json','title_id'); validate_titles(titles,promotion_ids,fighter_ids,article_ids); validate_fighter_snapshots(snapshots,fighter_ids,event_ids,article_ids,promotion_ids); video_ids=validate_videos(videos,article_ids); validate_video_links(video_links,video_ids,event_ids,bout_ids,fighter_ids,promotion_ids,title_ids); validate_source_documents(load_json('source_documents.json',[])); validate_source_mentions(load_json('source_mentions.json',[])); validate_aliases(aliases)
     for w in WARNINGS: print(f"WARNING: {w}", file=sys.stderr)
     for e in ERRORS: print(f"ERROR: {e}", file=sys.stderr)
     if ERRORS: print(f"json validation failed: {len(ERRORS)} error(s), {len(WARNINGS)} warning(s)", file=sys.stderr); return 1

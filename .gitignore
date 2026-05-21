@@ -8,3 +8,9 @@ docs/data/*.json
 
 # Keep output directory
 !docs/data/.gitkeep
+
+# Local caches
+tmp/*
+!tmp/.gitkeep
+!tmp/note-html/.gitkeep
+!tmp/youtube-info/.gitkeep
