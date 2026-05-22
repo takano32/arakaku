@@ -622,6 +622,7 @@ function renderTitles() {
           reign.won_at_event_id,
           reign.lost_at_event_id,
           reign.source_article_id,
+          reign.source_video_id,
         ]),
       ]);
     })
@@ -660,7 +661,8 @@ function renderTitles() {
             <span class="meta">
               ${reign.won_at_event_id ? ` / 獲得: ${eventLink(reign.won_at_event_id, eventName(reign.won_at_event_id))}` : ""}
               ${reign.lost_at_event_id ? ` / 喪失: ${eventLink(reign.lost_at_event_id, eventName(reign.lost_at_event_id))}` : ""}
-              ${reign.source_article_id ? ` / 出典: ${renderArticleRefs(reign.source_article_id)}` : ""}
+              ${reign.source_video_id ? ` / 出典: ${renderVideoRefs([reign.source_video_id])}` : ""}
+              ${!reign.source_video_id && reign.source_article_id ? ` / 出典: ${renderArticleRefs(reign.source_article_id)}` : ""}
             </span>
           </span>
         </li>

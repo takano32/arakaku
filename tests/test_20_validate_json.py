@@ -8,14 +8,15 @@ def test_collect_ids_detects_duplicate_ids(validate_json_module):
     assert 'duplicate fighter_id: waku' in '\n'.join(validate_json_module.ERRORS)
 
 def test_validate_real_article_references(validate_json_module, docs_data, json_file):
-    articles=json_file(docs_data/'articles.json'); promotions=json_file(docs_data/'promotions.json'); events=json_file(docs_data/'events.json'); fighters=json_file(docs_data/'fighters.json'); bouts=json_file(docs_data/'bouts.json'); titles=json_file(docs_data/'titles.json'); snapshots=json_file(docs_data/'fighter_snapshots.json')
+    articles=json_file(docs_data/'articles.json'); promotions=json_file(docs_data/'promotions.json'); events=json_file(docs_data/'events.json'); fighters=json_file(docs_data/'fighters.json'); bouts=json_file(docs_data/'bouts.json'); titles=json_file(docs_data/'titles.json'); snapshots=json_file(docs_data/'fighter_snapshots.json'); videos=json_file(docs_data/'videos.json')
     validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
     article_ids=validate_json_module.validate_articles(articles)
     promotion_ids=validate_json_module.validate_promotions(promotions, article_ids)
     event_ids=validate_json_module.validate_events(events, promotion_ids, article_ids)
     fighter_ids=validate_json_module.validate_fighters(fighters, promotion_ids, article_ids)
+    video_ids=validate_json_module.validate_videos(videos, article_ids)
     validate_json_module.validate_bouts(bouts, event_ids, promotion_ids, fighter_ids, article_ids)
-    validate_json_module.validate_titles(titles, promotion_ids, fighter_ids, article_ids)
+    validate_json_module.validate_titles(titles, promotion_ids, fighter_ids, article_ids, video_ids)
     validate_json_module.validate_fighter_snapshots(snapshots, fighter_ids, event_ids, article_ids, promotion_ids)
     assert validate_json_module.ERRORS == []
 

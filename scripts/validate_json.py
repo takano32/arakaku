@@ -92,16 +92,17 @@ def validate_bouts(bouts:list[Any], event_ids:set[str], promotion_ids:set[str], 
         aid=x.get('source_article_id')
         if aid and aid not in article_ids: add_error(f"bouts.json[{i}]: unknown article reference: {aid}")
     return ids
-def validate_titles(titles:list[Any], promotion_ids:set[str], fighter_ids:set[str], article_ids:set[str])->None:
+def validate_titles(titles:list[Any], promotion_ids:set[str], fighter_ids:set[str], article_ids:set[str], video_ids:set[str]|None=None)->None:
     collect_ids(titles,'titles.json','title_id')
     for i,x in enumerate(titles):
         if not isinstance(x,dict): continue
         pid=x.get('promotion_id')
         if pid and pid not in promotion_ids: add_error(f"titles.json[{i}]: unknown promotion reference: {pid}")
         for j,r in enumerate(x.get('lineage') or []):
-            fid=r.get('fighter_id'); aid=r.get('source_article_id')
+            fid=r.get('fighter_id'); aid=r.get('source_article_id'); vid=r.get('source_video_id')
             if fid and fid not in fighter_ids: add_error(f"titles.json[{i}].lineage[{j}]: unknown fighter reference: {fid}")
             if aid and aid not in article_ids: add_error(f"titles.json[{i}].lineage[{j}]: unknown article reference: {aid}")
+            if vid and video_ids is not None and vid not in video_ids: add_error(f"titles.json[{i}].lineage[{j}]: unknown video reference: {vid}")
 def validate_fighter_snapshots(snapshots:list[Any], fighter_ids:set[str], event_ids:set[str], article_ids:set[str], promotion_ids:set[str])->None:
     collect_ids(snapshots,'fighter_snapshots.json','snapshot_id')
     for i,x in enumerate(snapshots):
@@ -218,7 +219,7 @@ def main()->int:
     ERRORS.clear(); WARNINGS.clear()
     articles=load_json('articles.json',[]); promotions=load_json('promotions.json',[]); events=load_json('events.json',[]); bouts=load_json('bouts.json',[]); fighters=load_json('fighters.json',[]); titles=load_json('titles.json',[]); snapshots=load_json('fighter_snapshots.json',[]); videos=load_json('videos.json',[]); video_links=load_json('video_links.json',[]); aliases=load_json('aliases.json',{}); load_json('metadata.json',{})
     article_ids=validate_articles(articles); promotion_ids=validate_promotions(promotions,article_ids); event_ids=validate_events(events,promotion_ids,article_ids); fighter_ids=validate_fighters(fighters,promotion_ids,article_ids)
-    bout_ids=validate_bouts(bouts,event_ids,promotion_ids,fighter_ids,article_ids); title_ids=collect_ids(titles,'titles.json','title_id'); validate_titles(titles,promotion_ids,fighter_ids,article_ids); validate_fighter_snapshots(snapshots,fighter_ids,event_ids,article_ids,promotion_ids); video_ids=validate_videos(videos,article_ids); validate_video_links(video_links,video_ids,event_ids,bout_ids,fighter_ids,promotion_ids,title_ids); validate_source_documents(load_json('source_documents.json',[])); validate_source_mentions(load_json('source_mentions.json',[])); validate_source_references(load_json('source_event_references.json',[]),'source_event_references.json','event_id',event_ids); validate_source_references(load_json('source_bout_references.json',[]),'source_bout_references.json','bout_id',bout_ids); validate_source_references(load_json('source_video_references.json',[]),'source_video_references.json','video_id',video_ids); validate_aliases(aliases)
+    bout_ids=validate_bouts(bouts,event_ids,promotion_ids,fighter_ids,article_ids); title_ids=collect_ids(titles,'titles.json','title_id'); video_ids=validate_videos(videos,article_ids); validate_titles(titles,promotion_ids,fighter_ids,article_ids,video_ids); validate_fighter_snapshots(snapshots,fighter_ids,event_ids,article_ids,promotion_ids); validate_video_links(video_links,video_ids,event_ids,bout_ids,fighter_ids,promotion_ids,title_ids); validate_source_documents(load_json('source_documents.json',[])); validate_source_mentions(load_json('source_mentions.json',[])); validate_source_references(load_json('source_event_references.json',[]),'source_event_references.json','event_id',event_ids); validate_source_references(load_json('source_bout_references.json',[]),'source_bout_references.json','bout_id',bout_ids); validate_source_references(load_json('source_video_references.json',[]),'source_video_references.json','video_id',video_ids); validate_aliases(aliases)
     for w in WARNINGS: print(f"WARNING: {w}", file=sys.stderr)
     for e in ERRORS: print(f"ERROR: {e}", file=sys.stderr)
     if ERRORS: print(f"json validation failed: {len(ERRORS)} error(s), {len(WARNINGS)} warning(s)", file=sys.stderr); return 1

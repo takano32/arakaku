@@ -214,6 +214,9 @@ JSON は viewer 用の生成物です。
 
 王座ID、団体、階級、王座変遷などを管理します。
 
+各王座履歴の出典は `source_article_id` または `source_video_id` で管理します。
+該当する決定戦・タイトル戦の動画が確認できる場合は、王座 view で動画出典を優先表示します。
+
 王座変遷は viewer の王座 view に表示されます。
 
 ### `data-src/fighter_snapshots.csv`
