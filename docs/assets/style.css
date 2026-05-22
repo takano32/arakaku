@@ -609,3 +609,38 @@ a {
 .source-mention-card details {
   margin-top: 0.75rem;
 }
+
+.github-ribbon-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.github-ribbon {
+  display: block;
+  position: absolute;
+  top: 25px;
+  right: -35px;
+  width: 160px;
+  background: var(--ink);
+  color: #fff;
+  text-align: center;
+  line-height: 28px;
+  transform: rotate(45deg);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s;
+  pointer-events: auto;
+}
+
+.github-ribbon:hover {
+  background: var(--muted);
+  color: #fff;
+}
