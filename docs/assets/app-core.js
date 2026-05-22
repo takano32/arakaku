@@ -68,6 +68,29 @@ function videosForEntity(entityType, entityId) {
     .filter((item) => item.video);
 }
 
+function videoIdsLinkedToEventBouts(eventId) {
+  const boutIds = new Set(
+    state.data.bouts
+      .filter((bout) => bout.event_id === eventId)
+      .map((bout) => bout.bout_id)
+  );
+  const videoIds = new Set();
+
+  for (const link of state.data.videoLinks ?? []) {
+    if (link.entity_type === "bout" && boutIds.has(link.entity_id) && link.video_id) {
+      videoIds.add(link.video_id);
+    }
+  }
+
+  return videoIds;
+}
+
+function eventSourceVideoIdsWithoutBoutCoverage(event) {
+  const covered = videoIdsLinkedToEventBouts(event.event_id);
+
+  return (event.source_video_ids ?? []).filter((videoId) => videoId && !covered.has(videoId));
+}
+
 function videoTypeLabel(videoType) {
   return {
     full_fight: "Full Fight",

@@ -418,7 +418,7 @@ function renderEvents() {
       <p class="meta">${escapeHtml(promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
       <p>${escapeHtml(event.summary || "概要未入力")}</p>
       ${renderPrimaryArticleRefs(event.source_article_id)}
-      ${renderPrimaryVideoRefs(event.source_video_ids)}
+      ${renderPrimaryVideoRefs(eventSourceVideoIdsWithoutBoutCoverage(event))}
       ${renderVideoLinks("event", event.event_id)}
       ${renderSourceReferences(sourceReferencesForEvent(event))}
       ${renderEventBouts(event.event_id)}
