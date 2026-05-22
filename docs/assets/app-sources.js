@@ -92,9 +92,39 @@ function sourceMentionDocumentSummary(sourceId) {
     <span class="meta">
       ${escapeHtml(sourceTypeLabel(document.source_type))}
       /
-      <a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">
-        ${escapeHtml(title)}
-      </a>
+      ${renderSourceDocumentLink(document, title, document.url)}
+    </span>
+  `;
+}
+
+function renderSourceDocumentDetail(document) {
+  if (document?.source_type !== "note_article" || !document.content_text) {
+    return "";
+  }
+
+  return `
+    <details class="article-source-detail">
+      <summary>
+        <span class="article-source-detail-closed">▶ 詳細</span>
+        <span class="article-source-detail-open">▼ 詳細</span>
+      </summary>
+      <pre>${escapeHtml(document.content_text)}</pre>
+    </details>
+  `;
+}
+
+function renderSourceDocumentLink(document, title, url) {
+  const label = title || document?.title || document?.source_ref_id || document?.source_id || "出典";
+  const href = url || document?.url;
+  const detail = renderSourceDocumentDetail(document);
+  const link = href
+    ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`
+    : `<code>${escapeHtml(label)}</code>`;
+
+  return `
+    <span class="article-source-ref">
+      ${link}
+      ${detail}
     </span>
   `;
 }
@@ -182,15 +212,14 @@ function referenceMentionBadges(reference) {
 function sourceReferenceSummary(reference) {
   const title = reference.source_title || reference.source_ref_id || reference.source_id;
   const matchedTexts = splitReferenceTokens(reference.matched_texts).slice(0, 3).join(" / ");
+  const document = sourceDocumentById(reference.source_id);
 
   return `
     <li>
       <span class="meta">
         ${escapeHtml(sourceTypeLabel(reference.source_type))}
         /
-        <a href="${escapeHtml(reference.source_url)}" target="_blank" rel="noopener noreferrer">
-          ${escapeHtml(title)}
-        </a>
+        ${renderSourceDocumentLink(document, title, reference.source_url)}
       </span>
       <div class="video-badges">
         <span class="video-badge">候補 ${escapeHtml(reference.confidence || "unknown")}</span>
