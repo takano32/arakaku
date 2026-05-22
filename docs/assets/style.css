@@ -260,12 +260,6 @@ dd {
   display: inline;
 }
 
-.article-source-video-embed {
-  display: block;
-  margin-top: 0.35rem;
-  max-width: 100%;
-}
-
 .video-embed {
   max-width: 100%;
 }
@@ -292,7 +286,7 @@ dd {
 .card .related-item-card,
 .card .article-source-detail-panel,
 .card .source-body pre,
-.card .article-source-video-embed,
+.card .video-source-block,
 .card .record-detail-toggle .record-details,
 .card .video-description-preview {
   border: 1px solid var(--border);
@@ -303,19 +297,14 @@ dd {
 .card .related-item-card,
 .card .article-source-detail-panel,
 .card .record-detail-toggle .record-details,
-.card .video-description-preview {
+.card .video-description-preview,
+.card .video-source-block {
   padding: 0.75rem;
 }
 
 .card .source-body pre {
   margin: 0.5rem 0 0;
   padding: 0.75rem;
-}
-
-.card .article-source-video-embed,
-.card .article-source-video-embed .video-embed {
-  overflow: hidden;
-  padding: 0;
 }
 
 .card .article-source-detail-panel pre {
@@ -326,10 +315,76 @@ dd {
   background: transparent;
 }
 
-/* Level 3+: keep flat inside level-2 panels */
+.video-source-block {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+.video-source-title {
+  margin: 0;
+  font-weight: 800;
+}
+
+.video-source-title a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.video-source-title a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.video-source-block .article-source-detail {
+  margin-top: 0;
+}
+
+.video-source-block .video-source-embed {
+  margin-top: 0;
+}
+
+.video-source-block .video-source-embed .video-embed {
+  overflow: hidden;
+}
+
+.video-ref-list,
+.video-link-item {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.video-link-meta {
+  display: grid;
+  gap: 0.35rem;
+}
+
+/* Video block interior: no nested rounded panels */
+.video-source-block .article-source-detail-panel,
+.video-source-block .article-source-detail pre,
+.video-source-block .video-source-embed,
+.video-source-block .video-embed,
+.card .video-source-block .article-source-detail-panel,
+.card .video-source-block .article-source-detail pre,
+.card .video-source-block .video-source-embed,
+.card .video-source-block .video-embed {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.video-source-block .article-source-detail-panel pre {
+  max-height: 28rem;
+  overflow: auto;
+}
+
+/* Level 3+: keep flat inside other level-2 panels */
 .related-item-card .article-source-detail-panel,
 .related-item-card .article-source-detail pre,
-.related-item-card .article-source-video-embed,
 .related-item-card .video-embed,
 .related-item-card .source-body pre {
   border: 0;

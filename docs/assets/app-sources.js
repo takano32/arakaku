@@ -41,36 +41,33 @@ function renderVideoEmbed(video) {
   return "";
 }
 
-function renderVideoDocumentDetail(video) {
+function renderVideoSourceBlock(video, label = video?.title || video?.video_id || "動画") {
+  if (!video?.url) {
+    return `<code>${escapeHtml(video?.video_id || label)}</code>`;
+  }
+
   const document = sourceDocumentForVideo(video);
   const embed = renderVideoEmbed(video);
   const detailHtml = document?.content_text
     ? renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`)
     : "";
-  const embedHtml = embed
-    ? `<div class="article-source-video-embed">${embed}</div>`
-    : "";
+  const embedHtml = embed ? `<div class="video-source-embed">${embed}</div>` : "";
 
-  if (!detailHtml && !embedHtml) {
-    return "";
-  }
-
-  return `${detailHtml}${embedHtml}`;
+  return `
+    <div class="video-source-block">
+      <p class="video-source-title">
+        <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
+          ${escapeHtml(label)}
+        </a>
+      </p>
+      ${detailHtml}
+      ${embedHtml}
+    </div>
+  `;
 }
 
 function renderVideoLinkWithDetail(video, label = video?.title || video?.video_id || "動画") {
-  if (!video?.url) {
-    return `<code>${escapeHtml(video?.video_id || label)}</code>`;
-  }
-
-  return `
-    <span class="article-source-ref">
-      <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
-        ${escapeHtml(label)}
-      </a>
-      ${renderVideoDocumentDetail(video)}
-    </span>
-  `;
+  return renderVideoSourceBlock(video, label);
 }
 
 function renderVideoLinks(entityType, entityId) {
@@ -83,11 +80,15 @@ function renderVideoLinks(entityType, entityId) {
   return `
     <section class="video-links">
       <h3>動画</h3>
-      ${renderRelatedItemGrid(items.map(({ link, video }) => renderRelatedItemCard(`
-        ${renderVideoLinkWithDetail(video)}
-        <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type || video.video_type))}</span>
-        ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
-      `, "video-link-card")).join(""))}
+      ${renderRelatedItemGrid(items.map(({ link, video }) => `
+        <div class="video-link-item">
+          ${renderVideoSourceBlock(video)}
+          <div class="video-link-meta">
+            <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type || video.video_type))}</span>
+            ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
+          </div>
+        </div>
+      `).join(""))}
     </section>
   `;
 }

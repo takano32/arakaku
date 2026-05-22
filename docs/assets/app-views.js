@@ -125,10 +125,20 @@ function renderTextList(values) {
   return items.map((value) => escapeHtml(value)).join(", ");
 }
 
-function renderVideoRefs(videoIds) {
+function renderVideoRefs(videoIds, options = {}) {
   const ids = (videoIds ?? []).filter(Boolean);
   if (ids.length === 0) {
     return "未入力";
+  }
+
+  if (options.inline) {
+    return ids.map((videoId) => {
+      const video = videoById(videoId);
+      if (!video?.url) {
+        return `<code>${escapeHtml(videoId)}</code>`;
+      }
+      return `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.title || videoId)}</a>`;
+    }).join(", ");
   }
 
   return ids.map((videoId) => {
@@ -136,8 +146,8 @@ function renderVideoRefs(videoIds) {
     if (!video) {
       return `<code>${escapeHtml(videoId)}</code>`;
     }
-    return renderVideoLinkWithDetail(video, video.title || videoId);
-  }).join(", ");
+    return renderVideoSourceBlock(video, video.title || videoId);
+  }).join("");
 }
 
 function renderArticleRefs(articleIds) {
@@ -223,7 +233,7 @@ function renderPrimaryVideoRefs(videoIds, title = "出典動画") {
   return `
     <section class="primary-links">
       <h3>${escapeHtml(title)}</h3>
-      <p>${renderVideoRefs(ids)}</p>
+      <div class="video-ref-list">${renderVideoRefs(ids)}</div>
     </section>
   `;
 }
@@ -556,7 +566,7 @@ function renderVideos() {
 
       <section class="primary-links">
         <h3>動画URL</h3>
-        <p>${renderVideoLinkWithDetail(video, video.url)}</p>
+        ${renderVideoSourceBlock(video, video.url)}
       </section>
 
       ${renderPrimaryArticleRefs(video.source_article_ids)}
@@ -639,7 +649,7 @@ function renderTitles() {
         <p class="meta">
           ${reign.won_at_event_id ? `獲得: ${eventLink(reign.won_at_event_id, eventName(reign.won_at_event_id))}` : ""}
           ${reign.lost_at_event_id ? `${reign.won_at_event_id ? " / " : ""}喪失: ${eventLink(reign.lost_at_event_id, eventName(reign.lost_at_event_id))}` : ""}
-          ${reign.source_video_id ? ` / 出典: ${renderVideoRefs([reign.source_video_id])}` : ""}
+          ${reign.source_video_id ? ` / 出典: ${renderVideoRefs([reign.source_video_id], { inline: true })}` : ""}
           ${!reign.source_video_id && reign.source_article_id ? ` / 出典: ${renderArticleRefs(reign.source_article_id)}` : ""}
         </p>
       `, "lineage-card"))
