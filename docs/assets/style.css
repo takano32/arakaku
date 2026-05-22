@@ -250,6 +250,15 @@ dd {
   display: inline;
 }
 
+.video-embed {
+  margin-top: 0.5rem;
+  max-width: 100%;
+}
+
+.video-embed iframe {
+  max-width: 100%;
+}
+
 .article-source-detail pre {
   white-space: pre-wrap;
   word-break: break-word;

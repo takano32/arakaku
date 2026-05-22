@@ -1,7 +1,26 @@
+function renderVideoEmbed(video) {
+  if (video.platform === "youtube" && video.platform_video_id) {
+    return `
+      <div class="video-embed">
+        <iframe
+          width="320"
+          height="240"
+          src="https://www.youtube.com/embed/${escapeHtml(video.platform_video_id)}"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+    `;
+  }
+  return "";
+}
+
 function renderVideoDocumentDetail(video) {
   const document = sourceDocumentForVideo(video);
+  const embed = renderVideoEmbed(video);
 
-  if (!document?.content_text) {
+  if (!document?.content_text && !embed) {
     return "";
   }
 
@@ -11,7 +30,8 @@ function renderVideoDocumentDetail(video) {
         <span class="article-source-detail-closed">▶ 詳細</span>
         <span class="article-source-detail-open">▼ 詳細</span>
       </summary>
-      <pre>${escapeHtml(document.content_text)}</pre>
+      ${embed}
+      ${document?.content_text ? `<pre>${escapeHtml(document.content_text)}</pre>` : ""}
     </details>
   `;
 }
