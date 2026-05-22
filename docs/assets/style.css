@@ -173,6 +173,40 @@ dd {
   word-break: break-word;
 }
 
+.record-detail-toggle {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.record-detail-toggle summary,
+.source-body summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.record-detail-toggle summary:hover,
+.source-body summary:hover {
+  color: var(--accent-dark);
+}
+
+.primary-links {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.primary-links h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.primary-links p {
+  margin: 0;
+  word-break: break-word;
+}
+
 .inline-list {
   display: grid;
   gap: 4px;
@@ -492,12 +526,6 @@ a {
 
 .source-card details {
   margin-top: 0.75rem;
-}
-
-.source-body summary {
-  cursor: pointer;
-  color: var(--accent);
-  font-weight: 700;
 }
 
 .source-body pre {
