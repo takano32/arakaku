@@ -209,7 +209,7 @@ dd {
 
 .article-source-ref {
   display: inline-flex;
-  align-items: baseline;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.35rem;
   max-width: 100%;
@@ -217,13 +217,13 @@ dd {
 }
 
 .article-source-detail {
-  display: inline-block;
+  display: block;
+  flex-basis: 100%;
   max-width: 100%;
 }
 
 .article-source-detail[open] {
   display: block;
-  flex-basis: 100%;
 }
 
 .article-source-detail summary {
