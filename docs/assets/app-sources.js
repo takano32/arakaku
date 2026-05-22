@@ -1,3 +1,36 @@
+function renderVideoDocumentDetail(video) {
+  const document = sourceDocumentForVideo(video);
+
+  if (!document?.content_text) {
+    return "";
+  }
+
+  return `
+    <details class="article-source-detail">
+      <summary>
+        <span class="article-source-detail-closed">▶ 詳細</span>
+        <span class="article-source-detail-open">▼ 詳細</span>
+      </summary>
+      <pre>${escapeHtml(document.content_text)}</pre>
+    </details>
+  `;
+}
+
+function renderVideoLinkWithDetail(video, label = video?.title || video?.video_id || "動画") {
+  if (!video?.url) {
+    return `<code>${escapeHtml(video?.video_id || label)}</code>`;
+  }
+
+  return `
+    <span class="article-source-ref">
+      <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
+        ${escapeHtml(label)}
+      </a>
+      ${renderVideoDocumentDetail(video)}
+    </span>
+  `;
+}
+
 function renderVideoLinks(entityType, entityId) {
   const items = videosForEntity(entityType, entityId);
 
@@ -11,9 +44,7 @@ function renderVideoLinks(entityType, entityId) {
       <ul>
         ${items.map(({ link, video }) => `
           <li>
-            <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
-              ${escapeHtml(video.title)}
-            </a>
+            ${renderVideoLinkWithDetail(video)}
             <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type || video.video_type))}</span>
             ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
           </li>

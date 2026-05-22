@@ -133,10 +133,10 @@ function renderVideoRefs(videoIds) {
 
   return ids.map((videoId) => {
     const video = videoById(videoId);
-    if (!video?.url) {
+    if (!video) {
       return `<code>${escapeHtml(videoId)}</code>`;
     }
-    return `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.title || videoId)}</a>`;
+    return renderVideoLinkWithDetail(video, video.title || videoId);
   }).join(", ");
 }
 
@@ -578,7 +578,7 @@ function renderVideos() {
 
       <section class="primary-links">
         <h3>動画URL</h3>
-        <p><a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.url)}</a></p>
+        <p>${renderVideoLinkWithDetail(video, video.url)}</p>
       </section>
 
       ${renderPrimaryArticleRefs(video.source_article_ids)}
