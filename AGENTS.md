@@ -121,12 +121,7 @@ review/*.csv
 scripts/*.py
 tests/*.py
 docs/index.html
-docs/assets/app-config.js
-docs/assets/app-core.js
-docs/assets/app-main.js
-docs/assets/app-related.js
-docs/assets/app-sources.js
-docs/assets/app-views.js
+docs/assets/js/**/*.js
 docs/assets/style.css
 README.md
 AGENTS.md
@@ -191,12 +186,7 @@ GitHub Pages 用 viewer です。
 
 ```text
 docs/index.html
-docs/assets/app-config.js
-docs/assets/app-core.js
-docs/assets/app-main.js
-docs/assets/app-related.js
-docs/assets/app-sources.js
-docs/assets/app-views.js
+docs/assets/js/**/*.js
 docs/assets/style.css
 docs/data/.gitkeep
 ```
@@ -390,12 +380,7 @@ viewer の主要ファイル:
 
 ```text
 docs/index.html
-docs/assets/app-config.js
-docs/assets/app-core.js
-docs/assets/app-main.js
-docs/assets/app-related.js
-docs/assets/app-sources.js
-docs/assets/app-views.js
+docs/assets/js/**/*.js
 docs/assets/style.css
 ```
 

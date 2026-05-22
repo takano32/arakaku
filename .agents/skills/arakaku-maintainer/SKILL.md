@@ -429,12 +429,12 @@ Viewer files:
 
 ```text
 docs/index.html
-docs/assets/app-config.js
-docs/assets/app-core.js
-docs/assets/app-main.js
-docs/assets/app-related.js
-docs/assets/app-sources.js
-docs/assets/app-views.js
+docs/assets/js/main.js
+docs/assets/js/config.js
+docs/assets/js/core/
+docs/assets/js/ui/
+docs/assets/js/services/
+docs/assets/js/tabs/
 docs/assets/style.css
 ```
 

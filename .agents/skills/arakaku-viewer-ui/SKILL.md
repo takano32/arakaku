@@ -11,12 +11,12 @@ Viewer files:
 
 ```text
 docs/index.html
-docs/assets/app-config.js
-docs/assets/app-core.js
-docs/assets/app-main.js
-docs/assets/app-related.js
-docs/assets/app-sources.js
-docs/assets/app-views.js
+docs/assets/js/main.js
+docs/assets/js/config.js
+docs/assets/js/core/
+docs/assets/js/ui/
+docs/assets/js/services/
+docs/assets/js/tabs/
 docs/assets/style.css
 ```
 
@@ -89,9 +89,9 @@ When adding a new JSON data file, update `DATA_FILES`.
 
 When adding a new tab:
 
-1. Add it to `TABS`.
-2. Add a renderer function.
-3. Register it in `renderContent()`.
+1. Add it to `docs/assets/js/config.js` (`TABS`).
+2. Add a method on `TabRenderers` in `docs/assets/js/tabs/tab-renderers.js`.
+3. Register it in `TabRendererRegistry` (`docs/assets/js/tabs/tab-registry.js`).
 4. Confirm search behavior.
 5. Confirm tab click behavior.
 

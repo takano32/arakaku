@@ -1,4 +1,6 @@
-var DATA_FILES = {
+/** @typedef {import("./core/app-state.js").AppState} AppState */
+
+export const DATA_FILES = {
   metadata: "./data/metadata.json",
   articles: "./data/articles.json",
   promotions: "./data/promotions.json",
@@ -17,7 +19,7 @@ var DATA_FILES = {
   sourceVideoReferences: "./data/source_video_references.json",
 };
 
-var TABS = [
+export const TABS = [
   ["bouts", "試合"],
   ["fighters", "選手"],
   ["events", "大会"],
@@ -28,15 +30,6 @@ var TABS = [
   ["mentions", "出典言及"],
 ];
 
-var MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
+export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
 
-var state = {
-  tab: "bouts",
-  query: "",
-  focusFighterId: "",
-  focusEventId: "",
-  titlePromotion: "",
-  titleDivision: "",
-  mentionType: "",
-  data: null,
-};
+export const DEFAULT_TAB = "bouts";
