@@ -241,6 +241,15 @@ dd {
   color: var(--accent-dark);
 }
 
+.article-source-detail-open,
+.article-source-detail[open] .article-source-detail-closed {
+  display: none;
+}
+
+.article-source-detail[open] .article-source-detail-open {
+  display: inline;
+}
+
 .article-source-detail pre {
   white-space: pre-wrap;
   word-break: break-word;

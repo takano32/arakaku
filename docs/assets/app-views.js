@@ -152,7 +152,10 @@ function renderArticleRefs(articleIds) {
     const label = article?.title || articleId;
     const detail = document?.content_text ? `
       <details class="article-source-detail">
-        <summary>▶詳細</summary>
+        <summary>
+          <span class="article-source-detail-closed">▶ 詳細</span>
+          <span class="article-source-detail-open">▼ 詳細</span>
+        </summary>
         <pre>${escapeHtml(document.content_text)}</pre>
       </details>
     ` : "";
