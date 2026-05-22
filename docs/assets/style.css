@@ -293,30 +293,15 @@ dd {
   list-style: none;
 }
 
-.lineage-list {
-  display: grid;
-  gap: 0;
-  padding-left: 0;
-  margin: 12px 0 0;
-  list-style: none;
-  border-top: 1px solid var(--line);
-}
-
-.lineage-list li {
-  display: grid;
-  grid-template-columns: minmax(5rem, 8rem) 1fr;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
-}
-
 .reign-label {
+  margin: 0;
   font-size: 1rem;
   font-weight: 700;
   color: var(--accent-dark);
 }
 
 .fighter-name {
+  margin: 0;
   font-weight: 600;
 }
 
@@ -351,11 +336,6 @@ a {
   .tab {
     flex: 1 1 auto;
     text-align: center;
-  }
-
-  .lineage-list li {
-    grid-template-columns: 1fr;
-    gap: 2px;
   }
 
   .record-details {
@@ -448,25 +428,6 @@ a {
   font-size: 1rem;
 }
 
-.related-bouts ul {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
-}
-
-.related-bouts li {
-  display: grid;
-  gap: 2px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.related-bouts li:last-child {
-  border-bottom: 0;
-}
-
 .video-links {
   margin-top: 14px;
   padding-top: 12px;
@@ -476,19 +437,6 @@ a {
 .video-links h3 {
   margin: 0 0 8px;
   font-size: 1rem;
-}
-
-.video-links ul {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
-}
-
-.video-links li {
-  display: grid;
-  gap: 4px;
 }
 
 .video-links a {
@@ -506,25 +454,6 @@ a {
 .video-description-preview h3 {
   margin: 0 0 8px;
   font-size: 1rem;
-}
-
-.related-source-mentions ul {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
-}
-
-.related-source-mentions li {
-  display: grid;
-  gap: 4px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.related-source-mentions li:last-child {
-  border-bottom: 0;
 }
 
 .video-description-preview p {
@@ -560,26 +489,36 @@ a {
   margin: 8px 0 12px;
 }
 
-.related-bout-grid {
+.related-item-grid {
   display: grid;
   gap: 0.75rem;
   margin-top: 0.75rem;
 }
 
-.related-bout-card {
+.related-item-card {
+  display: grid;
+  gap: 0.35rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 0.75rem;
   background: var(--card);
 }
 
-.related-bout-card h4 {
+.related-item-card h4 {
   margin: 0.25rem 0;
   font-size: 1rem;
 }
 
-.related-bout-card p {
+.related-item-card p {
   margin: 0.25rem 0;
+}
+
+.related-item-card .record-details {
+  margin-top: 0.25rem;
+}
+
+.related-item-card .video-badges {
+  margin: 0;
 }
 
 .record-card > h2 {
@@ -593,8 +532,12 @@ a {
 }
 
 .record-card .related-bout-title,
-.record-card .related-bout-card .bout-order {
+.record-card .related-item-card .bout-order {
   font-size: 1rem;
+}
+
+.title-card .related-item-grid {
+  margin-top: 12px;
 }
 
 .record-card .video-links h3,

@@ -252,25 +252,21 @@ function renderFighterSnapshots(fighterId) {
   return `
     <section class="related-source-mentions">
       <h3>出典別プロフィール</h3>
-      <ul>
-        ${snapshots.map((snapshot) => `
-          <li>
-            <span class="meta">
-              ${snapshot.event_id ? eventLink(snapshot.event_id, eventName(snapshot.event_id)) : "大会未設定"}
-              / ${renderArticleRefs(snapshot.source_article_id)}
-            </span>
-            ${renderDefinitionList([
-              ["snapshot_id", `<code>${escapeHtml(snapshot.snapshot_id)}</code>`],
-              ["所属", renderValue(snapshot.gym)],
-              ["身長・年齢", renderValue([snapshot.height, snapshot.age].filter(Boolean).join(" / "))],
-              ["戦績", renderValue(snapshot.record_text)],
-              ["主団体", renderValue(promotionName(snapshot.main_promotion_id))],
-              ["肩書き", renderValue(snapshot.titles_text)],
-              ["キャッチコピー", renderValue(snapshot.catchphrase)],
-            ])}
-          </li>
-        `).join("")}
-      </ul>
+      ${renderRelatedItemGrid(snapshots.map((snapshot) => renderRelatedItemCard(`
+        <span class="meta">
+          ${snapshot.event_id ? eventLink(snapshot.event_id, eventName(snapshot.event_id)) : "大会未設定"}
+          / ${renderArticleRefs(snapshot.source_article_id)}
+        </span>
+        ${renderDefinitionList([
+          ["snapshot_id", `<code>${escapeHtml(snapshot.snapshot_id)}</code>`],
+          ["所属", renderValue(snapshot.gym)],
+          ["身長・年齢", renderValue([snapshot.height, snapshot.age].filter(Boolean).join(" / "))],
+          ["戦績", renderValue(snapshot.record_text)],
+          ["主団体", renderValue(promotionName(snapshot.main_promotion_id))],
+          ["肩書き", renderValue(snapshot.titles_text)],
+          ["キャッチコピー", renderValue(snapshot.catchphrase)],
+        ])}
+      `, "fighter-snapshot-card")).join(""))}
     </section>
   `;
 }
@@ -287,16 +283,12 @@ function renderPromotionEvents(promotionId) {
   return `
     <section class="related-source-mentions">
       <h3>大会</h3>
-      <ul>
-        ${events.slice(0, 12).map((event) => `
-          <li>
-            <span>${eventLink(event.event_id, event.name)}</span>
-            <span class="meta">
-              ${escapeHtml([event.event_type, event.published_at || event.event_date].filter(Boolean).join(" / "))}
-            </span>
-          </li>
-        `).join("")}
-      </ul>
+      ${renderRelatedItemGrid(events.slice(0, 12).map((event) => renderRelatedItemCard(`
+        <h4>${eventLink(event.event_id, event.name)}</h4>
+        <p class="meta">
+          ${escapeHtml([event.event_type, event.published_at || event.event_date].filter(Boolean).join(" / "))}
+        </p>
+      `, "promotion-event-card")).join(""))}
       ${events.length > 12 ? `<p class="meta">ほか ${escapeHtml(events.length - 12)} 件</p>` : ""}
     </section>
   `;
@@ -312,14 +304,10 @@ function renderPromotionTitles(promotionId) {
   return `
     <section class="related-source-mentions">
       <h3>王座</h3>
-      <ul>
-        ${titles.map((title) => `
-          <li>
-            <span>${escapeHtml(titleDisplayName(title))}</span>
-            <span class="meta">${escapeHtml(title.lineage?.length ?? 0)} reigns</span>
-          </li>
-        `).join("")}
-      </ul>
+      ${renderRelatedItemGrid(titles.map((title) => renderRelatedItemCard(`
+        <h4>${escapeHtml(titleDisplayName(title))}</h4>
+        <p class="meta">${escapeHtml(title.lineage?.length ?? 0)} reigns</p>
+      `, "promotion-title-card")).join(""))}
     </section>
   `;
 }
@@ -494,16 +482,12 @@ function renderVideoLinkedEntities(video) {
   return `
     <section class="related-source-mentions">
       <h3>紐づけ先</h3>
-      <ul>
-        ${links.map((link) => `
-          <li>
-            <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type))}</span>
-            <span>${renderLinkedEntity(link)}</span>
-            ${link.start_time || link.end_time ? `<span class="meta">${escapeHtml([link.start_time, link.end_time].filter(Boolean).join(" - "))}</span>` : ""}
-            ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
-          </li>
-        `).join("")}
-      </ul>
+      ${renderRelatedItemGrid(links.map((link) => renderRelatedItemCard(`
+        <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type))}</span>
+        <span>${renderLinkedEntity(link)}</span>
+        ${link.start_time || link.end_time ? `<span class="meta">${escapeHtml([link.start_time, link.end_time].filter(Boolean).join(" - "))}</span>` : ""}
+        ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
+      `, "video-link-entity-card")).join(""))}
     </section>
   `;
 }
@@ -647,20 +631,18 @@ function renderTitles() {
 
     const lineage = [...(title.lineage ?? [])]
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      .map((reign) => `
-        <li>
-          <span class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</span>
-          <span class="fighter-name">
-            ${fighterLink(reign.fighter_id, reign.fighter_name)}
-            <span class="meta">
-              ${reign.won_at_event_id ? ` / 獲得: ${eventLink(reign.won_at_event_id, eventName(reign.won_at_event_id))}` : ""}
-              ${reign.lost_at_event_id ? ` / 喪失: ${eventLink(reign.lost_at_event_id, eventName(reign.lost_at_event_id))}` : ""}
-              ${reign.source_video_id ? ` / 出典: ${renderVideoRefs([reign.source_video_id])}` : ""}
-              ${!reign.source_video_id && reign.source_article_id ? ` / 出典: ${renderArticleRefs(reign.source_article_id)}` : ""}
-            </span>
-          </span>
-        </li>
-      `)
+      .map((reign) => renderRelatedItemCard(`
+        <p class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</p>
+        <p class="fighter-name">
+          ${fighterLink(reign.fighter_id, reign.fighter_name)}
+        </p>
+        <p class="meta">
+          ${reign.won_at_event_id ? `獲得: ${eventLink(reign.won_at_event_id, eventName(reign.won_at_event_id))}` : ""}
+          ${reign.lost_at_event_id ? `${reign.won_at_event_id ? " / " : ""}喪失: ${eventLink(reign.lost_at_event_id, eventName(reign.lost_at_event_id))}` : ""}
+          ${reign.source_video_id ? ` / 出典: ${renderVideoRefs([reign.source_video_id])}` : ""}
+          ${!reign.source_video_id && reign.source_article_id ? ` / 出典: ${renderArticleRefs(reign.source_article_id)}` : ""}
+        </p>
+      `, "lineage-card"))
       .join("");
 
     return `
@@ -673,9 +655,7 @@ function renderTitles() {
           ["階級", renderValue(title.division)],
           ["変遷数", renderValue((title.lineage ?? []).length)],
         ])}
-        <ol class="lineage-list">
-          ${lineage}
-        </ol>
+        ${lineage ? renderRelatedItemGrid(lineage) : ""}
       </article>
     `;
   }).join("");

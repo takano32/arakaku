@@ -279,3 +279,12 @@ function renderBoutResultSummary(bout) {
 
   return "結果未入力";
 }
+
+function renderRelatedItemCard(innerHtml, className = "") {
+  const extra = className ? ` ${className}` : "";
+  return `<article class="related-item-card${extra}">${innerHtml}</article>`;
+}
+
+function renderRelatedItemGrid(itemsHtml) {
+  return `<div class="related-item-grid">${itemsHtml}</div>`;
+}

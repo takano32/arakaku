@@ -83,15 +83,11 @@ function renderVideoLinks(entityType, entityId) {
   return `
     <section class="video-links">
       <h3>動画</h3>
-      <ul>
-        ${items.map(({ link, video }) => `
-          <li>
-            ${renderVideoLinkWithDetail(video)}
-            <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type || video.video_type))}</span>
-            ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
-          </li>
-        `).join("")}
-      </ul>
+      ${renderRelatedItemGrid(items.map(({ link, video }) => renderRelatedItemCard(`
+        ${renderVideoLinkWithDetail(video)}
+        <span class="video-badge">${escapeHtml(relationTypeLabel(link.relation_type || video.video_type))}</span>
+        ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
+      `, "video-link-card")).join(""))}
     </section>
   `;
 }
@@ -122,13 +118,11 @@ function sourceMentionSummary(mention) {
   const label = mentionTypeLabel(mention.mention_type);
   const text = mention.matched_text || mention.context || mention.mention_id;
 
-  return `
-    <li>
-      <span class="video-badge">${escapeHtml(label)}</span>
-      <span>${escapeHtml(text)}</span>
-      ${renderSourceMentionLink(mention)}
-    </li>
-  `;
+  return renderRelatedItemCard(`
+    <span class="video-badge">${escapeHtml(label)}</span>
+    <span>${escapeHtml(text)}</span>
+    ${renderSourceMentionLink(mention)}
+  `, "source-mention-item-card");
 }
 
 function renderRelatedSourceMentions(mentions, title = "出典候補") {
@@ -145,9 +139,7 @@ function renderRelatedSourceMentions(mentions, title = "出典候補") {
   return `
     <section class="related-source-mentions">
       <h3>${escapeHtml(title)}</h3>
-      <ul>
-        ${uniqueMentions.map(sourceMentionSummary).join("")}
-      </ul>
+      ${renderRelatedItemGrid(uniqueMentions.map(sourceMentionSummary).join(""))}
     </section>
   `;
 }
@@ -204,17 +196,15 @@ function sourceMentionGroupSummary(sourceId, mentions) {
   )[0];
   const text = firstMention?.matched_text || firstMention?.context || firstMention?.mention_id || "";
 
-  return `
-    <li>
-      ${sourceMentionDocumentSummary(sourceId)}
-      <div class="video-badges">
-        ${Object.entries(counts).map(([mentionType, count]) => `
-          <span class="video-badge">${escapeHtml(mentionTypeLabel(mentionType))} ${escapeHtml(count)}</span>
-        `).join("")}
-      </div>
-      <span>${escapeHtml(text)}</span>
-    </li>
-  `;
+  return renderRelatedItemCard(`
+    ${sourceMentionDocumentSummary(sourceId)}
+    <div class="video-badges">
+      ${Object.entries(counts).map(([mentionType, count]) => `
+        <span class="video-badge">${escapeHtml(mentionTypeLabel(mentionType))} ${escapeHtml(count)}</span>
+      `).join("")}
+    </div>
+    <span>${escapeHtml(text)}</span>
+  `, "source-mention-group-card");
 }
 
 function renderGroupedSourceMentions(mentions, title = "出典候補") {
@@ -238,11 +228,9 @@ function renderGroupedSourceMentions(mentions, title = "出典候補") {
   return `
     <section class="related-source-mentions">
       <h3>${escapeHtml(title)}</h3>
-      <ul>
-        ${groupedMentions.map(([sourceId, sourceMentions]) =>
-          sourceMentionGroupSummary(sourceId, sourceMentions)
-        ).join("")}
-      </ul>
+      ${renderRelatedItemGrid(groupedMentions.map(([sourceId, sourceMentions]) =>
+        sourceMentionGroupSummary(sourceId, sourceMentions)
+      ).join(""))}
     </section>
   `;
 }
@@ -279,21 +267,19 @@ function sourceReferenceSummary(reference) {
   const matchedTexts = splitReferenceTokens(reference.matched_texts).slice(0, 3).join(" / ");
   const document = sourceDocumentById(reference.source_id);
 
-  return `
-    <li>
-      <span class="meta">
-        ${escapeHtml(sourceTypeLabel(reference.source_type))}
-        /
-        ${renderSourceDocumentLink(document, title, reference.source_url)}
-      </span>
-      <div class="video-badges">
-        <span class="video-badge">候補 ${escapeHtml(reference.confidence || "unknown")}</span>
-        ${referenceMentionBadges(reference)}
-      </div>
-      ${matchedTexts ? `<span>${escapeHtml(matchedTexts)}</span>` : ""}
-      ${reference.line_numbers ? `<p class="meta">line ${escapeHtml(reference.line_numbers)}</p>` : ""}
-    </li>
-  `;
+  return renderRelatedItemCard(`
+    <span class="meta">
+      ${escapeHtml(sourceTypeLabel(reference.source_type))}
+      /
+      ${renderSourceDocumentLink(document, title, reference.source_url)}
+    </span>
+    <div class="video-badges">
+      <span class="video-badge">候補 ${escapeHtml(reference.confidence || "unknown")}</span>
+      ${referenceMentionBadges(reference)}
+    </div>
+    ${matchedTexts ? `<span>${escapeHtml(matchedTexts)}</span>` : ""}
+    ${reference.line_numbers ? `<p class="meta">line ${escapeHtml(reference.line_numbers)}</p>` : ""}
+  `, "source-reference-card");
 }
 
 function sourceReferenceSearchText(reference) {
@@ -327,9 +313,7 @@ function renderSourceReferences(references, title = "出典候補") {
   return `
     <section class="related-source-mentions">
       <h3>${escapeHtml(title)}</h3>
-      <ul>
-        ${uniqueReferences.map(sourceReferenceSummary).join("")}
-      </ul>
+      ${renderRelatedItemGrid(uniqueReferences.map(sourceReferenceSummary).join(""))}
     </section>
   `;
 }
