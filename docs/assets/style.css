@@ -256,12 +256,14 @@ dd {
   display: inline;
 }
 
-.video-embed {
+.article-source-video-embed {
+  display: block;
+  margin-top: 0.35rem;
   max-width: 100%;
 }
 
-.article-source-detail-panel .video-embed + pre {
-  margin-top: 0.5rem;
+.video-embed {
+  max-width: 100%;
 }
 
 .video-embed iframe {

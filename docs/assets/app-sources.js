@@ -44,12 +44,18 @@ function renderVideoEmbed(video) {
 function renderVideoDocumentDetail(video) {
   const document = sourceDocumentForVideo(video);
   const embed = renderVideoEmbed(video);
-  const bodyHtml = [
-    embed,
-    document?.content_text ? `<pre>${escapeHtml(document.content_text)}</pre>` : "",
-  ].join("");
+  const detailHtml = document?.content_text
+    ? renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`)
+    : "";
+  const embedHtml = embed
+    ? `<div class="article-source-video-embed">${embed}</div>`
+    : "";
 
-  return renderArticleSourceDetail(bodyHtml);
+  if (!detailHtml && !embedHtml) {
+    return "";
+  }
+
+  return `${detailHtml}${embedHtml}`;
 }
 
 function renderVideoLinkWithDetail(video, label = video?.title || video?.video_id || "動画") {
