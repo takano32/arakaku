@@ -208,22 +208,28 @@ dd {
 }
 
 .article-source-ref {
-  display: inline-flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  display: inline-block;
   max-width: 100%;
   vertical-align: top;
 }
 
+.article-source-ref > a,
+.article-source-ref > code {
+  margin-right: 0.35rem;
+}
+
 .article-source-detail {
   display: block;
-  flex-basis: 100%;
+  margin-top: 0.35rem;
   max-width: 100%;
 }
 
-.article-source-detail[open] {
-  display: block;
+.article-source-detail-panel {
+  margin-top: 0.35rem;
+}
+
+.article-source-detail:not([open]) .article-source-detail-panel {
+  display: none;
 }
 
 .article-source-detail summary {
@@ -251,8 +257,11 @@ dd {
 }
 
 .video-embed {
-  margin-top: 0.5rem;
   max-width: 100%;
+}
+
+.article-source-detail-panel .video-embed + pre {
+  margin-top: 0.5rem;
 }
 
 .video-embed iframe {

@@ -150,15 +150,9 @@ function renderArticleRefs(articleIds) {
     const article = articleById(articleId);
     const document = sourceDocumentForArticle(articleId);
     const label = article?.title || articleId;
-    const detail = document?.content_text ? `
-      <details class="article-source-detail">
-        <summary>
-          <span class="article-source-detail-closed">▶ 詳細</span>
-          <span class="article-source-detail-open">▼ 詳細</span>
-        </summary>
-        <pre>${escapeHtml(document.content_text)}</pre>
-      </details>
-    ` : "";
+    const detail = document?.content_text
+      ? renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`)
+      : "";
     if (!article?.url) {
       return `
         <span class="article-source-ref">

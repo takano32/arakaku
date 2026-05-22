@@ -1,3 +1,27 @@
+function renderArticleSourceDetailPanel(bodyHtml) {
+  if (!bodyHtml) {
+    return "";
+  }
+
+  return `<div class="article-source-detail-panel">${bodyHtml}</div>`;
+}
+
+function renderArticleSourceDetail(bodyHtml) {
+  if (!bodyHtml) {
+    return "";
+  }
+
+  return `
+    <details class="article-source-detail">
+      <summary>
+        <span class="article-source-detail-closed">▶ 詳細</span>
+        <span class="article-source-detail-open">▼ 詳細</span>
+      </summary>
+      ${renderArticleSourceDetailPanel(bodyHtml)}
+    </details>
+  `;
+}
+
 function renderVideoEmbed(video) {
   if (video.platform === "youtube" && video.platform_video_id) {
     return `
@@ -9,6 +33,7 @@ function renderVideoEmbed(video) {
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen
+          loading="lazy"
         ></iframe>
       </div>
     `;
@@ -19,21 +44,12 @@ function renderVideoEmbed(video) {
 function renderVideoDocumentDetail(video) {
   const document = sourceDocumentForVideo(video);
   const embed = renderVideoEmbed(video);
+  const bodyHtml = [
+    embed,
+    document?.content_text ? `<pre>${escapeHtml(document.content_text)}</pre>` : "",
+  ].join("");
 
-  if (!document?.content_text && !embed) {
-    return "";
-  }
-
-  return `
-    <details class="article-source-detail">
-      <summary>
-        <span class="article-source-detail-closed">▶ 詳細</span>
-        <span class="article-source-detail-open">▼ 詳細</span>
-      </summary>
-      ${embed}
-      ${document?.content_text ? `<pre>${escapeHtml(document.content_text)}</pre>` : ""}
-    </details>
-  `;
+  return renderArticleSourceDetail(bodyHtml);
 }
 
 function renderVideoLinkWithDetail(video, label = video?.title || video?.video_id || "動画") {
@@ -153,15 +169,7 @@ function renderSourceDocumentDetail(document) {
     return "";
   }
 
-  return `
-    <details class="article-source-detail">
-      <summary>
-        <span class="article-source-detail-closed">▶ 詳細</span>
-        <span class="article-source-detail-open">▼ 詳細</span>
-      </summary>
-      <pre>${escapeHtml(document.content_text)}</pre>
-    </details>
-  `;
+  return renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`);
 }
 
 function renderSourceDocumentLink(document, title, url) {
