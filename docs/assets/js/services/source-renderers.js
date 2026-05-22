@@ -1,4 +1,4 @@
-import { escapeHtml, renderValue } from "../ui/html-utils.js";
+import { escapeHtml, externalLink } from "../ui/html-utils.js";
 
 /** 出典・動画・言及候補の描画サービス */
 export class SourceRenderers {
@@ -59,11 +59,7 @@ export class SourceRenderers {
 
     return `
       <div class="video-source-block">
-        <p class="video-source-title">
-          <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
-            ${escapeHtml(label)}
-          </a>
-        </p>
+        <p class="video-source-title">${externalLink(video.url, label)}</p>
         ${detailHtml}
         ${embedHtml}
       </div>
@@ -78,13 +74,12 @@ export class SourceRenderers {
       return "";
     }
 
-    return `
-      <section class="video-links">
-        <h3>動画</h3>
-        ${components.relatedGrid(
-          items
-            .map(
-              ({ link, video }) => `
+    return components.section(
+      "動画",
+      components.relatedGrid(
+        items
+          .map(
+            ({ link, video }) => `
           <div class="video-link-item">
             ${this.renderVideoSourceBlock(video)}
             <div class="video-link-meta">
@@ -93,11 +88,11 @@ export class SourceRenderers {
             </div>
           </div>
         `
-            )
-            .join("")
-        )}
-      </section>
-    `;
+          )
+          .join("")
+      ),
+      "video-links"
+    );
   }
 
   mentionSortValue(mention) {
@@ -118,9 +113,7 @@ export class SourceRenderers {
       <span class="meta">
         ${escapeHtml(labels.sourceType(document.source_type))}
         /
-        <a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">
-          ${escapeHtml(title)}
-        </a>
+        ${externalLink(document.url, title)}
         /
         line ${escapeHtml(mention.line_number)}
       </span>
@@ -180,9 +173,7 @@ export class SourceRenderers {
     const label = title || document?.title || document?.source_ref_id || document?.source_id || "出典";
     const href = url || document?.url;
     const detail = this.renderSourceDocumentDetail(document);
-    const link = href
-      ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`
-      : `<code>${escapeHtml(label)}</code>`;
+    const link = externalLink(href, label);
 
     return `
       <span class="article-source-ref">
@@ -249,23 +240,15 @@ export class SourceRenderers {
       return "";
     }
 
-    return `
-      <section class="related-source-mentions">
-        <h3>${escapeHtml(title)}</h3>
-        ${components.relatedGrid(uniqueReferences.map((reference) => this.sourceReferenceSummary(reference)).join(""))}
-      </section>
-    `;
+    return components.section(
+      title,
+      components.relatedGrid(uniqueReferences.map((reference) => this.sourceReferenceSummary(reference)).join("")),
+      "related-source-mentions"
+    );
   }
 
   sourceReferenceCountsForDocument(sourceId) {
-    const countBySource = (references) =>
-      references.filter((reference) => reference.source_id === sourceId).length;
-
-    return {
-      events: countBySource(this.ctx.repo.sourceEventReferences),
-      bouts: countBySource(this.ctx.repo.sourceBoutReferences),
-      videos: countBySource(this.ctx.repo.sourceVideoReferences),
-    };
+    return this.ctx.repo.countSourceReferences(sourceId);
   }
 
   renderSourceReferenceCounts(sourceId) {
@@ -311,7 +294,7 @@ export class SourceRenderers {
 
         return `
           <span class="article-source-ref">
-            <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>
+            ${externalLink(article.url, label)}
             ${detail}
           </span>
         `;
@@ -332,7 +315,7 @@ export class SourceRenderers {
           if (!video?.url) {
             return `<code>${escapeHtml(videoId)}</code>`;
           }
-          return `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.title || videoId)}</a>`;
+          return externalLink(video.url, video.title || videoId);
         })
         .join(", ");
     }
@@ -349,8 +332,7 @@ export class SourceRenderers {
   }
 
   renderVideoDescriptionPreview(video) {
-    const reference = this.ctx.repo.sourceReferenceForVideo(video);
-    const document = this.ctx.repo.sourceDocumentForVideo(video);
+    const { reference, document } = this.ctx.repo.sourceContextForVideo(video);
 
     if (!reference && !document) {
       return "";
@@ -366,28 +348,20 @@ export class SourceRenderers {
         <span class="video-badge">結果 ${escapeHtml(counts.result ?? 0)}</span>
       `;
 
-    return `
-      <section class="video-description-preview">
-        <h3>YouTube概要欄</h3>
+    return this.ctx.components.section(
+      "YouTube概要欄",
+      `
         <p>${escapeHtml(preview)}</p>
         <div class="video-badges">
           ${mentionBadges}
         </div>
-      </section>
-    `;
+      `,
+      "video-description-preview"
+    );
   }
 
   sourceMentionCountsForDocument(sourceId) {
-    const counts = { note_url: 0, matchup: 0, result: 0 };
-
-    for (const mention of this.ctx.repo.sourceMentions) {
-      if (mention.source_id !== sourceId || !(mention.mention_type in counts)) {
-        continue;
-      }
-      counts[mention.mention_type] += 1;
-    }
-
-    return counts;
+    return this.ctx.repo.countSourceMentions(sourceId, ["note_url", "matchup", "result"]);
   }
 
   renderSourceBody(document) {

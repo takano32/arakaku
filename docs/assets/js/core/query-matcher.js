@@ -17,9 +17,7 @@ export class QueryMatcher {
   }
 
   fighterMatches(fighter) {
-    const snapshots = this.ctx.repo.fighterSnapshots.filter(
-      (snapshot) => snapshot.fighter_id === fighter.fighter_id
-    );
+    const snapshots = this.ctx.repo.fighterSnapshotsForFighter(fighter.fighter_id);
 
     return this.includes([
       fighter.display_name,
@@ -82,6 +80,87 @@ export class QueryMatcher {
     ];
   }
 
+  eventMatches(event) {
+    return this.includes([
+      event.name,
+      event.event_id,
+      event.event_type,
+      event.source_article_id,
+      event.source_video_ids?.join(" "),
+      event.inferred_from,
+      event.inferred_confidence,
+      this.ctx.repo.promotionName(event.promotion_id),
+      event.summary,
+      ...this.ctx.repo
+        .sourceReferencesForEvent(event)
+        .map((reference) => this.ctx.sources.sourceReferenceSearchText(reference)),
+    ]);
+  }
+
+  promotionMatches(promotion) {
+    return this.includes([
+      promotion.name,
+      promotion.name_en,
+      promotion.promotion_id,
+      promotion.category,
+      promotion.country_scope,
+      promotion.summary,
+      promotion.source_article_ids?.join(" "),
+      ...this.ctx.repo
+        .eventsForPromotion(promotion.promotion_id)
+        .map((event) => [event.event_id, event.name].join(" ")),
+      ...this.ctx.repo.titlesForPromotion(promotion.promotion_id).map((title) => this.ctx.repo.titleDisplayName(title)),
+    ]);
+  }
+
+  videoMatches(video) {
+    const { reference, document } = this.ctx.repo.sourceContextForVideo(video);
+
+    return this.includes([
+      video.title,
+      video.original_title,
+      video.video_id,
+      video.url,
+      video.channel_name,
+      video.platform,
+      video.platform_video_id,
+      video.official_status,
+      video.video_type,
+      video.link_status,
+      video.notes,
+      video.duplicate_group_id,
+      video.duplicate_note,
+      video.source_article_ids?.join(" "),
+      reference?.content_preview,
+      reference?.matched_texts,
+      document?.content_preview,
+    ]);
+  }
+
+  titleMatches(title) {
+    const { state, repo } = this.ctx;
+    if (state.titlePromotion && title.promotion_id !== state.titlePromotion) {
+      return false;
+    }
+    if (state.titleDivision && title.division !== state.titleDivision) {
+      return false;
+    }
+
+    return this.includes([
+      title.title_id,
+      title.division,
+      repo.promotionName(title.promotion_id),
+      ...(title.lineage ?? []).flatMap((reign) => [
+        reign.fighter_name,
+        reign.reign_label,
+        reign.won_at_event_id,
+        reign.lost_at_event_id,
+        reign.source_article_id,
+        reign.source_video_id,
+      ]),
+    ]);
+  }
+
   mentionSearchText(mention) {
     const document = this.ctx.repo.sourceDocumentById(mention.source_id);
 
@@ -98,5 +177,23 @@ export class QueryMatcher {
       document?.title,
       document?.url,
     ].filter(Boolean).join(" ");
+  }
+
+  mentionMatches(mention) {
+    const { state } = this.ctx;
+    return (!state.mentionType || mention.mention_type === state.mentionType) &&
+      this.includes([this.mentionSearchText(mention)]);
+  }
+
+  sourceDocumentMatches(document) {
+    return this.includes([
+      document.title,
+      document.url,
+      document.source_type,
+      document.source_ref_id,
+      document.content_preview,
+      document.content_text,
+      document.notes,
+    ]);
   }
 }

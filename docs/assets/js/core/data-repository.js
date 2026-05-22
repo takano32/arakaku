@@ -5,6 +5,51 @@ export class DataRepository {
     this.data = data;
   }
 
+  #indexes = new Map();
+
+  #index(name, records, keyForRecord) {
+    if (this.#indexes.has(name)) {
+      return this.#indexes.get(name);
+    }
+
+    const index = new Map();
+    for (const record of records) {
+      const key = keyForRecord(record);
+      if (key) {
+        index.set(key, record);
+      }
+    }
+    this.#indexes.set(name, index);
+    return index;
+  }
+
+  #findById(collectionName, idField, id) {
+    return this.#index(`${collectionName}:${idField}`, this[collectionName], (record) => record[idField]).get(id);
+  }
+
+  #groupIndex(name, records, keyForRecord) {
+    if (this.#indexes.has(name)) {
+      return this.#indexes.get(name);
+    }
+
+    const index = new Map();
+    for (const record of records) {
+      const key = keyForRecord(record);
+      if (!key) {
+        continue;
+      }
+      const group = index.get(key) ?? [];
+      group.push(record);
+      index.set(key, group);
+    }
+    this.#indexes.set(name, index);
+    return index;
+  }
+
+  #findManyByField(collectionName, fieldName, value) {
+    return this.#groupIndex(`${collectionName}:${fieldName}:many`, this[collectionName], (record) => record[fieldName]).get(value) ?? [];
+  }
+
   get events() {
     return /** @type {Array<Record<string, unknown>>} */ (this.data.events ?? []);
   }
@@ -62,39 +107,43 @@ export class DataRepository {
   }
 
   eventName(eventId) {
-    return this.events.find((event) => event.event_id === eventId)?.name ?? eventId;
+    return this.findEvent(eventId)?.name ?? eventId;
   }
 
   promotionName(promotionId) {
-    return this.promotions.find((promotion) => promotion.promotion_id === promotionId)?.name ?? promotionId;
+    return this.findPromotion(promotionId)?.name ?? promotionId;
   }
 
   fighterName(fighterId) {
-    return this.fighters.find((fighter) => fighter.fighter_id === fighterId)?.display_name ?? fighterId;
+    return this.findFighter(fighterId)?.display_name ?? fighterId;
   }
 
   findEvent(eventId) {
-    return this.events.find((event) => event.event_id === eventId);
+    return this.#findById("events", "event_id", eventId);
+  }
+
+  findPromotion(promotionId) {
+    return this.#findById("promotions", "promotion_id", promotionId);
   }
 
   findBout(boutId) {
-    return this.bouts.find((bout) => bout.bout_id === boutId);
+    return this.#findById("bouts", "bout_id", boutId);
   }
 
   findFighter(fighterId) {
-    return this.fighters.find((fighter) => fighter.fighter_id === fighterId);
+    return this.#findById("fighters", "fighter_id", fighterId);
   }
 
   findArticle(articleId) {
-    return this.articles.find((article) => article.article_id === articleId);
+    return this.#findById("articles", "article_id", articleId);
   }
 
   videoById(videoId) {
-    return this.videos.find((video) => video.video_id === videoId);
+    return this.#findById("videos", "video_id", videoId);
   }
 
   sourceDocumentById(sourceId) {
-    return this.sourceDocuments.find((document) => document.source_id === sourceId);
+    return this.#findById("sourceDocuments", "source_id", sourceId);
   }
 
   sourceDocumentForArticle(articleId) {
@@ -155,6 +204,57 @@ export class DataRepository {
 
   sourceReferenceForVideo(video) {
     return this.sourceVideoReferences.find((reference) => reference.video_id === video.video_id);
+  }
+
+  sourceContextForVideo(video) {
+    return {
+      reference: this.sourceReferenceForVideo(video),
+      document: this.sourceDocumentForVideo(video),
+    };
+  }
+
+  fighterSnapshotsForFighter(fighterId) {
+    return [...this.#findManyByField("fighterSnapshots", "fighter_id", fighterId)].sort((a, b) =>
+      String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja")
+    );
+  }
+
+  eventsForPromotion(promotionId) {
+    return [...this.#findManyByField("events", "promotion_id", promotionId)].sort((a, b) =>
+      String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja")
+    );
+  }
+
+  titlesForPromotion(promotionId) {
+    return this.#findManyByField("titles", "promotion_id", promotionId);
+  }
+
+  videoLinksForVideo(videoId) {
+    return this.#findManyByField("videoLinks", "video_id", videoId);
+  }
+
+  countSourceReferences(sourceId) {
+    const countBySource = (references) =>
+      references.filter((reference) => reference.source_id === sourceId).length;
+
+    return {
+      events: countBySource(this.sourceEventReferences),
+      bouts: countBySource(this.sourceBoutReferences),
+      videos: countBySource(this.sourceVideoReferences),
+    };
+  }
+
+  countSourceMentions(sourceId, mentionTypes) {
+    const counts = Object.fromEntries(mentionTypes.map((mentionType) => [mentionType, 0]));
+
+    for (const mention of this.sourceMentions) {
+      if (mention.source_id !== sourceId || !(mention.mention_type in counts)) {
+        continue;
+      }
+      counts[mention.mention_type] += 1;
+    }
+
+    return counts;
   }
 
   relatedBoutsForFighter(fighterId) {

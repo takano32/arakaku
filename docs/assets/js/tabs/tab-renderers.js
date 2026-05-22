@@ -1,4 +1,4 @@
-import { escapeHtml, emptyMessage, renderIdList, renderTextList, renderValue, uniqueSorted } from "../ui/html-utils.js";
+import { escapeHtml, externalLink, renderIdList, renderTextList, renderValue, uniqueSorted } from "../ui/html-utils.js";
 import { MENTION_TYPE_ORDER } from "../config.js";
 
 /** Template Method の具象: 各タブの HTML 生成 */
@@ -6,6 +6,10 @@ export class TabRenderers {
   /** @param {import("../core/view-context.js").ViewContext} ctx */
   constructor(ctx) {
     this.ctx = ctx;
+  }
+
+  recordList(records, renderItem) {
+    return this.ctx.components.recordList(records, renderItem);
   }
 
   renderFighterRows(bout) {
@@ -27,21 +31,17 @@ export class TabRenderers {
 
   renderFighterSnapshots(fighterId) {
     const { components, navigation, sources, repo } = this.ctx;
-    const snapshots = repo.fighterSnapshots
-      .filter((snapshot) => snapshot.fighter_id === fighterId)
-      .sort((a, b) => String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
+    const snapshots = repo.fighterSnapshotsForFighter(fighterId);
 
     if (snapshots.length === 0) {
       return "";
     }
 
-    return `
-      <section class="related-source-mentions">
-        <h3>出典別プロフィール</h3>
-        ${components.relatedGrid(
-          snapshots
-            .map((snapshot) =>
-              components.relatedItem(
+    return components.relatedSection(
+      "出典別プロフィール",
+      snapshots,
+      (snapshot) =>
+        components.relatedItem(
                 `
           <span class="meta">
             ${snapshot.event_id ? navigation.eventLink(snapshot.event_id, repo.eventName(snapshot.event_id)) : "大会未設定"}
@@ -57,77 +57,58 @@ export class TabRenderers {
             ["キャッチコピー", renderValue(snapshot.catchphrase)],
           ])}
         `,
-                "fighter-snapshot-card"
-              )
-            )
-            .join("")
-        )}
-      </section>
-    `;
+          "fighter-snapshot-card"
+        )
+    );
   }
 
   renderPromotionEvents(promotionId) {
     const { components, navigation, repo } = this.ctx;
-    const events = repo.events
-      .filter((event) => event.promotion_id === promotionId)
-      .sort((a, b) =>
-        String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja")
-      );
+    const events = repo.eventsForPromotion(promotionId);
 
     if (events.length === 0) {
       return "";
     }
 
     return `
-      <section class="related-source-mentions">
-        <h3>大会</h3>
-        ${components.relatedGrid(
-          events
-            .slice(0, 12)
-            .map((event) =>
-              components.relatedItem(
+      ${components.relatedSection(
+        "大会",
+        events.slice(0, 12),
+        (event) =>
+          components.relatedItem(
                 `
           <h4>${navigation.eventLink(event.event_id, event.name)}</h4>
           <p class="meta">
             ${escapeHtml([event.event_type, event.published_at || event.event_date].filter(Boolean).join(" / "))}
           </p>
         `,
-                "promotion-event-card"
-              )
-            )
-            .join("")
-        )}
-        ${events.length > 12 ? `<p class="meta">ほか ${escapeHtml(events.length - 12)} 件</p>` : ""}
-      </section>
+          "promotion-event-card"
+        )
+      )}
+      ${events.length > 12 ? `<p class="meta">ほか ${escapeHtml(events.length - 12)} 件</p>` : ""}
     `;
   }
 
   renderPromotionTitles(promotionId) {
     const { components, repo } = this.ctx;
-    const titles = repo.titles.filter((title) => title.promotion_id === promotionId);
+    const titles = repo.titlesForPromotion(promotionId);
 
     if (titles.length === 0) {
       return "";
     }
 
-    return `
-      <section class="related-source-mentions">
-        <h3>王座</h3>
-        ${components.relatedGrid(
-          titles
-            .map((title) =>
-              components.relatedItem(
+    return components.relatedSection(
+      "王座",
+      titles,
+      (title) =>
+        components.relatedItem(
                 `
           <h4>${escapeHtml(repo.titleDisplayName(title))}</h4>
           <p class="meta">${escapeHtml(title.lineage?.length ?? 0)} reigns</p>
         `,
-                "promotion-title-card"
-              )
-            )
-            .join("")
-        )}
-      </section>
-    `;
+          "promotion-title-card"
+        )
+    );
   }
 
   renderLinkedEntity(link) {
@@ -151,32 +132,26 @@ export class TabRenderers {
 
   renderVideoLinkedEntities(video) {
     const { components, labels, repo } = this.ctx;
-    const links = repo.videoLinks.filter((link) => link.video_id === video.video_id);
+    const links = repo.videoLinksForVideo(video.video_id);
 
     if (links.length === 0) {
       return "";
     }
 
-    return `
-      <section class="related-source-mentions">
-        <h3>紐づけ先</h3>
-        ${components.relatedGrid(
-          links
-            .map((link) =>
-              components.relatedItem(
+    return components.relatedSection(
+      "紐づけ先",
+      links,
+      (link) =>
+        components.relatedItem(
                 `
           <span class="video-badge">${escapeHtml(labels.relationType(link.relation_type))}</span>
           <span>${this.renderLinkedEntity(link)}</span>
           ${link.start_time || link.end_time ? `<span class="meta">${escapeHtml([link.start_time, link.end_time].filter(Boolean).join(" - "))}</span>` : ""}
           ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
         `,
-                "video-link-entity-card"
-              )
-            )
-            .join("")
-        )}
-      </section>
-    `;
+          "video-link-entity-card"
+        )
+    );
   }
 
   bouts() {
@@ -185,10 +160,9 @@ export class TabRenderers {
       ? repo.bouts.filter((bout) => bout.event_id === state.focusEventId)
       : repo.bouts.filter((bout) => query.includes(query.boutSearchText(bout)));
 
-    return (
-      bouts
-        .map(
-          (bout) => `
+    return this.recordList(
+      bouts,
+      (bout) => `
     <article class="card record-card bout-card">
       <h2>${navigation.boutMatchup(bout)}</h2>
       <p class="meta">${navigation.eventLink(bout.event_id, repo.eventName(bout.event_id))} / ${escapeHtml(bout.division ?? "")}</p>
@@ -231,8 +205,6 @@ export class TabRenderers {
       ])}
     </article>
   `
-        )
-        .join("") || emptyMessage()
     );
   }
 
@@ -242,10 +214,9 @@ export class TabRenderers {
       ? repo.fighters.filter((fighter) => fighter.fighter_id === state.focusFighterId)
       : repo.fighters.filter((fighter) => query.fighterMatches(fighter));
 
-    return (
-      fighters
-        .map(
-          (fighter) => `
+    return this.recordList(
+      fighters,
+      (fighter) => `
     <article class="card record-card fighter-card">
       <h2>${escapeHtml(fighter.display_name)}</h2>
       <p class="meta">${escapeHtml(fighter.main_division ?? "")} / ${escapeHtml(repo.promotionName(fighter.main_promotion_id))}</p>
@@ -265,8 +236,6 @@ export class TabRenderers {
       ${this.renderFighterSnapshots(fighter.fighter_id)}
     </article>
   `
-        )
-        .join("") || emptyMessage()
     );
   }
 
@@ -275,27 +244,11 @@ export class TabRenderers {
 
     const events = state.focusEventId
       ? repo.events.filter((event) => event.event_id === state.focusEventId)
-      : repo.events.filter((event) =>
-          query.includes([
-            event.name,
-            event.event_id,
-            event.event_type,
-            event.source_article_id,
-            event.source_video_ids?.join(" "),
-            event.inferred_from,
-            event.inferred_confidence,
-            repo.promotionName(event.promotion_id),
-            event.summary,
-            ...repo.sourceReferencesForEvent(event).map((reference) =>
-              sources.sourceReferenceSearchText(reference)
-            ),
-          ])
-        );
+      : repo.events.filter((event) => query.eventMatches(event));
 
-    return (
-      events
-        .map(
-          (event) => `
+    return this.recordList(
+      events,
+      (event) => `
     <article class="card record-card event-card">
       <h2>${escapeHtml(event.name)}</h2>
       <p class="meta">${escapeHtml(repo.promotionName(event.promotion_id))} / ${escapeHtml(event.published_at ?? "")}</p>
@@ -317,36 +270,17 @@ export class TabRenderers {
       ])}
     </article>
   `
-        )
-        .join("") || emptyMessage()
     );
   }
 
   promotions() {
     const { query, components, sources, repo } = this.ctx;
 
-    const promotions = repo.promotions.filter((promotion) =>
-      query.includes([
-        promotion.name,
-        promotion.name_en,
-        promotion.promotion_id,
-        promotion.category,
-        promotion.country_scope,
-        promotion.summary,
-        promotion.source_article_ids?.join(" "),
-        ...repo.events
-          .filter((event) => event.promotion_id === promotion.promotion_id)
-          .map((event) => [event.event_id, event.name].join(" ")),
-        ...repo.titles
-          .filter((title) => title.promotion_id === promotion.promotion_id)
-          .map((title) => repo.titleDisplayName(title)),
-      ])
-    );
+    const promotions = repo.promotions.filter((promotion) => query.promotionMatches(promotion));
 
-    return (
-      promotions
-        .map(
-          (promotion) => `
+    return this.recordList(
+      promotions,
+      (promotion) => `
     <article class="card record-card promotion-card">
       <h2>${escapeHtml(promotion.name)}</h2>
       <p class="meta">${escapeHtml(promotion.name_en ?? "")} / ${escapeHtml(promotion.category ?? "")}</p>
@@ -385,49 +319,23 @@ export class TabRenderers {
       ])}
     </article>
   `
-        )
-        .join("") || emptyMessage()
     );
   }
 
   videos() {
     const { query, components, labels, sources, repo } = this.ctx;
 
-    const videos = repo.videos.filter((video) =>
-      query.includes([
-        video.title,
-        video.original_title,
-        video.video_id,
-        video.url,
-        video.channel_name,
-        video.platform,
-        video.platform_video_id,
-        video.official_status,
-        video.video_type,
-        video.link_status,
-        video.notes,
-        video.duplicate_group_id,
-        video.duplicate_note,
-        video.source_article_ids?.join(" "),
-        repo.sourceReferenceForVideo(video)?.content_preview,
-        repo.sourceReferenceForVideo(video)?.matched_texts,
-        repo.sourceDocumentForVideo(video)?.content_preview,
-      ])
-    );
+    const videos = repo.videos.filter((video) => query.videoMatches(video));
 
-    if (videos.length === 0) {
-      return emptyMessage();
-    }
-
-    return videos
-      .map(
-        (video) => `
-    <article class="card record-card video-card">
-      <h2>
-        <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">
-          ${escapeHtml(video.title)}
-        </a>
-      </h2>
+    return this.recordList(
+      videos,
+      (video) =>
+        components.recordCard(
+          "video-card",
+          `<h2>
+        ${externalLink(video.url, video.title)}
+      </h2>`,
+          `
       <p class="meta">
         ${escapeHtml(video.channel_name ?? "")}
         ${video.published_at ? ` / ${escapeHtml(video.published_at)}` : ""}
@@ -436,10 +344,7 @@ export class TabRenderers {
         <span class="video-badge">${escapeHtml(labels.videoType(video.video_type))}</span>
         <span class="video-badge">${escapeHtml(labels.linkStatus(video.link_status))}</span>
       </div>
-      <section class="primary-links">
-        <h3>動画URL</h3>
-        ${sources.renderVideoSourceBlock(video, video.url)}
-      </section>
+      ${components.section("動画URL", sources.renderVideoSourceBlock(video, video.url), "primary-links")}
       ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), video.source_article_ids)}
       ${this.renderVideoLinkedEntities(video)}
       ${sources.renderVideoDescriptionPreview(video)}
@@ -455,38 +360,16 @@ export class TabRenderers {
         ["重複メモ", renderValue(video.duplicate_note)],
         ["メモ", renderValue(video.notes)],
       ])}
-    </article>
-  `
-      )
-      .join("");
+    `
+        )
+    );
   }
 
   titles() {
-    const { state, query, navigation, components, repo } = this.ctx;
+    const { query, navigation, components, repo } = this.ctx;
 
     const titles = repo.titles
-      .filter((title) => {
-        if (state.titlePromotion && title.promotion_id !== state.titlePromotion) {
-          return false;
-        }
-        if (state.titleDivision && title.division !== state.titleDivision) {
-          return false;
-        }
-
-        return query.includes([
-          title.title_id,
-          title.division,
-          repo.promotionName(title.promotion_id),
-          ...(title.lineage ?? []).flatMap((reign) => [
-            reign.fighter_name,
-            reign.reign_label,
-            reign.won_at_event_id,
-            reign.lost_at_event_id,
-            reign.source_article_id,
-            reign.source_video_id,
-          ]),
-        ]);
-      })
+      .filter((title) => query.titleMatches(title))
       .sort((a, b) => {
         const promotionCompare = repo.promotionName(a.promotion_id).localeCompare(
           repo.promotionName(b.promotion_id),
@@ -496,15 +379,12 @@ export class TabRenderers {
         return String(a.division ?? "").localeCompare(String(b.division ?? ""), "ja");
       });
 
-    if (titles.length === 0) {
-      return emptyMessage();
-    }
+    if (titles.length === 0) return this.recordList(titles, () => "");
 
     let previousGroup = "";
     const { sources } = this.ctx;
 
-    return titles
-      .map((title) => {
+    return this.recordList(titles, (title) => {
         const group = `${repo.promotionName(title.promotion_id)} / ${title.division ?? "階級未設定"}`;
         const groupHeader =
           group !== previousGroup ? `<h2 class="title-group-heading">${escapeHtml(group)}</h2>` : "";
@@ -542,26 +422,17 @@ export class TabRenderers {
           ${lineage ? components.relatedGrid(lineage) : ""}
         </article>
       `;
-      })
-      .join("");
+      });
   }
 
   mentions() {
-    const { state, query, sources, labels, components } = this.ctx;
+    const { query, sources, labels, components } = this.ctx;
 
-    const mentions = this.ctx.repo.sourceMentions.filter(
-      (mention) =>
-        (!state.mentionType || mention.mention_type === state.mentionType) &&
-        query.includes([query.mentionSearchText(mention)])
-    );
+    const mentions = this.ctx.repo.sourceMentions.filter((mention) => query.mentionMatches(mention));
 
-    if (mentions.length === 0) {
-      return emptyMessage();
-    }
-
-    return mentions
-      .map(
-        (mention) => `
+    return this.recordList(
+      mentions,
+      (mention) => `
     <article class="card record-card source-mention-card">
       <h2>
         <span class="video-badge">${escapeHtml(labels.mentionType(mention.mention_type))}</span>
@@ -584,34 +455,21 @@ export class TabRenderers {
       ])}
     </article>
   `
-      )
-      .join("");
+    );
   }
 
   sources() {
     const { query, sources, labels, components } = this.ctx;
 
-    const documents = this.ctx.repo.sourceDocuments.filter((document) =>
-      query.includes([
-        document.title,
-        document.url,
-        document.source_type,
-        document.source_ref_id,
-        document.content_preview,
-        document.content_text,
-        document.notes,
-      ])
-    );
+    const documents = this.ctx.repo.sourceDocuments.filter((document) => query.sourceDocumentMatches(document));
 
-    if (documents.length === 0) {
-      return emptyMessage();
-    }
-
-    return documents
-      .map(
-        (document) => `
-    <article class="card record-card source-card">
-      <h2>${escapeHtml(document.title || document.source_ref_id)}</h2>
+    return this.recordList(
+      documents,
+      (document) =>
+        components.recordCard(
+          "source-card",
+          `<h2>${escapeHtml(document.title || document.source_ref_id)}</h2>`,
+          `
       <p class="meta">
         ${escapeHtml(labels.sourceType(document.source_type))}
         / ${escapeHtml(document.published_at || "日付未入力")}
@@ -621,7 +479,7 @@ export class TabRenderers {
         document.url
           ? `
         <p>
-          <a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">出典を開く</a>
+          ${externalLink(document.url, "出典を開く")}
         </p>
       `
           : ""
@@ -633,9 +491,7 @@ export class TabRenderers {
         ["source_id", `<code>${escapeHtml(document.source_id)}</code>`],
         [
           "URL",
-          document.url
-            ? `<a href="${escapeHtml(document.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(document.url)}</a>`
-            : "未入力",
+          document.url ? externalLink(document.url, document.url) : "未入力",
         ],
         ["取得日時", renderValue(document.fetched_at)],
         [
@@ -644,9 +500,8 @@ export class TabRenderers {
         ],
         ["notes", renderValue(document.notes)],
       ])}
-    </article>
-  `
-      )
-      .join("");
+    `
+        )
+    );
   }
 }

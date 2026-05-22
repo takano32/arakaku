@@ -36,6 +36,14 @@ export function renderTextList(values) {
   return items.map((value) => escapeHtml(value)).join(", ");
 }
 
+export function externalLink(url, label) {
+  if (!url) {
+    return `<code>${escapeHtml(label)}</code>`;
+  }
+
+  return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+}
+
 export function emptyMessage() {
   return `<article class="card"><p>該当するデータがありません。</p></article>`;
 }

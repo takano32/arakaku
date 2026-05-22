@@ -1,4 +1,4 @@
-import { escapeHtml, renderValue } from "./html-utils.js";
+import { emptyMessage, escapeHtml } from "./html-utils.js";
 
 /** Builder: definition list を段階的に組み立てる */
 export class DefinitionListBuilder {
@@ -33,6 +33,32 @@ export class DefinitionListBuilder {
 
 /** Factory + Template Method: 共通カード・グリッド部品 */
 export class ComponentFactory {
+  section(title, innerHtml, className = "") {
+    if (!innerHtml) {
+      return "";
+    }
+
+    const extra = className ? ` class="${escapeHtml(className)}"` : "";
+
+    return `
+      <section${extra}>
+        <h3>${escapeHtml(title)}</h3>
+        ${innerHtml}
+      </section>
+    `;
+  }
+
+  recordCard(className, titleHtml, bodyHtml) {
+    const extra = className ? ` ${className}` : "";
+
+    return `
+      <article class="card record-card${extra}">
+        ${titleHtml}
+        ${bodyHtml}
+      </article>
+    `;
+  }
+
   relatedItem(innerHtml, className = "") {
     const extra = className ? ` ${className}` : "";
     return `<article class="related-item-card${extra}">${innerHtml}</article>`;
@@ -40,6 +66,14 @@ export class ComponentFactory {
 
   relatedGrid(itemsHtml) {
     return `<div class="related-item-grid">${itemsHtml}</div>`;
+  }
+
+  relatedSection(title, items, renderItem, className = "related-source-mentions") {
+    if (items.length === 0) {
+      return "";
+    }
+
+    return this.section(title, this.relatedGrid(items.map((item) => renderItem(item)).join("")), className);
   }
 
   definitionList(rows) {
@@ -70,12 +104,7 @@ export class ComponentFactory {
       return "";
     }
 
-    return `
-      <section class="primary-links">
-        <h3>${escapeHtml(title)}</h3>
-        <p>${renderArticleRefs(ids)}</p>
-      </section>
-    `;
+    return this.section(title, `<p>${renderArticleRefs(ids)}</p>`, "primary-links");
   }
 
   primaryVideoRefs(renderVideoRefs, videoIds, title = "出典動画") {
@@ -84,19 +113,14 @@ export class ComponentFactory {
       return "";
     }
 
-    return `
-      <section class="primary-links">
-        <h3>${escapeHtml(title)}</h3>
-        <div class="video-ref-list">${renderVideoRefs(ids)}</div>
-      </section>
-    `;
+    return this.section(title, `<div class="video-ref-list">${renderVideoRefs(ids)}</div>`, "primary-links");
   }
 
-  recordList(itemsHtml) {
-    return itemsHtml || emptyMessageFromFactory();
-  }
-}
+  recordList(items, renderItem) {
+    if (typeof renderItem === "function") {
+      return items.length > 0 ? items.map(renderItem).join("") : emptyMessage();
+    }
 
-function emptyMessageFromFactory() {
-  return `<article class="card"><p>該当するデータがありません。</p></article>`;
+    return items || emptyMessage();
+  }
 }
