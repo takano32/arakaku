@@ -9,6 +9,8 @@
   --border: #ddd6cc;
   --accent: #8b2f20;
   --accent-dark: #632216;
+  --radius-card: 16px;
+  --radius-nested: 0.75rem;
 }
 
 * {
@@ -56,7 +58,7 @@ main {
 .card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   padding: 16px;
   box-shadow: 0 1px 8px rgb(0 0 0 / 0.04);
 }
@@ -226,6 +228,8 @@ dd {
 
 .article-source-detail-panel {
   margin-top: 0.35rem;
+  display: grid;
+  gap: 0.5rem;
 }
 
 .article-source-detail:not([open]) .article-source-detail-panel {
@@ -267,22 +271,73 @@ dd {
 }
 
 .video-embed iframe {
+  display: block;
   max-width: 100%;
+  border: 0;
 }
 
-.article-source-detail pre {
+.article-source-detail pre,
+.source-body pre {
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 28rem;
   overflow: auto;
   width: 100%;
-  margin: 0.5rem 0 0;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--bg);
   color: var(--text);
   font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+/* Level 2: rounded panels inside top-level cards (max 2 nesting levels) */
+.card .related-item-card,
+.card .article-source-detail-panel,
+.card .source-body pre,
+.card .article-source-video-embed,
+.card .record-detail-toggle .record-details,
+.card .video-description-preview {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-nested);
+  background: var(--bg);
+}
+
+.card .related-item-card,
+.card .article-source-detail-panel,
+.card .record-detail-toggle .record-details,
+.card .video-description-preview {
+  padding: 0.75rem;
+}
+
+.card .source-body pre {
+  margin: 0.5rem 0 0;
+  padding: 0.75rem;
+}
+
+.card .article-source-video-embed,
+.card .article-source-video-embed .video-embed {
+  overflow: hidden;
+  padding: 0;
+}
+
+.card .article-source-detail-panel pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Level 3+: keep flat inside level-2 panels */
+.related-item-card .article-source-detail-panel,
+.related-item-card .article-source-detail pre,
+.related-item-card .article-source-video-embed,
+.related-item-card .video-embed,
+.related-item-card .source-body pre {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  margin-top: 0.35rem;
+  overflow: visible;
 }
 
 .inline-list {
@@ -498,20 +553,6 @@ a {
 .related-item-card {
   display: grid;
   gap: 0.35rem;
-  padding: 0.75rem 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  border-bottom: 1px solid var(--line);
-}
-
-.related-item-card:first-child {
-  padding-top: 0;
-}
-
-.related-item-card:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
 }
 
 .related-item-card h4 {
@@ -559,17 +600,10 @@ a {
   margin-top: 0.75rem;
 }
 
-.source-body pre {
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-height: 28rem;
-  overflow: auto;
+.card .video-description-preview {
+  margin-top: 14px;
   padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--bg);
-  font-size: 0.9rem;
-  line-height: 1.7;
+  border-top: 0;
 }
 
 .source-mention-card h2 {
