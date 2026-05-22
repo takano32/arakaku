@@ -207,6 +207,55 @@ dd {
   word-break: break-word;
 }
 
+.article-source-ref {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+.article-source-detail {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.article-source-detail[open] {
+  display: block;
+  flex-basis: 100%;
+}
+
+.article-source-detail summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+  list-style: none;
+}
+
+.article-source-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.article-source-detail summary:hover {
+  color: var(--accent-dark);
+}
+
+.article-source-detail pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 28rem;
+  overflow: auto;
+  width: 100%;
+  margin: 0.5rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .inline-list {
   display: grid;
   gap: 4px;

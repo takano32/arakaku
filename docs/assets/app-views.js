@@ -95,6 +95,13 @@ function articleById(articleId) {
   return state.data.articles.find((article) => article.article_id === articleId);
 }
 
+function sourceDocumentForArticle(articleId) {
+  return (state.data.sourceDocuments ?? []).find((document) =>
+    document.source_type === "note_article" &&
+    (document.source_ref_id === articleId || document.source_id === `note:${articleId}`)
+  );
+}
+
 function renderValue(value) {
   if (value === null || value === undefined || value === "") {
     return "未入力";
@@ -141,11 +148,28 @@ function renderArticleRefs(articleIds) {
 
   return ids.map((articleId) => {
     const article = articleById(articleId);
+    const document = sourceDocumentForArticle(articleId);
     const label = article?.title || articleId;
+    const detail = document?.content_text ? `
+      <details class="article-source-detail">
+        <summary>▶詳細</summary>
+        <pre>${escapeHtml(document.content_text)}</pre>
+      </details>
+    ` : "";
     if (!article?.url) {
-      return `<code>${escapeHtml(articleId)}</code>`;
+      return `
+        <span class="article-source-ref">
+          <code>${escapeHtml(articleId)}</code>
+          ${detail}
+        </span>
+      `;
     }
-    return `<a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+    return `
+      <span class="article-source-ref">
+        <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>
+        ${detail}
+      </span>
+    `;
   }).join(", ");
 }
 
