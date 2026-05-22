@@ -17,7 +17,7 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 ## viewer を変更させる
 
 ```text
-docs/index.html、docs/assets/app.js、docs/assets/style.css を対象に viewer を更新してください。
+docs/index.html、docs/assets/app-*.js、docs/assets/style.css を対象に viewer を更新してください。
 AGENTS.md と .agents/skills/arakaku-viewer-ui/SKILL.md を必ず読んでください。
 変更後は make check と make clean-generated を実行してください。
 docs/data/*.json は編集・コミットしないでください。

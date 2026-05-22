@@ -16,7 +16,7 @@ Use this skill whenever the task touches:
 - `scripts/*.py`
 - `tests/*.py`
 - `docs/index.html`
-- `docs/assets/app.js`
+- `docs/assets/app-*.js`
 - `docs/assets/style.css`
 - `.github/workflows/*.yml`
 - `Makefile`
@@ -40,7 +40,7 @@ The project has three layers.
 
 3. GitHub Pages viewer
 
-   `docs/index.html`, `docs/assets/app.js`, and `docs/assets/style.css` render the generated JSON.
+   `docs/index.html`, `docs/assets/app-*.js`, and `docs/assets/style.css` render the generated JSON.
 
 Do not edit generated JSON directly. Always edit source CSVs or scripts, then rebuild.
 
@@ -310,6 +310,10 @@ review/youtube_description_candidates.csv
 review/inferred_bouts_from_video_titles.csv
 review/inferred_events_from_video_titles.csv
 review/inferred_fighters_from_video_titles.csv
+review/source_mention_result_candidates.csv
+review/source_event_reference_candidates.csv
+review/source_bout_reference_candidates.csv
+review/source_video_reference_candidates.csv
 review/parse_skips.csv
 ```
 
@@ -346,6 +350,9 @@ video_links.json
 aliases.json
 source_documents.json
 source_mentions.json
+source_event_references.json
+source_bout_references.json
+source_video_references.json
 ```
 
 ### `scripts/validate_json.py`
@@ -406,6 +413,8 @@ The following scripts are for extraction and review workflows:
 ```text
 scripts/extract_note_result_candidates.py
 scripts/extract_note_structured_results.py
+scripts/make_source_mention_result_candidates.py
+scripts/make_source_reference_candidates.py
 scripts/make_structured_result_patch_candidates.py
 scripts/apply_structured_result_patches.py
 ```
@@ -420,7 +429,12 @@ Viewer files:
 
 ```text
 docs/index.html
-docs/assets/app.js
+docs/assets/app-config.js
+docs/assets/app-core.js
+docs/assets/app-main.js
+docs/assets/app-related.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
 ```
 
@@ -436,6 +450,13 @@ Current viewer tabs:
 出典本文
 出典言及
 ```
+
+Current viewer behavior also includes:
+
+- related source candidates on bout, event, and video cards
+- YouTube description previews on video cards
+- inline `▶ 詳細` / `▼ 詳細` disclosure controls for note article links, source candidate note links, and video links
+- candidate labels for inferred or extracted source references
 
 Expected navigation behavior:
 

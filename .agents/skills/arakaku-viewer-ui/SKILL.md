@@ -1,6 +1,6 @@
 ---
 name: arakaku-viewer-ui
-description: Use this skill when editing the ARAKAKU GitHub Pages viewer, including docs/index.html, docs/assets/app.js, docs/assets/style.css, tabs, search, navigation, source document display, or source mention display.
+description: Use this skill when editing the ARAKAKU GitHub Pages viewer, including docs/index.html, docs/assets/app-*.js, docs/assets/style.css, tabs, search, navigation, source document display, or source mention display.
 ---
 
 # ARAKAKU Viewer UI Skill
@@ -11,7 +11,12 @@ Viewer files:
 
 ```text
 docs/index.html
-docs/assets/app.js
+docs/assets/app-config.js
+docs/assets/app-core.js
+docs/assets/app-main.js
+docs/assets/app-related.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
 ```
 
@@ -48,10 +53,12 @@ Expected behavior:
 - Fighter cards show related bouts.
 - Source document view shows note bodies and YouTube descriptions.
 - Source mention view shows extracted candidates.
+- Bout, event, and video cards show related source candidates where available.
+- Note article links and video links can expose inline `▶ 詳細` / `▼ 詳細` disclosure controls for source text.
 
 ---
 
-## Key app.js concepts
+## Key viewer JS concepts
 
 Important state fields:
 
@@ -143,6 +150,7 @@ Remember:
 - `source_mentions` are candidates, not confirmed facts.
 - Labels should say candidate or mention when appropriate.
 - Do not present extracted result mentions as confirmed bout results.
+- Inline detail disclosures can show note本文 or YouTube概要欄, but they do not make a candidate result confirmed.
 
 ---
 
@@ -182,4 +190,4 @@ After push, verify Pages:
 https://takano32.github.io/arakaku/
 ```
 
-Check browser console for app.js errors.
+Check browser console for viewer JS errors.

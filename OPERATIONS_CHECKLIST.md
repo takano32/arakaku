@@ -127,7 +127,12 @@ push 後に確認:
 
 ```text
 docs/index.html
-docs/assets/app.js
+docs/assets/app-config.js
+docs/assets/app-core.js
+docs/assets/app-main.js
+docs/assets/app-related.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
 ```
 
@@ -141,7 +146,9 @@ docs/assets/style.css
 - 大会 view に関連試合が出る
 - 出典本文タブが表示される
 - 出典言及タブが表示される
-- Console に app.js 由来のエラーがない
+- 試合・大会・動画カードに関連出典候補が出る
+- note本文リンク、出典候補リンク、動画リンクの `▶ 詳細` / `▼ 詳細` が開閉する
+- Console に viewer JS 由来のエラーがない
 
 コマンド:
 
@@ -204,6 +211,7 @@ Add source mention filters
 Generate source mention result candidates
 Show related source mentions on bout cards
 Update viewer source document UI
+Update viewer source detail toggles
 Improve source document build pipeline
 Update project handoff documentation
 ```

@@ -121,7 +121,12 @@ review/*.csv
 scripts/*.py
 tests/*.py
 docs/index.html
-docs/assets/app.js
+docs/assets/app-config.js
+docs/assets/app-core.js
+docs/assets/app-main.js
+docs/assets/app-related.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
 README.md
 AGENTS.md
@@ -171,13 +176,27 @@ aliases.csv
 
 自動抽出、推定、曖昧な照合結果はここに置いて、人間が確認してから `data-src/` に反映します。
 
+主な出典レビュー候補:
+
+```text
+source_mention_result_candidates.csv
+source_event_reference_candidates.csv
+source_bout_reference_candidates.csv
+source_video_reference_candidates.csv
+```
+
 ### `docs/`
 
 GitHub Pages 用 viewer です。
 
 ```text
 docs/index.html
-docs/assets/app.js
+docs/assets/app-config.js
+docs/assets/app-core.js
+docs/assets/app-main.js
+docs/assets/app-related.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
 docs/data/.gitkeep
 ```
@@ -349,6 +368,14 @@ data-src/source_mentions.csv
 
 構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
 
+### `scripts/make_source_mention_result_candidates.py`
+
+`source_mentions.csv` の result 言及から、レビュー用の試合結果候補CSVを作ります。
+
+### `scripts/make_source_reference_candidates.py`
+
+note本文と YouTube概要欄から、大会・試合・動画ごとの関連出典候補CSVを作ります。
+
 ### `scripts/apply_structured_result_patches.py`
 
 レビュー済みの structured result patch を `bouts.csv` に反映します。
@@ -363,7 +390,12 @@ viewer の主要ファイル:
 
 ```text
 docs/index.html
-docs/assets/app.js
+docs/assets/app-config.js
+docs/assets/app-core.js
+docs/assets/app-main.js
+docs/assets/app-related.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
 ```
 
@@ -379,6 +411,13 @@ viewer で現在扱う主なタブ:
 出典本文
 出典言及
 ```
+
+現在の viewer では、関連出典候補と詳細トグルも扱います。
+
+- 試合・大会・動画カードに関連出典候補を表示します。
+- note本文リンク、出典候補にある note本文リンク、動画リンクの右横に `▶ 詳細` / `▼ 詳細` を表示します。
+- `▶ 詳細` / `▼ 詳細` は本文DBの note本文または YouTube概要欄を展開するための UI です。
+- `source_mentions` と出典参照候補は確認支援の候補であり、確定結果として表示しないでください。
 
 viewer を変更した場合は、少なくとも以下を確認してください。
 
@@ -495,12 +534,8 @@ make clean-generated
 
 ## 次の改善候補
 
-- 出典言及を `mention_type` で絞り込むフィルタを追加する
-- `source_mentions` から試合結果候補CSVを作る
 - `source_documents.json` を軽量化する
-- 試合 view に関連出典候補を表示する
-- 大会 view に関連出典候補を表示する
-- 動画 view に YouTube概要欄プレビューを表示する
 - 王座変遷の精度を上げる
 - 選手プロフィールを充実させる
 - unknown 試合の結果補完を進める
+- Pages 上で出典詳細トグルの表示を確認し、必要なら CSS を微調整する

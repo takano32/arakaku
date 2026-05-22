@@ -10,6 +10,7 @@
 
 ```bash
 git status
+git log --oneline -5
 make check
 make clean-generated
 ```
@@ -18,177 +19,56 @@ make clean-generated
 
 ---
 
-## P1: 出典言及 view にフィルタを追加
+## 完了済み: 全コミット履歴から確認できる主な作業
+
+以下は全コミット履歴上で完了済みです。重複して新規タスク化しないでください。
+
+- CSV-backed database、Pages viewer、build / validate / pytest の初期構築
+- 王座変遷、動画カタログ、動画タブ、選手・大会・試合リンクの追加
+- YouTube概要欄候補、note結果候補、構造化結果候補、review CSV workflow の追加
+- note本文と YouTube概要欄の本文DB化
+- 出典本文 view、出典言及 view、`mention_type` フィルタの追加
+- `source_mentions.csv` からの試合結果候補CSV生成
+- 大会・試合・動画の出典参照候補CSV生成
+- 試合・大会 view の関連出典候補表示
+- 動画 view の YouTube概要欄 preview 表示
+- note本文リンク、出典候補リンク、動画リンク横の `▶ 詳細` / `▼ 詳細` 展開
+- viewer JS の分割
+- GitHub Actions と Codex/agent handoff 文書の整備
+
+---
+
+## P1: Pages 上で出典詳細トグルを確認する
 
 ### 目的
 
-`source_mentions.csv` は 1801 rows あり、現在は検索だけで見る状態です。  
-`mention_type` で絞り込めるようにすると、レビューがかなり楽になります。
+note本文リンク、出典候補の note本文リンク、動画リンクに追加した `▶ 詳細` / `▼ 詳細` が Pages 上でも見やすく動くか確認する。
 
 ### 対象
 
 ```text
-docs/assets/app.js
+docs/assets/app-sources.js
+docs/assets/app-views.js
 docs/assets/style.css
-docs/index.html
 ```
 
-### 想定フィルタ
+### 確認項目
 
-```text
-すべて
-event
-matchup
-result
-note_url
-youtube_url
-```
+- note本文リンクの横に `▶ 詳細` がある
+- 展開すると `▼ 詳細` に変わる
+- 出典候補の note本文リンクでも同じ挙動になる
+- 動画リンクの横でも YouTube概要欄を展開できる
+- 長い本文がカード外へ大きく崩れない
+- モバイル幅でリンク、バッジ、詳細本文が重ならない
 
 ### 完了条件
 
-- 出典言及タブで `mention_type` フィルタが使える
-- `result` だけに絞れる
-- `matchup` だけに絞れる
-- 検索ボックスと併用できる
 - `make check` が通る
 - Pages で確認済み
 
 ---
 
-## P1: source_mentions から試合結果候補CSVを作る
-
-### 目的
-
-`mention_type=result` の 321 件から、`bouts.csv` に反映できそうな候補を作る。
-
-### 出力先
-
-```text
-review/source_mention_result_candidates.csv
-```
-
-### 候補に含めたい列
-
-```text
-candidate_id
-mention_id
-source_id
-source_type
-source_ref_id
-line_number
-matched_text
-context
-event_hint
-matchup_hint
-method_hint
-round_hint
-time_hint
-confidence
-notes
-```
-
-### 重要ルール
-
-この段階では `data-src/bouts.csv` に反映しない。  
-候補CSVを作るだけ。
-
-### 完了条件
-
-- 候補CSVが生成される
-- 件数と confidence 分布が確認できる
-- `make check` が通る
-
----
-
-## P1: source_documents / source_mentions から出典参照候補CSVを作る
-
-### 目的
-
-note本文とYouTube概要欄から、大会・試合・動画ごとに確認すべき出典候補を作る。
-
-### 出力先
-
-```text
-review/source_event_reference_candidates.csv
-review/source_bout_reference_candidates.csv
-review/source_video_reference_candidates.csv
-```
-
-### コマンド
-
-```bash
-make source-reference-candidates
-```
-
-### 重要ルール
-
-候補CSVはレビュー支援用です。  
-勝敗・決着方法・ラウンド・タイムを確定反映する前に、必ず本文文脈を確認してください。
-
-### 完了条件
-
-- 大会・試合・動画の出典候補CSVが生成される
-- 件数と confidence 分布が確認できる
-- `make check` が通る
-
----
-
-## P2: 試合 view に関連出典候補を表示
-
-### 目的
-
-試合カードから、その試合に関係しそうな出典言及を確認できるようにする。
-
-### マッチ候補
-
-- `bout.matchup` が `source_mentions.context` に含まれる
-- `fighter_a` / `fighter_b` が両方含まれる
-- `eventName(bout.event_id)` が含まれる
-- `mention_type` が `matchup` または `result`
-
-### 注意
-
-誤爆があり得るので、表示ラベルは「出典候補」にする。  
-「確定出典」とはしない。
-
----
-
-## P2: 大会 view に関連出典候補を表示
-
-### 目的
-
-大会カードから、その大会に関係しそうな note本文・YouTube概要欄・言及候補を確認できるようにする。
-
-### マッチ候補
-
-- 大会名が `source_mentions.context` に含まれる
-- `entity_hint` に大会名が入っている
-- source document title が大会名を含む
-
----
-
-## P2: 動画 view に YouTube概要欄プレビューを表示
-
-### 目的
-
-動画カードに、YouTube概要欄の preview と抽出された note URL / matchup / result 件数を表示する。
-
-### 対象データ
-
-```text
-source_documents.csv
-source_mentions.csv
-videos.csv
-```
-
-### 注意
-
-全文表示は出典本文 view で行う。  
-動画 view では preview に留める。
-
----
-
-## P3: source_documents JSON 軽量化
+## P1: source_documents JSON 軽量化
 
 ### 背景
 
@@ -213,11 +93,12 @@ source_documents_full.json
 
 - 初期ロードに全文を載せない
 - 出典本文 view では必要時に全文を開ける
+- 既存の `▶ 詳細` / `▼ 詳細` 展開を壊さない
 - Pages で正常動作する
 
 ---
 
-## P3: unknown 試合の結果補完
+## P2: unknown 試合の結果補完
 
 ### 目的
 
@@ -237,19 +118,7 @@ source_documents_full.json
 
 ---
 
-## P3: 王座変遷の精度向上
-
-### 目的
-
-`titles.csv` の王座・トーナメント情報をより正確にする。
-
-### 注意
-
-王座変遷は誤ると影響が大きいので、出典確認を優先する。
-
----
-
-## P3: 選手プロフィール補完
+## P2: 選手プロフィール補完
 
 ### 目的
 
@@ -262,16 +131,12 @@ source_documents_full.json
 
 ---
 
-## Done に近いもの
+## P3: 王座変遷の精度向上
 
-以下は直近で完了済み。
+### 目的
 
-- 出典本文DBの追加
-- 出典言及DBの追加
-- 出典本文 view の追加
-- 出典言及 view の追加
-- GitHub Actions 最新化
-- `upload-pages-artifact@v5` 対応
-- README 詳細化
-- AGENTS.md 追加
-- Codex向け SKILL.md 追加
+`titles.csv` の王座・トーナメント情報をより正確にする。
+
+### 注意
+
+王座変遷は誤ると影響が大きいので、出典確認を優先する。

@@ -94,7 +94,7 @@ pytest passed
 
 ## 6. viewer 変更の確認
 
-`docs/assets/app.js` / `style.css` / `index.html` が変わった場合:
+`docs/assets/app-*.js` / `style.css` / `index.html` が変わった場合:
 
 - タブが表示される
 - 検索が動く
@@ -103,7 +103,9 @@ pytest passed
 - 大会クリックが動く
 - 出典本文 view が表示される
 - 出典言及 view が表示される
-- Console に app.js 由来のエラーがない
+- 関連出典候補が候補として表示され、確定情報のように見えない
+- note本文リンク、出典候補リンク、動画リンクの `▶ 詳細` / `▼ 詳細` が開閉する
+- Console に viewer JS 由来のエラーがない
 
 ---
 

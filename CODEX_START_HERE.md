@@ -41,7 +41,7 @@ make clean-generated
 ```text
 make check: PASS
 json validation passed: 0 warning(s)
-pytest: 10 passed
+pytest: 15 passed
 make clean-generated: DONE
 ```
 
@@ -56,6 +56,8 @@ GitHub Pages viewer で以下を確認済みです。
 動画
 出典本文
 出典言及
+関連出典候補
+出典リンク横の詳細トグル
 ```
 
 ---
@@ -86,11 +88,11 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 優先度の高い候補:
 
 ```text
-1. 出典言及 view に mention_type フィルタを追加する
-2. source_mentions から試合結果候補CSVを作る
-3. 試合 view に関連出典候補を表示する
-4. 大会 view に関連出典候補を表示する
-5. source_documents.json を軽量化する
+1. Pages 上で出典詳細トグルを確認する
+2. source_documents.json を軽量化する
+3. unknown 試合の結果補完を進める
+4. 選手プロフィールを補完する
+5. 王座変遷の精度を上げる
 ```
 
 詳細は `NEXT_TASKS.md` を参照してください。

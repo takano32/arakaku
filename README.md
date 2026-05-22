@@ -54,6 +54,8 @@ GitHub Pages の viewer では、現在以下を表示します。
 - 選手 view には、その選手の関連試合を表示します。
 - 出典本文 view では、note 本文と YouTube 概要欄を確認できます。
 - 出典言及 view では、本文中から抽出した大会名・対戦カード・結果・URL などの候補を確認できます。
+- 試合・大会・動画などのカードでは、関連する出典候補を確認できます。
+- note本文リンクや動画リンクの横にある `▶ 詳細` / `▼ 詳細` から、本文や YouTube概要欄をその場で展開できます。
 - 検索ボックスで各 view の内容を絞り込めます。
 
 ---
@@ -107,7 +109,12 @@ JSON は viewer 用の生成物です。
 ├── data-src/               # 正規ソースCSV
 ├── docs/                   # GitHub Pages 用 viewer
 │   ├── assets/
-│   │   ├── app.js           # viewer 本体
+│   │   ├── app-config.js    # viewer 設定・データ定義
+│   │   ├── app-core.js      # 共通状態・検索・リンク処理
+│   │   ├── app-main.js      # 初期化・イベント処理
+│   │   ├── app-related.js   # 関連カード表示
+│   │   ├── app-sources.js   # 出典・動画関連表示
+│   │   ├── app-views.js     # 各 view の描画
 │   │   └── style.css        # viewer CSS
 │   ├── data/                # 生成JSON出力先。JSONはコミットしない
 │   └── index.html           # viewer HTML
@@ -136,7 +143,7 @@ JSON は viewer 用の生成物です。
 - `tmp/youtube-info/.gitkeep`
 - `scripts/*.py`
 - `tests/*.py`
-- `docs/assets/app.js`
+- `docs/assets/app-*.js`
 - `docs/assets/style.css`
 - `docs/index.html`
 - `.github/workflows/*.yml`
@@ -312,6 +319,10 @@ viewer や抽出処理での検索・照合改善に使います。
 - `review/inferred_bouts_from_video_titles.csv`
 - `review/inferred_events_from_video_titles.csv`
 - `review/inferred_fighters_from_video_titles.csv`
+- `review/source_mention_result_candidates.csv`
+- `review/source_event_reference_candidates.csv`
+- `review/source_bout_reference_candidates.csv`
+- `review/source_video_reference_candidates.csv`
 - `review/parse_skips.csv`
 
 `review/` のデータは、原則として人間が確認してから `data-src/` に反映します。
@@ -338,6 +349,9 @@ viewer や抽出処理での検索・照合改善に使います。
 - `aliases.json`
 - `source_documents.json`
 - `source_mentions.json`
+- `source_event_references.json`
+- `source_bout_references.json`
+- `source_video_references.json`
 - `metadata.json`
 
 ### `scripts/validate_json.py`
@@ -392,6 +406,22 @@ note 本文から、より構造化された試合結果候補を抽出します
 ### `scripts/make_structured_result_patch_candidates.py`
 
 構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
+
+### `scripts/make_source_mention_result_candidates.py`
+
+`source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
+
+### `scripts/make_source_reference_candidates.py`
+
+note本文と YouTube概要欄から、大会・試合・動画ごとの関連出典候補CSVを作ります。
+
+生成先:
+
+- `review/source_event_reference_candidates.csv`
+- `review/source_bout_reference_candidates.csv`
+- `review/source_video_reference_candidates.csv`
+
+これらは確認支援用の候補です。勝敗や結果を確定する根拠として使う前に、本文文脈を必ず確認してください。
 
 ### `scripts/apply_structured_result_patches.py`
 
@@ -510,6 +540,22 @@ Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v
 
 ---
 
+## コミット履歴から見た整備済み領域
+
+全コミット履歴では、以下の順に機能が整備されています。
+
+- 初期の CSV-backed database、Pages viewer、build / validate / pytest を構築
+- 王座変遷、選手・大会・試合リンク、動画カタログ、動画タブを追加
+- YouTube概要欄候補、note試合結果候補、構造化結果候補、反映候補CSVの review workflow を追加
+- note本文と YouTube概要欄を `source_documents.csv` / `source_mentions.csv` として本文DB化
+- 出典本文 view、出典言及 view、`mention_type` フィルタ、試合結果候補CSV、出典参照候補CSVを追加
+- viewer を `app-config.js` / `app-core.js` / `app-main.js` / `app-related.js` / `app-sources.js` / `app-views.js` に分割
+- 試合・大会・動画カードへ関連出典候補と YouTube概要欄 preview を表示
+- note本文リンク、出典候補の note本文リンク、動画リンクに `▶ 詳細` / `▼ 詳細` の本文展開を追加
+- GitHub Actions、エージェント向け handoff、Codex prompt/checklist/skill 文書を整備
+
+---
+
 ## Branch
 
 既定ブランチは以下です。
@@ -575,7 +621,12 @@ make clean-generated
 viewer の主要ファイルは以下です。
 
 - `docs/index.html`
-- `docs/assets/app.js`
+- `docs/assets/app-config.js`
+- `docs/assets/app-core.js`
+- `docs/assets/app-main.js`
+- `docs/assets/app-related.js`
+- `docs/assets/app-sources.js`
+- `docs/assets/app-views.js`
 - `docs/assets/style.css`
 
 ### 7. Pages の表示確認
@@ -619,12 +670,8 @@ https://takano32.github.io/arakaku/
 
 ## 次の改善候補
 
-- 出典言及を `mention_type` で絞り込むフィルタを追加する
-- `source_mentions` から試合結果候補CSVを作る
 - `source_documents.json` を軽量化する
-- 試合 view に関連出典候補を表示する
-- 大会 view に関連出典候補を表示する
-- 動画 view に YouTube概要欄プレビューを表示する
 - 王座変遷の精度を上げる
 - 選手プロフィールを充実させる
 - unknown 試合の結果補完を進める
+- 出典詳細トグルの表示を Pages 上で確認し、必要なら開閉時のレイアウトを微調整する
