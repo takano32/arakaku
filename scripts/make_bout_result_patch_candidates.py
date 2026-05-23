@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
 import re
-from pathlib import Path
+
+from arakaku_utils import DATA_SRC, REVIEW, read_csv, write_csv
 
 
-ROOT = Path(__file__).resolve().parents[1]
-BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
-CANDIDATES_CSV = ROOT / "review" / "note_result_candidates.csv"
-OUT_CSV = ROOT / "review" / "bout_result_patch_candidates.csv"
+BOUTS_CSV = DATA_SRC / "bouts.csv"
+CANDIDATES_CSV = REVIEW / "note_result_candidates.csv"
+OUT_CSV = REVIEW / "bout_result_patch_candidates.csv"
 
 
 METHOD_PATTERNS = [
@@ -125,11 +124,8 @@ def candidate_window(candidates: list[dict[str, str]], index: int) -> list[dict[
 
 
 def main() -> int:
-    with BOUTS_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        bouts = list(csv.DictReader(f))
-
-    with CANDIDATES_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        candidates = list(csv.DictReader(f))
+    bouts = read_csv(BOUTS_CSV)
+    candidates = read_csv(CANDIDATES_CSV)
 
     result_lines = [
         row for row in candidates
@@ -212,8 +208,6 @@ def main() -> int:
                 }
             )
 
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-
     fieldnames = [
         "apply",
         "confidence",
@@ -234,13 +228,8 @@ def main() -> int:
         "winner_reason",
         "source_line_text",
     ]
+    write_csv(OUT_CSV, fieldnames, patch_rows)
 
-    with OUT_CSV.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(patch_rows)
-
-    print(f"[info] {OUT_CSV}")
     print(f"[rows] {len(patch_rows)}")
     print("[next] Review the CSV and change apply=false to apply=true for trusted rows.")
 

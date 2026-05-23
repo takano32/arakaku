@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
 from collections import Counter, defaultdict
-from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parents[1]
-DATA_SRC = ROOT / "data-src"
-REVIEW = ROOT / "review"
+from arakaku_utils import DATA_SRC, REVIEW, compact_join, compact_text, read_csv, write_csv
 
 SOURCE_DOCUMENTS_CSV = DATA_SRC / "source_documents.csv"
 SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
@@ -20,27 +15,6 @@ VIDEO_LINKS_CSV = DATA_SRC / "video_links.csv"
 EVENT_OUT_CSV = REVIEW / "source_event_reference_candidates.csv"
 BOUT_OUT_CSV = REVIEW / "source_bout_reference_candidates.csv"
 VIDEO_OUT_CSV = REVIEW / "source_video_reference_candidates.csv"
-
-
-def read_csv(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
-
-
-def compact_join(values: list[str], limit: int = 5) -> str:
-    unique = []
-    for value in values:
-        value = (value or "").strip()
-        if value and value not in unique:
-            unique.append(value)
-    return " | ".join(unique[:limit])
-
-
-def compact_text(value: str, limit: int = 240) -> str:
-    value = " ".join((value or "").split())
-    if len(value) <= limit:
-        return value
-    return value[:limit].rstrip() + "..."
 
 
 def mention_text(mention: dict[str, str], document: dict[str, str] | None = None) -> str:
@@ -263,16 +237,6 @@ def build_video_candidates(
     return rows
 
 
-def write_csv(path: Path, rows: list[dict[str, str]], fieldnames: list[str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-    print(f"[info] {path}")
-    print(f"[rows] {len(rows)}")
-
-
 def main() -> int:
     documents = source_doc_map(read_csv(SOURCE_DOCUMENTS_CSV))
     mentions = read_csv(SOURCE_MENTIONS_CSV)
@@ -285,7 +249,7 @@ def main() -> int:
     bout_rows = build_bout_candidates(bouts, events, mentions, documents, video_links)
     video_rows = build_video_candidates(videos, mentions, documents)
 
-    write_csv(
+    write_candidate_csv(
         EVENT_OUT_CSV,
         event_rows,
         [
@@ -304,7 +268,7 @@ def main() -> int:
             "notes",
         ],
     )
-    write_csv(
+    write_candidate_csv(
         BOUT_OUT_CSV,
         bout_rows,
         [
@@ -328,7 +292,7 @@ def main() -> int:
             "notes",
         ],
     )
-    write_csv(
+    write_candidate_csv(
         VIDEO_OUT_CSV,
         video_rows,
         [
@@ -349,6 +313,11 @@ def main() -> int:
     )
 
     return 0
+
+
+def write_candidate_csv(path, rows: list[dict[str, str]], fieldnames: list[str]) -> None:
+    write_csv(path, fieldnames, rows)
+    print(f"[rows] {len(rows)}")
 
 
 if __name__ == "__main__":

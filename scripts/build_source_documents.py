@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
 import hashlib
 import html
 import json
 import re
 from datetime import datetime, timezone
-from pathlib import Path
+
+from arakaku_utils import DATA_SRC, ROOT, read_csv, safe_slug, write_csv
 
 
-ROOT = Path(__file__).resolve().parents[1]
-
-ARTICLES_CSV = ROOT / "data-src" / "articles.csv"
-VIDEOS_CSV = ROOT / "data-src" / "videos.csv"
+ARTICLES_CSV = DATA_SRC / "articles.csv"
+VIDEOS_CSV = DATA_SRC / "videos.csv"
 
 NOTE_HTML_DIR = ROOT / "tmp" / "note-html"
 YOUTUBE_INFO_DIR = ROOT / "tmp" / "youtube-info"
 
-SOURCE_DOCUMENTS_CSV = ROOT / "data-src" / "source_documents.csv"
-SOURCE_MENTIONS_CSV = ROOT / "data-src" / "source_mentions.csv"
+SOURCE_DOCUMENTS_CSV = DATA_SRC / "source_documents.csv"
+SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
 
 
 DOCUMENT_FIELDS = [
@@ -70,23 +68,6 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
-def read_csv(path: Path) -> list[dict[str, str]]:
-    if not path.exists():
-        return []
-
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
-
-
-def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, str]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 def strip_tags(text: str) -> str:
     text = re.sub(r"<script\b.*?</script>", "\n", text, flags=re.S | re.I)
     text = re.sub(r"<style\b.*?</style>", "\n", text, flags=re.S | re.I)
@@ -115,8 +96,7 @@ def sha256_text(text: str) -> str:
 
 def cache_name_for_article(article_id: str, url: str) -> str:
     raw = article_id or url
-    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw).strip("_")
-    return f"{safe}.html"
+    return f"{safe_slug(raw)}.html"
 
 
 def classify_mention(line: str) -> tuple[str, str, str]:
@@ -299,9 +279,7 @@ def main() -> int:
     write_csv(SOURCE_DOCUMENTS_CSV, DOCUMENT_FIELDS, documents)
     write_csv(SOURCE_MENTIONS_CSV, MENTION_FIELDS, mentions)
 
-    print(f"[info] {SOURCE_DOCUMENTS_CSV}")
     print(f"[info] {len(documents)}")
-    print(f"[info] {SOURCE_MENTIONS_CSV}")
     print(f"[info] {len(mentions)}")
 
     return 0

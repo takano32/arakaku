@@ -2,15 +2,14 @@
 from __future__ import annotations
 
 import argparse
-import csv
-import re
 import time
 import urllib.request
 from pathlib import Path
 
+from arakaku_utils import DATA_SRC, ROOT, read_csv, safe_slug
 
-ROOT = Path(__file__).resolve().parents[1]
-ARTICLES_CSV = ROOT / "data-src" / "articles.csv"
+
+ARTICLES_CSV = DATA_SRC / "articles.csv"
 OUT_DIR = ROOT / "tmp" / "note-html"
 
 USER_AGENT = "Mozilla/5.0 arakaku-note-cache/1.0"
@@ -18,8 +17,7 @@ USER_AGENT = "Mozilla/5.0 arakaku-note-cache/1.0"
 
 def cache_name(article_id: str, url: str) -> str:
     raw = article_id or url
-    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw).strip("_")
-    return f"{safe}.html"
+    return f"{safe_slug(raw)}.html"
 
 
 def fetch_note_html(url: str) -> str:
@@ -46,8 +44,7 @@ def main() -> int:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    with args.articles.open("r", encoding="utf-8-sig", newline="") as f:
-        rows = list(csv.DictReader(f))
+    rows = read_csv(args.articles)
 
     fetched = 0
     skipped = 0

@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import re
 from pathlib import Path
 
+from arakaku_utils import DATA_SRC, ROOT, read_csv, write_csv
 
-ROOT = Path(__file__).resolve().parents[1]
+
 DEFAULT_INPUT = ROOT / "tmp" / "arakaku-youtube-videos.tsv"
-DEFAULT_OUTPUT = ROOT / "data-src" / "videos.csv"
+DEFAULT_OUTPUT = DATA_SRC / "videos.csv"
 
 FIELDS = [
     "video_id",
@@ -67,22 +67,14 @@ def classify_video_type(title: str) -> str:
 
 
 def read_existing_rows(path: Path) -> dict[tuple[str, str], dict[str, str]]:
-    if not path.exists():
-        return {}
-
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        rows = {}
-
-        for row in reader:
-            platform = row.get("platform", "youtube")
-            platform_video_id = row.get("platform_video_id", "")
-            url = row.get("url", "")
-            key = (platform, platform_video_id or url)
-
-            rows[key] = row
-
-        return rows
+    rows = {}
+    for row in read_csv(path):
+        platform = row.get("platform", "youtube")
+        platform_video_id = row.get("platform_video_id", "")
+        url = row.get("url", "")
+        key = (platform, platform_video_id or url)
+        rows[key] = row
+    return rows
 
 
 def parse_tsv(path: Path) -> list[dict[str, str]]:
@@ -161,17 +153,6 @@ def merge_rows(
     )
 
 
-def write_csv(path: Path, rows: list[dict[str, str]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
-        writer.writeheader()
-
-        for row in rows:
-            writer.writerow({field: row.get(field, "") for field in FIELDS})
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Import official Arakaku YouTube video metadata from yt-dlp TSV output.",
@@ -208,9 +189,8 @@ def main() -> int:
         preserve_existing=not args.replace,
     )
 
-    write_csv(args.output, rows)
+    write_csv(args.output, FIELDS, rows)
 
-    print(f"[info] {args.output}")
     print(f"[imported] {len(imported_rows)} row(s)")
     print(f"[total] {len(rows)} row(s)")
 

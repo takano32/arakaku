@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import re
 from pathlib import Path
 
+from arakaku_utils import ROOT, write_csv
 
-ROOT = Path(__file__).resolve().parents[1]
+
 DEFAULT_INPUT_DIR = ROOT / "tmp" / "youtube-info"
 DEFAULT_OUTPUT = ROOT / "review" / "youtube_description_candidates.csv"
 
@@ -94,15 +94,6 @@ def extract_candidates(data: dict) -> list[dict[str, str]]:
     return rows
 
 
-def write_csv(path: Path, rows: list[dict[str, str]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Extract candidate event/match/source lines from yt-dlp info.json descriptions.",
@@ -132,10 +123,9 @@ def main() -> int:
         file_count += 1
         rows.extend(extract_candidates(data))
 
-    write_csv(args.output, rows)
+    write_csv(args.output, FIELDS, rows)
 
     print(f"[read] {file_count} info json file(s)")
-    print(f"[info] {args.output}")
     print(f"[rows] {len(rows)}")
 
     return 0

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
 import html
 import re
 import urllib.request
 from pathlib import Path
 
+from arakaku_utils import DATA_SRC, REVIEW, ROOT, read_csv, safe_slug, write_csv
 
-ROOT = Path(__file__).resolve().parents[1]
-ARTICLES_CSV = ROOT / "data-src" / "articles.csv"
-OUT_CSV = ROOT / "review" / "note_result_candidates.csv"
+
+ARTICLES_CSV = DATA_SRC / "articles.csv"
+OUT_CSV = REVIEW / "note_result_candidates.csv"
 CACHE_DIR = ROOT / "tmp" / "note-html"
 
 RESULT_RE = re.compile(
@@ -72,13 +72,11 @@ def classify_line(line: str) -> str:
 
 def cache_name_for_article(article_id: str, url: str) -> str:
     raw = article_id or url
-    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw).strip("_")
-    return f"{safe}.html"
+    return f"{safe_slug(raw)}.html"
 
 
 def main() -> int:
-    with ARTICLES_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        articles = list(csv.DictReader(f))
+    articles = read_csv(ARTICLES_CSV)
 
     rows: list[dict[str, str]] = []
 
@@ -131,8 +129,6 @@ def main() -> int:
                 }
             )
 
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-
     fieldnames = [
         "article_id",
         "article_title",
@@ -141,13 +137,8 @@ def main() -> int:
         "line_type",
         "line_text",
     ]
+    write_csv(OUT_CSV, fieldnames, rows)
 
-    with OUT_CSV.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    print(f"[info] {OUT_CSV}")
     print(f"[rows] {len(rows)}")
 
     return 0

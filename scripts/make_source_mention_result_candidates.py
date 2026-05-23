@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
 import re
 from collections import defaultdict
-from pathlib import Path
+
+from arakaku_utils import DATA_SRC, REVIEW, read_csv, write_csv
 
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE_MENTIONS_CSV = ROOT / "data-src" / "source_mentions.csv"
-OUT_CSV = ROOT / "review" / "source_mention_result_candidates.csv"
+SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
+OUT_CSV = REVIEW / "source_mention_result_candidates.csv"
 
 
 METHOD_PATTERNS = [
@@ -154,12 +153,8 @@ def build_rows(source_mentions: list[dict[str, str]]) -> list[dict[str, str]]:
 
 
 def main() -> int:
-    with SOURCE_MENTIONS_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        source_mentions = list(csv.DictReader(f))
-
+    source_mentions = read_csv(SOURCE_MENTIONS_CSV)
     rows = build_rows(source_mentions)
-
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
 
     fieldnames = [
         "candidate_id",
@@ -181,17 +176,12 @@ def main() -> int:
         "confidence",
         "notes",
     ]
-
-    with OUT_CSV.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
+    write_csv(OUT_CSV, fieldnames, rows)
 
     counts: dict[str, int] = defaultdict(int)
     for row in rows:
         counts[row["confidence"]] += 1
 
-    print(f"[info] {OUT_CSV}")
     print(f"[rows] {len(rows)}")
     print("[confidence] " + ", ".join(f"{key}={counts[key]}" for key in sorted(counts)))
     print("[next] Review the CSV before applying anything to data-src/bouts.csv.")
