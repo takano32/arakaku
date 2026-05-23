@@ -270,7 +270,7 @@ export class TabRenderers {
         <span class="video-badge">${escapeHtml(labels.linkStatus(v.link_status))}</span>
       </div>
       ${components.section("動画URL", sources.renderVideoSourceBlock(v, v.url), "primary-links")}
-      ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), v.source_article_ids)}
+      ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), v.source_article_ids)}
       ${this.renderVideoLinkedEntities(v)}
       ${sources.renderVideoDescriptionPreview(v)}
       ${components.detailDisclosure([
