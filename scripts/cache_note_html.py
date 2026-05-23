@@ -78,7 +78,7 @@ def main() -> int:
                 time.sleep(args.sleep)
 
         except Exception as exc:
-            print(f"[fail] {article_id} {url}: {exc}")
+            print(f"[error] {article_id} {url}: {exc}")
             failed += 1
 
     print(f"[fetched] {fetched}")

@@ -269,7 +269,7 @@ def write_csv(path: Path, rows: list[dict[str, str]], fieldnames: list[str]) -> 
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
-    print(f"[write] {path}")
+    print(f"[info] {path}")
     print(f"[rows] {len(rows)}")
 
 

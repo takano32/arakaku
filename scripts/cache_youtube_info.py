@@ -70,7 +70,7 @@ def main() -> int:
         if result.returncode == 0 and out_path.exists():
             fetched += 1
         else:
-            print(f"[fail] {platform_video_id} {url}")
+            print(f"[error] {platform_video_id} {url}")
             failed += 1
 
     print(f"[fetched] {fetched}")

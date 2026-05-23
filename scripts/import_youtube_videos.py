@@ -92,7 +92,7 @@ def parse_tsv(path: Path) -> list[dict[str, str]]:
         parts = line.split("\t")
 
         if len(parts) < 6:
-            print(f"[skip] line {line_number}: expected 6 TSV fields")
+            print(f"[warn] line {line_number}: expected 6 TSV fields")
             continue
 
         platform_video_id, url, title, channel_name, upload_date, duration = parts[:6]
@@ -102,7 +102,7 @@ def parse_tsv(path: Path) -> list[dict[str, str]]:
         title = title.strip()
 
         if not platform_video_id or not url:
-            print(f"[skip] line {line_number}: missing video id or url")
+            print(f"[warn] line {line_number}: missing video id or url")
             continue
 
         rows.append(
@@ -210,7 +210,7 @@ def main() -> int:
 
     write_csv(args.output, rows)
 
-    print(f"[write] {args.output}")
+    print(f"[info] {args.output}")
     print(f"[imported] {len(imported_rows)} row(s)")
     print(f"[total] {len(rows)} row(s)")
 

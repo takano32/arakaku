@@ -55,7 +55,7 @@ def iter_info_json(input_dir: Path):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            print(f"[skip] invalid json: {path}: {exc}")
+            print(f"[warn] invalid json: {path}: {exc}")
             continue
 
         yield path, data
@@ -135,7 +135,7 @@ def main() -> int:
     write_csv(args.output, rows)
 
     print(f"[read] {file_count} info json file(s)")
-    print(f"[write] {args.output}")
+    print(f"[info] {args.output}")
     print(f"[rows] {len(rows)}")
 
     return 0

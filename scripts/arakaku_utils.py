@@ -12,7 +12,7 @@ JST = timezone(timedelta(hours=9))
 
 def read_csv(path: Path) -> list[dict[str, str]]:
     if not path.exists():
-        print(f"[skip] {path} not found")
+        print(f"[warn] {path} not found")
         return []
     with path.open("r", encoding="utf-8-sig", newline="") as f:
         return list(csv.DictReader(f))
@@ -22,7 +22,7 @@ def write_json(path: Path, data: Any) -> None:
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print(f"[write] {path}")
+    print(f"[info] {path}")
 
 def load_json(filename: str, default: Any = None) -> Any:
     p = DOCS_DATA / filename

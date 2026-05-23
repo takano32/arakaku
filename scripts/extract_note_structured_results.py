@@ -428,7 +428,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"[write] {OUT_CSV}")
+    print(f"[info] {OUT_CSV}")
     print(f"[rows] {len(rows)}")
 
     return 0

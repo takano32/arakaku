@@ -191,7 +191,7 @@ def main() -> int:
     for row in rows:
         counts[row["confidence"]] += 1
 
-    print(f"[write] {OUT_CSV}")
+    print(f"[info] {OUT_CSV}")
     print(f"[rows] {len(rows)}")
     print("[confidence] " + ", ".join(f"{key}={counts[key]}" for key in sorted(counts)))
     print("[next] Review the CSV before applying anything to data-src/bouts.csv.")

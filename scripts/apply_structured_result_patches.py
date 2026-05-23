@@ -33,7 +33,7 @@ def main() -> int:
         bout = by_id.get(patch.get("bout_id", ""))
 
         if not bout:
-            print(f"[skip] unknown bout_id: {patch.get('bout_id', '')}")
+            print(f"[warn] unknown bout_id: {patch.get('bout_id', '')}")
             continue
 
         winner = patch.get("winner", "")
@@ -47,7 +47,7 @@ def main() -> int:
                 bout["winner_id"] = bout.get("fighter_b_id", "")
                 bout["loser_id"] = bout.get("fighter_a_id", "")
             else:
-                print(f"[skip] winner does not match fighters: {bout['bout_id']} winner={winner}")
+                print(f"[warn] winner does not match fighters: {bout['bout_id']} winner={winner}")
                 continue
 
             bout["winner"] = winner
@@ -83,7 +83,7 @@ def main() -> int:
         writer.writerows(bouts)
 
     print(f"[applied] {applied}")
-    print(f"[write] {BOUTS_CSV}")
+    print(f"[info] {BOUTS_CSV}")
 
     return 0
 

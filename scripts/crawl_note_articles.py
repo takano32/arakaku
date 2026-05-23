@@ -381,7 +381,7 @@ def main() -> int:
 
     if not args.dry_run:
         write_articles(args.articles, fieldnames, merged)
-        print(f"[write] {args.articles}")
+        print(f"[info] {args.articles}")
 
     return 0
 

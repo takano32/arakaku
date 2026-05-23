@@ -299,10 +299,10 @@ def main() -> int:
     write_csv(SOURCE_DOCUMENTS_CSV, DOCUMENT_FIELDS, documents)
     write_csv(SOURCE_MENTIONS_CSV, MENTION_FIELDS, mentions)
 
-    print(f"[write] {SOURCE_DOCUMENTS_CSV}")
-    print(f"[documents] {len(documents)}")
-    print(f"[write] {SOURCE_MENTIONS_CSV}")
-    print(f"[mentions] {len(mentions)}")
+    print(f"[info] {SOURCE_DOCUMENTS_CSV}")
+    print(f"[info] {len(documents)}")
+    print(f"[info] {SOURCE_MENTIONS_CSV}")
+    print(f"[info] {len(mentions)}")
 
     return 0
 

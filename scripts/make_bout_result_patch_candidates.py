@@ -240,7 +240,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(patch_rows)
 
-    print(f"[write] {OUT_CSV}")
+    print(f"[info] {OUT_CSV}")
     print(f"[rows] {len(patch_rows)}")
     print("[next] Review the CSV and change apply=false to apply=true for trusted rows.")
 
