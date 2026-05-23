@@ -1,10 +1,12 @@
 from __future__ import annotations
-import importlib.util, json
+import importlib.util, json, sys
 from pathlib import Path
 import pytest
 @pytest.fixture
 def repo_root() -> Path: return Path.cwd()
 def load_module(module_name: str, script_path: Path):
+    if str(script_path.parent) not in sys.path:
+        sys.path.insert(0, str(script_path.parent))
     spec = importlib.util.spec_from_file_location(module_name, script_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); return module
