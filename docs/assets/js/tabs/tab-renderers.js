@@ -154,7 +154,6 @@ export class TabRenderers {
           ${escapeHtml(this.boutResultLine(b))}
         </p>
         ${b.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(b.title.note)}</p>` : ""}
-        ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), b.source_article_id)}
         ${sources.renderVideoLinks("bout", b.bout_id)}
         ${sources.renderSourceReferences(sources.sourceReferencesForBout(b))}
         ${components.detailDisclosure([
