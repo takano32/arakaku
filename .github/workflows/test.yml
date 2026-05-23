@@ -32,7 +32,7 @@ jobs:
 
       - name: Validate JSON
         run: |
-          python scripts/validate_json.py
+          make validate
 
       - name: Run tests
         run: |

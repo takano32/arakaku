@@ -5,6 +5,7 @@ build:
 
 validate:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/validate_json.py
+	node scripts/validate_json.js
 
 test:
 	OAI_IS_JUPYTER_KERNEL=0 python -m pytest -q

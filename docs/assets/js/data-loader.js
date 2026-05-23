@@ -11,15 +11,17 @@ async function fetchJsonText(path, fallback) {
 /** データ取得と Repository の組み立て */
 export class DataLoader {
   /** @param {import("./core/app-state.js").AppState} state */
-  constructor(state) {
+  constructor(state, { dataFiles = DATA_FILES, fetchText = fetchJsonText } = {}) {
     this.state = state;
+    this.dataFiles = dataFiles;
+    this.fetchText = fetchText;
   }
 
   async load() {
     const entries = await Promise.all(
-      Object.entries(DATA_FILES).map(async ([key, path]) => {
+      Object.entries(this.dataFiles).map(async ([key, path]) => {
         const fallback = JSON.stringify(fallbackForDataKey(key));
-        return [key, await fetchJsonText(path, fallback)];
+        return [key, await this.fetchText(path, fallback)];
       })
     );
 
