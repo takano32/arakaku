@@ -40,8 +40,34 @@ export class ViewController {
       .join("");
   }
 
+  renderSelectOptions(options, selectedValue, defaultLabel, labelForOption = (value) => value) {
+    return [
+      `<option value="">${escapeHtml(defaultLabel)}</option>`,
+      ...options.map(
+        (value) => `
+        <option value="${escapeHtml(value)}" ${value === selectedValue ? "selected" : ""}>
+          ${escapeHtml(labelForOption(value))}
+        </option>
+      `
+      ),
+    ].join("");
+  }
+
+  sortedMentionTypes() {
+    return uniqueSorted(this.ctx.repo.sourceMentions.map((mention) => mention.mention_type)).sort(
+      (a, b) => {
+        const orderA = MENTION_TYPE_ORDER.indexOf(a);
+        const orderB = MENTION_TYPE_ORDER.indexOf(b);
+        if (orderA === -1 && orderB === -1) return String(a).localeCompare(String(b), "ja");
+        if (orderA === -1) return 1;
+        if (orderB === -1) return -1;
+        return orderA - orderB;
+      }
+    );
+  }
+
   renderTitleFilters() {
-    const { state, repo, labels } = this.ctx;
+    const { state, repo } = this.ctx;
     const filters = document.querySelector("#title-filters");
     if (!filters) return;
 
@@ -54,27 +80,14 @@ export class ViewController {
     const promotionIds = uniqueSorted(repo.titles.map((title) => title.promotion_id));
     const divisions = uniqueSorted(repo.titles.map((title) => title.division));
 
-    promotionSelect.innerHTML = [
-      `<option value="">すべての団体</option>`,
-      ...promotionIds.map(
-        (promotionId) => `
-        <option value="${escapeHtml(promotionId)}" ${promotionId === state.titlePromotion ? "selected" : ""}>
-          ${escapeHtml(repo.promotionName(promotionId))}
-        </option>
-      `
-      ),
-    ].join("");
+    promotionSelect.innerHTML = this.renderSelectOptions(
+      promotionIds,
+      state.titlePromotion,
+      "すべての団体",
+      (promotionId) => repo.promotionName(promotionId)
+    );
 
-    divisionSelect.innerHTML = [
-      `<option value="">すべての階級</option>`,
-      ...divisions.map(
-        (division) => `
-        <option value="${escapeHtml(division)}" ${division === state.titleDivision ? "selected" : ""}>
-          ${escapeHtml(division)}
-        </option>
-      `
-      ),
-    ].join("");
+    divisionSelect.innerHTML = this.renderSelectOptions(divisions, state.titleDivision, "すべての階級");
   }
 
   renderMentionFilters() {
@@ -87,27 +100,12 @@ export class ViewController {
     const mentionTypeSelect = document.querySelector("#mention-type-filter");
     if (!mentionTypeSelect || !state.data) return;
 
-    const mentionTypes = uniqueSorted(this.ctx.repo.sourceMentions.map((mention) => mention.mention_type)).sort(
-      (a, b) => {
-        const orderA = MENTION_TYPE_ORDER.indexOf(a);
-        const orderB = MENTION_TYPE_ORDER.indexOf(b);
-        if (orderA === -1 && orderB === -1) return String(a).localeCompare(String(b), "ja");
-        if (orderA === -1) return 1;
-        if (orderB === -1) return -1;
-        return orderA - orderB;
-      }
+    mentionTypeSelect.innerHTML = this.renderSelectOptions(
+      this.sortedMentionTypes(),
+      state.mentionType,
+      "すべての言及",
+      (mentionType) => `${labels.mentionType(mentionType)} / ${mentionType}`
     );
-
-    mentionTypeSelect.innerHTML = [
-      `<option value="">すべての言及</option>`,
-      ...mentionTypes.map(
-        (mentionType) => `
-        <option value="${escapeHtml(mentionType)}" ${mentionType === state.mentionType ? "selected" : ""}>
-          ${escapeHtml(`${labels.mentionType(mentionType)} / ${mentionType}`)}
-        </option>
-      `
-      ),
-    ].join("");
   }
 
   renderTabs() {

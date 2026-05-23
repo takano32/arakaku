@@ -33,7 +33,7 @@ export class SourceRenderers {
     const { components, labels, repo } = this.ctx;
     const items = repo.videosForEntity(type, id);
     if (items.length === 0) return "";
-    return components.section("動画", components.relatedGrid(items.map(({ link, video }) => `
+    const cards = items.map(({ link, video }) => `
       <div class="video-link-item">
         ${this.renderVideoSourceBlock(video)}
         <div class="video-link-meta">
@@ -41,7 +41,8 @@ export class SourceRenderers {
           ${link.notes ? `<p class="meta">${escapeHtml(link.notes)}</p>` : ""}
         </div>
       </div>
-    `).join("")), "video-links");
+    `).join("");
+    return components.section("動画", components.relatedGrid(cards), "video-links");
   }
 
   mentionSortValue(m) { return `${m.source_id ?? ""}:${String(m.line_number ?? "").padStart(6, "0")}`; }
@@ -103,11 +104,15 @@ export class SourceRenderers {
 
   renderSourceReferences(refs, title = "出典候補") {
     const { components } = this.ctx;
-    const list = [...new Map(refs.map(r => [r.candidate_id, r])).values()]
+    const list = this.uniqueSourceReferences(refs)
       .sort((a, b) => this.referenceSortValue(a).localeCompare(this.referenceSortValue(b), "ja"))
       .slice(0, 5);
     if (list.length === 0) return "";
     return components.section(title, components.relatedGrid(list.map(r => this.sourceReferenceSummary(r)).join("")), "related-source-mentions");
+  }
+
+  uniqueSourceReferences(refs) {
+    return [...new Map(refs.map((reference) => [reference.candidate_id, reference])).values()];
   }
 
   renderSourceReferenceCounts(sid) {
@@ -143,8 +148,16 @@ export class SourceRenderers {
     if (!r && !d) return "";
     const c = d ? repo.countSourceMentions(d.source_id, ["note_url", "matchup", "result"]) : {};
     const preview = r?.content_preview || d?.content_preview || "プレビュー未入力";
-    const badges = r ? this.referenceMentionBadges(r) : `<span class="video-badge">note URL ${c.note_url ?? 0}</span><span class="video-badge">対戦カード ${c.matchup ?? 0}</span><span class="video-badge">結果 ${c.result ?? 0}</span>`;
+    const badges = r ? this.referenceMentionBadges(r) : this.sourceMentionCountBadges(c);
     return components.section("YouTube概要欄", `<p>${escapeHtml(preview)}</p><div class="video-badges">${badges}</div>`, "video-description-preview");
+  }
+
+  sourceMentionCountBadges(counts) {
+    return [
+      `note URL ${counts.note_url ?? 0}`,
+      `対戦カード ${counts.matchup ?? 0}`,
+      `結果 ${counts.result ?? 0}`,
+    ].map((label) => `<span class="video-badge">${escapeHtml(label)}</span>`).join("");
   }
 
   renderSourceBody(d) {

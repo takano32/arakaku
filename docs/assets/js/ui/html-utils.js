@@ -20,6 +20,17 @@ export function renderValue(value) {
   return escapeHtml(value);
 }
 
+export function joinPresent(values, separator = " / ") {
+  return (values ?? []).filter(Boolean).join(separator);
+}
+
+export function renderBooleanJa(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  return value ? "あり" : "なし";
+}
+
 export function renderIdList(values) {
   const items = (values ?? []).filter(Boolean);
   if (items.length === 0) {

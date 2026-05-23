@@ -1,3 +1,13 @@
+const COLLECTION_FIELDS = {
+  events: "event_id",
+  promotions: "promotion_id",
+  bouts: "bout_id",
+  fighters: "fighter_id",
+  articles: "article_id",
+  videos: "video_id",
+  sourceDocuments: "source_id",
+};
+
 /** Repository: JSON データへの参照・検索を集約 */
 export class DataRepository {
   /** @param {Record<string, unknown>} data */
@@ -19,8 +29,9 @@ export class DataRepository {
     return index;
   }
 
-  #findById(collectionName, idField, id) {
-    return this.#index(`${collectionName}:${idField}`, this[collectionName], (r) => r[idField]).get(id);
+  #findById(collectionName, id) {
+    const idField = COLLECTION_FIELDS[collectionName];
+    return this.#index(`${collectionName}:${idField}`, this[collectionName], (record) => record[idField]).get(id);
   }
 
   #groupIndex(name, records, keyForRecord) {
@@ -58,13 +69,13 @@ export class DataRepository {
   get sourceVideoReferences() { return this.data.sourceVideoReferences ?? []; }
 
   // Finder Methods
-  findEvent(id) { return this.#findById("events", "event_id", id); }
-  findPromotion(id) { return this.#findById("promotions", "promotion_id", id); }
-  findBout(id) { return this.#findById("bouts", "bout_id", id); }
-  findFighter(id) { return this.#findById("fighters", "fighter_id", id); }
-  findArticle(id) { return this.#findById("articles", "article_id", id); }
-  videoById(id) { return this.#findById("videos", "video_id", id); }
-  sourceDocumentById(id) { return this.#findById("sourceDocuments", "source_id", id); }
+  findEvent(id) { return this.#findById("events", id); }
+  findPromotion(id) { return this.#findById("promotions", id); }
+  findBout(id) { return this.#findById("bouts", id); }
+  findFighter(id) { return this.#findById("fighters", id); }
+  findArticle(id) { return this.#findById("articles", id); }
+  videoById(id) { return this.#findById("videos", id); }
+  sourceDocumentById(id) { return this.#findById("sourceDocuments", id); }
 
   // Label Methods
   eventName(id) { return this.findEvent(id)?.name ?? id; }
@@ -107,6 +118,13 @@ export class DataRepository {
   sourceReferencesForEvent(event) { return this.#findManyByField("sourceEventReferences", "event_id", event.event_id); }
   sourceReferenceForVideo(video) {
     return this.sourceVideoReferences.find(r => r.video_id === video.video_id);
+  }
+
+  sourceContextForVideo(video) {
+    return {
+      reference: this.sourceReferenceForVideo(video),
+      document: this.sourceDocumentForVideo(video),
+    };
   }
 
   fighterSnapshotsForFighter(fighterId) {

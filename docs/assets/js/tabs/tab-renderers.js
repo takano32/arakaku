@@ -1,5 +1,12 @@
-import { escapeHtml, externalLink, renderIdList, renderTextList, renderValue, uniqueSorted } from "../ui/html-utils.js";
-import { MENTION_TYPE_ORDER } from "../config.js";
+import {
+  escapeHtml,
+  externalLink,
+  joinPresent,
+  renderBooleanJa,
+  renderIdList,
+  renderTextList,
+  renderValue,
+} from "../ui/html-utils.js";
 
 /** Template Method の具象: 各タブの HTML 生成 */
 export class TabRenderers {
@@ -10,12 +17,42 @@ export class TabRenderers {
 
   recordList(records, renderItem) { return this.ctx.components.recordList(records, renderItem); }
 
+  focusedOrFiltered(focusedId, findRecord, records, predicate) {
+    return focusedId ? [findRecord(focusedId)].filter(Boolean) : records.filter(predicate);
+  }
+
+  boutResultLine(bout) {
+    return joinPresent([
+      bout.result?.round ? `${bout.result.round}R` : "",
+      bout.result?.time,
+      bout.result?.method_raw,
+    ], "");
+  }
+
+  boutDecisionLine(bout) {
+    return joinPresent([bout.result?.method_normalized, bout.result?.technique, bout.result?.decision_score]);
+  }
+
+  promotionRuleRows(promotion) {
+    return [
+      ["会場", promotion.rules?.venue],
+      ["ラウンド", promotion.rules?.rounds],
+      ["判定", promotion.rules?.judging],
+      ["グローブ", promotion.rules?.glove],
+      ["肘", renderBooleanJa(promotion.rules?.elbows)],
+      ["サッカーボールキック", renderBooleanJa(promotion.rules?.soccer_kicks)],
+      ["踏みつけ", renderBooleanJa(promotion.rules?.stomps)],
+      ["4点頭部キック", renderBooleanJa(promotion.rules?.four_point_head_kicks)],
+      ["4点頭部膝", renderBooleanJa(promotion.rules?.four_point_head_knees)],
+    ];
+  }
+
   renderFighterRows(bout) {
     const { navigation } = this.ctx;
     return (bout.fighters ?? []).map(f => `
       <li>
         <span>${navigation.fighterLink(f.fighter_id, f.name)}</span>
-        <span class="meta">${f.corner ? `${escapeHtml(f.corner)} / ` : ""}${escapeHtml(f.result || "unknown")}</span>
+        <span class="meta">${escapeHtml(joinPresent([f.corner, f.result || "unknown"]))}</span>
       </li>
     `).join("");
   }
@@ -32,7 +69,7 @@ export class TabRenderers {
       ${components.definitionList([
         ["snapshot_id", `<code>${escapeHtml(x.snapshot_id)}</code>`],
         ["所属", renderValue(x.gym)],
-        ["身長・年齢", renderValue([x.height, x.age].filter(Boolean).join(" / "))],
+        ["身長・年齢", renderValue(joinPresent([x.height, x.age]))],
         ["戦績", renderValue(x.record_text)],
         ["主団体", renderValue(repo.promotionName(x.main_promotion_id))],
         ["肩書き", renderValue(x.titles_text)],
@@ -47,7 +84,7 @@ export class TabRenderers {
     if (e.length === 0) return "";
     return components.relatedSection("大会", e.slice(0, 12), (x) => components.relatedItem(`
       <h4>${navigation.eventLink(x.event_id, x.name)}</h4>
-      <p class="meta">${escapeHtml([x.event_type, x.published_at || x.event_date].filter(Boolean).join(" / "))}</p>
+      <p class="meta">${escapeHtml(joinPresent([x.event_type, x.published_at || x.event_date]))}</p>
     `, "promotion-event-card")) + (e.length > 12 ? `<p class="meta">ほか ${e.length - 12} 件</p>` : "");
   }
 
@@ -68,7 +105,7 @@ export class TabRenderers {
     return components.relatedSection("紐づけ先", l, (x) => components.relatedItem(`
       <span class="video-badge">${escapeHtml(labels.relationType(x.relation_type))}</span>
       <span>${this.#renderLinkedEntityLabel(x)}</span>
-      ${x.start_time || x.end_time ? `<span class="meta">${escapeHtml([x.start_time, x.end_time].filter(Boolean).join(" - "))}</span>` : ""}
+      ${x.start_time || x.end_time ? `<span class="meta">${escapeHtml(joinPresent([x.start_time, x.end_time], " - "))}</span>` : ""}
       ${x.notes ? `<p class="meta">${escapeHtml(x.notes)}</p>` : ""}
     `, "video-link-entity-card"));
   }
@@ -86,16 +123,35 @@ export class TabRenderers {
     return `<code>${escapeHtml(id)}</code>`;
   }
 
+  renderLineageCard(reign) {
+    const { navigation, components, repo, sources } = this.ctx;
+    const eventParts = [
+      reign.won_at_event_id ? `獲得: ${navigation.eventLink(reign.won_at_event_id, repo.eventName(reign.won_at_event_id))}` : "",
+      reign.lost_at_event_id ? `喪失: ${navigation.eventLink(reign.lost_at_event_id, repo.eventName(reign.lost_at_event_id))}` : "",
+    ].filter(Boolean);
+    const source = reign.source_video_id
+      ? `出典: ${sources.renderVideoRefs([reign.source_video_id], { inline: true })}`
+      : reign.source_article_id ? `出典: ${sources.renderArticleRefs(reign.source_article_id)}` : "";
+
+    return components.relatedItem(`
+      <p class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</p>
+      <p class="fighter-name">${navigation.fighterLink(reign.fighter_id, reign.fighter_name)}</p>
+      <p class="meta">${[...eventParts, source].filter(Boolean).join(" / ")}</p>
+    `, "lineage-card");
+  }
+
   bouts() {
     const { state, query, navigation, components, sources, repo } = this.ctx;
-    const list = state.focusEventId ? repo.boutsForEvent(state.focusEventId) : repo.bouts.filter(b => query.includes(query.boutSearchText(b)));
+    const list = state.focusEventId
+      ? repo.boutsForEvent(state.focusEventId)
+      : repo.bouts.filter((bout) => query.includes(query.boutSearchText(bout)));
     return this.recordList(list, (b) => `
       <article class="card record-card bout-card">
         <h2>${navigation.boutMatchup(b)}</h2>
         <p class="meta">${navigation.eventLink(b.event_id, repo.eventName(b.event_id))} / ${escapeHtml(b.division ?? "")}</p>
         <p class="result">
           ${navigation.renderBoutResultSummary(b)}
-          ${b.result?.round ? `${escapeHtml(b.result.round)}R` : ""}${escapeHtml(b.result?.time ?? "")} ${escapeHtml(b.result?.method_raw ?? "")}
+          ${escapeHtml(this.boutResultLine(b))}
         </p>
         ${b.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(b.title.note)}</p>` : ""}
         ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), b.source_article_id)}
@@ -106,12 +162,12 @@ export class TabRenderers {
           ["大会", navigation.eventLink(b.event_id, repo.eventName(b.event_id))],
           ["団体", repo.promotionName(b.promotion_id)],
           ["試合順", b.bout_order ? `第${b.bout_order}試合` : ""],
-          ["階級", [b.division, b.weight_class_id].filter(Boolean).join(" / ")],
+          ["階級", joinPresent([b.division, b.weight_class_id])],
           ["種別", b.bout_type],
           ["結果状態", b.result_status],
           ["選手", `<ul class="inline-list">${this.renderFighterRows(b)}</ul>`],
-          ["決着", [b.result?.method_normalized, b.result?.technique, b.result?.decision_score].filter(Boolean).join(" / ")],
-          ["王座", b.title?.is_title_bout ? [b.title.title_id, b.title.title_result].filter(Boolean).join(" / ") : ""],
+          ["決着", this.boutDecisionLine(b)],
+          ["王座", b.title?.is_title_bout ? joinPresent([b.title.title_id, b.title.title_result]) : ""],
           ["推定元動画", renderIdList([b.inferred_from_video_id])],
           ["推定信頼度", b.inferred_confidence],
           ["メモ", b.notes],
@@ -122,7 +178,12 @@ export class TabRenderers {
 
   fighters() {
     const { state, query, components, sources, related, repo } = this.ctx;
-    const list = state.focusFighterId ? [repo.findFighter(state.focusFighterId)].filter(Boolean) : repo.fighters.filter(f => query.fighterMatches(f));
+    const list = this.focusedOrFiltered(
+      state.focusFighterId,
+      repo.findFighter.bind(repo),
+      repo.fighters,
+      (fighter) => query.fighterMatches(fighter)
+    );
     return this.recordList(list, (f) => `
       <article class="card record-card fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
@@ -135,7 +196,7 @@ export class TabRenderers {
           ["主階級", f.main_division],
           ["主団体", repo.promotionName(f.main_promotion_id)],
           ["所属", f.profile?.gym],
-          ["身長・年齢", [f.profile?.height, f.profile?.age].filter(Boolean).join(" / ")],
+          ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
           ["推定元動画", renderIdList(f.inferred_from_video_ids)],
           ["推定信頼度", f.inferred_confidence],
           ["概要", f.summary],
@@ -147,7 +208,12 @@ export class TabRenderers {
 
   events() {
     const { state, query, navigation, components, sources, related, repo } = this.ctx;
-    const list = state.focusEventId ? [repo.findEvent(state.focusEventId)].filter(Boolean) : repo.events.filter(e => query.eventMatches(e));
+    const list = this.focusedOrFiltered(
+      state.focusEventId,
+      repo.findEvent.bind(repo),
+      repo.events,
+      (event) => query.eventMatches(event)
+    );
     return this.recordList(list, (e) => `
       <article class="card record-card event-card">
         <h2>${escapeHtml(e.name)}</h2>
@@ -189,15 +255,7 @@ export class TabRenderers {
           ["英字名", p.name_en],
           ["カテゴリ", p.category],
           ["範囲", p.country_scope],
-          ["会場", p.rules?.venue],
-          ["ラウンド", p.rules?.rounds],
-          ["判定", p.rules?.judging],
-          ["グローブ", p.rules?.glove],
-          ["肘", p.rules?.elbows === null ? "" : p.rules?.elbows ? "あり" : "なし"],
-          ["サッカーボールキック", p.rules?.soccer_kicks === null ? "" : p.rules?.soccer_kicks ? "あり" : "なし"],
-          ["踏みつけ", p.rules?.stomps === null ? "" : p.rules?.stomps ? "あり" : "なし"],
-          ["4点頭部キック", p.rules?.four_point_head_kicks === null ? "" : p.rules?.four_point_head_kicks ? "あり" : "なし"],
-          ["4点頭部膝", p.rules?.four_point_head_knees === null ? "" : p.rules?.four_point_head_knees ? "あり" : "なし"],
+          ...this.promotionRuleRows(p),
         ])}
       </article>
     `);
@@ -232,7 +290,7 @@ export class TabRenderers {
   }
 
   titles() {
-    const { query, navigation, components, repo, sources } = this.ctx;
+    const { query, components, repo } = this.ctx;
     const list = repo.titles.filter(t => query.titleMatches(t)).sort((a, b) => 
       repo.promotionName(a.promotion_id).localeCompare(repo.promotionName(b.promotion_id), "ja") || String(a.division ?? "").localeCompare(String(b.division ?? ""), "ja")
     );
@@ -243,16 +301,10 @@ export class TabRenderers {
       const g = `${repo.promotionName(t.promotion_id)} / ${t.division ?? "階級未設定"}`;
       const header = g !== prev ? `<h2 class="title-group-heading">${escapeHtml(g)}</h2>` : "";
       prev = g;
-      const lineage = [...(t.lineage ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(r => components.relatedItem(`
-        <p class="reign-label">${escapeHtml(r.reign_label ?? `${r.order}代`)}</p>
-        <p class="fighter-name">${navigation.fighterLink(r.fighter_id, r.fighter_name)}</p>
-        <p class="meta">
-          ${r.won_at_event_id ? `獲得: ${navigation.eventLink(r.won_at_event_id, repo.eventName(r.won_at_event_id))}` : ""}
-          ${r.lost_at_event_id ? `${r.won_at_event_id ? " / " : ""}喪失: ${navigation.eventLink(r.lost_at_event_id, repo.eventName(r.lost_at_event_id))}` : ""}
-          ${r.source_video_id ? ` / 出典: ${sources.renderVideoRefs([r.source_video_id], { inline: true })}` : ""}
-          ${!r.source_video_id && r.source_article_id ? ` / 出典: ${sources.renderArticleRefs(r.source_article_id)}` : ""}
-        </p>
-      `, "lineage-card")).join("");
+      const lineage = [...(t.lineage ?? [])]
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((reign) => this.renderLineageCard(reign))
+        .join("");
       return `${header}<article class="card title-card">
         <h3>${escapeHtml(repo.titleDisplayName(t))}</h3>
         ${components.detailDisclosure([["title_id", `<code>${escapeHtml(t.title_id)}</code>`], ["団体", repo.promotionName(t.promotion_id)], ["階級", t.division], ["変遷数", (t.lineage ?? []).length]])}
