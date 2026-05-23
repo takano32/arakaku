@@ -187,7 +187,7 @@ export class TabRenderers {
       <article class="card record-card fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
         <p class="meta">${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}</p>
-        ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), f.source_article_ids)}
+        ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
         ${related.renderRelatedBouts(f.fighter_id)}
         ${components.detailDisclosure([
           ["fighter_id", `<code>${escapeHtml(f.fighter_id)}</code>`],

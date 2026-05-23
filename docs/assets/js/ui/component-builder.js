@@ -62,6 +62,13 @@ export class ComponentFactory {
     return this.section(title, `<p>${renderArticleRefs(ids)}</p>`, "primary-links");
   }
 
+  primaryArticleRefList(renderArticleRef, articleIds, title = "出典記事") {
+    const ids = (Array.isArray(articleIds) ? articleIds : [articleIds]).filter(Boolean);
+    if (ids.length === 0) return "";
+    const items = ids.map((id) => `<li>${renderArticleRef(id)}</li>`).join("");
+    return this.section(title, `<ul class="article-ref-list">${items}</ul>`, "primary-links");
+  }
+
   primaryVideoRefs(renderVideoRefs, videoIds, title = "出典動画") {
     const ids = (videoIds ?? []).filter(Boolean);
     if (ids.length === 0) return "";

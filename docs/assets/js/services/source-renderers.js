@@ -124,12 +124,15 @@ export class SourceRenderers {
   renderArticleRefs(aids) {
     const ids = (Array.isArray(aids) ? aids : [aids]).filter(Boolean);
     if (ids.length === 0) return "未入力";
-    return ids.map(id => {
-      const a = this.ctx.repo.findArticle(id);
-      const d = this.ctx.repo.sourceDocumentForArticle(id);
-      const detail = d?.content_text ? this.renderArticleSourceDetail(`<pre>${escapeHtml(d.content_text)}</pre>`) : "";
-      return `<span class="article-source-ref">${a?.url ? externalLink(a.url, a.title || id) : `<code>${escapeHtml(id)}</code>`}${detail}</span>`;
-    }).join(", ");
+    return ids.map((id) => this.renderArticleRef(id)).join(", ");
+  }
+
+  renderArticleRef(id) {
+    const article = this.ctx.repo.findArticle(id);
+    const document = this.ctx.repo.sourceDocumentForArticle(id);
+    const detail = document?.content_text ? this.renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`) : "";
+    const link = article?.url ? externalLink(article.url, article.title || id) : `<code>${escapeHtml(id)}</code>`;
+    return `<span class="article-source-ref">${link}${detail}</span>`;
   }
 
   renderVideoRefs(vids, opts = {}) {
