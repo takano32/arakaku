@@ -29,11 +29,13 @@ export class SourceRenderers {
     return `<div class="video-source-block"><p class="video-source-title">${externalLink(v.url, label)}</p>${detail}${embed ? `<div class="video-source-embed">${embed}</div>` : ""}</div>`;
   }
 
-  renderVideoLinks(type, id) {
+  renderVideoLinks(type, id, excludeVideoIds = new Set()) {
     const { components, labels, repo } = this.ctx;
+    const excluded = excludeVideoIds instanceof Set ? excludeVideoIds : new Set(excludeVideoIds);
     const items = repo.videosForEntity(type, id);
-    if (items.length === 0) return "";
-    const cards = items.map(({ link, video }) => `
+    const visibleItems = items.filter(({ video }) => !excluded.has(video.video_id));
+    if (visibleItems.length === 0) return "";
+    const cards = visibleItems.map(({ link, video }) => `
       <div class="video-link-item">
         ${this.renderVideoSourceBlock(video)}
         <div class="video-link-meta">

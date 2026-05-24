@@ -219,8 +219,7 @@ export class TabRenderers {
         <p class="meta">${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}</p>
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
         ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), e.source_article_id)}
-        ${components.primaryVideoRefs(sources.renderVideoRefs.bind(sources), repo.eventSourceVideoIdsWithoutBoutCoverage(e))}
-        ${sources.renderVideoLinks("event", e.event_id)}
+        ${sources.renderVideoLinks("event", e.event_id, repo.videoIdsLinkedToEventBouts(e.event_id))}
         ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e))}
         ${related.renderEventBouts(e.event_id)}
         ${components.detailDisclosure([
