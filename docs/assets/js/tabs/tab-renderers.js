@@ -187,6 +187,7 @@ export class TabRenderers {
       <article class="card record-card fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
         <p class="meta">${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}</p>
+        ${this.renderFighterSnapshots(f.fighter_id)}
         ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
         ${related.renderRelatedBouts(f.fighter_id)}
         ${components.detailDisclosure([
@@ -200,7 +201,6 @@ export class TabRenderers {
           ["推定信頼度", f.inferred_confidence],
           ["概要", f.summary],
         ])}
-        ${this.renderFighterSnapshots(f.fighter_id)}
       </article>
     `);
   }
