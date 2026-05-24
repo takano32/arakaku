@@ -16,7 +16,7 @@ Use this skill whenever the task touches:
 - `scripts/*.py`
 - `tests/*.py`
 - `docs/index.html`
-- `docs/assets/app-*.js`
+- `docs/assets/js/*.js`
 - `docs/assets/style.css`
 - `.github/workflows/*.yml`
 - `Makefile`
@@ -40,7 +40,7 @@ The project has three layers.
 
 3. GitHub Pages viewer
 
-   `docs/index.html`, `docs/assets/app-*.js`, and `docs/assets/style.css` render the generated JSON.
+   `docs/index.html`, `docs/assets/js/`, and `docs/assets/style.css` render the generated JSON.
 
 Do not edit generated JSON directly. Always edit source CSVs or scripts, then rebuild.
 
@@ -191,13 +191,25 @@ Bout data.
 
 Important fields and meanings:
 
-- `fighter_a` / `fighter_b`: matchup participants
-- `matchup`: viewer-friendly label such as `A vs B`
-- `winner` / `loser`: only fill when confirmed
+- bout-level facts live here
 - `result_status`: use `unknown` when not confirmed
 - method / round / time fields: only fill when confirmed
 
 Do not derive winner/loser from matchup ordering.
+
+### `data-src/bout_participants.csv`
+
+Bout participant relationship data.
+
+Important fields and meanings:
+
+- `bout_id`: links to `bouts.csv`
+- `side`: participant side, currently `red` or `blue`
+- `fighter_id`: links to `fighters.csv` when the fighter is identified
+- `fighter_name`: source/display name preserved even if identity is uncertain
+- `result`: `win`, `loss`, or `unknown`
+
+Viewer `matchup`, `winner`, and `loser` fields are derived from this table during JSON generation.
 
 ### `data-src/fighters.csv`
 
@@ -207,9 +219,15 @@ Use for fighter IDs, display names, divisions, gyms, aliases, and summaries.
 
 ### `data-src/titles.csv`
 
+Title and tournament entity data.
+
+Use for belt, title, and tournament entities.
+
+### `data-src/title_reigns.csv`
+
 Title and tournament lineage data.
 
-Use for belt, title, tournament, and lineage information.
+Use for reign order, fighter, source article/video, and won/lost event references.
 
 ### `data-src/fighter_snapshots.csv`
 
@@ -248,6 +266,23 @@ preview
 interview
 commentary
 reference
+```
+
+### `data-src/article_links.csv`
+
+Links articles to entities.
+
+Supported `entity_type` values include:
+
+```text
+event
+bout
+fighter
+fighter_snapshot
+promotion
+title
+title_reign
+video
 ```
 
 ### `data-src/articles.csv`
@@ -338,12 +373,16 @@ Expected outputs include:
 
 ```text
 metadata.json
+database.json
 articles.json
+article_links.json
 promotions.json
 events.json
 bouts.json
+bout_participants.json
 fighters.json
 titles.json
+title_reigns.json
 fighter_snapshots.json
 videos.json
 video_links.json

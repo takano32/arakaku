@@ -1,6 +1,6 @@
 ---
 name: arakaku-viewer-ui
-description: Use this skill when editing the ARAKAKU GitHub Pages viewer, including docs/index.html, docs/assets/app-*.js, docs/assets/style.css, tabs, search, navigation, source document display, or source mention display.
+description: Use this skill when editing the ARAKAKU GitHub Pages viewer, including docs/index.html, docs/assets/js/, docs/assets/style.css, tabs, search, navigation, source document display, or source mention display.
 ---
 
 # ARAKAKU Viewer UI Skill

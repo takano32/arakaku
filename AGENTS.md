@@ -39,7 +39,7 @@ The following may be changed destructively when a cleaner design is better:
 - `tests/`
 - `docs/data/`
 - Generated JSON schemas
-- `docs/assets/app.js`
+- `docs/assets/js/`
 - `docs/assets/`
 - `docs/index.html`
 - README and documentation

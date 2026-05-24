@@ -224,6 +224,16 @@ make clean-generated
 For quick validation of counts:
 
 ```bash
-wc -l data-src/source_documents.csv
-wc -l data-src/source_mentions.csv
+python - <<'PY'
+import csv
+
+for path in [
+    "data-src/source_documents.csv",
+    "data-src/source_mentions.csv",
+]:
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        print(path, len(list(csv.DictReader(f))), "rows")
+PY
 ```
+
+Do not use `wc -l` for `source_documents.csv`; source text fields can contain embedded newlines.

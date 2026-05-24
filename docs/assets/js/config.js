@@ -2,12 +2,16 @@
 
 export const DATA_FILES = {
   metadata: "./data/metadata.json",
+  database: "./data/database.json",
   articles: "./data/articles.json",
+  articleLinks: "./data/article_links.json",
   promotions: "./data/promotions.json",
   events: "./data/events.json",
   bouts: "./data/bouts.json",
+  boutParticipants: "./data/bout_participants.json",
   fighters: "./data/fighters.json",
   titles: "./data/titles.json",
+  titleReigns: "./data/title_reigns.json",
   videos: "./data/videos.json",
   videoLinks: "./data/video_links.json",
   fighterSnapshots: "./data/fighter_snapshots.json",

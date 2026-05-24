@@ -67,8 +67,8 @@ When editing docs:
 Current expected data scale:
 
 ```text
-source_documents.csv: 480 rows
-source_mentions.csv: 1801 rows
+source_documents.csv: 479 rows
+source_mentions.csv: 1794 rows
 ```
 
 Current source document types:

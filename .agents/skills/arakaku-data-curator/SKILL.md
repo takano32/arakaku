@@ -72,12 +72,24 @@ Bout data.
 
 Important distinction:
 
-- `fighter_a` / `fighter_b`: matchup participants
-- `winner` / `loser`: confirmed result only
-- `matchup`: display helper such as `A vs B`
+- bout-level facts live here
 - `result_status=unknown`: use when result is not confirmed
+- method / round / time are confirmed result details only
 
 Do not derive winner/loser from matchup order.
+
+### bout_participants.csv
+
+Bout participant relationship data.
+
+Use this for:
+
+- `bout_id` to `bouts.csv`
+- `fighter_id` to `fighters.csv` when identified
+- preserved `fighter_name`
+- participant `result` such as `win`, `loss`, or `unknown`
+
+`matchup`, `winner`, and `loser` are generated JSON display fields, not source columns.
 
 ### fighters.csv
 
@@ -90,6 +102,12 @@ Use stable `fighter_id` values. Be careful with same-name and similar-name fight
 Video metadata.
 
 Do not duplicate videos unless URLs differ or there is a clear reason.
+
+### article_links.csv
+
+Link articles to entities.
+
+Use this instead of comma-list source article columns on entity tables.
 
 ### video_links.csv
 
@@ -117,6 +135,18 @@ interview
 commentary
 reference
 ```
+
+### titles.csv
+
+Title and tournament entity data.
+
+Use this for title ID, promotion, and division.
+
+### title_reigns.csv
+
+Title and tournament lineage data.
+
+Use this for reign order, fighter, won/lost event references, and source article/video references.
 
 ### source_documents.csv
 

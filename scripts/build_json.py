@@ -1,57 +1,117 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 from typing import Any
+
 from arakaku_utils import (
-    DATA_SRC, REVIEW, DOCS_DATA,
-    read_csv, write_json, none_if_empty, bool_from_text, split_list,
-    parse_int, get_jst_now_iso, map_csv,
-    field_or_default, field_or_empty, int_field, list_field, CsvRow,
+    DATA_SRC,
+    REVIEW,
+    DOCS_DATA,
+    CsvRow,
+    bool_from_text,
+    field_or_default,
+    field_or_empty,
+    get_jst_now_iso,
+    int_field,
+    list_field,
+    map_csv,
+    none_if_empty,
+    parse_int,
+    read_csv,
+    split_list,
+    write_json,
 )
-from models import Bout
+
+
+def rows(name: str) -> list[CsvRow]:
+    return read_csv(DATA_SRC / name)
+
+
+def index_by(items: list[CsvRow], key: str) -> dict[str, CsvRow]:
+    return {item[key]: item for item in items if item.get(key)}
+
+
+def group_by(items: list[CsvRow], key: str) -> dict[str, list[CsvRow]]:
+    groups: dict[str, list[CsvRow]] = {}
+    for item in items:
+        value = item.get(key)
+        if not value:
+            continue
+        groups.setdefault(value, []).append(item)
+    return groups
+
+
+ARTICLE_LINKS = rows("article_links.csv")
+BOUT_PARTICIPANTS = rows("bout_participants.csv")
+TITLE_REIGNS = rows("title_reigns.csv")
+VIDEO_LINKS = rows("video_links.csv")
+
+
+def article_ids_for(entity_type: str, entity_id: str) -> list[str]:
+    return [
+        row["article_id"]
+        for row in ARTICLE_LINKS
+        if row.get("entity_type") == entity_type and row.get("entity_id") == entity_id
+    ]
+
+
+def first_article_id_for(entity_type: str, entity_id: str) -> str | None:
+    ids = article_ids_for(entity_type, entity_id)
+    return ids[0] if ids else None
+
+
+def video_ids_for(entity_type: str, entity_id: str) -> list[str]:
+    return [
+        row["video_id"]
+        for row in VIDEO_LINKS
+        if row.get("entity_type") == entity_type and row.get("entity_id") == entity_id
+    ]
 
 
 def known_or_unknown_result(row: CsvRow) -> str:
-    if none_if_empty(row.get("result_status")):
-        return none_if_empty(row.get("result_status")) or "unknown"
-    return "known" if row.get("winner_id") or none_if_empty(row.get("winner")) else "unknown"
+    return none_if_empty(row.get("result_status")) or "unknown"
+
+
+def sorted_participants_for_bout(bout_id: str) -> list[CsvRow]:
+    side_order = {"red": 0, "blue": 1}
+    return sorted(
+        [row for row in BOUT_PARTICIPANTS if row.get("bout_id") == bout_id],
+        key=lambda row: side_order.get(row.get("side", ""), 99),
+    )
 
 
 def bout_matchup(row: CsvRow) -> str:
-    existing = none_if_empty(row.get("matchup"))
-    if existing:
-        return existing
-    return f"{row.get('fighter_a', '')} vs {row.get('fighter_b', '')}".strip()
-
-
-def bout_fighter_result(row: CsvRow, fighter_id: str | None, name: str) -> str:
-    winner_id = none_if_empty(row.get("winner_id"))
-    winner_name = none_if_empty(row.get("winner"))
-    if winner_id == fighter_id or winner_name == name:
-        return "win"
-    if winner_id or winner_name:
-        return "loss"
-    return "unknown"
+    names = [p.get("fighter_name", "") for p in sorted_participants_for_bout(row["bout_id"])]
+    return " vs ".join(name for name in names if name)
 
 
 def bout_fighters(row: CsvRow) -> list[dict[str, Any]]:
-    fighter_a_id = none_if_empty(row.get("fighter_a_id"))
-    fighter_b_id = none_if_empty(row.get("fighter_b_id"))
-    fighter_a = row["fighter_a"]
-    fighter_b = row["fighter_b"]
     return [
         {
-            "fighter_id": fighter_a_id,
-            "name": fighter_a,
-            "corner": none_if_empty(row.get("fighter_a_corner")),
-            "result": bout_fighter_result(row, fighter_a_id, fighter_a),
-        },
-        {
-            "fighter_id": fighter_b_id,
-            "name": fighter_b,
-            "corner": none_if_empty(row.get("fighter_b_corner")),
-            "result": bout_fighter_result(row, fighter_b_id, fighter_b),
-        },
+            "fighter_id": none_if_empty(participant.get("fighter_id")),
+            "name": participant.get("fighter_name", ""),
+            "side": participant.get("side", ""),
+            "corner": none_if_empty(participant.get("corner")),
+            "result": none_if_empty(participant.get("result")) or "unknown",
+        }
+        for participant in sorted_participants_for_bout(row["bout_id"])
     ]
+
+
+def winner_from_participants(row: CsvRow, field: str) -> str | None:
+    winners = [p for p in sorted_participants_for_bout(row["bout_id"]) if p.get("result") == "win"]
+    if not winners:
+        return None
+    winner = winners[0]
+    return none_if_empty(winner.get(field))
+
+
+def loser_from_participants(row: CsvRow, field: str) -> str | None:
+    losers = [p for p in sorted_participants_for_bout(row["bout_id"]) if p.get("result") == "loss"]
+    if not losers:
+        return None
+    loser = losers[0]
+    return none_if_empty(loser.get(field))
 
 
 def is_title_bout(row: CsvRow) -> bool:
@@ -86,114 +146,218 @@ def build_metadata() -> dict[str, Any]:
         "display_name": "アラカク非公式データベース",
         "description": "アラカク通信のーと等をもとに、団体・大会・試合結果・選手情報を整理するデータベース。",
         "generated_at": get_jst_now_iso(),
-        "data_version": "0.1.0",
-        "source_note": "公式表記を尊重しつつ、検索・集計用に一部正規化しています。"
+        "data_version": "0.2.0",
+        "source_schema": "relational-csv-v1",
+        "source_note": "CSV は事実データを正規化し、viewer 用 JSON は関係テーブルから派生生成しています。",
     }
 
+
 def build_articles() -> list[dict[str, Any]]:
-    return map_csv("articles.csv", {
-        "article_id": "article_id", "title": "title", "url": "url",
-        "source_type": field_or_default("source_type", "official_note"),
-        "article_type": "article_type", "promotion_id": "promotion_id",
-        "published_at": "published_at", "last_checked_at": "last_checked_at",
-        "status": field_or_default("status", "parsed"),
-        "notes": field_or_empty("notes"),
-    })
+    return map_csv(
+        "articles.csv",
+        {
+            "article_id": "article_id",
+            "title": "title",
+            "url": "url",
+            "source_type": field_or_default("source_type", "official_note"),
+            "article_type": "article_type",
+            "promotion_id": "promotion_id",
+            "published_at": "published_at",
+            "last_checked_at": "last_checked_at",
+            "status": field_or_default("status", "parsed"),
+            "notes": field_or_empty("notes"),
+        },
+    )
+
 
 def build_promotions() -> list[dict[str, Any]]:
-    return map_csv("promotions.csv", {
-        "promotion_id": "promotion_id", "name": "name", "name_en": "name_en",
-        "category": "category", "country_scope": "country_scope",
-        "summary": field_or_empty("summary"),
-        "rules": promotion_rules,
-        "source_article_ids": list_field("source_article_ids"),
-    })
+    return map_csv(
+        "promotions.csv",
+        {
+            "promotion_id": "promotion_id",
+            "name": "name",
+            "name_en": "name_en",
+            "category": "category",
+            "country_scope": "country_scope",
+            "summary": field_or_empty("summary"),
+            "rules": promotion_rules,
+            "source_article_ids": lambda row: article_ids_for("promotion", row["promotion_id"]),
+        },
+    )
+
 
 def build_events() -> list[dict[str, Any]]:
-    return map_csv("events.csv", {
-        "event_id": "event_id", "name": "name", "promotion_id": "promotion_id",
-        "event_number": int_field("event_number"), "event_type": "event_type",
-        "event_date": "event_date", "published_at": "published_at",
-        "source_article_id": "source_article_id", "summary": field_or_empty("summary"),
-        "source_video_ids": list_field("source_video_ids"),
-        "inferred_from": "inferred_from", "inferred_confidence": "inferred_confidence"
-    })
+    return map_csv(
+        "events.csv",
+        {
+            "event_id": "event_id",
+            "name": "name",
+            "promotion_id": "promotion_id",
+            "event_number": int_field("event_number"),
+            "event_type": "event_type",
+            "event_date": "event_date",
+            "published_at": "published_at",
+            "source_article_id": lambda row: first_article_id_for("event", row["event_id"]),
+            "summary": field_or_empty("summary"),
+            "source_video_ids": lambda row: video_ids_for("event", row["event_id"]),
+            "inferred_from": "inferred_from",
+            "inferred_confidence": "inferred_confidence",
+        },
+    )
 
-def build_bouts() -> list[Bout]:
-    return map_csv("bouts.csv", {
-        "bout_id": "bout_id", "event_id": "event_id", "promotion_id": "promotion_id",
-        "bout_order": int_field("bout_order"),
-        "matchup": bout_matchup,
-        "division": "division", "weight_class_id": "weight_class_id", "bout_type": "bout_type",
-        "fighters": bout_fighters, "winner_id": "winner_id", "winner": "winner", "loser_id": "loser_id", "loser": "loser",
-        "result_status": known_or_unknown_result,
-        "result": {
-            "round": int_field("round", strip_prefix="R"), "time": "time", "method_raw": "method_raw", "method_normalized": "method_normalized",
-            "technique": "technique", "decision_score": "decision_score"
+
+def build_bouts() -> list[dict[str, Any]]:
+    return map_csv(
+        "bouts.csv",
+        {
+            "bout_id": "bout_id",
+            "event_id": "event_id",
+            "promotion_id": "promotion_id",
+            "bout_order": int_field("bout_order"),
+            "matchup": bout_matchup,
+            "division": "division",
+            "weight_class_id": "weight_class_id",
+            "bout_type": "bout_type",
+            "fighters": bout_fighters,
+            "winner_id": lambda row: winner_from_participants(row, "fighter_id"),
+            "winner": lambda row: winner_from_participants(row, "fighter_name"),
+            "loser_id": lambda row: loser_from_participants(row, "fighter_id"),
+            "loser": lambda row: loser_from_participants(row, "fighter_name"),
+            "result_status": known_or_unknown_result,
+            "result": {
+                "round": int_field("round", strip_prefix="R"),
+                "time": "time",
+                "method_raw": "method_raw",
+                "method_normalized": "method_normalized",
+                "technique": "technique",
+                "decision_score": "decision_score",
+            },
+            "title": {
+                "is_title_bout": is_title_bout,
+                "title_id": "title_id",
+                "title_result": "title_result",
+                "note": field_or_empty("title_note"),
+            },
+            "source_article_id": lambda row: first_article_id_for("bout", row["bout_id"]),
+            "notes": field_or_empty("notes"),
+            "inferred_from_video_id": "inferred_from_video_id",
+            "inferred_from_video_title": "inferred_from_video_title",
+            "inferred_confidence": "inferred_confidence",
         },
-        "title": {
-            "is_title_bout": is_title_bout,
-            "title_id": "title_id", "title_result": "title_result",
-            "note": field_or_empty("title_note"),
-        },
-        "source_article_id": "source_article_id", "notes": field_or_empty("notes"),
-        "inferred_from_video_id": "inferred_from_video_id", "inferred_from_video_title": "inferred_from_video_title", "inferred_confidence": "inferred_confidence"
-    })
+    )
+
 
 def build_fighters() -> list[dict[str, Any]]:
-    return map_csv("fighters.csv", {
-        "fighter_id": "fighter_id", "display_name": "display_name", "aliases": list_field("aliases"),
-        "main_division": "main_division", "main_promotion_id": "main_promotion_id",
-        "profile": fighter_profile,
-        "summary": field_or_empty("summary"),
-        "source_article_ids": list_field("source_article_ids"),
-        "inferred_from_video_ids": list_field("inferred_from_video_ids"),
-        "inferred_confidence": "inferred_confidence"
-    })
+    return map_csv(
+        "fighters.csv",
+        {
+            "fighter_id": "fighter_id",
+            "display_name": "display_name",
+            "aliases": lambda row: [
+                alias["alias"]
+                for alias in rows("aliases.csv")
+                if alias.get("alias_type") == "fighters" and alias.get("canonical_id") == row["fighter_id"]
+            ],
+            "main_division": "main_division",
+            "main_promotion_id": "main_promotion_id",
+            "profile": fighter_profile,
+            "summary": field_or_empty("summary"),
+            "source_article_ids": lambda row: article_ids_for("fighter", row["fighter_id"]),
+            "inferred_from_video_ids": lambda row: video_ids_for("fighter", row["fighter_id"]),
+            "inferred_confidence": "inferred_confidence",
+        },
+    )
+
 
 def build_titles() -> list[dict[str, Any]]:
-    g = {}
-    for r in read_csv(DATA_SRC / "titles.csv"):
-        tid = r["title_id"]
-        g.setdefault(tid, {"title_id": tid, "promotion_id": r["promotion_id"], "division": r["division"], "lineage": []})["lineage"].append({
-            "order": parse_int(r.get("order")),
-            "fighter_id": none_if_empty(r.get("fighter_id")), "fighter_name": r["fighter_name"],
-            "reign_label": none_if_empty(r.get("reign_label")), "won_at_event_id": none_if_empty(r.get("won_at_event_id")),
-            "lost_at_event_id": none_if_empty(r.get("lost_at_event_id")), "source_article_id": none_if_empty(r.get("source_article_id")),
-            "source_video_id": none_if_empty(r.get("source_video_id"))
-        })
-    return list(g.values())
+    reigns_by_title = group_by(TITLE_REIGNS, "title_id")
+    out = []
+    for title in rows("titles.csv"):
+        lineage = []
+        for reign in sorted(reigns_by_title.get(title["title_id"], []), key=lambda r: parse_int(r.get("reign_order")) or 0):
+            lineage.append(
+                {
+                    "reign_id": reign["reign_id"],
+                    "order": parse_int(reign.get("reign_order")),
+                    "fighter_id": none_if_empty(reign.get("fighter_id")),
+                    "fighter_name": reign.get("fighter_name", ""),
+                    "reign_label": none_if_empty(reign.get("reign_label")),
+                    "won_at_event_id": none_if_empty(reign.get("won_at_event_id")),
+                    "lost_at_event_id": none_if_empty(reign.get("lost_at_event_id")),
+                    "source_article_id": none_if_empty(reign.get("source_article_id")),
+                    "source_video_id": none_if_empty(reign.get("source_video_id")),
+                }
+            )
+        out.append(
+            {
+                "title_id": title["title_id"],
+                "promotion_id": title["promotion_id"],
+                "division": title["division"],
+                "lineage": lineage,
+            }
+        )
+    return out
+
 
 def build_fighter_snapshots() -> list[dict[str, Any]]:
-    return map_csv("fighter_snapshots.csv", {
-        "snapshot_id": "snapshot_id", "fighter_id": "fighter_id", "event_id": "event_id", "source_article_id": "source_article_id",
-        "age": "age", "height": "height", "gym": "gym", "record_text": "record_text", "main_promotion_id": "main_promotion_id",
-        "titles_text": "titles_text", "catchphrase": "catchphrase"
-    })
+    return map_csv(
+        "fighter_snapshots.csv",
+        {
+            "snapshot_id": "snapshot_id",
+            "fighter_id": "fighter_id",
+            "event_id": "event_id",
+            "source_article_id": lambda row: first_article_id_for("fighter_snapshot", row["snapshot_id"]),
+            "age": "age",
+            "height": "height",
+            "gym": "gym",
+            "record_text": "record_text",
+            "main_promotion_id": "main_promotion_id",
+            "titles_text": "titles_text",
+            "catchphrase": "catchphrase",
+        },
+    )
+
 
 def build_videos() -> list[dict[str, Any]]:
-    return map_csv("videos.csv", {
-        "video_id": "video_id", "platform": field_or_default("platform", "youtube"),
-        "platform_video_id": "platform_video_id", "url": "url", "title": "title", "original_title": "original_title",
-        "channel_name": "channel_name", "published_at": "published_at",
-        "official_status": field_or_default("official_status", "unknown"),
-        "video_type": field_or_default("video_type", "reference"),
-        "link_status": field_or_default("link_status", "unlinked"),
-        "duplicate_group_id": "duplicate_group_id", "duplicate_note": "duplicate_note",
-        "notes": field_or_empty("notes"),
-        "source_article_ids": list_field("source_article_ids"),
-    })
+    return map_csv(
+        "videos.csv",
+        {
+            "video_id": "video_id",
+            "platform": field_or_default("platform", "youtube"),
+            "platform_video_id": "platform_video_id",
+            "url": "url",
+            "title": "title",
+            "original_title": "original_title",
+            "channel_name": "channel_name",
+            "published_at": "published_at",
+            "official_status": field_or_default("official_status", "unknown"),
+            "video_type": field_or_default("video_type", "reference"),
+            "link_status": field_or_default("link_status", "unlinked"),
+            "duplicate_group_id": "duplicate_group_id",
+            "duplicate_note": "duplicate_note",
+            "notes": field_or_empty("notes"),
+            "source_article_ids": lambda row: article_ids_for("video", row["video_id"]),
+        },
+    )
+
 
 def build_video_links() -> list[dict[str, Any]]:
-    return map_csv("video_links.csv", {
-        "video_id": "video_id", "entity_type": "entity_type", "entity_id": "entity_id",
-        "relation_type": field_or_default("relation_type", "reference"),
-        "start_time": "start_time", "end_time": "end_time", "notes": field_or_empty("notes")
-    })
+    return map_csv(
+        "video_links.csv",
+        {
+            "video_id": "video_id",
+            "entity_type": "entity_type",
+            "entity_id": "entity_id",
+            "relation_type": field_or_default("relation_type", "reference"),
+            "start_time": "start_time",
+            "end_time": "end_time",
+            "notes": field_or_empty("notes"),
+        },
+    )
 
 
 def build_aliases() -> dict[str, dict[str, str]]:
-    aliases = read_csv(DATA_SRC / "aliases.csv")
+    aliases = rows("aliases.csv")
     return {
         alias_type: {
             row["alias"]: row["canonical_id"]
@@ -204,20 +368,47 @@ def build_aliases() -> dict[str, dict[str, str]]:
     }
 
 
+def build_database() -> dict[str, Any]:
+    return {
+        "schema": "relational-csv-v1",
+        "tables": {
+            "articles": build_articles(),
+            "article_links": rows("article_links.csv"),
+            "promotions": build_promotions(),
+            "events": build_events(),
+            "bouts": rows("bouts.csv"),
+            "bout_participants": rows("bout_participants.csv"),
+            "fighters": build_fighters(),
+            "fighter_snapshots": build_fighter_snapshots(),
+            "titles": rows("titles.csv"),
+            "title_reigns": rows("title_reigns.csv"),
+            "videos": build_videos(),
+            "video_links": build_video_links(),
+            "aliases": rows("aliases.csv"),
+            "source_documents": rows("source_documents.csv"),
+            "source_mentions": rows("source_mentions.csv"),
+        },
+    }
+
+
 JSON_BUILDERS = {
     "metadata.json": build_metadata,
+    "database.json": build_database,
     "articles.json": build_articles,
+    "article_links.json": lambda: rows("article_links.csv"),
     "promotions.json": build_promotions,
     "events.json": build_events,
     "bouts.json": build_bouts,
+    "bout_participants.json": lambda: rows("bout_participants.csv"),
     "fighters.json": build_fighters,
     "titles.json": build_titles,
+    "title_reigns.json": lambda: rows("title_reigns.csv"),
     "fighter_snapshots.json": build_fighter_snapshots,
     "videos.json": build_videos,
     "video_links.json": build_video_links,
     "aliases.json": build_aliases,
-    "source_documents.json": lambda: read_csv(DATA_SRC / "source_documents.csv"),
-    "source_mentions.json": lambda: read_csv(DATA_SRC / "source_mentions.csv"),
+    "source_documents.json": lambda: rows("source_documents.csv"),
+    "source_mentions.json": lambda: rows("source_mentions.csv"),
     "source_event_references.json": lambda: read_csv(REVIEW / "source_event_reference_candidates.csv"),
     "source_bout_references.json": lambda: read_csv(REVIEW / "source_bout_reference_candidates.csv"),
     "source_video_references.json": lambda: read_csv(REVIEW / "source_video_reference_candidates.csv"),
@@ -229,6 +420,7 @@ def main() -> None:
     for filename, build in JSON_BUILDERS.items():
         write_json(DOCS_DATA / filename, build())
     print("[done] JSON build completed")
+
 
 if __name__ == "__main__":
     main()

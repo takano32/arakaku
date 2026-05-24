@@ -18,6 +18,10 @@ VALID_VIDEO_RELATION_TYPES = {
     'full_fight', 'highlight', 'short', 'stream_archive', 'preview', 'interview', 'commentary', 'reference'
 }
 VALID_VIDEO_ENTITY_TYPES = {'event', 'bout', 'fighter', 'promotion', 'title'}
+VALID_ARTICLE_ENTITY_TYPES = {
+    'event', 'bout', 'fighter', 'fighter_snapshot', 'promotion', 'title', 'title_reign', 'video'
+}
+VALID_ARTICLE_RELATION_TYPES = {'source', 'reference'}
 
 def add_error(m: str) -> None:
     ERRORS.append(m)
@@ -155,6 +159,32 @@ def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str
             add_error(f"bouts.json[{i}]: unknown article reference: {aid}")
     return ids
 
+def validate_bout_participants(participants: list[Any], bout_ids: set[str], fighter_ids: set[str]) -> set[str]:
+    ids = collect_ids(participants, 'bout_participants.json', 'participant_id')
+    by_bout: dict[str, list[dict[str, Any]]] = {}
+    for i, x in enumerate(participants):
+        if not isinstance(x, dict):
+            continue
+        bout_id = require_field(x, 'bout_participants.json', i, 'bout_id')
+        if bout_id and bout_id not in bout_ids:
+            add_error(f"bout_participants.json[{i}]: unknown bout reference: {bout_id}")
+        fid = x.get('fighter_id')
+        if fid and fid not in fighter_ids:
+            add_error(f"bout_participants.json[{i}]: unknown fighter reference: {fid}")
+        require_field(x, 'bout_participants.json', i, 'fighter_name')
+        result = x.get('result')
+        if result and result not in {'win', 'loss', 'draw', 'nc', 'unknown'}:
+            add_warning(f"bout_participants.json[{i}]: unusual result: {result}")
+        if bout_id:
+            by_bout.setdefault(bout_id, []).append(x)
+    for bout_id, rows in by_bout.items():
+        if len(rows) != 2:
+            add_error(f"bout_participants.json: bout {bout_id} must have exactly two participants")
+        sides = [row.get('side') for row in rows]
+        if len(set(sides)) != len(sides):
+            add_error(f"bout_participants.json: bout {bout_id} has duplicate participant side")
+    return ids
+
 def validate_titles(titles: list[Any], promotion_ids: set[str], fighter_ids: set[str], article_ids: set[str], video_ids: set[str] | None = None) -> None:
     collect_ids(titles, 'titles.json', 'title_id')
     for i, x in enumerate(titles):
@@ -173,6 +203,35 @@ def validate_titles(titles: list[Any], promotion_ids: set[str], fighter_ids: set
                 add_error(f"titles.json[{i}].lineage[{j}]: unknown article reference: {aid}")
             if vid and video_ids is not None and vid not in video_ids:
                 add_error(f"titles.json[{i}].lineage[{j}]: unknown video reference: {vid}")
+
+def validate_title_reigns(reigns: list[Any], title_ids: set[str], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], video_ids: set[str]) -> set[str]:
+    ids = collect_ids(reigns, 'title_reigns.json', 'reign_id')
+    seen_order = set()
+    for i, x in enumerate(reigns):
+        if not isinstance(x, dict):
+            continue
+        title_id = require_field(x, 'title_reigns.json', i, 'title_id')
+        if title_id and title_id not in title_ids:
+            add_error(f"title_reigns.json[{i}]: unknown title reference: {title_id}")
+        order = require_field(x, 'title_reigns.json', i, 'reign_order')
+        marker = (title_id, order)
+        if marker in seen_order:
+            add_error(f"title_reigns.json[{i}]: duplicate title/reign_order: {marker}")
+        seen_order.add(marker)
+        fid = x.get('fighter_id')
+        if fid and fid not in fighter_ids:
+            add_error(f"title_reigns.json[{i}]: unknown fighter reference: {fid}")
+        for key in ['won_at_event_id', 'lost_at_event_id']:
+            eid = x.get(key)
+            if eid and eid not in event_ids:
+                add_error(f"title_reigns.json[{i}]: unknown event reference in {key}: {eid}")
+        aid = x.get('source_article_id')
+        if aid and aid not in article_ids:
+            add_error(f"title_reigns.json[{i}]: unknown article reference: {aid}")
+        vid = x.get('source_video_id')
+        if vid and vid not in video_ids:
+            add_error(f"title_reigns.json[{i}]: unknown video reference: {vid}")
+    return ids
 
 def validate_fighter_snapshots(snapshots: list[Any], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], promotion_ids: set[str]) -> None:
     collect_ids(snapshots, 'fighter_snapshots.json', 'snapshot_id')
@@ -237,6 +296,41 @@ def validate_video_links(video_links: list[Any], video_ids: set[str], event_ids:
         if entity_id and entity_type in entity_sets and entity_id not in entity_sets[entity_type]:
             add_error(f"video_links.json[{i}]: unknown {entity_type} reference: {entity_id}")
 
+def validate_article_links(article_links: list[Any], article_ids: set[str], event_ids: set[str], bout_ids: set[str], fighter_ids: set[str], snapshot_ids: set[str], promotion_ids: set[str], title_ids: set[str], reign_ids: set[str], video_ids: set[str]) -> None:
+    seen = set()
+    entity_sets = {
+        'event': event_ids,
+        'bout': bout_ids,
+        'fighter': fighter_ids,
+        'fighter_snapshot': snapshot_ids,
+        'promotion': promotion_ids,
+        'title': title_ids,
+        'title_reign': reign_ids,
+        'video': video_ids,
+    }
+    collect_ids(article_links, 'article_links.json', 'link_id')
+    for i, x in enumerate(article_links):
+        if not isinstance(x, dict):
+            add_error(f"article_links.json[{i}]: expected object")
+            continue
+        article_id = require_field(x, 'article_links.json', i, 'article_id')
+        entity_type = require_field(x, 'article_links.json', i, 'entity_type')
+        entity_id = require_field(x, 'article_links.json', i, 'entity_id')
+        relation_type = x.get('relation_type') or 'source'
+        marker = (article_id, entity_type, entity_id, relation_type)
+        if marker in seen:
+            add_error(f"article_links.json[{i}]: duplicate article link: {marker}")
+        seen.add(marker)
+        if article_id and article_id not in article_ids:
+            add_error(f"article_links.json[{i}]: unknown article reference: {article_id}")
+        if entity_type and entity_type not in VALID_ARTICLE_ENTITY_TYPES:
+            add_error(f"article_links.json[{i}]: invalid entity_type: {entity_type}")
+            continue
+        if relation_type and relation_type not in VALID_ARTICLE_RELATION_TYPES:
+            add_warning(f"article_links.json[{i}]: unusual relation_type: {relation_type}")
+        if entity_id and entity_type in entity_sets and entity_id not in entity_sets[entity_type]:
+            add_error(f"article_links.json[{i}]: unknown {entity_type} reference: {entity_id}")
+
 def validate_aliases(aliases: Any) -> None:
     if not isinstance(aliases, dict):
         add_error('aliases.json: expected object')
@@ -297,7 +391,14 @@ def main() -> int:
     WARNINGS.clear()
     
     # Check existence and load
-    all_files = REQUIRED_JSON_FILES | {'titles.json', 'fighter_snapshots.json', 'videos.json', 'video_links.json', 'aliases.json', 'metadata.json', 'source_documents.json', 'source_mentions.json', 'source_event_references.json', 'source_bout_references.json', 'source_video_references.json'}
+    all_files = REQUIRED_JSON_FILES | {
+        'database.json', 'article_links.json', 'titles.json', 'title_reigns.json',
+        'bout_participants.json', 'fighter_snapshots.json', 'videos.json',
+        'video_links.json', 'aliases.json', 'metadata.json',
+        'source_documents.json', 'source_mentions.json',
+        'source_event_references.json', 'source_bout_references.json',
+        'source_video_references.json'
+    }
     for f in all_files:
         validate_json_exists(f)
     
@@ -305,11 +406,14 @@ def main() -> int:
     promotions = load_json('promotions.json', [])
     events = load_json('events.json', [])
     bouts = load_json('bouts.json', [])
+    bout_participants = load_json('bout_participants.json', [])
     fighters = load_json('fighters.json', [])
     titles = load_json('titles.json', [])
+    title_reigns = load_json('title_reigns.json', [])
     snapshots = load_json('fighter_snapshots.json', [])
     videos = load_json('videos.json', [])
     video_links = load_json('video_links.json', [])
+    article_links = load_json('article_links.json', [])
     aliases = load_json('aliases.json', {})
     
     article_ids = validate_articles(articles)
@@ -319,10 +423,14 @@ def main() -> int:
     bout_ids = validate_bouts(bouts, event_ids, promotion_ids, fighter_ids, article_ids)
     title_ids = collect_ids(titles, 'titles.json', 'title_id')
     video_ids = validate_videos(videos, article_ids)
+    snapshot_ids = collect_ids(snapshots, 'fighter_snapshots.json', 'snapshot_id')
+    reign_ids = validate_title_reigns(title_reigns, title_ids, fighter_ids, event_ids, article_ids, video_ids)
     
     validate_titles(titles, promotion_ids, fighter_ids, article_ids, video_ids)
+    validate_bout_participants(bout_participants, bout_ids, fighter_ids)
     validate_fighter_snapshots(snapshots, fighter_ids, event_ids, article_ids, promotion_ids)
     validate_video_links(video_links, video_ids, event_ids, bout_ids, fighter_ids, promotion_ids, title_ids)
+    validate_article_links(article_links, article_ids, event_ids, bout_ids, fighter_ids, snapshot_ids, promotion_ids, title_ids, reign_ids, video_ids)
     validate_source_documents(load_json('source_documents.json', []))
     validate_source_mentions(load_json('source_mentions.json', []))
     validate_source_references(load_json('source_event_references.json', []), 'source_event_references.json', 'event_id', event_ids)

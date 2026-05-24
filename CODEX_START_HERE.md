@@ -41,7 +41,7 @@ make clean-generated
 ```text
 make check: PASS
 json validation passed: 0 warning(s)
-pytest: 15 passed
+pytest: 18 passed
 make clean-generated: DONE
 ```
 

@@ -43,6 +43,7 @@ function assert(condition, message) {
 function validateParserFallbacks() {
   assert(Array.isArray(fallbackForDataKey("bouts")), "bouts fallback must be an array");
   assert(Array.isArray(fallbackForDataKey("sourceDocuments")), "sourceDocuments fallback must be an array");
+  assert(!Array.isArray(fallbackForDataKey("database")), "database fallback must be an object");
   assert(!Array.isArray(fallbackForDataKey("metadata")), "metadata fallback must be an object");
   assert(!Array.isArray(fallbackForDataKey("aliases")), "aliases fallback must be an object");
 }
@@ -52,10 +53,14 @@ function validateLoadedData(data, repository) {
   assert(Array.isArray(data.events), "events must be an array");
   assert(Array.isArray(data.fighters), "fighters must be an array");
   assert(Array.isArray(data.promotions), "promotions must be an array");
+  assert(Array.isArray(data.articleLinks), "articleLinks must be an array");
   assert(Array.isArray(data.videos), "videos must be an array");
+  assert(Array.isArray(data.boutParticipants), "boutParticipants must be an array");
+  assert(Array.isArray(data.titleReigns), "titleReigns must be an array");
   assert(Array.isArray(data.videoLinks), "videoLinks must be an array");
   assert(Array.isArray(data.sourceDocuments), "sourceDocuments must be an array");
   assert(typeof data.metadata === "object" && !Array.isArray(data.metadata), "metadata must be an object");
+  assert(typeof data.database === "object" && !Array.isArray(data.database), "database must be an object");
   assert(typeof data.aliases === "object" && !Array.isArray(data.aliases), "aliases must be an object");
 
   for (const bout of data.bouts) {

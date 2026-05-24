@@ -36,9 +36,19 @@ make clean-generated
 確認:
 
 ```bash
-wc -l data-src/source_documents.csv
-wc -l data-src/source_mentions.csv
+python - <<'PY'
+import csv
+
+for path in [
+    "data-src/source_documents.csv",
+    "data-src/source_mentions.csv",
+]:
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        print(path, len(list(csv.DictReader(f))), "rows")
+PY
 ```
+
+`source_documents.csv` は本文内に改行を含むため、`wc -l` は CSV の行数確認には使いません。
 
 分布確認:
 
@@ -127,12 +137,13 @@ push 後に確認:
 
 ```text
 docs/index.html
-docs/assets/app-config.js
-docs/assets/app-core.js
-docs/assets/app-main.js
-docs/assets/app-related.js
-docs/assets/app-sources.js
-docs/assets/app-views.js
+docs/assets/js/config.js
+docs/assets/js/main.js
+docs/assets/js/data-loader.js
+docs/assets/js/core/
+docs/assets/js/services/
+docs/assets/js/tabs/
+docs/assets/js/ui/
 docs/assets/style.css
 ```
 
@@ -213,6 +224,7 @@ Show related source mentions on bout cards
 Update viewer source document UI
 Update viewer source detail toggles
 Improve source document build pipeline
+Migrate CSV schema to relational tables
 Update project handoff documentation
 ```
 

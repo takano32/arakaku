@@ -73,10 +73,10 @@ pytest passed
 
 特に `bouts.csv` 変更時:
 
-- `fighter_a` / `fighter_b` は対戦カードである
-- `winner` / `loser` は出典で確認できたときだけ入っている
+- bout-level facts と participant facts が混ざっていない
+- 参加者は `bout_participants.csv` に 1 試合 2 行で入っている
+- `bout_participants.result` は出典で確認できたときだけ `win` / `loss` になっている
 - `result_status=unknown` を勝手に確定していない
-- `matchup` が表示用に自然である
 - 同じ試合が重複していない
 
 ---
@@ -94,7 +94,7 @@ pytest passed
 
 ## 6. viewer 変更の確認
 
-`docs/assets/app-*.js` / `style.css` / `index.html` が変わった場合:
+`docs/assets/js/` / `style.css` / `index.html` が変わった場合:
 
 - タブが表示される
 - 検索が動く

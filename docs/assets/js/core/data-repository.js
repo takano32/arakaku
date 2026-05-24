@@ -55,9 +55,12 @@ export class DataRepository {
   // Collection Accessors
   get events() { return this.data.events ?? []; }
   get promotions() { return this.data.promotions ?? []; }
+  get articleLinks() { return this.data.articleLinks ?? []; }
   get fighters() { return this.data.fighters ?? []; }
   get bouts() { return this.data.bouts ?? []; }
+  get boutParticipants() { return this.data.boutParticipants ?? []; }
   get titles() { return this.data.titles ?? []; }
+  get titleReigns() { return this.data.titleReigns ?? []; }
   get videos() { return this.data.videos ?? []; }
   get videoLinks() { return this.data.videoLinks ?? []; }
   get articles() { return this.data.articles ?? []; }

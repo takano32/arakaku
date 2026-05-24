@@ -1,4 +1,4 @@
-const OBJECT_DATA_KEYS = new Set(["aliases", "metadata"]);
+const OBJECT_DATA_KEYS = new Set(["aliases", "database", "metadata"]);
 
 export function fallbackForDataKey(key) {
   return OBJECT_DATA_KEYS.has(key) ? {} : [];

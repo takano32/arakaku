@@ -137,5 +137,5 @@ Do not:
 - create duplicate bouts
 - create duplicate fighters
 - convert unknown to known without source support
-- forget to update `matchup` when adding fighter A/B
+- add a bout without adding the two `bout_participants.csv` rows
 - commit generated JSON

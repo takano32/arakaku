@@ -1,8 +1,8 @@
-promotion_id,name,name_en,category,country_scope,summary,rule_venue,rule_rounds,rule_judging,rule_glove,rule_elbows,rule_soccer_kicks,rule_stomps,rule_four_point_head_kicks,rule_four_point_head_knees,source_article_ids
-target,ターゲット,TARGET,major,japan,スーパーうんどう活動休止後、その関係者が新しく立ち上げた日本のメジャー団体。,リング,1R5分3R,トータルマスト,青OFG,なし,あり,あり,あり,,note-target
-emperor,エンペラー,EMPEROR,major,foreign,外国の総合格闘技団体。メジャー3団体の一つ。,リング,1R5分3R,ラウンドマスト,青OFG,あり,なし,なし,なし,,note-emperor
-mh,マウンテン・ヒーローズ,M・H,major,foreign,総合格闘技団体マウンテンとヒーローズが合併してできた外国の団体。メジャー3団体の一つ。,リング,1R5分3R,ラウンドマスト,赤OFG,あり,なし,なし,なし,あり,note-mh
-max_bout,MAXバウト,MAX BOUT,special_event_series,japan,メジャー3団体の強者たちだけが戦える大会シリーズ。基本トーナメント中心。,リング,1R5分3R,ラウンドマスト,白OFG,あり,なし,なし,なし,あり,note-max-bout
-elite_spirits,エリートスピリッツ,ELITE SPIRITS,minor,unknown,公式YouTube動画タイトルから抽出した大会系列。詳細未入力。,,,,,,,,,,
-arakaku_live,アラカクライブ,ARAKAKU LIVE,event_series,unknown,公式YouTube動画タイトルから抽出したライブ/特別イベント系列。詳細未入力。,,,,,,,,,,
-video_catalog,動画カタログ未分類,VIDEO CATALOG,unclassified,unknown,大会系列を確定できない公式YouTube動画タイトル由来の仮分類。,,,,,,,,,,
+promotion_id,name,name_en,category,country_scope,summary,rule_venue,rule_rounds,rule_judging,rule_glove,rule_elbows,rule_soccer_kicks,rule_stomps,rule_four_point_head_kicks,rule_four_point_head_knees
+target,ターゲット,TARGET,major,japan,スーパーうんどう活動休止後、その関係者が新しく立ち上げた日本のメジャー団体。,リング,1R5分3R,トータルマスト,青OFG,なし,あり,あり,あり,
+emperor,エンペラー,EMPEROR,major,foreign,外国の総合格闘技団体。メジャー3団体の一つ。,リング,1R5分3R,ラウンドマスト,青OFG,あり,なし,なし,なし,
+mh,マウンテン・ヒーローズ,M・H,major,foreign,総合格闘技団体マウンテンとヒーローズが合併してできた外国の団体。メジャー3団体の一つ。,リング,1R5分3R,ラウンドマスト,赤OFG,あり,なし,なし,なし,あり
+max_bout,MAXバウト,MAX BOUT,special_event_series,japan,メジャー3団体の強者たちだけが戦える大会シリーズ。基本トーナメント中心。,リング,1R5分3R,ラウンドマスト,白OFG,あり,なし,なし,なし,あり
+elite_spirits,エリートスピリッツ,ELITE SPIRITS,minor,unknown,公式YouTube動画タイトルから抽出した大会系列。詳細未入力。,,,,,,,,,
+arakaku_live,アラカクライブ,ARAKAKU LIVE,event_series,unknown,公式YouTube動画タイトルから抽出したライブ/特別イベント系列。詳細未入力。,,,,,,,,,
+video_catalog,動画カタログ未分類,VIDEO CATALOG,unclassified,unknown,大会系列を確定できない公式YouTube動画タイトル由来の仮分類。,,,,,,,,,
