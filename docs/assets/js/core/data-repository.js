@@ -70,7 +70,21 @@ export class DataRepository {
   get articleLinks() { return this.data.articleLinks ?? []; }
   get fighters() {
     if (this.#richFighters) return this.#richFighters;
-    const raw = this.data.fighters ?? [];
+    
+    const canonical = this.data.fighters ?? [];
+    const fighterIds = new Set(canonical.map(f => f.fighter_id));
+    
+    // Discover fighters that only exist in Numbers matches
+    const discovered = [];
+    for (const match of this.numbersNameMatches) {
+      const fid = match.matched_fighter_id || match.candidate_fighter_id;
+      if (fid && !fighterIds.has(fid)) {
+        discovered.push({ fighter_id: fid, display_name: match.numbers_name || fid });
+        fighterIds.add(fid);
+      }
+    }
+    
+    const raw = [...canonical, ...discovered];
     this.#richFighters = raw.map(f => this.getRichFighterInfo(f));
     return this.#richFighters;
   }

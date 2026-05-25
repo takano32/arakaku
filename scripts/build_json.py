@@ -26,10 +26,6 @@ def rows(name: str) -> list[CsvRow]:
     return read_csv(DATA_SRC / name)
 
 
-def index_by(items: list[CsvRow], key: str) -> dict[str, CsvRow]:
-    return {item[key]: item for item in items if item.get(key)}
-
-
 def group_by(items: list[CsvRow], key: str) -> dict[str, list[CsvRow]]:
     groups: dict[str, list[CsvRow]] = {}
     for item in items:
@@ -44,7 +40,6 @@ ARTICLE_LINKS = rows("article_links.csv")
 BOUT_PARTICIPANTS = rows("bout_participants.csv")
 TITLE_REIGNS = rows("title_reigns.csv")
 VIDEO_LINKS = rows("video_links.csv")
-NUMBERS_NAME_MATCHES = rows("numbers_name_matches.csv")
 
 
 def article_ids_for(entity_type: str, entity_id: str) -> list[str]:
@@ -248,73 +243,25 @@ def build_bouts() -> list[dict[str, Any]]:
 
 
 def build_fighters() -> list[dict[str, Any]]:
-    primary_rows = rows("fighters.csv")
-    numbers_rows = rows("numbers_fighters.csv")
-    matches_by_numbers_id = index_by(NUMBERS_NAME_MATCHES, "numbers_fighter_id")
-
-    fighter_ids = set()
-    for r in primary_rows:
-        fighter_ids.add(r["fighter_id"])
-
-    numbers_by_fighter_id = {}
-    for row in numbers_rows:
-        match = matches_by_numbers_id.get(row["numbers_fighter_id"], {})
-        fighter_id = none_if_empty(match.get("matched_fighter_id")) or none_if_empty(match.get("candidate_fighter_id"))
-        if fighter_id:
-            numbers_by_fighter_id[fighter_id] = row
-
-    merged_rows = list(primary_rows)
-    for fighter_id, row in numbers_by_fighter_id.items():
-        if fighter_id not in fighter_ids:
-            merged_rows.append({"fighter_id": fighter_id, "display_name": row["display_name"]})
-            fighter_ids.add(fighter_id)
-
-    def numbers_summary(row: CsvRow) -> str:
-        parts = [none_if_empty(row.get("catchphrase")), none_if_empty(row.get("notes"))]
-        return "\n\n".join(part for part in parts if part)
-
-    def merged_field(row: CsvRow, field: str) -> str | None:
-        val = none_if_empty(row.get(field))
-        if val is not None:
-            return val
-        numbers_row = numbers_by_fighter_id.get(row["fighter_id"])
-        if not numbers_row:
-            return None
-        if field == "summary":
-            return none_if_empty(numbers_summary(numbers_row))
-        if field == "inferred_confidence":
-            return none_if_empty(numbers_row.get("source_confidence"))
-        if field in {"height", "age", "gym", "main_division", "main_promotion_id", "display_name"}:
-            return none_if_empty(numbers_row.get(field))
-        return None
-
-    def merged_fighter_profile(row: CsvRow) -> dict[str, Any]:
-        return {
-            "height": merged_field(row, "height"),
-            "age": merged_field(row, "age"),
-            "gym": merged_field(row, "gym"),
-        }
-
-    out = []
-    for row in merged_rows:
-        f_id = row["fighter_id"]
-        out.append({
-            "fighter_id": f_id,
-            "display_name": merged_field(row, "display_name"),
-            "aliases": [
+    return map_csv(
+        "fighters.csv",
+        {
+            "fighter_id": "fighter_id",
+            "display_name": "display_name",
+            "aliases": lambda row: [
                 alias["alias"]
                 for alias in rows("aliases.csv")
-                if alias.get("alias_type") == "fighters" and alias.get("canonical_id") == f_id
+                if alias.get("alias_type") == "fighters" and alias.get("canonical_id") == row["fighter_id"]
             ],
-            "main_division": merged_field(row, "main_division"),
-            "main_promotion_id": merged_field(row, "main_promotion_id"),
-            "profile": merged_fighter_profile(row),
-            "summary": merged_field(row, "summary") or "",
-            "source_article_ids": article_ids_for("fighter", f_id),
-            "inferred_from_video_ids": video_ids_for("fighter", f_id),
-            "inferred_confidence": merged_field(row, "inferred_confidence"),
-        })
-    return out
+            "main_division": "main_division",
+            "main_promotion_id": "main_promotion_id",
+            "profile": fighter_profile,
+            "summary": field_or_empty("summary"),
+            "source_article_ids": lambda row: article_ids_for("fighter", row["fighter_id"]),
+            "inferred_from_video_ids": lambda row: video_ids_for("fighter", row["fighter_id"]),
+            "inferred_confidence": "inferred_confidence",
+        },
+    )
 
 
 def build_numbers_fighters() -> list[dict[str, Any]]:
