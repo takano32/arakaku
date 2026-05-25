@@ -141,14 +141,17 @@ export class TabRenderers {
   }
 
   bouts() {
-    const { state, query, navigation, components, sources, repo } = this.ctx;
+    const { state, query, navigation, components, sources, repo, labels } = this.ctx;
     const list = state.focusEventId
       ? repo.boutsForEvent(state.focusEventId)
       : repo.bouts.filter((bout) => query.includes(query.boutSearchText(bout)));
     return this.recordList(list, (b) => `
       <article class="card record-card bout-card">
         <h2>${navigation.boutMatchup(b)}</h2>
-        <p class="meta">${navigation.eventLink(b.event_id, repo.eventName(b.event_id))} / ${escapeHtml(b.division ?? "")}</p>
+        <p class="meta">
+          ${navigation.eventLink(b.event_id, repo.eventName(b.event_id))} / ${escapeHtml(b.division ?? "")}
+          ${b.numbers_records?.length ? `<span class="video-badge">名鑑確認済み</span>` : ""}
+        </p>
         <p class="result">
           ${navigation.renderBoutResultSummary(b)}
           ${escapeHtml(this.boutResultLine(b))}
@@ -163,7 +166,7 @@ export class TabRenderers {
           ["試合順", b.bout_order ? `第${b.bout_order}試合` : ""],
           ["階級", joinPresent([b.division, b.weight_class_id])],
           ["種別", b.bout_type],
-          ["結果状態", b.result_status],
+          ["結果状態", labels.resultStatus(b.result_status)],
           ["選手", `<ul class="inline-list">${this.renderFighterRows(b)}</ul>`],
           ["決着", this.boutDecisionLine(b)],
           ["王座", b.title?.is_title_bout ? joinPresent([b.title.title_id, b.title.title_result]) : ""],
@@ -186,7 +189,10 @@ export class TabRenderers {
     return this.recordList(list, (f) => `
       <article class="card record-card fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
-        <p class="meta">${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}</p>
+        <p class="meta">
+          ${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}
+          ${f.numbers_data ? `<span class="video-badge">名鑑確認済み</span>` : ""}
+        </p>
         ${this.renderFighterSnapshots(f.fighter_id)}
         ${related.renderRelatedBouts(f.fighter_id)}
         ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}

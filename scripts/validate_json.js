@@ -70,7 +70,8 @@ function validateLoadedData(data, repository) {
   assert(Array.isArray(data.noteArchives), "noteArchives must be an array");
 
   for (const bout of data.bouts) {
-    assert(repository.findBout(bout.bout_id) === bout, `repository cannot resolve bout: ${bout.bout_id}`);
+    const found = repository.findBout(bout.bout_id);
+    assert(found && found.bout_id === bout.bout_id, `repository cannot resolve bout: ${bout.bout_id}`);
   }
 
   for (const event of data.events) {
@@ -78,7 +79,8 @@ function validateLoadedData(data, repository) {
   }
 
   for (const fighter of data.fighters) {
-    assert(repository.findFighter(fighter.fighter_id) === fighter, `repository cannot resolve fighter: ${fighter.fighter_id}`);
+    const found = repository.findFighter(fighter.fighter_id);
+    assert(found && found.fighter_id === fighter.fighter_id, `repository cannot resolve fighter: ${fighter.fighter_id}`);
   }
 
   for (const promotion of data.promotions) {

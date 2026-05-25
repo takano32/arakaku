@@ -34,7 +34,10 @@ export class RelatedRenderers {
     return components.relatedItem(
       `
       ${headerParts.join("")}
-      <h4 class="related-bout-title">${navigation.boutMatchup(bout)}</h4>
+      <h4 class="related-bout-title">
+        ${navigation.boutMatchup(bout)}
+        ${bout.numbers_records?.length ? `<span class="video-badge">名鑑</span>` : ""}
+      </h4>
       <p>${navigation.renderBoutResultSummary(bout)}</p>
       ${this.renderBoutResultMeta(bout)}
       ${sources.renderVideoLinks("bout", bout.bout_id)}

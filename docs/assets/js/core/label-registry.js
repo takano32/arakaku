@@ -36,6 +36,17 @@ export class LabelRegistry {
     );
   }
 
+  resultStatus(status) {
+    return (
+      {
+        known: "確定",
+        unknown: "不明",
+        numbers_verified: "名鑑確認済み",
+        needs_review: "要確認",
+      }[status] ?? status ?? "未設定"
+    );
+  }
+
   sourceType(sourceType) {
     return (
       {

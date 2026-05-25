@@ -15,9 +15,13 @@ export class DataRepository {
   constructor(data) {
     this.data = data;
     this.#indexes = new Map();
+    this.#richFighters = null;
+    this.#richBouts = null;
   }
 
   #indexes;
+  #richFighters;
+  #richBouts;
 
   #index(name, records, keyForRecord) {
     if (this.#indexes.has(name)) return this.#indexes.get(name);
@@ -64,8 +68,18 @@ export class DataRepository {
   get events() { return this.data.events ?? []; }
   get promotions() { return this.data.promotions ?? []; }
   get articleLinks() { return this.data.articleLinks ?? []; }
-  get fighters() { return this.data.fighters ?? []; }
-  get bouts() { return this.data.bouts ?? []; }
+  get fighters() {
+    if (this.#richFighters) return this.#richFighters;
+    const raw = this.data.fighters ?? [];
+    this.#richFighters = raw.map(f => this.getRichFighterInfo(f));
+    return this.#richFighters;
+  }
+  get bouts() {
+    if (this.#richBouts) return this.#richBouts;
+    const raw = this.data.bouts ?? [];
+    this.#richBouts = raw.map(b => this.getRichBoutInfo(b));
+    return this.#richBouts;
+  }
   get boutParticipants() { return this.data.boutParticipants ?? []; }
   get titles() { return this.data.titles ?? []; }
   get titleReigns() { return this.data.titleReigns ?? []; }
@@ -117,6 +131,75 @@ export class DataRepository {
       title: archive?.title ?? article.title,
       archive_description: archive?.description,
     };
+  }
+
+  getRichFighterInfo(fighter) {
+    const match = this.numbersNameMatches.find(m => m.matched_fighter_id === fighter.fighter_id || m.candidate_fighter_id === fighter.fighter_id);
+    const nf = match ? this.numbersFighterById(match.numbers_fighter_id) : undefined;
+    if (!nf) return fighter;
+
+    const rich = { ...fighter };
+    if (!rich.display_name || rich.display_name === "unknown") rich.display_name = nf.display_name;
+    if (!rich.main_division || rich.main_division === "unknown") rich.main_division = nf.main_division;
+    if (!rich.main_promotion_id || rich.main_promotion_id === "unknown") rich.main_promotion_id = nf.main_promotion_id;
+    
+    rich.profile = { ...(rich.profile ?? {}) };
+    if (!rich.profile.height || rich.profile.height === "unknown") rich.profile.height = nf.profile?.height;
+    if (!rich.profile.age || rich.profile.age === "unknown") rich.profile.age = nf.profile?.age;
+    if (!rich.profile.gym || rich.profile.gym === "unknown") rich.profile.gym = nf.profile?.gym;
+
+    if (!rich.summary) rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
+    
+    rich.numbers_data = nf;
+    return rich;
+  }
+
+  getRichBoutInfo(bout) {
+    const rich = { ...bout };
+    const event = this.findEvent(bout.event_id);
+    if (!event) return rich;
+
+    const participants = (bout.fighters ?? []).map(f => ({ ...f }));
+    const fighterIds = new Set(participants.map(f => f.fighter_id).filter(Boolean));
+
+    // Match by promotion, event number, and at least one fighter
+    const records = this.numbersFightRecords.filter(r => 
+      r.promotion_id === bout.promotion_id &&
+      r.event_number_normalized === String(event.event_number) &&
+      (fighterIds.has(r.matched_fighter_id) || fighterIds.has(r.opponent_matched_fighter_id))
+    );
+
+    if (records.length === 0) return rich;
+
+    // Use Numbers records to fill unknown fields
+    for (const p of participants) {
+      if (!p.fighter_id) continue;
+      const r = records.find(rec => rec.matched_fighter_id === p.fighter_id);
+      if (!r) continue;
+
+      if (p.result === "unknown" && r.result) {
+        p.result = r.result;
+      }
+    }
+    rich.fighters = participants;
+
+    const hasWinner = participants.some(p => p.result === "win");
+    const hasLoss = participants.some(p => p.result === "loss");
+    if (rich.result_status === "unknown" && (hasWinner || hasLoss)) {
+      rich.result_status = "numbers_verified";
+    }
+
+    // Also supplement bout result details if unknown
+    const anyRecord = records[0];
+    if ((!rich.result?.method_raw || rich.result.method_raw === "unknown") && anyRecord.detail_raw) {
+      rich.result = {
+        ...(rich.result ?? {}),
+        method_raw: anyRecord.detail_raw,
+      };
+    }
+
+    rich.numbers_records = records;
+    return rich;
   }
 
   // Label Methods
