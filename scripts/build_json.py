@@ -248,25 +248,59 @@ def build_bouts() -> list[dict[str, Any]]:
 
 
 def build_fighters() -> list[dict[str, Any]]:
-    return map_csv(
-        "fighters.csv",
-        {
-            "fighter_id": "fighter_id",
-            "display_name": "display_name",
-            "aliases": lambda row: [
+    primary_rows = rows("fighters.csv")
+    secondary_rows = rows("fighters_from_numbers.csv")
+
+    fighter_ids = set()
+    for r in primary_rows:
+        fighter_ids.add(r["fighter_id"])
+
+    # Numbersにしかいない選手を追加
+    merged_rows = list(primary_rows)
+    for r in secondary_rows:
+        if r["fighter_id"] not in fighter_ids:
+            merged_rows.append(r)
+            fighter_ids.add(r["fighter_id"])
+
+    # IDごとの辞書を作成（補完用）
+    secondary_by_id = {r["fighter_id"]: r for r in secondary_rows}
+
+    def merged_field(row: CsvRow, field: str) -> str | None:
+        val = none_if_empty(row.get(field))
+        if val is not None:
+            return val
+        s_row = secondary_by_id.get(row["fighter_id"])
+        if s_row:
+            return none_if_empty(s_row.get(field))
+        return None
+
+    def merged_fighter_profile(row: CsvRow) -> dict[str, Any]:
+        return {
+            "height": merged_field(row, "height"),
+            "age": merged_field(row, "age"),
+            "gym": merged_field(row, "gym"),
+        }
+
+    out = []
+    for row in merged_rows:
+        f_id = row["fighter_id"]
+        out.append({
+            "fighter_id": f_id,
+            "display_name": merged_field(row, "display_name"),
+            "aliases": [
                 alias["alias"]
                 for alias in rows("aliases.csv")
-                if alias.get("alias_type") == "fighters" and alias.get("canonical_id") == row["fighter_id"]
+                if alias.get("alias_type") == "fighters" and alias.get("canonical_id") == f_id
             ],
-            "main_division": "main_division",
-            "main_promotion_id": "main_promotion_id",
-            "profile": fighter_profile,
-            "summary": field_or_empty("summary"),
-            "source_article_ids": lambda row: article_ids_for("fighter", row["fighter_id"]),
-            "inferred_from_video_ids": lambda row: video_ids_for("fighter", row["fighter_id"]),
-            "inferred_confidence": "inferred_confidence",
-        },
-    )
+            "main_division": merged_field(row, "main_division"),
+            "main_promotion_id": merged_field(row, "main_promotion_id"),
+            "profile": merged_fighter_profile(row),
+            "summary": merged_field(row, "summary") or "",
+            "source_article_ids": article_ids_for("fighter", f_id),
+            "inferred_from_video_ids": video_ids_for("fighter", f_id),
+            "inferred_confidence": merged_field(row, "inferred_confidence"),
+        })
+    return out
 
 
 def build_titles() -> list[dict[str, Any]]:
