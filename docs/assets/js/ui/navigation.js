@@ -29,6 +29,7 @@ export class Navigator {
 
   jumpToEvent(eventId, eventNameValue) {
     this.ctx.state.patch({
+      viewMode: "public",
       tab: "events",
       focusEventId: eventId || "",
       focusFighterId: "",
@@ -45,6 +46,7 @@ export class Navigator {
 
   jumpToFighter(fighterId, fighterNameValue) {
     this.ctx.state.patch({
+      viewMode: "public",
       tab: "fighters",
       focusFighterId: fighterId || "",
       focusEventId: "",

@@ -5,6 +5,7 @@ export class AppState {
   static #instance = null;
 
   tab = DEFAULT_TAB;
+  viewMode = "public";
   query = "";
   focusFighterId = "";
   focusEventId = "";

@@ -1,5 +1,5 @@
 import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
-import { TABS, MENTION_TYPE_ORDER } from "./config.js";
+import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 
 /** Facade: DOM 更新とフィルタ UI を統括 */
 export class ViewController {
@@ -112,13 +112,32 @@ export class ViewController {
     const tabs = document.querySelector(".tabs");
     if (!tabs) return;
 
-    tabs.innerHTML = TABS.map(
+    const visibleTabs = this.ctx.state.viewMode === "admin" ? ADMIN_TABS : PUBLIC_TABS;
+    tabs.setAttribute("aria-label", this.ctx.state.viewMode === "admin" ? "管理ビュー切替" : "表示切替");
+    tabs.innerHTML = visibleTabs.map(
       ([tabId, label]) => `
       <button type="button" class="tab ${tabId === this.ctx.state.tab ? "active" : ""}" data-tab="${escapeHtml(tabId)}">
         ${escapeHtml(label)}
       </button>
     `
     ).join("");
+  }
+
+  renderViewModeSwitch() {
+    const switcher = document.querySelector(".view-mode-switch");
+    if (!switcher) return;
+
+    const { viewMode } = this.ctx.state;
+    const buttons = [
+      ["public", "通常ビュー"],
+      ["admin", "管理ビュー"],
+    ];
+
+    switcher.innerHTML = buttons.map(([mode, label]) => `
+      <button type="button" class="view-mode-button ${viewMode === mode ? "active" : ""}" data-view-mode="${escapeHtml(mode)}" aria-pressed="${viewMode === mode ? "true" : "false"}">
+        ${escapeHtml(label)}
+      </button>
+    `).join("");
   }
 
   renderContent() {
@@ -129,6 +148,7 @@ export class ViewController {
     if (!this.ctx.hasData) return;
 
     this.renderSummary();
+    this.renderViewModeSwitch();
     this.renderTabs();
     this.renderTitleFilters();
     this.renderMentionFilters();

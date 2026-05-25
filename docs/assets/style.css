@@ -104,6 +104,35 @@ input[type="search"]:focus {
   margin-bottom: 16px;
 }
 
+.view-mode-switch {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: -8px 0 10px;
+}
+
+.view-mode-button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.view-mode-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.view-mode-button.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: white;
+}
+
 .tab {
   border: 1px solid var(--line);
   border-radius: 999px;

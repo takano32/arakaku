@@ -1,3 +1,4 @@
+import { DEFAULT_ADMIN_TAB, DEFAULT_TAB } from "./config.js";
 import { escapeHtml } from "./ui/html-utils.js";
 
 /** Command: UI イベントを状態更新へマッピング */
@@ -57,6 +58,19 @@ export class EventController {
 
       this.state.patch({
         tab: button.dataset.tab,
+        focusFighterId: "",
+        focusEventId: "",
+      });
+    });
+
+    document.querySelector(".view-mode-switch")?.addEventListener("click", (event) => {
+      const button = event.target.closest(".view-mode-button");
+      if (!button?.dataset.viewMode) return;
+
+      const viewMode = button.dataset.viewMode;
+      this.state.patch({
+        viewMode,
+        tab: viewMode === "admin" ? DEFAULT_ADMIN_TAB : DEFAULT_TAB,
         focusFighterId: "",
         focusEventId: "",
       });
