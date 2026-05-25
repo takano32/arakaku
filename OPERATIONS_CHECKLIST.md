@@ -24,10 +24,11 @@ docs/data/.gitkeep exists
 
 ## 本文DB更新時
 
-note本文やYouTube概要欄を再取得する場合:
+note本文やYouTube概要欄を再取得し、アーカイブする場合:
 
 ```bash
 make cache-sources
+python scripts/archive_metadata.py
 make build-sources
 make check
 make clean-generated

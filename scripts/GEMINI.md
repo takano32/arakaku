@@ -25,6 +25,7 @@ Python scripts in this directory handle data processing, validation, and extract
 - `validate_json.py`: Ensures structural integrity and referential correctness.
 - `extract_numbers.py`: Exports `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv` from the Numbers file.
 - `cache_*.py`: Fetch external data and cache it in `../tmp/`.
+- `archive_metadata.py`: Extracts critical metadata from cached data into `data-src/archives/` for permanent storage.
 - `make_*_candidates.py`: Analyze data and generate review candidates.
 
 ## Workflow for Script Changes

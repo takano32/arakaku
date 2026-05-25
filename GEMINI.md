@@ -31,9 +31,11 @@ make clean-generated
 - Use `unknown` or `needs_review` for uncertain data.
 - New extractions must go through `review/*.csv` before being applied to `data-src/`.
 
-### 4. Naming Conventions
-- Prefer `スーパーうんどう` for project-specific terminology.
-- Preserve original spellings when quoting or extracting from sources.
+### 5. Metadata Archival
+To mitigate risks from external site structure changes or data deletion, critical metadata must be archived.
+- Cache external data in `tmp/` (do not commit).
+- Run `python scripts/archive_metadata.py` to extract and commit lightweight metadata to `data-src/archives/`.
+- Ensure all important external sources (YouTube, etc.) have archived metadata tracked in Git.
 
 ## Documentation Index
 
