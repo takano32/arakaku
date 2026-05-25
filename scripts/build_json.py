@@ -474,6 +474,8 @@ def build_database() -> dict[str, Any]:
             "numbers_fighters": build_numbers_fighters(),
             "numbers_name_matches": rows("numbers_name_matches.csv"),
             "numbers_fight_records": rows("numbers_fight_records.csv"),
+            "youtube_archives": rows("archives/youtube.csv"),
+            "note_archives": rows("archives/note.csv"),
         },
     }
 
@@ -499,6 +501,8 @@ JSON_BUILDERS = {
     "numbers_fighters.json": build_numbers_fighters,
     "numbers_name_matches.json": lambda: rows("numbers_name_matches.csv"),
     "numbers_fight_records.json": lambda: rows("numbers_fight_records.csv"),
+    "youtube_archives.json": lambda: rows("archives/youtube.csv"),
+    "note_archives.json": lambda: rows("archives/note.csv"),
     "source_event_references.json": lambda: read_csv(REVIEW / "source_event_reference_candidates.csv"),
     "source_bout_references.json": lambda: read_csv(REVIEW / "source_bout_reference_candidates.csv"),
     "source_video_references.json": lambda: read_csv(REVIEW / "source_video_reference_candidates.csv"),
