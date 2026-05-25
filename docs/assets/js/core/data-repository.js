@@ -207,13 +207,18 @@ export class DataRepository {
       rich.result_status = "numbers_verified";
     }
 
-    // Supplement bout result details from any available Numbers record
-    const recordWithDetail = records.find(r => r.detail_raw);
-    if (recordWithDetail) {
-      rich.result = {
-        ...(rich.result ?? {}),
-        method_raw: recordWithDetail.detail_raw,
-      };
+    // Supplement bout metadata from any available Numbers record
+    const recordWithMeta = records.find(r => r.detail_raw || r.division || r.bout_format);
+    if (recordWithMeta) {
+      if ((!rich.result?.method_raw || rich.result.method_raw === "unknown") && recordWithMeta.detail_raw) {
+        rich.result = { ...(rich.result ?? {}), method_raw: recordWithMeta.detail_raw };
+      }
+      if ((!rich.division || rich.division === "unknown") && recordWithMeta.division) {
+        rich.division = recordWithMeta.division;
+      }
+      if ((!rich.bout_type || rich.bout_type === "unknown") && recordWithMeta.bout_format) {
+        rich.bout_type = recordWithMeta.bout_format;
+      }
     }
 
     rich.numbers_records = records;

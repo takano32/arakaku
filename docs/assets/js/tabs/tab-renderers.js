@@ -166,6 +166,7 @@ export class TabRenderers {
           ["試合順", b.bout_order ? `第${b.bout_order}試合` : ""],
           ["階級", joinPresent([b.division, b.weight_class_id])],
           ["種別", b.bout_type],
+          ["形式 (名鑑)", b.numbers_records?.[0]?.bout_format],
           ["結果状態", labels.resultStatus(b.result_status)],
           ["選手", `<ul class="inline-list">${this.renderFighterRows(b)}</ul>`],
           ["決着", this.boutDecisionLine(b)],
@@ -186,13 +187,23 @@ export class TabRenderers {
       repo.fighters,
       (fighter) => query.fighterMatches(fighter)
     );
-    return this.recordList(list, (f) => `
+    return this.recordList(list, (f) => {
+      const nd = f.numbers_data;
+      return `
       <article class="card record-card fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
         <p class="meta">
           ${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}
-          ${f.numbers_data ? `<span class="video-badge">名鑑確認済み</span>` : ""}
+          ${nd ? `<span class="video-badge">名鑑確認済み</span>` : ""}
         </p>
+        ${nd ? `
+          <div class="numbers-stats-block">
+            <span class="numbers-stat">通算: ${escapeHtml(joinPresent([nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "", nd.stats?.wins ? `${nd.stats.wins}勝` : "", nd.stats?.losses ? `${nd.stats.losses}負` : ""], " "))}</span>
+            ${nd.achievements?.white_glove_count ? `<span class="numbers-stat">白グローブ: ${nd.achievements.white_glove_count}回</span>` : ""}
+            ${nd.achievements?.belt_marker ? `<span class="numbers-stat achievement-marker">👑 ${escapeHtml(nd.achievements.belt_marker)}</span>` : ""}
+            ${nd.achievements?.tournament_win_marker ? `<span class="numbers-stat achievement-marker">🏆 ${escapeHtml(nd.achievements.tournament_win_marker)}</span>` : ""}
+          </div>
+        ` : ""}
         ${this.renderFighterSnapshots(f.fighter_id)}
         ${related.renderRelatedBouts(f.fighter_id)}
         ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
@@ -203,12 +214,15 @@ export class TabRenderers {
           ["主団体", repo.promotionName(f.main_promotion_id)],
           ["所属", f.profile?.gym],
           ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
+          ["名鑑勝率", nd?.stats?.win_rate],
+          ["名鑑出場大会", nd?.achievements?.tournament_entry_raw],
           ["推定元動画", renderIdList(f.inferred_from_video_ids)],
           ["推定信頼度", f.inferred_confidence],
           ["概要", f.summary],
         ])}
       </article>
-    `);
+    `;
+    });
   }
 
   events() {

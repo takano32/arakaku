@@ -689,6 +689,28 @@ a {
   font-size: 0.9rem;
 }
 
+.numbers-stats-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.numbers-stat {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--bg);
+  border-radius: var(--radius-nested);
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.achievement-marker {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .source-card details {
   margin-top: 0.75rem;
 }
