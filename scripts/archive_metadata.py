@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 from datetime import datetime
+import html
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -26,6 +27,8 @@ NOTE_FIELDS = ["filename", "webpage_url", "title", "description", "archived_at"]
 
 
 def existing_archive_times(path: Path, key_field: str) -> dict[str, str]:
+    if not path.exists():
+        return {}
     return {
         row[key_field]: row.get("archived_at", "")
         for row in read_csv(path)
@@ -52,7 +55,7 @@ class NoteMetadataParser(HTMLParser):
         elif tag.lower() == "link" and attr.get("rel") == "canonical":
             self.canonical_url = attr.get("href", "")
         elif tag.lower() == "meta" and attr.get("name") == "description":
-            self.description = attr.get("content", "")
+            self.description = html.unescape(attr.get("content", ""))
 
     def handle_endtag(self, tag: str) -> None:
         if tag.lower() == "title":
@@ -64,7 +67,7 @@ class NoteMetadataParser(HTMLParser):
 
     @property
     def title(self) -> str:
-        return "".join(self.title_parts).strip()
+        return html.unescape("".join(self.title_parts)).strip()
 
 
 def parse_note_metadata(html: str) -> dict[str, str]:
