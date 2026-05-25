@@ -51,10 +51,12 @@ Numbers由来の個人成績を data-src/bouts.csv や data-src/bout_participant
 ## source_documents / source_mentions を更新させる
 
 ```text
-note本文とYouTube概要欄の取り込みパイプラインを更新してください。
+note本文とYouTube概要欄の取り込み・archive metadata パイプラインを更新してください。
 AGENTS.md と .agents/skills/arakaku-source-pipeline/SKILL.md を必ず読んでください。
 tmp/note-html/*.html と tmp/youtube-info/*.info.json はコミットしないでください。
-必要なら make cache-sources、make build-sources、make check、make clean-generated を実行してください。
+data-src/archives/youtube.csv と data-src/archives/note.csv は cache から生成した永続メタデータです。
+必要なら make cache-sources、make archive-metadata、make build-sources、make check、make clean-generated を実行してください。
+archive metadata を試合結果や選手同定の確定根拠として扱わないでください。
 ```
 
 ---

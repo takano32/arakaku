@@ -39,20 +39,25 @@ make clean-generated
 - `database.json` と relationship JSON の生成
 - GitHub Actions と Codex/agent handoff 文書の整備
 - `アラカク選手名鑑.numbers` から Numbers 由来三分割CSVを生成
+- `data-src/archives/youtube.csv` / `data-src/archives/note.csv` を cache metadata archive として整備
+- `youtube_archives.json` / `note_archives.json` を生成・検証し、viewer の動画表示・記事リンク・検索に補助連携
+- `make archive-metadata` を追加し、`make refresh-sources` に組み込み
 
 ---
 
-## P1: Pages 上で出典詳細トグルを確認する
+## P1: Pages 上で出典詳細トグルと archive 補助表示を確認する
 
 ### 目的
 
-note本文リンク、出典候補の note本文リンク、動画リンクに追加した `▶ 詳細` / `▼ 詳細` が Pages 上でも見やすく動くか確認する。
+note本文リンク、出典候補の note本文リンク、動画リンクに追加した `▶ 詳細` / `▼ 詳細` と、archive 由来の動画・記事メタデータ補助表示が Pages 上でも見やすく動くか確認する。
 
 ### 対象
 
 ```text
 docs/assets/js/services/source-renderers.js
 docs/assets/js/tabs/tab-renderers.js
+docs/assets/js/core/data-repository.js
+docs/assets/js/core/query-matcher.js
 docs/assets/style.css
 ```
 
@@ -62,6 +67,9 @@ docs/assets/style.css
 - 展開すると `▼ 詳細` に変わる
 - 出典候補の note本文リンクでも同じ挙動になる
 - 動画リンクの横でも YouTube概要欄を展開できる
+- YouTube archive の `fulltitle` / `uploader` / `upload_date` が動画 view と関連動画リンクに補助表示される
+- note archive の `title` が記事リンク表示に補助利用される
+- archive 由来のタイトル・概要欄で検索できる
 - 長い本文がカード外へ大きく崩れない
 - モバイル幅でリンク、バッジ、詳細本文が重ならない
 

@@ -28,7 +28,7 @@ note本文やYouTube概要欄を再取得し、アーカイブする場合:
 
 ```bash
 make cache-sources
-python scripts/archive_metadata.py
+make archive-metadata
 make build-sources
 make check
 make clean-generated
@@ -43,6 +43,8 @@ import csv
 for path in [
     "data-src/source_documents.csv",
     "data-src/source_mentions.csv",
+    "data-src/archives/youtube.csv",
+    "data-src/archives/note.csv",
 ]:
     with open(path, encoding="utf-8-sig", newline="") as f:
         print(path, len(list(csv.DictReader(f))), "rows")
@@ -61,6 +63,8 @@ from collections import Counter
 for path in [
     "data-src/source_documents.csv",
     "data-src/source_mentions.csv",
+    "data-src/archives/youtube.csv",
+    "data-src/archives/note.csv",
 ]:
     with open(path, encoding="utf-8-sig", newline="") as f:
         rows = list(csv.DictReader(f))
@@ -76,6 +80,13 @@ for path in [
     print()
 PY
 ```
+
+archive CSV 確認:
+
+- `data-src/archives/youtube.csv` は `display_id` が主キーです。
+- `data-src/archives/note.csv` は `filename` が主キーです。
+- archive は viewer の補助表示・検索に使いますが、試合結果や選手同定の確定根拠ではありません。
+- cache 再取得後は `make archive-metadata` を実行し、`archived_at` が既存行で不要に変わっていないか差分を確認してください。
 
 本文DBからレビュー用の出典参照候補を作る場合:
 
@@ -195,6 +206,9 @@ docs/assets/style.css
 - 出典言及タブが表示される
 - 試合・大会・動画カードに関連出典候補が出る
 - note本文リンク、出典候補リンク、動画リンクの `▶ 詳細` / `▼ 詳細` が開閉する
+- YouTube archive のタイトル・投稿者・投稿日が動画 view と関連動画リンクに補助表示される
+- note archive の HTML title が記事リンクの補助表示に使われる
+- archive 由来の文言で検索できる
 - Console に viewer JS 由来のエラーがない
 
 コマンド:
@@ -260,6 +274,7 @@ Show related source mentions on bout cards
 Update viewer source document UI
 Update viewer source detail toggles
 Improve source document build pipeline
+Archive external metadata from caches
 Migrate CSV schema to relational tables
 Export Numbers-derived comparison CSVs
 Update project handoff documentation
@@ -291,6 +306,16 @@ make clean-generated
 ```bash
 ls tmp/youtube-info/*.info.json | head
 ```
+
+### archive CSV の差分が大きい
+
+`archive_metadata.py` は固定ヘッダ・固定ソートで `data-src/archives/*.csv` を書きます。古い出力順から移行した直後は差分が大きく見えます。
+
+確認すること:
+
+- 行数が意図せず減っていない
+- `display_id` / `filename` が重複していない
+- 既存行の `archived_at` が不要に更新されていない
 
 ### source_documents.json が重い
 

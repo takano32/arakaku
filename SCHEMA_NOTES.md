@@ -25,6 +25,8 @@ Current canonical source tables:
 - `title_reigns.csv`: title reign lineage rows.
 - `articles.csv`: article/source metadata.
 - `videos.csv`: video metadata.
+- `archives/youtube.csv`: archived metadata extracted from cached YouTube info JSON.
+- `archives/note.csv`: archived metadata extracted from cached note HTML.
 - `article_links.csv`: article-to-entity relationships.
 - `video_links.csv`: video-to-entity relationships.
 - `aliases.csv`: alias-to-canonical entity mappings.
@@ -38,6 +40,13 @@ Numbers-derived helper tables:
 - `numbers_fight_records.csv` is generated from the Numbers "個人成績" sheet.
 
 These tables should not force immediate changes to the canonical relational tables. They exist to make client-side comparison, matching, and review easier.
+
+Archive helper tables:
+
+- `archives/youtube.csv` is generated from `tmp/youtube-info/*.info.json`.
+- `archives/note.csv` is generated from `tmp/note-html/*.html`.
+
+Archive rows preserve external metadata that may be useful after cache files are deleted or remote pages change. They are source CSVs for generated JSON, but they are not confirmed fight facts and should not directly set winners, participants, methods, or title lineage.
 
 ## 2. Problems In The Previous CSV Design
 
@@ -189,6 +198,8 @@ Viewer-compatible generated files:
 - `numbers_fighters.json`
 - `numbers_name_matches.json`
 - `numbers_fight_records.json`
+- `youtube_archives.json`
+- `note_archives.json`
 - source reference candidate JSON from `review/*.csv`
 
 The frontend may keep using the smaller per-view JSON files while `database.json` provides the ideal normalized snapshot for future simplification.

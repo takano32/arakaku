@@ -31,11 +31,12 @@ make clean-generated
 - Use `unknown` or `needs_review` for uncertain data.
 - New extractions must go through `review/*.csv` before being applied to `data-src/`.
 
-### 5. Metadata Archival
+### 4. Metadata Archival
 To mitigate risks from external site structure changes or data deletion, critical metadata must be archived.
 - Cache external data in `tmp/` (do not commit).
-- Run `python scripts/archive_metadata.py` to extract and commit lightweight metadata to `data-src/archives/`.
-- Ensure all important external sources (YouTube, etc.) have archived metadata tracked in Git.
+- Run `make archive-metadata` to extract and commit lightweight metadata to `data-src/archives/`.
+- `data-src/archives/youtube.csv` and `data-src/archives/note.csv` are source CSVs generated from local caches and converted to `youtube_archives.json` / `note_archives.json`.
+- Archive metadata may enrich viewer labels and search, but it does not confirm winners, participants, methods, or fighter identities.
 
 ## Documentation Index
 
@@ -55,9 +56,10 @@ To mitigate risks from external site structure changes or data deletion, critica
 
 ### Source Document Processing
 1. `make cache-sources` (Fetches note HTML and YouTube info)
-2. `make build-sources` (Generates `source_documents.csv` and `source_mentions.csv`)
-3. `make check`
-4. `make clean-generated`
+2. `make archive-metadata` (Regenerates `data-src/archives/*.csv`)
+3. `make build-sources` (Generates `source_documents.csv` and `source_mentions.csv`)
+4. `make check`
+5. `make clean-generated`
 
 ### Numbers Import
 1. `python scripts/extract_numbers.py` (Generates `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv`)

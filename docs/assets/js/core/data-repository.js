@@ -22,9 +22,11 @@ export class DataRepository {
   #index(name, records, keyForRecord) {
     if (this.#indexes.has(name)) return this.#indexes.get(name);
     const index = new Map();
-    for (const record of records) {
-      const key = keyForRecord(record);
-      if (key) index.set(key, record);
+    if (records) {
+      for (const record of records) {
+        const key = keyForRecord(record);
+        if (key) index.set(key, record);
+      }
     }
     this.#indexes.set(name, index);
     return index;
@@ -32,25 +34,30 @@ export class DataRepository {
 
   #findById(collectionName, id) {
     const idField = COLLECTION_FIELDS[collectionName];
-    return this.#index(`${collectionName}:${idField}`, this[collectionName], (record) => record[idField]).get(id);
+    const records = this[collectionName];
+    if (!records) return undefined;
+    return this.#index(`${collectionName}:${idField}`, records, (record) => record[idField]).get(id);
   }
 
   #groupIndex(name, records, keyForRecord) {
     if (this.#indexes.has(name)) return this.#indexes.get(name);
     const index = new Map();
-    for (const record of records) {
-      const key = keyForRecord(record);
-      if (!key) continue;
-      const group = index.get(key) ?? [];
-      group.push(record);
-      index.set(key, group);
+    if (records) {
+      for (const record of records) {
+        const key = keyForRecord(record);
+        if (!key) continue;
+        const group = index.get(key) ?? [];
+        group.push(record);
+        index.set(key, group);
+      }
     }
     this.#indexes.set(name, index);
     return index;
   }
 
   #findManyByField(collectionName, fieldName, value) {
-    return this.#groupIndex(`${collectionName}:${fieldName}:many`, this[collectionName], (r) => r[fieldName]).get(value) ?? [];
+    const records = this[collectionName] ?? [];
+    return this.#groupIndex(`${collectionName}:${fieldName}:many`, records, (r) => r[fieldName]).get(value) ?? [];
   }
 
   // Collection Accessors
@@ -66,14 +73,16 @@ export class DataRepository {
   get videoLinks() { return this.data.videoLinks ?? []; }
   get articles() { return this.data.articles ?? []; }
   get fighterSnapshots() { return this.data.fighterSnapshots ?? []; }
-  get sourceDocuments() { return this.data.sourceDocuments ?? []; }
-  get sourceMentions() { return this.data.sourceMentions ?? []; }
+  get sourceDocuments() { return this.data?.sourceDocuments ?? []; }
+  get sourceMentions() { return this.data?.sourceMentions ?? []; }
   get numbersFighters() { return this.data.numbersFighters ?? []; }
   get numbersNameMatches() { return this.data.numbersNameMatches ?? []; }
   get numbersFightRecords() { return this.data.numbersFightRecords ?? []; }
   get sourceEventReferences() { return this.data.sourceEventReferences ?? []; }
   get sourceBoutReferences() { return this.data.sourceBoutReferences ?? []; }
   get sourceVideoReferences() { return this.data.sourceVideoReferences ?? []; }
+  get youtubeArchives() { return this.data.youtubeArchives ?? []; }
+  get noteArchives() { return this.data.noteArchives ?? []; }
 
   // Finder Methods
   findEvent(id) { return this.#findById("events", id); }
@@ -85,6 +94,31 @@ export class DataRepository {
   sourceDocumentById(id) { return this.#findById("sourceDocuments", id); }
   numbersFighterById(id) { return this.#findById("numbersFighters", id); }
 
+  // Archive Lookups
+  findYoutubeArchive(displayId) { return this.#index("youtubeArchives:display_id", this.youtubeArchives, (r) => r.display_id).get(displayId); }
+  findNoteArchive(url) { return this.#index("noteArchives:webpage_url", this.noteArchives, (r) => r.webpage_url).get(url); }
+
+  getRichVideoInfo(video) {
+    const archive = this.findYoutubeArchive(video.platform_video_id);
+    return {
+      ...video,
+      title: archive?.fulltitle ?? video.title,
+      channel_name: archive?.uploader ?? video.channel_name,
+      published_at: archive?.upload_date ?? video.published_at,
+      archive_description: archive?.description,
+      archive_metadata: archive,
+    };
+  }
+
+  getRichArticleInfo(article) {
+    const archive = this.findNoteArchive(article.url);
+    return {
+      ...article,
+      title: archive?.title ?? article.title,
+      archive_description: archive?.description,
+    };
+  }
+
   // Label Methods
   eventName(id) { return this.findEvent(id)?.name ?? id; }
   promotionName(id) { return this.findPromotion(id)?.name ?? id; }
@@ -92,13 +126,13 @@ export class DataRepository {
 
   // Source Document Resolution
   sourceDocumentForArticle(articleId) {
-    return this.sourceDocuments.find(d => 
+    return this.sourceDocuments?.find(d => 
       d.source_type === "note_article" && (d.source_ref_id === articleId || d.source_id === `note:${articleId}`)
     );
   }
 
   sourceDocumentForVideo(video) {
-    return this.sourceDocuments.find(d => 
+    return this.sourceDocuments?.find(d => 
       d.source_type === "youtube_description" && 
       (d.source_ref_id === video.video_id || d.source_id === `youtube_description:${video.video_id}` || d.url === video.url)
     );

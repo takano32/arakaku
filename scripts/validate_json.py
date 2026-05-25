@@ -424,6 +424,29 @@ def validate_numbers_data(numbers_fighters: list[Any], matches: list[Any], recor
         if result and result not in {'win', 'loss'}:
             add_warning(f"numbers_fight_records.json[{index}]: unusual result: {result}")
 
+def validate_archive_data(youtube_archives: list[Any], note_archives: list[Any]) -> None:
+    collect_ids(youtube_archives, 'youtube_archives.json', 'display_id')
+    for index, row in enumerate(youtube_archives):
+        if not isinstance(row, dict):
+            add_error(f"youtube_archives.json[{index}]: expected object")
+            continue
+        for field in ['webpage_url', 'fulltitle', 'archived_at']:
+            require_field(row, 'youtube_archives.json', index, field)
+        url = row.get('webpage_url')
+        if url and not str(url).startswith(('http://', 'https://')):
+            add_error(f"youtube_archives.json[{index}]: invalid webpage_url: {url}")
+
+    collect_ids(note_archives, 'note_archives.json', 'filename')
+    for index, row in enumerate(note_archives):
+        if not isinstance(row, dict):
+            add_error(f"note_archives.json[{index}]: expected object")
+            continue
+        for field in ['webpage_url', 'title', 'archived_at']:
+            require_field(row, 'note_archives.json', index, field)
+        url = row.get('webpage_url')
+        if url and not str(url).startswith(('http://', 'https://')):
+            add_error(f"note_archives.json[{index}]: invalid webpage_url: {url}")
+
 def main() -> int:
     ERRORS.clear()
     WARNINGS.clear()
@@ -436,6 +459,7 @@ def main() -> int:
         'source_documents.json', 'source_mentions.json',
         'numbers_fighters.json', 'numbers_name_matches.json',
         'numbers_fight_records.json',
+        'youtube_archives.json', 'note_archives.json',
         'source_event_references.json', 'source_bout_references.json',
         'source_video_references.json'
     }
@@ -458,6 +482,8 @@ def main() -> int:
     numbers_fighters = load_json('numbers_fighters.json', [])
     numbers_name_matches = load_json('numbers_name_matches.json', [])
     numbers_fight_records = load_json('numbers_fight_records.json', [])
+    youtube_archives = load_json('youtube_archives.json', [])
+    note_archives = load_json('note_archives.json', [])
     
     article_ids = validate_articles(articles)
     promotion_ids = validate_promotions(promotions, article_ids)
@@ -481,6 +507,7 @@ def main() -> int:
     validate_source_references(load_json('source_video_references.json', []), 'source_video_references.json', 'video_id', video_ids)
     validate_aliases(aliases)
     validate_numbers_data(numbers_fighters, numbers_name_matches, numbers_fight_records, fighter_ids)
+    validate_archive_data(youtube_archives, note_archives)
     
     for w in WARNINGS:
         print(f"WARNING: {w}", file=sys.stderr)

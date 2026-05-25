@@ -47,6 +47,15 @@ tmp/note-html/*.html
 tmp/youtube-info/*.info.json
 ```
 
+必要に応じて変更してよい生成元CSV:
+
+```text
+data-src/archives/youtube.csv
+data-src/archives/note.csv
+```
+
+archive CSV は `make archive-metadata` で cache から再生成する永続メタデータです。cache ファイルそのものはコミットしません。
+
 ---
 
 ## 仕様
@@ -71,4 +80,5 @@ tmp/youtube-info/*.info.json
 
 - source_mentions は候補であり、確定結果ではない
 - `mention_type=result` を試合結果として確定表示しない
+- archive metadata を試合結果や選手同定の確定根拠にしない
 - 目的外のリファクタリングをしない

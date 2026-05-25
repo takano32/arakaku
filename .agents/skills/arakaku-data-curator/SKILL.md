@@ -195,6 +195,25 @@ note_url
 youtube_url
 ```
 
+### archives/youtube.csv and archives/note.csv
+
+Archive metadata generated from local caches:
+
+```text
+archives/youtube.csv
+archives/note.csv
+```
+
+These CSVs are committed source metadata even though `tmp/` cache files are not committed.
+
+Use them for:
+
+- viewer display enrichment
+- search enrichment
+- preserving external title/description metadata when remote pages change
+
+Do not use archive rows to confirm bout winners, methods, fighter identities, title lineage, or other canonical facts without checking source context.
+
 ---
 
 ## Data update workflow
@@ -210,6 +229,7 @@ For source document refresh:
 
 ```bash
 make cache-sources
+make archive-metadata
 make build-sources
 make check
 make clean-generated

@@ -21,12 +21,14 @@ export class SourceRenderers {
     return `<div class="video-embed"><iframe width="320" height="240" src="https://www.youtube.com/embed/${escapeHtml(v.platform_video_id)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
   }
 
-  renderVideoSourceBlock(v, label = v?.title || v?.video_id || "動画") {
-    if (!v?.url) return `<code>${escapeHtml(v?.video_id || label)}</code>`;
+  renderVideoSourceBlock(v, label = null) {
+    const video = v ? this.ctx.repo.getRichVideoInfo(v) : v;
+    const displayLabel = label || video?.title || video?.video_id || "動画";
+    if (!video?.url) return `<code>${escapeHtml(video?.video_id || displayLabel)}</code>`;
     const d = this.ctx.repo.sourceDocumentForVideo(v);
     const detail = d?.content_text ? this.renderArticleSourceDetail(`<pre>${escapeHtml(d.content_text)}</pre>`) : "";
-    const embed = this.renderVideoEmbed(v);
-    return `<div class="video-source-block"><p class="video-source-title">${externalLink(v.url, label)}</p>${detail}${embed ? `<div class="video-source-embed">${embed}</div>` : ""}</div>`;
+    const embed = this.renderVideoEmbed(video);
+    return `<div class="video-source-block"><p class="video-source-title">${externalLink(video.url, displayLabel)}</p>${detail}${embed ? `<div class="video-source-embed">${embed}</div>` : ""}</div>`;
   }
 
   renderVideoLinks(type, id, excludeVideoIds = new Set()) {
@@ -131,9 +133,10 @@ export class SourceRenderers {
 
   renderArticleRef(id) {
     const article = this.ctx.repo.findArticle(id);
+    const richArticle = article ? this.ctx.repo.getRichArticleInfo(article) : null;
     const document = this.ctx.repo.sourceDocumentForArticle(id);
     const detail = document?.content_text ? this.renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`) : "";
-    const link = article?.url ? externalLink(article.url, article.title || id) : `<code>${escapeHtml(id)}</code>`;
+    const link = richArticle?.url ? externalLink(richArticle.url, richArticle.title || id) : `<code>${escapeHtml(id)}</code>`;
     return `<span class="article-source-ref">${link}${detail}</span>`;
   }
 
@@ -142,8 +145,9 @@ export class SourceRenderers {
     if (ids.length === 0) return "未入力";
     return ids.map(id => {
       const v = this.ctx.repo.videoById(id);
-      if (opts.inline) return v?.url ? externalLink(v.url, v.title || id) : `<code>${escapeHtml(id)}</code>`;
-      return v ? this.renderVideoSourceBlock(v, v.title || id) : `<code>${escapeHtml(id)}</code>`;
+      const richVideo = v ? this.ctx.repo.getRichVideoInfo(v) : null;
+      if (opts.inline) return richVideo?.url ? externalLink(richVideo.url, richVideo.title || id) : `<code>${escapeHtml(id)}</code>`;
+      return v ? this.renderVideoSourceBlock(v, richVideo?.title || id) : `<code>${escapeHtml(id)}</code>`;
     }).join(opts.inline ? ", " : "");
   }
 

@@ -58,9 +58,11 @@ export class QueryMatcher {
   }
 
   videoMatches(video) {
+    const richVideo = this.ctx.repo.getRichVideoInfo(video);
     const { reference, document } = this.ctx.repo.sourceContextForVideo(video);
     return this.includes([
-      video.title, video.original_title, video.video_id, video.url, video.channel_name, video.platform, video.platform_video_id, video.official_status, video.video_type, video.link_status, video.notes, video.duplicate_group_id, video.duplicate_note, video.source_article_ids?.join(" "),
+      richVideo.title, richVideo.original_title, richVideo.video_id, richVideo.url, richVideo.channel_name, richVideo.published_at,
+      richVideo.archive_description, richVideo.platform, richVideo.platform_video_id, richVideo.official_status, richVideo.video_type, richVideo.link_status, richVideo.notes, richVideo.duplicate_group_id, richVideo.duplicate_note, richVideo.source_article_ids?.join(" "),
       reference?.content_preview, reference?.matched_texts, document?.content_preview,
     ]);
   }

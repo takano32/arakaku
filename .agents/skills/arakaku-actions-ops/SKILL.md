@@ -72,6 +72,8 @@ docs/data/source_mentions.json
 docs/data/numbers_fighters.json
 docs/data/numbers_name_matches.json
 docs/data/numbers_fight_records.json
+docs/data/youtube_archives.json
+docs/data/note_archives.json
 ```
 
 ---

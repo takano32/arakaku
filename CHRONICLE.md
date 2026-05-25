@@ -38,8 +38,15 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 - **Client-Side Comparison:** Decided that Numbers-derived profile and personal fight-record data should be loaded by the static viewer for comparison, pairing, and conflict surfacing before any canonical CSV is changed.
 - **Numbers Skills:** Added dedicated agent instructions for maintaining the Numbers pipeline and updated related skills and handoff documents.
 
+### Phase 6: Archive Metadata Stabilization (2026-05-25)
+- **Cache Metadata Archives:** Added `data-src/archives/youtube.csv` and `data-src/archives/note.csv` as committed metadata archives generated from local YouTube info JSON and note HTML caches.
+- **Deterministic Archive Generation:** Updated `archive_metadata.py` to use stable headers, stable sorting, standard-library HTML parsing, and existing `archived_at` preservation.
+- **Archive JSON Integration:** Generated and validated `youtube_archives.json` and `note_archives.json`.
+- **Viewer Enrichment:** Connected archive metadata to viewer video/article labels and global search without treating archive rows as confirmed fight facts.
+
 ## Key Architectural Decisions
 - **Static First:** Chose a static site architecture (CSV -> JSON -> GitHub Pages) for low maintenance and high availability.
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.
 - **Context-Rich Viewer:** Focused on showing source context directly in the viewer to aid data verification.
 - **Numbers as Comparison Data:** Treats Numbers-derived rows as review/comparison inputs. Personal fight records are not directly promoted into canonical bouts or participant results.
+- **Archives as External Metadata:** Treats archive CSVs as committed source metadata for display and review. Archive rows can enrich labels/search but do not confirm winners, fighter identities, methods, or title lineage.

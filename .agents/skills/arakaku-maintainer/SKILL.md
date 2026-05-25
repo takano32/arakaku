@@ -138,6 +138,7 @@ For source document refreshes, run:
 
 ```bash
 make cache-sources
+make archive-metadata
 make build-sources
 make check
 make clean-generated
@@ -363,6 +364,36 @@ youtube_url
 
 This file supports review and future result extraction. Treat entries as candidates unless separately confirmed.
 
+### `data-src/archives/youtube.csv`
+
+Archived YouTube metadata generated from `tmp/youtube-info/*.info.json`.
+
+Important fields:
+
+- `display_id`: primary key, usually the YouTube video ID
+- `webpage_url`: source URL
+- `fulltitle`: archived title
+- `uploader`: archived channel/uploader
+- `upload_date`: archived upload date from yt-dlp
+- `description`: archived description text
+- `archived_at`: first archive time, preserved on regeneration for existing rows
+
+Use this for viewer display/search enrichment and metadata review. Do not use it to confirm bout results, fighter identity, or title lineage.
+
+### `data-src/archives/note.csv`
+
+Archived note metadata generated from `tmp/note-html/*.html`.
+
+Important fields:
+
+- `filename`: primary key, cache filename
+- `webpage_url`: canonical note URL
+- `title`: archived HTML title
+- `description`: archived meta description
+- `archived_at`: first archive time, preserved on regeneration for existing rows
+
+Use this for viewer display/search enrichment and metadata review. Do not use it to confirm facts without checking the source context.
+
 ### `data-src/aliases.csv`
 
 Alias and spelling variation data.
@@ -429,6 +460,8 @@ video_links.json
 aliases.json
 source_documents.json
 source_mentions.json
+youtube_archives.json
+note_archives.json
 source_event_references.json
 source_bout_references.json
 source_video_references.json
@@ -484,6 +517,24 @@ from:
 tmp/note-html/
 tmp/youtube-info/
 ```
+
+### `scripts/archive_metadata.py`
+
+Builds:
+
+```text
+data-src/archives/youtube.csv
+data-src/archives/note.csv
+```
+
+from:
+
+```text
+tmp/youtube-info/*.info.json
+tmp/note-html/*.html
+```
+
+The script uses stable headers and stable sort order, and preserves existing `archived_at` values for existing archive rows.
 
 ### Result extraction scripts
 

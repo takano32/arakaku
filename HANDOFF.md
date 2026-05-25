@@ -50,6 +50,8 @@ article_links.csv: 244 rows
 video_links.csv: 1076 rows
 source_documents.csv: 479 rows
 source_mentions.csv: 1794 rows
+archives/youtube.csv: 360 rows
+archives/note.csv: 120 rows
 ```
 
 `source_documents.csv` の内訳:
@@ -89,8 +91,9 @@ scripts/archive_metadata.py
 
 - メタデータアーカイブ: `scripts/archive_metadata.py` を実装し、YouTube / Note キャッシュからメタデータを抽出し `data-src/archives/*.csv` に集約・永続化する体制を構築しました。
 - アーカイブの JSON 化: `build_json.py` でこれら CSV を `youtube_archives.json` / `note_archives.json` に変換し、ビューアー側で利用可能にしました。
-- クライアントサイドマージ: ビューアーの `DataRepository` を更新し、サーバーサイドでのマージを廃止して、クライアントサイドでアーカイブデータとエンティティ（動画・記事）を結合するようにしました。
-- **注意: 現在の既知のバリデーション問題**: `scripts/validate_json.js` が `Cannot read properties of undefined (reading 'find')` エラーで失敗しています。これは `DataRepository` が正しくソースドキュメントを初期化できない、またはテスト用状態の構成ミスに起因する可能性があります。デバッグが必要です。
+- クライアントサイドマージ: ビューアーの `DataRepository` が archive JSON と動画・記事をクライアントサイドで結合します。動画 view、関連動画リンク、検索、記事リンク表示で archive メタデータを補助的に使います。
+- deterministic archive: `archive_metadata.py` は固定ヘッダ・固定ソートで出力し、既存 `archived_at` を維持します。新規 archive 行だけ実行時刻を持ちます。
+- 検証: `scripts/validate_json.py` と `scripts/validate_json.js` は archive JSON と viewer repository lookup を検証します。直近確認では `make check` が通っています。
 
 ---
 
@@ -100,8 +103,7 @@ scripts/archive_metadata.py
 
 特に試合結果は、後で参照される重要データなので、曖昧な抽出結果をそのまま勝敗として反映しないでください。
 
-また、アーカイブのデータ突合ロジックを変更する際は、クライアントサイドでの null チェック（`this.data?.sourceDocuments ?? []` 等）を必ず行ってください。
-現在 `scripts/validate_json.js` のテストが通らない状態ですので、これを解消するのが最優先タスクです。
+また、アーカイブのデータ突合ロジックを変更する際は、クライアントサイドでの null チェック（`this.data?.sourceDocuments ?? []` 等）と `sourceVideoReferences` / archive getter の維持を必ず確認してください。
 
 
 ただし `docs/data/*.json` は生成物なのでコミットしません。
@@ -156,6 +158,7 @@ scripts/build_source_documents.py
 make cache-note-html
 make cache-youtube-info
 make cache-sources
+make archive-metadata
 make build-sources
 make refresh-sources
 ```
@@ -229,6 +232,7 @@ AGENTS.md
 8. 出典記事、出典候補、動画リンクに本文・概要欄の折りたたみ詳細表示を追加
 9. GitHub Actions と Codex/agent handoff 文書を整備
 10. CSV schema を relational-style に移行し、参加者・王座履歴・記事リンクを関係テーブル化
+11. YouTube / note cache metadata を `data-src/archives/*.csv` に永続化し、archive JSON を viewer の補助表示・検索に連携
 
 ---
 
@@ -279,6 +283,7 @@ grep -RIn "uses: actions/" .github/workflows
 
 ```bash
 make cache-sources
+make archive-metadata
 make build-sources
 make check
 make clean-generated
@@ -326,11 +331,11 @@ make clean-generated
 優先度順のおすすめです。
 
 1. `source_documents.json` の軽量化
-2. unknown 試合の結果補完
-3. Numbers 由来データの viewer 突合表示
-4. 選手プロフィールの補完
-5. 王座変遷の精度向上
-6. Pages 上で出典詳細トグルの表示確認と必要な CSS 微調整
+2. Pages 上で archive 補助表示・検索・出典詳細トグルを確認する
+3. unknown 試合の結果補完
+4. Numbers 由来データの viewer 突合表示
+5. 選手プロフィールの補完
+6. 王座変遷の精度向上
 
 ---
 

@@ -28,6 +28,8 @@ Ensure all mandatory fields (as defined in `scripts/validate_json.py`) are prese
 - `numbers_fighters.csv`: Fighter profiles extracted from `data-raw/アラカク選手名鑑.numbers`.
 - `numbers_name_matches.csv`: Inferred links between Numbers fighter rows and canonical fighter IDs.
 - `numbers_fight_records.csv`: Personal fight-record rows from the Numbers "個人成績" sheet.
+- `archives/youtube.csv`: YouTube metadata extracted from local yt-dlp info JSON caches.
+- `archives/note.csv`: note metadata extracted from local HTML caches.
 - `videos.csv`: Metadata for YouTube and other video sources.
 - `source_documents.csv`: Full text database for verification.
 - `source_mentions.csv`: Extracted entity mentions for review.

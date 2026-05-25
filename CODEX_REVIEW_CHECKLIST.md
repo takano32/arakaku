@@ -87,6 +87,14 @@ pytest passed
 - `numbers_fight_records.csv` の個人成績を直接 `bouts.csv` / `bout_participants.csv` に反映していない
 - 片側行や勝敗矛盾を隠していない
 
+特に archive CSV変更時:
+
+- `data-src/archives/youtube.csv` の `display_id` が一意で空欄ではない
+- `data-src/archives/note.csv` の `filename` が一意で空欄ではない
+- `webpage_url`、表示用タイトル、`archived_at` が空欄になっていない
+- 既存行の `archived_at` が不要に更新されていない
+- archive 由来データを試合結果・選手同定・王座履歴の確定根拠として扱っていない
+
 ---
 
 ## 5. review 変更の確認
@@ -113,6 +121,9 @@ pytest passed
 - 出典言及 view が表示される
 - 関連出典候補が候補として表示され、確定情報のように見えない
 - note本文リンク、出典候補リンク、動画リンクの `▶ 詳細` / `▼ 詳細` が開閉する
+- archive 由来の動画タイトル・投稿者・投稿日が補助表示として使われる
+- archive 由来の note title が記事リンクの補助表示として使われる
+- archive 由来の文字列が検索対象に入っている
 - Console に viewer JS 由来のエラーがない
 
 ---

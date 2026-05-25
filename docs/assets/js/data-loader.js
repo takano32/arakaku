@@ -22,6 +22,8 @@ export const CORE_DATA_KEYS = [
   "numbersFightRecords",
   "youtubeArchives",
   "noteArchives",
+  "sourceDocuments",
+  "sourceMentions",
 ];
 
 export const PUBLIC_REFERENCE_DATA_KEYS = [

@@ -93,6 +93,7 @@ Prefer explicit entities such as:
 - title reigns
 - articles
 - videos
+- archive metadata
 - relationship/link tables
 
 Use relationship tables when one record can relate to many other records.
@@ -126,6 +127,16 @@ Aim for a simple pipeline:
 4. Render the site from those JSON files.
 5. Test the real data pipeline and generated output.
 6. Publish as static GitHub Pages content.
+
+Source cache metadata follows the same principle:
+
+1. Fetch external note HTML and YouTube info JSON into `tmp/`.
+2. Do not commit cache files.
+3. Archive stable metadata into `data-src/archives/*.csv`.
+4. Generate `youtube_archives.json` and `note_archives.json`.
+5. Use archive metadata for display, search, and review only.
+
+Archive metadata does not confirm bout winners, participants, methods, fighter identities, or title lineage.
 
 The project should be understandable from the file structure.
 

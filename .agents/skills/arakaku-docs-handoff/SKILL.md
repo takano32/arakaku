@@ -14,6 +14,8 @@ README.md
 AGENTS.md
 .agents/skills/arakaku-maintainer/SKILL.md
 .agents/skills/arakaku-numbers-pipeline/SKILL.md
+.agents/skills/arakaku-source-pipeline/SKILL.md
+.agents/skills/arakaku-viewer-ui/SKILL.md
 HANDOFF.md
 NEXT_TASKS.md
 OPERATIONS_CHECKLIST.md
@@ -38,6 +40,12 @@ AGENTS.md
 
 .agents/skills/arakaku-numbers-pipeline/SKILL.md
   Codex-specific instructions for Numbers import, matching, and client-side comparison.
+
+.agents/skills/arakaku-source-pipeline/SKILL.md
+  Codex-specific instructions for note/YouTube cache refresh, archive CSV generation, and source document extraction.
+
+.agents/skills/arakaku-viewer-ui/SKILL.md
+  Codex-specific instructions for static viewer tabs, source rendering, archive metadata display, and search behavior.
 
 HANDOFF.md
   Current project state and recent work summary.
@@ -73,6 +81,8 @@ Current expected data scale:
 ```text
 source_documents.csv: 479 rows
 source_mentions.csv: 1794 rows
+archives/youtube.csv: 360 rows
+archives/note.csv: 120 rows
 numbers_fighters.csv: 101 rows
 numbers_name_matches.csv: 101 rows
 numbers_fight_records.csv: 543 rows

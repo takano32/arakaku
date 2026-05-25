@@ -262,29 +262,32 @@ export class TabRenderers {
   videos() {
     const { query, components, labels, sources, repo } = this.ctx;
     const list = repo.videos.filter(v => query.videoMatches(v));
-    return this.recordList(list, (v) => components.recordCard("video-card", `<h2>${externalLink(v.url, v.title)}</h2>`, `
-      <p class="meta">${escapeHtml(v.channel_name ?? "")}${v.published_at ? ` / ${escapeHtml(v.published_at)}` : ""}</p>
+    return this.recordList(list, (v) => {
+      const video = repo.getRichVideoInfo(v);
+      return components.recordCard("video-card", `<h2>${externalLink(video.url, video.title)}</h2>`, `
+      <p class="meta">${escapeHtml(video.channel_name ?? "")}${video.published_at ? ` / ${escapeHtml(video.published_at)}` : ""}</p>
       <div class="video-badges">
-        <span class="video-badge">${escapeHtml(labels.videoType(v.video_type))}</span>
-        <span class="video-badge">${escapeHtml(labels.linkStatus(v.link_status))}</span>
+        <span class="video-badge">${escapeHtml(labels.videoType(video.video_type))}</span>
+        <span class="video-badge">${escapeHtml(labels.linkStatus(video.link_status))}</span>
       </div>
-      ${components.section("動画URL", sources.renderVideoSourceBlock(v, v.url), "primary-links")}
+      ${components.section("動画URL", sources.renderVideoSourceBlock(video, video.url), "primary-links")}
       ${sources.renderVideoDescriptionPreview(v)}
-      ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), v.source_article_ids)}
-      ${this.renderVideoLinkedEntities(v)}
+      ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), video.source_article_ids)}
+      ${this.renderVideoLinkedEntities(video)}
       ${components.detailDisclosure([
-        ["video_id", `<code>${escapeHtml(v.video_id)}</code>`],
-        ["原題", v.original_title],
-        ["platform", v.platform],
-        ["platform_video_id", v.platform_video_id],
-        ["公式状態", v.official_status],
-        ["動画種別", labels.videoType(v.video_type)],
-        ["紐づけ状態", labels.linkStatus(v.link_status)],
-        ["重複候補", v.duplicate_group_id],
-        ["重複メモ", v.duplicate_note],
-        ["メモ", v.notes],
+        ["video_id", `<code>${escapeHtml(video.video_id)}</code>`],
+        ["原題", video.original_title],
+        ["platform", video.platform],
+        ["platform_video_id", video.platform_video_id],
+        ["公式状態", video.official_status],
+        ["動画種別", labels.videoType(video.video_type)],
+        ["紐づけ状態", labels.linkStatus(video.link_status)],
+        ["重複候補", video.duplicate_group_id],
+        ["重複メモ", video.duplicate_note],
+        ["メモ", video.notes],
       ])}
-    `));
+    `);
+    });
   }
 
   titles() {

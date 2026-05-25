@@ -16,6 +16,7 @@ NEXT_TASKS.md
 OPERATIONS_CHECKLIST.md
 .agents/skills/arakaku-maintainer/SKILL.md
 .agents/skills/arakaku-numbers-pipeline/SKILL.md
+.agents/skills/arakaku-source-pipeline/SKILL.md
 ```
 
 公式 Codex の Skills 探索に合わせるなら、`.agents/skills/*/SKILL.md` にも同じ内容を配置してください。
@@ -59,6 +60,7 @@ GitHub Pages viewer で以下を確認済みです。
 出典言及
 関連出典候補
 出典リンク横の詳細トグル
+archive 由来の動画・記事メタデータ補助表示
 ```
 
 ---
@@ -78,6 +80,8 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 - 正規データは `data-src/*.csv`
 - `docs/data/*.json` は生成物なので直接編集しない
 - `tmp/note-html/*.html` と `tmp/youtube-info/*.info.json` はコミットしない
+- `data-src/archives/youtube.csv` と `data-src/archives/note.csv` は cache から生成した永続メタデータで、コミット対象
+- archive metadata は viewer の補助表示・検索用であり、試合結果や選手同定を確定しない
 - 不明な試合結果を推測で確定しない
 - 抽出候補はまず `review/`
 - Numbers由来の個人成績は比較データであり、確認前に `bouts.csv` / `bout_participants.csv` へ直接反映しない
@@ -90,7 +94,7 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 優先度の高い候補:
 
 ```text
-1. Pages 上で出典詳細トグルを確認する
+1. Pages 上で出典詳細トグルと archive 補助表示を確認する
 2. source_documents.json を軽量化する
 3. Numbers 由来データの viewer 突合表示を作る
 4. unknown 試合の結果補完を進める

@@ -77,6 +77,8 @@ Important data keys:
 ```text
 sourceDocuments
 sourceMentions
+youtubeArchives
+noteArchives
 numbersFighters
 numbersNameMatches
 numbersFightRecords
@@ -154,6 +156,26 @@ Remember:
 - Labels should say candidate or mention when appropriate.
 - Do not present extracted result mentions as confirmed bout results.
 - Inline detail disclosures can show note本文 or YouTube概要欄, but they do not make a candidate result confirmed.
+
+---
+
+## Archive metadata
+
+Archive metadata uses:
+
+```text
+youtubeArchives
+noteArchives
+```
+
+These JSON files are generated from:
+
+```text
+data-src/archives/youtube.csv
+data-src/archives/note.csv
+```
+
+Viewer code may use archive rows to enrich labels, dates, descriptions, and search text for videos and articles. Archive rows are external metadata only; do not present them as confirmation of bout results, fighter identity, or title lineage.
 
 ---
 

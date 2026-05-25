@@ -25,6 +25,13 @@ tmp/note-html/*.html
 tmp/youtube-info/*.info.json
 ```
 
+Archived cache metadata:
+
+```text
+data-src/archives/note.csv
+data-src/archives/youtube.csv
+```
+
 Generated canonical CSVs:
 
 ```text
@@ -37,6 +44,8 @@ Generated viewer JSON:
 ```text
 docs/data/source_documents.json
 docs/data/source_mentions.json
+docs/data/note_archives.json
+docs/data/youtube_archives.json
 ```
 
 Do not commit cache files or generated JSON.
@@ -57,6 +66,12 @@ Build source document CSVs:
 make build-sources
 ```
 
+Archive cache metadata:
+
+```bash
+make archive-metadata
+```
+
 Full source refresh:
 
 ```bash
@@ -67,6 +82,7 @@ Safe full flow:
 
 ```bash
 make cache-sources
+make archive-metadata
 make build-sources
 make check
 make clean-generated
@@ -110,6 +126,17 @@ Reads caches and writes:
 data-src/source_documents.csv
 data-src/source_mentions.csv
 ```
+
+### archive_metadata.py
+
+Reads caches and writes:
+
+```text
+data-src/archives/note.csv
+data-src/archives/youtube.csv
+```
+
+Archive CSVs preserve external metadata for display and review. They are generated from local caches, but are committed as source CSVs because cache files are not committed.
 
 ---
 
@@ -216,6 +243,7 @@ After changing source pipeline scripts:
 
 ```bash
 make cache-sources
+make archive-metadata
 make build-sources
 make check
 make clean-generated
@@ -230,6 +258,8 @@ import csv
 for path in [
     "data-src/source_documents.csv",
     "data-src/source_mentions.csv",
+    "data-src/archives/youtube.csv",
+    "data-src/archives/note.csv",
 ]:
     with open(path, encoding="utf-8-sig", newline="") as f:
         print(path, len(list(csv.DictReader(f))), "rows")
