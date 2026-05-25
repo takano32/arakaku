@@ -220,8 +220,8 @@ export class TabRenderers {
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
         ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), e.source_article_id)}
         ${sources.renderVideoLinks("event", e.event_id, repo.videoIdsLinkedToEventBouts(e.event_id))}
-        ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e))}
         ${related.renderEventBouts(e.event_id)}
+        ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e))}
         ${components.detailDisclosure([
           ["event_id", `<code>${escapeHtml(e.event_id)}</code>`],
           ["団体", repo.promotionName(e.promotion_id)],
