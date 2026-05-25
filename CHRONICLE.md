@@ -41,6 +41,7 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 ### Phase 6: Archive Metadata Stabilization (2026-05-25)
 - **Cache Metadata Archives:** Added `data-src/archives/youtube.csv` and `data-src/archives/note.csv` as committed metadata archives generated from local YouTube info JSON and note HTML caches.
 - **Deterministic Archive Generation:** Updated `archive_metadata.py` to use stable headers, stable sorting, standard-library HTML parsing, and existing `archived_at` preservation.
+- **HTML Entity Decoding:** Refined metadata extraction to decode HTML entities (e.g., `&nbsp;`) for cleaner display and search.
 - **Archive JSON Integration:** Generated and validated `youtube_archives.json` and `note_archives.json`.
 - **Viewer Enrichment:** Connected archive metadata to viewer video/article labels and global search without treating archive rows as confirmed fight facts.
 
