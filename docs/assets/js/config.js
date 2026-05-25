@@ -27,12 +27,12 @@ export const PUBLIC_TABS = [
   ["bouts", "試合"],
   ["fighters", "選手"],
   ["events", "大会"],
+  ["promotions", "団体"],
   ["titles", "王座"],
   ["videos", "動画"],
 ];
 
 export const ADMIN_TABS = [
-  ["promotions", "団体"],
   ["sources", "出典本文"],
   ["mentions", "出典言及"],
 ];
@@ -42,4 +42,4 @@ export const TABS = [...PUBLIC_TABS, ...ADMIN_TABS];
 export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
 
 export const DEFAULT_TAB = "bouts";
-export const DEFAULT_ADMIN_TAB = "promotions";
+export const DEFAULT_ADMIN_TAB = "sources";
