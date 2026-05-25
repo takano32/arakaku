@@ -6,6 +6,7 @@ const COLLECTION_FIELDS = {
   articles: "article_id",
   videos: "video_id",
   sourceDocuments: "source_id",
+  numbersFighters: "numbers_fighter_id",
 };
 
 /** Repository: JSON データへの参照・検索を集約 */
@@ -67,6 +68,9 @@ export class DataRepository {
   get fighterSnapshots() { return this.data.fighterSnapshots ?? []; }
   get sourceDocuments() { return this.data.sourceDocuments ?? []; }
   get sourceMentions() { return this.data.sourceMentions ?? []; }
+  get numbersFighters() { return this.data.numbersFighters ?? []; }
+  get numbersNameMatches() { return this.data.numbersNameMatches ?? []; }
+  get numbersFightRecords() { return this.data.numbersFightRecords ?? []; }
   get sourceEventReferences() { return this.data.sourceEventReferences ?? []; }
   get sourceBoutReferences() { return this.data.sourceBoutReferences ?? []; }
   get sourceVideoReferences() { return this.data.sourceVideoReferences ?? []; }
@@ -79,6 +83,7 @@ export class DataRepository {
   findArticle(id) { return this.#findById("articles", id); }
   videoById(id) { return this.#findById("videos", id); }
   sourceDocumentById(id) { return this.#findById("sourceDocuments", id); }
+  numbersFighterById(id) { return this.#findById("numbersFighters", id); }
 
   // Label Methods
   eventName(id) { return this.findEvent(id)?.name ?? id; }

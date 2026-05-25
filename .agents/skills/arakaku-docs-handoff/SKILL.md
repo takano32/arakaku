@@ -13,6 +13,7 @@ Important documentation files:
 README.md
 AGENTS.md
 .agents/skills/arakaku-maintainer/SKILL.md
+.agents/skills/arakaku-numbers-pipeline/SKILL.md
 HANDOFF.md
 NEXT_TASKS.md
 OPERATIONS_CHECKLIST.md
@@ -34,6 +35,9 @@ AGENTS.md
 
 .agents/skills/arakaku-maintainer/SKILL.md
   Codex-specific operational instructions.
+
+.agents/skills/arakaku-numbers-pipeline/SKILL.md
+  Codex-specific instructions for Numbers import, matching, and client-side comparison.
 
 HANDOFF.md
   Current project state and recent work summary.
@@ -69,6 +73,9 @@ Current expected data scale:
 ```text
 source_documents.csv: 479 rows
 source_mentions.csv: 1794 rows
+numbers_fighters.csv: 101 rows
+numbers_name_matches.csv: 101 rows
+numbers_fight_records.csv: 543 rows
 ```
 
 Current source document types:

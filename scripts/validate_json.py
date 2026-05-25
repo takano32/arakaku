@@ -386,6 +386,44 @@ def validate_source_references(data: list[Any], filename: str, id_field: str, kn
                 add_error(f"{filename}[{index}]: missing {field}")
     return ids
 
+def validate_numbers_data(numbers_fighters: list[Any], matches: list[Any], records: list[Any], fighter_ids: set[str]) -> None:
+    numbers_ids = collect_ids(numbers_fighters, 'numbers_fighters.json', 'numbers_fighter_id')
+    matched_by_numbers_id = set()
+    for index, row in enumerate(matches):
+        if not isinstance(row, dict):
+            add_error(f"numbers_name_matches.json[{index}]: expected object")
+            continue
+        numbers_id = require_field(row, 'numbers_name_matches.json', index, 'numbers_fighter_id')
+        if numbers_id and numbers_id not in numbers_ids:
+            add_error(f"numbers_name_matches.json[{index}]: unknown numbers_fighter_id: {numbers_id}")
+        if numbers_id in matched_by_numbers_id:
+            add_error(f"numbers_name_matches.json[{index}]: duplicate numbers_fighter_id: {numbers_id}")
+        matched_by_numbers_id.add(numbers_id)
+        matched_fighter_id = row.get('matched_fighter_id')
+        if matched_fighter_id and matched_fighter_id not in fighter_ids:
+            add_error(f"numbers_name_matches.json[{index}]: unknown matched_fighter_id: {matched_fighter_id}")
+        require_field(row, 'numbers_name_matches.json', index, 'candidate_fighter_id')
+        require_field(row, 'numbers_name_matches.json', index, 'match_method')
+
+    collect_ids(records, 'numbers_fight_records.json', 'record_id')
+    for index, row in enumerate(records):
+        if not isinstance(row, dict):
+            add_error(f"numbers_fight_records.json[{index}]: expected object")
+            continue
+        numbers_id = row.get('numbers_fighter_id')
+        if numbers_id and numbers_id not in numbers_ids:
+            add_error(f"numbers_fight_records.json[{index}]: unknown numbers_fighter_id: {numbers_id}")
+        opponent_numbers_id = row.get('opponent_numbers_fighter_id')
+        if opponent_numbers_id and opponent_numbers_id not in numbers_ids:
+            add_error(f"numbers_fight_records.json[{index}]: unknown opponent_numbers_fighter_id: {opponent_numbers_id}")
+        for field in ['matched_fighter_id', 'opponent_matched_fighter_id']:
+            fighter_id = row.get(field)
+            if fighter_id and fighter_id not in fighter_ids:
+                add_error(f"numbers_fight_records.json[{index}]: unknown {field}: {fighter_id}")
+        result = row.get('result')
+        if result and result not in {'win', 'loss'}:
+            add_warning(f"numbers_fight_records.json[{index}]: unusual result: {result}")
+
 def main() -> int:
     ERRORS.clear()
     WARNINGS.clear()
@@ -396,6 +434,8 @@ def main() -> int:
         'bout_participants.json', 'fighter_snapshots.json', 'videos.json',
         'video_links.json', 'aliases.json', 'metadata.json',
         'source_documents.json', 'source_mentions.json',
+        'numbers_fighters.json', 'numbers_name_matches.json',
+        'numbers_fight_records.json',
         'source_event_references.json', 'source_bout_references.json',
         'source_video_references.json'
     }
@@ -415,6 +455,9 @@ def main() -> int:
     video_links = load_json('video_links.json', [])
     article_links = load_json('article_links.json', [])
     aliases = load_json('aliases.json', {})
+    numbers_fighters = load_json('numbers_fighters.json', [])
+    numbers_name_matches = load_json('numbers_name_matches.json', [])
+    numbers_fight_records = load_json('numbers_fight_records.json', [])
     
     article_ids = validate_articles(articles)
     promotion_ids = validate_promotions(promotions, article_ids)
@@ -437,6 +480,7 @@ def main() -> int:
     validate_source_references(load_json('source_bout_references.json', []), 'source_bout_references.json', 'bout_id', bout_ids)
     validate_source_references(load_json('source_video_references.json', []), 'source_video_references.json', 'video_id', video_ids)
     validate_aliases(aliases)
+    validate_numbers_data(numbers_fighters, numbers_name_matches, numbers_fight_records, fighter_ids)
     
     for w in WARNINGS:
         print(f"WARNING: {w}", file=sys.stderr)

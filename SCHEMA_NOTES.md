@@ -17,6 +17,9 @@ Current canonical source tables:
 - `bouts.csv`: bout entities and bout-level result fields.
 - `bout_participants.csv`: two participant rows per bout.
 - `fighters.csv`: fighter entities.
+- `numbers_fighters.csv`: fighter profile rows extracted from `data-raw/アラカク選手名鑑.numbers`.
+- `numbers_name_matches.csv`: inferred links between Numbers fighter rows and canonical fighter IDs.
+- `numbers_fight_records.csv`: personal fight-record rows extracted from the Numbers "個人成績" sheet.
 - `fighter_snapshots.csv`: event/article-specific fighter profile facts.
 - `titles.csv`: title entities.
 - `title_reigns.csv`: title reign lineage rows.
@@ -27,6 +30,14 @@ Current canonical source tables:
 - `aliases.csv`: alias-to-canonical entity mappings.
 - `source_documents.csv`: cached/extracted source text.
 - `source_mentions.csv`: candidate mentions extracted from source text.
+
+Numbers-derived helper tables:
+
+- `numbers_fighters.csv` is generated from the Numbers "全体" sheet.
+- `numbers_name_matches.csv` stores exact-name matches and generated candidate IDs separately from the raw profile rows.
+- `numbers_fight_records.csv` is generated from the Numbers "個人成績" sheet.
+
+These tables should not force immediate changes to the canonical relational tables. They exist to make client-side comparison, matching, and review easier.
 
 ## 2. Problems In The Previous CSV Design
 
@@ -79,6 +90,16 @@ The source model is relational-style:
 - Unknown results remain explicit via `result_status=unknown` and participant `result=unknown`.
 - Automatically extracted mentions remain in `source_mentions.csv` or `review/*.csv` unless confirmed.
 
+Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer compare it with the canonical tables. Do not split the Numbers export into many narrow tables until there is a proven need. For example, profile text, current-looking stats, and achievement labels can stay together in a small number of Numbers-specific CSVs if that makes browser-side review clearer.
+
+Recommended Numbers split:
+
+- `numbers_fighters.csv`: one row per fighter from the Numbers "全体" sheet.
+- `numbers_name_matches.csv`: one row per Numbers fighter, storing exact matches or generated candidate IDs.
+- `numbers_fight_records.csv`: one row per personal fight record from the Numbers "個人成績" sheet.
+
+Avoid directly generating `bouts.csv` or `bout_participants.csv` from the Numbers "個人成績" sheet. That sheet is a personal-record view: the same bout can appear once per fighter, some rows may be one-sided, and contradictory result marks must be surfaced rather than silently resolved.
+
 ## 6. Primary Keys And Foreign Keys
 
 Primary keys:
@@ -118,6 +139,8 @@ Important foreign keys:
 - `source_mentions.source_id -> source_documents.source_id`
 
 `article_links.entity_type/entity_id` and `video_links.entity_type/entity_id` are polymorphic relationships validated against allowed entity tables.
+
+Numbers-derived tables may contain inferred or best-effort references such as `matched_fighter_id` and `candidate_fighter_id`, but those references are review aids rather than canonical confirmation. `numbers_name_matches.csv` must keep the matching method and confidence explicit.
 
 ## 7. Old To New Migration
 
@@ -163,6 +186,9 @@ Viewer-compatible generated files:
 - `aliases.json`
 - `source_documents.json`
 - `source_mentions.json`
+- `numbers_fighters.json`
+- `numbers_name_matches.json`
+- `numbers_fight_records.json`
 - source reference candidate JSON from `review/*.csv`
 
 The frontend may keep using the smaller per-view JSON files while `database.json` provides the ideal normalized snapshot for future simplification.

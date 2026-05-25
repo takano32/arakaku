@@ -69,6 +69,9 @@ docs/data/video_links.json
 docs/data/aliases.json
 docs/data/source_documents.json
 docs/data/source_mentions.json
+docs/data/numbers_fighters.json
+docs/data/numbers_name_matches.json
+docs/data/numbers_fight_records.json
 ```
 
 ---

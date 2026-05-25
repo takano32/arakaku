@@ -79,6 +79,14 @@ pytest passed
 - `result_status=unknown` を勝手に確定していない
 - 同じ試合が重複していない
 
+特に Numbers 由来CSV変更時:
+
+- `numbers_fighters.csv`、`numbers_name_matches.csv`、`numbers_fight_records.csv` の行数が説明できる
+- `numbers_name_matches.csv` の `matched_fighter_id` は既存 `fighters.csv` に存在する
+- generated candidate を確定済み選手IDとして扱っていない
+- `numbers_fight_records.csv` の個人成績を直接 `bouts.csv` / `bout_participants.csv` に反映していない
+- 片側行や勝敗矛盾を隠していない
+
 ---
 
 ## 5. review 変更の確認

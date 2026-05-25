@@ -98,6 +98,41 @@ review/source_video_reference_candidates.csv
 
 ---
 
+## Numbers 由来データ更新時
+
+`data-raw/アラカク選手名鑑.numbers` をCSVへ再出力する場合:
+
+```bash
+python scripts/extract_numbers.py
+make check
+make clean-generated
+```
+
+確認:
+
+```bash
+python - <<'PY'
+import csv
+
+for path in [
+    "data-src/numbers_fighters.csv",
+    "data-src/numbers_name_matches.csv",
+    "data-src/numbers_fight_records.csv",
+]:
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        print(path, len(list(csv.DictReader(f))), "rows")
+PY
+```
+
+注意:
+
+- `numbers_fighters.csv` は「全体」シート由来の比較用プロフィールです。
+- `numbers_name_matches.csv` は推定対応です。generated candidate を確定済み選手IDとして扱わないでください。
+- `numbers_fight_records.csv` は「個人成績」シート由来の個人視点戦績です。
+- Numbers由来の個人成績を、確認前に `bouts.csv` / `bout_participants.csv` へ直接反映しないでください。
+
+---
+
 ## GitHub Actions 更新時
 
 Actions の利用状況確認:
@@ -225,6 +260,7 @@ Update viewer source document UI
 Update viewer source detail toggles
 Improve source document build pipeline
 Migrate CSV schema to relational tables
+Export Numbers-derived comparison CSVs
 Update project handoff documentation
 ```
 

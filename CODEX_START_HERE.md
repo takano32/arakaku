@@ -15,6 +15,7 @@ HANDOFF.md
 NEXT_TASKS.md
 OPERATIONS_CHECKLIST.md
 .agents/skills/arakaku-maintainer/SKILL.md
+.agents/skills/arakaku-numbers-pipeline/SKILL.md
 ```
 
 公式 Codex の Skills 探索に合わせるなら、`.agents/skills/*/SKILL.md` にも同じ内容を配置してください。
@@ -79,6 +80,7 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 - `tmp/note-html/*.html` と `tmp/youtube-info/*.info.json` はコミットしない
 - 不明な試合結果を推測で確定しない
 - 抽出候補はまず `review/`
+- Numbers由来の個人成績は比較データであり、確認前に `bouts.csv` / `bout_participants.csv` へ直接反映しない
 - 変更後は必ず `make check` と `make clean-generated`
 
 ---
@@ -90,9 +92,10 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 ```text
 1. Pages 上で出典詳細トグルを確認する
 2. source_documents.json を軽量化する
-3. unknown 試合の結果補完を進める
-4. 選手プロフィールを補完する
-5. 王座変遷の精度を上げる
+3. Numbers 由来データの viewer 突合表示を作る
+4. unknown 試合の結果補完を進める
+5. 選手プロフィールを補完する
+6. 王座変遷の精度を上げる
 ```
 
 詳細は `NEXT_TASKS.md` を参照してください。

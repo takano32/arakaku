@@ -217,6 +217,46 @@ Fighter data.
 
 Use for fighter IDs, display names, divisions, gyms, aliases, and summaries.
 
+### `data-src/numbers_fighters.csv`
+
+Numbers-derived fighter profile rows from `data-raw/アラカク選手名鑑.numbers`.
+
+Important fields and meanings:
+
+- `numbers_fighter_id`: primary key for the Numbers row
+- `source_row`: row number in the Numbers sheet
+- `display_name`: fighter name as written in Numbers
+- `fight_count`, `wins`, `losses`, `win_rate`: Numbers aggregate stats
+- `white_glove_count`, `tournament_win_marker`, `tournament_entry_raw`, `belt_marker`: Numbers achievement columns
+
+This table does not replace `fighters.csv`.
+
+### `data-src/numbers_name_matches.csv`
+
+Inferred mapping from Numbers fighter rows to canonical fighters.
+
+Important fields and meanings:
+
+- `numbers_fighter_id`: links to `numbers_fighters.csv`
+- `matched_fighter_id`: exact-match canonical `fighters.fighter_id`, when found
+- `candidate_fighter_id`: existing match or generated candidate ID
+- `match_method` and `match_confidence`: make the matching rule explicit
+
+Treat these mappings as review aids, not confirmed identity facts when the match is only a generated candidate.
+
+### `data-src/numbers_fight_records.csv`
+
+Personal fight-record rows from the Numbers "個人成績" sheet.
+
+Important fields and meanings:
+
+- one row is one fighter's view of one fight
+- the same bout may appear once for each fighter
+- some rows may be one-sided
+- contradictory result marks must be surfaced in the viewer, not silently resolved
+
+Do not directly convert this table into `bouts.csv` or `bout_participants.csv`.
+
 ### `data-src/titles.csv`
 
 Title and tournament entity data.

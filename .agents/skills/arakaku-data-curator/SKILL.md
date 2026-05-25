@@ -97,6 +97,26 @@ Fighter data.
 
 Use stable `fighter_id` values. Be careful with same-name and similar-name fighters.
 
+### Numbers-derived CSVs
+
+Numbers-derived comparison data lives in:
+
+```text
+numbers_fighters.csv
+numbers_name_matches.csv
+numbers_fight_records.csv
+```
+
+These are generated from `data-raw/アラカク選手名鑑.numbers` by `scripts/extract_numbers.py`.
+
+Use them as comparison and review inputs:
+
+- `numbers_fighters.csv`: raw-ish profile rows from the Numbers "全体" sheet
+- `numbers_name_matches.csv`: inferred name-to-fighter matches and generated candidate IDs
+- `numbers_fight_records.csv`: personal fight records from the Numbers "個人成績" sheet
+
+Do not directly promote Numbers fight records into `bouts.csv` or `bout_participants.csv`. Pairing, duplicate detection, and contradiction checks should happen in viewer JavaScript or a review workflow first.
+
 ### videos.csv
 
 Video metadata.

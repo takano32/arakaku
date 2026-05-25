@@ -45,6 +45,7 @@ ARTICLE_LINKS = rows("article_links.csv")
 BOUT_PARTICIPANTS = rows("bout_participants.csv")
 TITLE_REIGNS = rows("title_reigns.csv")
 VIDEO_LINKS = rows("video_links.csv")
+NUMBERS_NAME_MATCHES = rows("numbers_name_matches.csv")
 
 
 def article_ids_for(entity_type: str, entity_id: str) -> list[str]:
@@ -249,29 +250,43 @@ def build_bouts() -> list[dict[str, Any]]:
 
 def build_fighters() -> list[dict[str, Any]]:
     primary_rows = rows("fighters.csv")
-    secondary_rows = rows("fighters_from_numbers.csv")
+    numbers_rows = rows("numbers_fighters.csv")
+    matches_by_numbers_id = index_by(NUMBERS_NAME_MATCHES, "numbers_fighter_id")
 
     fighter_ids = set()
     for r in primary_rows:
         fighter_ids.add(r["fighter_id"])
 
-    # Numbersにしかいない選手を追加
-    merged_rows = list(primary_rows)
-    for r in secondary_rows:
-        if r["fighter_id"] not in fighter_ids:
-            merged_rows.append(r)
-            fighter_ids.add(r["fighter_id"])
+    numbers_by_fighter_id = {}
+    for row in numbers_rows:
+        match = matches_by_numbers_id.get(row["numbers_fighter_id"], {})
+        fighter_id = none_if_empty(match.get("matched_fighter_id")) or none_if_empty(match.get("candidate_fighter_id"))
+        if fighter_id:
+            numbers_by_fighter_id[fighter_id] = row
 
-    # IDごとの辞書を作成（補完用）
-    secondary_by_id = {r["fighter_id"]: r for r in secondary_rows}
+    merged_rows = list(primary_rows)
+    for fighter_id, row in numbers_by_fighter_id.items():
+        if fighter_id not in fighter_ids:
+            merged_rows.append({"fighter_id": fighter_id, "display_name": row["display_name"]})
+            fighter_ids.add(fighter_id)
+
+    def numbers_summary(row: CsvRow) -> str:
+        parts = [none_if_empty(row.get("catchphrase")), none_if_empty(row.get("notes"))]
+        return "\n\n".join(part for part in parts if part)
 
     def merged_field(row: CsvRow, field: str) -> str | None:
         val = none_if_empty(row.get(field))
         if val is not None:
             return val
-        s_row = secondary_by_id.get(row["fighter_id"])
-        if s_row:
-            return none_if_empty(s_row.get(field))
+        numbers_row = numbers_by_fighter_id.get(row["fighter_id"])
+        if not numbers_row:
+            return None
+        if field == "summary":
+            return none_if_empty(numbers_summary(numbers_row))
+        if field == "inferred_confidence":
+            return none_if_empty(numbers_row.get("source_confidence"))
+        if field in {"height", "age", "gym", "main_division", "main_promotion_id", "display_name"}:
+            return none_if_empty(numbers_row.get(field))
         return None
 
     def merged_fighter_profile(row: CsvRow) -> dict[str, Any]:
@@ -301,6 +316,41 @@ def build_fighters() -> list[dict[str, Any]]:
             "inferred_confidence": merged_field(row, "inferred_confidence"),
         })
     return out
+
+
+def build_numbers_fighters() -> list[dict[str, Any]]:
+    return map_csv(
+        "numbers_fighters.csv",
+        {
+            "numbers_fighter_id": "numbers_fighter_id",
+            "source_sheet": "source_sheet",
+            "source_row": int_field("source_row"),
+            "display_name": "display_name",
+            "main_division": "main_division",
+            "main_promotion_raw": "main_promotion_raw",
+            "main_promotion_id": "main_promotion_id",
+            "profile": {
+                "age": "age",
+                "height": "height",
+                "gym": "gym",
+            },
+            "stats": {
+                "fight_count": int_field("fight_count"),
+                "wins": int_field("wins"),
+                "losses": int_field("losses"),
+                "win_rate": "win_rate",
+            },
+            "achievements": {
+                "white_glove_count": int_field("white_glove_count"),
+                "tournament_win_marker": "tournament_win_marker",
+                "tournament_entry_raw": "tournament_entry_raw",
+                "belt_marker": "belt_marker",
+            },
+            "catchphrase": "catchphrase",
+            "notes": field_or_empty("notes"),
+            "source_confidence": "source_confidence",
+        },
+    )
 
 
 def build_titles() -> list[dict[str, Any]]:
@@ -421,6 +471,9 @@ def build_database() -> dict[str, Any]:
             "aliases": rows("aliases.csv"),
             "source_documents": rows("source_documents.csv"),
             "source_mentions": rows("source_mentions.csv"),
+            "numbers_fighters": build_numbers_fighters(),
+            "numbers_name_matches": rows("numbers_name_matches.csv"),
+            "numbers_fight_records": rows("numbers_fight_records.csv"),
         },
     }
 
@@ -443,6 +496,9 @@ JSON_BUILDERS = {
     "aliases.json": build_aliases,
     "source_documents.json": lambda: rows("source_documents.csv"),
     "source_mentions.json": lambda: rows("source_mentions.csv"),
+    "numbers_fighters.json": build_numbers_fighters,
+    "numbers_name_matches.json": lambda: rows("numbers_name_matches.csv"),
+    "numbers_fight_records.json": lambda: rows("numbers_fight_records.csv"),
     "source_event_references.json": lambda: read_csv(REVIEW / "source_event_reference_candidates.csv"),
     "source_bout_references.json": lambda: read_csv(REVIEW / "source_bout_reference_candidates.csv"),
     "source_video_references.json": lambda: read_csv(REVIEW / "source_video_reference_candidates.csv"),

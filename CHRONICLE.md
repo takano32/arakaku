@@ -32,7 +32,14 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 - **Localization:** Adopted `スーパーうんどう` naming and used kana video titles.
 - **History Documentation:** Formalized project history and handoff documentation (this file and others).
 
+### Phase 5: Relational Data And Numbers Import (2026-05-25)
+- **Relational Schema:** Migrated bouts, participants, titles, reigns, and article/video relationships into clearer relational-style CSVs.
+- **Numbers Import:** Added a three-way export for `アラカク選手名鑑.numbers`: `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv`.
+- **Client-Side Comparison:** Decided that Numbers-derived profile and personal fight-record data should be loaded by the static viewer for comparison, pairing, and conflict surfacing before any canonical CSV is changed.
+- **Numbers Skills:** Added dedicated agent instructions for maintaining the Numbers pipeline and updated related skills and handoff documents.
+
 ## Key Architectural Decisions
 - **Static First:** Chose a static site architecture (CSV -> JSON -> GitHub Pages) for low maintenance and high availability.
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.
 - **Context-Rich Viewer:** Focused on showing source context directly in the viewer to aid data verification.
+- **Numbers as Comparison Data:** Treats Numbers-derived rows as review/comparison inputs. Personal fight records are not directly promoted into canonical bouts or participant results.

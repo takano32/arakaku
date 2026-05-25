@@ -38,6 +38,7 @@ make clean-generated
 - `bout_participants.csv` / `title_reigns.csv` / `article_links.csv` の追加
 - `database.json` と relationship JSON の生成
 - GitHub Actions と Codex/agent handoff 文書の整備
+- `アラカク選手名鑑.numbers` から Numbers 由来三分割CSVを生成
 
 ---
 
@@ -131,6 +132,48 @@ source_documents_full.json
 
 プロフィール情報は時点によって変わる可能性がある。  
 時点依存の情報は `fighter_snapshots.csv` に入れることを検討する。
+
+---
+
+## P2: Numbers 由来データの viewer 突合表示
+
+### 目的
+
+`アラカク選手名鑑.numbers` から抽出したデータを、既存の正規CSVとブラウザ上で比較できるようにする。
+
+### 方針
+
+既存の `fighters.csv`、`events.csv`、`bouts.csv`、`bout_participants.csv` は変更しない。Numbers 由来データは別CSVとして出力し、突合・比較・警告表示はクライアントサイド JavaScript で行う。
+
+### CSV分割の目安
+
+- `numbers_fighters.csv`
+  - 実装済み
+  - 「全体」シート由来の選手プロフィール
+- `numbers_fight_records.csv`
+  - 実装済み
+  - 「個人成績」シート由来の個人視点戦績
+  - 1行を1戦績として保持し、ペア化しない
+- `numbers_name_matches.csv`
+  - 実装済み
+  - Numbers名と既存 `fighter_id` の推定対応を、原データから分けて保存する
+
+細かく分割しすぎると、Numbers の元行との対応が追いにくくなります。まずは少数のCSVにまとめ、viewer 側で見える化してから追加分割を判断してください。
+
+### 確認項目
+
+- Numbers 上の選手名と既存 `fighters.csv` の一致・不一致
+- Numbers のプロフィール値と既存選手プロフィールの差分
+- 「個人成績」シートの同一試合ペア候補
+- 片側だけ存在する戦績行
+- 両者とも勝ち、または両者とも負けになっている矛盾候補
+- `団体 + No` と既存 `events.csv` の対応候補
+
+### 完了条件
+
+- `make check` が通る
+- `make clean-generated` 実行済み
+- 確認前のNumbers戦績を `bouts.csv` / `bout_participants.csv` へ直接反映していない
 
 ---
 

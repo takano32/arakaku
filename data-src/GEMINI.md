@@ -10,18 +10,24 @@ Once assigned, `event_id`, `fighter_id`, `bout_id`, etc., should not be changed 
 ### 2. Mandatory Fields
 Ensure all mandatory fields (as defined in `scripts/validate_json.py`) are present.
 - `event_id` is required for bouts and video links.
-- `fighter_a` and `fighter_b` are required for bouts.
+- Bout participants are stored in `bout_participants.csv`; do not add embedded fighter columns to `bouts.csv`.
 
 ### 3. Data Entry Conservatism
 - If a result is not explicitly confirmed by a source, set `result_status=unknown`.
-- Do not swap `fighter_a` and `fighter_b` based on who won; use the `winner` and `loser` columns.
+- Do not infer winners from matchup order.
+- Use participant `result` values in `bout_participants.csv` only when the result is confirmed.
+- Numbers-derived fight records are review/comparison data; do not directly convert them into confirmed bouts.
 
 ## Key Files
 
 - `promotions.csv`: Organizations and their meta-data.
 - `events.csv`: Tournament and event details. `event_id` is the primary key.
 - `bouts.csv`: Individual matches. Reference fighters by name/ID.
+- `bout_participants.csv`: Bout-to-fighter participant rows and participant-level results.
 - `fighters.csv`: Fighter profiles and IDs.
+- `numbers_fighters.csv`: Fighter profiles extracted from `data-raw/アラカク選手名鑑.numbers`.
+- `numbers_name_matches.csv`: Inferred links between Numbers fighter rows and canonical fighter IDs.
+- `numbers_fight_records.csv`: Personal fight-record rows from the Numbers "個人成績" sheet.
 - `videos.csv`: Metadata for YouTube and other video sources.
 - `source_documents.csv`: Full text database for verification.
 - `source_mentions.csv`: Extracted entity mentions for review.

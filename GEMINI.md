@@ -4,7 +4,7 @@ This file provides core instructions and context for `gemini-cli` and other AI a
 
 ## Project Overview
 
-ARAKAKU is a CSV-backed static database and GitHub Pages viewer for organizing MMA promotions, events, bouts, fighters, titles, videos, and source documents.
+ARAKAKU is a CSV-backed static database and GitHub Pages viewer for organizing MMA promotions, events, bouts, fighters, titles, videos, source documents, and Numbers-derived comparison data.
 
 - **Source Code & Data:** CSV files in `data-src/`
 - **Output:** JSON files in `docs/data/` (generated)
@@ -56,6 +56,13 @@ make clean-generated
 2. `make build-sources` (Generates `source_documents.csv` and `source_mentions.csv`)
 3. `make check`
 4. `make clean-generated`
+
+### Numbers Import
+1. `python scripts/extract_numbers.py` (Generates `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv`)
+2. `make check`
+3. `make clean-generated`
+
+Numbers-derived fight records are comparison data. Do not directly promote them into confirmed bouts or participant results.
 
 ### Viewer Development
 1. Modify `docs/index.html`, `docs/assets/*.js`, or `docs/assets/style.css`.

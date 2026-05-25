@@ -40,6 +40,9 @@ events.csv: 54 rows
 bouts.csv: 270 rows
 bout_participants.csv: 540 rows
 fighters.csv: 146 rows
+numbers_fighters.csv: 101 rows
+numbers_name_matches.csv: 101 rows
+numbers_fight_records.csv: 543 rows
 titles.csv: 16 rows
 title_reigns.csv: 68 rows
 videos.csv: 360 rows
@@ -95,6 +98,25 @@ docs/data/database.json
 ```
 
 `bouts.csv` は bout-level facts、`bout_participants.csv` は参加者と参加者ごとの result、`titles.csv` は王座本体、`title_reigns.csv` は王座履歴を持ちます。`database.json` は正規化 CSV の生成スナップショットです。
+
+### Numbers 由来の選手名鑑CSV
+
+以下を追加済みです。
+
+```text
+data-src/numbers_fighters.csv
+data-src/numbers_name_matches.csv
+data-src/numbers_fight_records.csv
+scripts/extract_numbers.py
+```
+
+`numbers_fighters.csv` は `data-raw/アラカク選手名鑑.numbers` の「全体」シートから生成した二次ソースです。既存 `fighters.csv` を置き換えるものではなく、viewer やクライアントサイド突合で比較するための入力です。
+
+`numbers_name_matches.csv` は Numbers 上の選手名と既存 `fighters.csv` の推定対応を、原データと分けて保存します。`numbers_fight_records.csv` は「個人成績」シートの1行をそのまま個人視点の戦績として保存します。
+
+「個人成績」シートは、既存 `bouts.csv` / `bout_participants.csv` へ直接反映しません。ペア化、重複検出、既存イベント・試合との突合、勝敗矛盾の表示は JavaScript 側で行う方針です。
+
+`build_json.py` は `numbers_fighters.json`、`numbers_name_matches.json`、`numbers_fight_records.json` を生成し、`database.json` にも Numbers 由来テーブルを含めます。`docs/assets/js/data-loader.js` はこれらをロードできますが、専用の比較UIは次タスクです。
 
 ### 本文キャッシュ系スクリプト
 
@@ -265,6 +287,12 @@ make clean-generated
 `mention_type=result` であっても、正規の試合結果として確定しているわけではありません。  
 反映前に必ず出典文脈を確認してください。
 
+### Numbers の個人成績は直接 bout 化しない
+
+`アラカク選手名鑑.numbers` の「個人成績」シートは個人視点の戦績表です。同じ試合が両選手分の2行として現れることがあり、一部は片側行だけ、または勝敗表記が矛盾する可能性があります。
+
+このデータを扱う場合は、まず Numbers 専用CSVとして保存し、viewer 側で既存CSVとの比較・突合・警告表示を行ってください。確認前に `bouts.csv` や `bout_participants.csv` へ確定反映しないでください。
+
 ### note 404
 
 `articles.csv` には、note 側で 404 / 削除 / 非公開になっている記事が含まれる可能性があります。
@@ -279,9 +307,10 @@ make clean-generated
 
 1. `source_documents.json` の軽量化
 2. unknown 試合の結果補完
-3. 選手プロフィールの補完
-4. 王座変遷の精度向上
-5. Pages 上で出典詳細トグルの表示確認と必要な CSS 微調整
+3. Numbers 由来データの viewer 突合表示
+4. 選手プロフィールの補完
+5. 王座変遷の精度向上
+6. Pages 上で出典詳細トグルの表示確認と必要な CSS 微調整
 
 ---
 

@@ -77,6 +77,9 @@ Important data keys:
 ```text
 sourceDocuments
 sourceMentions
+numbersFighters
+numbersNameMatches
+numbersFightRecords
 videos
 videoLinks
 bouts
@@ -151,6 +154,28 @@ Remember:
 - Labels should say candidate or mention when appropriate.
 - Do not present extracted result mentions as confirmed bout results.
 - Inline detail disclosures can show note本文 or YouTube概要欄, but they do not make a candidate result confirmed.
+
+---
+
+## Numbers comparison data
+
+Numbers-derived data uses:
+
+```text
+numbersFighters
+numbersNameMatches
+numbersFightRecords
+```
+
+These are comparison inputs from `data-raw/アラカク選手名鑑.numbers`.
+
+When rendering Numbers comparison UI:
+
+- show raw Numbers values separately from canonical values
+- surface unmatched names and generated candidate IDs clearly
+- pair personal fight records in JavaScript, not in the CSV export
+- flag one-sided records and contradictory win/loss marks
+- do not present Numbers-derived bout records as confirmed canonical bouts
 
 ---
 

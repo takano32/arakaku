@@ -74,11 +74,33 @@ Never confirm a result from:
 
 - matchup text alone
 - video title alone
+- Numbers personal fight record alone
 - vague description
 - ambiguous fighter names
 - candidate mention without context
 
 Confirmed result data must be supported by source context.
+
+---
+
+## Numbers-derived review
+
+Numbers-derived records come from:
+
+```text
+data-src/numbers_fight_records.csv
+```
+
+They are comparison inputs, not confirmed canonical results.
+
+Before promoting any Numbers-derived fight record into canonical CSVs:
+
+1. Pair reciprocal personal fight rows when possible.
+2. Keep one-sided records flagged for review.
+3. Flag contradictory result marks.
+4. Verify `numbers_name_matches.csv` identity matches.
+5. Match `promotion_id + event_number_normalized` to a canonical event candidate.
+6. Apply only reviewed facts to `bouts.csv` and `bout_participants.csv`.
 
 ---
 

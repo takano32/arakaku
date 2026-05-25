@@ -16,14 +16,14 @@
 
 例:
 
-`source_mentions.csv` は 1801 rows あり、現在は検索だけで確認している。`result` や `matchup` だけに絞り込めるようにしたい。
+`source_mentions.csv` は多数の候補行を持ち、現在は検索だけで確認している。`result` や `matchup` だけに絞り込めるようにしたい。
 
 ---
 
 ## 対象ファイル
 
 ```text
-docs/assets/app.js
+docs/assets/js/
 docs/assets/style.css
 docs/index.html
 ```
@@ -33,7 +33,7 @@ docs/index.html
 ## 変更してよいファイル
 
 ```text
-docs/assets/app.js
+docs/assets/js/
 docs/assets/style.css
 ```
 

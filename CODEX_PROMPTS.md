@@ -17,7 +17,7 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 ## viewer を変更させる
 
 ```text
-docs/index.html、docs/assets/app-*.js、docs/assets/style.css を対象に viewer を更新してください。
+docs/index.html、docs/assets/js/、docs/assets/style.css を対象に viewer を更新してください。
 AGENTS.md と .agents/skills/arakaku-viewer-ui/SKILL.md を必ず読んでください。
 変更後は make check と make clean-generated を実行してください。
 docs/data/*.json は編集・コミットしないでください。
@@ -31,6 +31,18 @@ docs/data/*.json は編集・コミットしないでください。
 data-src/*.csv の正規データを変更してください。
 AGENTS.md と .agents/skills/arakaku-data-curator/SKILL.md を必ず読んでください。
 不明な勝敗・決着方法・ラウンド・タイムを推測で確定しないでください。
+変更後は make check と make clean-generated を実行してください。
+```
+
+---
+
+## Numbers 由来データを更新させる
+
+```text
+data-raw/アラカク選手名鑑.numbers から Numbers 由来CSVを更新してください。
+AGENTS.md と .agents/skills/arakaku-numbers-pipeline/SKILL.md を必ず読んでください。
+python scripts/extract_numbers.py を実行し、numbers_fighters.csv、numbers_name_matches.csv、numbers_fight_records.csv の行数と差分を確認してください。
+Numbers由来の個人成績を data-src/bouts.csv や data-src/bout_participants.csv へ直接反映しないでください。
 変更後は make check と make clean-generated を実行してください。
 ```
 

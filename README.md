@@ -223,6 +223,52 @@ JSON は viewer 用の生成物です。
 
 選手名クリックや検索の基本データになります。
 
+### `data-src/numbers_fighters.csv`
+
+`data-raw/アラカク選手名鑑.numbers` の「全体」シートから抽出した選手名鑑データです。
+
+既存の `fighters.csv` を置き換えるものではありません。Numbers 側のプロフィールを viewer やクライアントサイド突合で参照するための二次ソースとして扱います。
+
+主な役割:
+
+- Numbers に含まれる選手名、階級、主戦団体、身長、年齢、所属を保持する
+- Numbers に含まれる試合数、勝、負、勝率を集計値として保持する
+- 白グローブ出場回数、優勝、出場回、ベルト欄を Numbers 上の実績表示として保持する
+- キャッチコピーと備考を、Numbers 由来のプロフィール文として保持する
+- 既存 `fighters.csv` との突合結果を混ぜず、原データに近い形で保持する
+
+注意:
+
+- `age`、`height`、`gym` は Numbers ファイル時点の情報であり、恒久的な選手属性とは限りません。
+- Numbers 由来の情報を既存 `fighters.csv`、`fighter_snapshots.csv`、`bouts.csv` へ反映する場合は、別途確認してから行います。
+- Numbers の「個人成績」シートは、個人視点の戦績行を含むため、直接 `bouts.csv` に入れず、まず別CSVまたは viewer 上の突合候補として扱います。
+
+### `data-src/numbers_name_matches.csv`
+
+Numbers 上の選手名と既存 `fighters.csv` の推定対応を管理します。
+
+主な役割:
+
+- `numbers_fighters.csv` の `numbers_fighter_id` と、既存 `fighters.csv` の `fighter_id` を対応づける
+- 完全一致した選手は `matched_fighter_id` に既存IDを入れる
+- 未一致の選手は `candidate_fighter_id` を生成し、既存選手とは未確定であることを残す
+- `match_method` と `match_confidence` で、突合方法と信頼度を明示する
+
+このCSVにより、Numbers の原データと突合結果を混ぜずに扱えます。
+
+### `data-src/numbers_fight_records.csv`
+
+`data-raw/アラカク選手名鑑.numbers` の「個人成績」シートから抽出した個人視点の戦績データです。
+
+1行は「その選手から見た1試合」です。同じ試合が対戦相手側にも現れることがあるため、このCSVをそのまま `bouts.csv` や `bout_participants.csv` に反映してはいけません。
+
+主な役割:
+
+- Numbers 上の選手名、対戦相手、団体、No、形式、勝敗、詳細を保持する
+- Numbers 選手IDと既存 `fighter_id` の突合結果を参照できるようにする
+- 同一試合ペア候補、片側だけの戦績行、勝敗矛盾を viewer 側で検出できるようにする
+- `団体 + No` と既存 `events.csv` の対応候補を JavaScript 側で比較できるようにする
+
 ### `data-src/titles.csv`
 
 王座・トーナメント系データです。
@@ -334,6 +380,33 @@ viewer や抽出処理での検索・照合改善に使います。
 
 ---
 
+## Numbers 由来CSVの分割方針
+
+`アラカク選手名鑑.numbers` には、少なくとも以下の性質の違うデータがあります。
+
+- 「全体」シート: 選手プロフィール、集計戦績、肩書き、備考
+- 「個人成績」シート: 選手ごとの試合履歴。1行は「その選手から見た1試合」で、同じ試合が対戦相手側にも重複して現れることがあります
+
+既存の正規CSVは変更せず、Numbers 由来データは別CSVとして追加します。比較・突合・重複検出・勝敗矛盾検出は、原則としてクライアントサイド JavaScript で行います。
+
+分割しすぎると、元の Numbers 行との対応が追いにくくなり、列間の意味も早い段階で推測してしまいます。そのため、現時点では細かい関係テーブルへ分解しすぎず、次の程度にまとめる方針です。
+
+- `numbers_fighters.csv`
+  - 「全体」シート由来の選手プロフィールCSV
+  - 選手名、階級、主戦団体、身長、年齢、所属、集計戦績、実績欄、キャッチコピー、備考を扱う
+  - 既存 `fighters.csv` への補完候補として viewer で比較する
+- `numbers_name_matches.csv`
+  - Numbers 上の名前と既存 `fighter_id` の推定対応を保存するCSV
+  - 自動一致結果と原データを混ぜないために、最初から分離する
+- `numbers_fight_records.csv`
+  - 「個人成績」シート由来の個人視点戦績CSV
+  - 1行を1戦績行として保持し、ペア化や重複排除は JavaScript 側で行う
+  - `bouts.csv` / `bout_participants.csv` へ直接反映しない
+
+この三分割を基本形とし、これ以上の細分化は viewer 側の比較UIを作ってから判断します。
+
+---
+
 ## review の役割
 
 `review/` は、正規データに反映する前の候補を置く場所です。
@@ -381,6 +454,9 @@ viewer や抽出処理での検索・照合改善に使います。
 - `aliases.json`
 - `source_documents.json`
 - `source_mentions.json`
+- `numbers_fighters.json`
+- `numbers_name_matches.json`
+- `numbers_fight_records.json`
 - `source_event_references.json`
 - `source_bout_references.json`
 - `source_video_references.json`
@@ -426,6 +502,18 @@ viewer や抽出処理での検索・照合改善に使います。
 - `data-src/source_mentions.csv`
 
 note本文・YouTube概要欄を本文DB化し、本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
+
+### `scripts/extract_numbers.py`
+
+`data-raw/アラカク選手名鑑.numbers` を読み、Numbers 由来のCSVを生成します。
+
+現在は以下の3CSVを生成します。
+
+- `data-src/numbers_fighters.csv`
+- `data-src/numbers_name_matches.csv`
+- `data-src/numbers_fight_records.csv`
+
+既存 `fighters.csv` の選手名と照合し、同名選手がいる場合は `numbers_name_matches.csv` に既存 `fighter_id` を記録します。試合ペア化・既存DB突合・勝敗矛盾の検出は viewer 側の JavaScript で行う方針です。
 
 ### `scripts/crawl_note_articles.py`
 
@@ -590,6 +678,7 @@ Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v
 - 試合・大会・動画カードへ関連出典候補と YouTube概要欄 preview を表示
 - note本文リンク、出典候補の note本文リンク、動画リンクに `▶ 詳細` / `▼ 詳細` の本文展開を追加
 - GitHub Actions、エージェント向け handoff、Codex prompt/checklist/skill 文書を整備
+- `アラカク選手名鑑.numbers` を三分割CSVに変換し、Numbers由来プロフィール・名前突合・個人成績をクライアントサイド比較用データとして追加
 
 ---
 
