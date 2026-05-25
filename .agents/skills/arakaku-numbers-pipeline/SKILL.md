@@ -192,13 +192,17 @@ These JSON files are generated artifacts and should be removed with `make clean-
 
 ## Viewer expectations
 
-The static viewer loads Numbers JSON files for **Rich Data Supplementation**:
+The static viewer loads Numbers JSON files for **Rich Data Supplementation** at runtime:
 
+- `DataRepository.fighters` dynamically discovers and merges Numbers-only entities.
 - `DataRepository.getRichFighterInfo` fills `unknown` canonical profiles from Numbers rows.
-- `DataRepository.getRichBoutInfo` fills `unknown` canonical results from Numbers records.
+- Displays a **Numbers Stats Block** in fighter cards (fights, wins, losses, rate).
+- Displays **Achievement Markers** (👑 crowns, 🏆 trophies) on fighter cards.
+- `DataRepository.getRichBoutInfo` fills `unknown` canonical results, divisions, and formats from Numbers records.
 - UI displays "名鑑確認済み" (Verified by Directory) badges for supplemented records.
 
-Client-side JavaScript should also handle:
+Client-side JavaScript also handles:
+...
 
 - Numbers name vs canonical fighter matching
 - profile difference display

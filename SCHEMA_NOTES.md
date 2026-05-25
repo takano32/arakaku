@@ -101,7 +101,7 @@ The source model is relational-style:
 - Unknown results remain explicit via `result_status=unknown` and participant `result=unknown`.
 - Automatically extracted mentions remain in `source_mentions.csv` or `review/*.csv` unless confirmed.
 
-Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer supplement and merge it with the canonical tables. The viewer's `DataRepository` implements `getRichFighterInfo` and `getRichBoutInfo` to provide a complete view without requiring manual updates to the canonical CSVs for every small detail.
+Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer supplement and merge it with the canonical tables at runtime. The build process (`scripts/build_json.py`) remains strictly factual and does not merge Numbers data into the canonical JSON. The viewer's `DataRepository` dynamically discovers Numbers-only entities and implements `getRichFighterInfo` and `getRichBoutInfo` to provide a complete view (including stats, achievements, and results) without requiring manual updates to the canonical CSVs for every small detail.
 
 Recommended Numbers split:
 
@@ -204,7 +204,7 @@ Viewer-compatible generated files:
 - `note_archives.json`
 - source reference candidate JSON from `review/*.csv`
 
-The `DataRepository` in the viewer automatically merges `numbers_fighters.json` and `numbers_fight_records.json` into the objects returned by the `fighters` and `bouts` accessors when supplementation is possible.
+The `DataRepository` in the viewer automatically merges `numbers_fighters.json` and `numbers_fight_records.json` into the objects returned by the `fighters` and `bouts` accessors at runtime. This ensures that canonical JSON files stay lean and strictly factual while the viewer provides a rich, supplemented experience.
 
 The frontend may keep using the smaller per-view JSON files while `database.json` provides the ideal normalized snapshot for future simplification.
 

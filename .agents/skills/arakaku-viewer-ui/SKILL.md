@@ -178,7 +178,6 @@ data-src/archives/note.csv
 Viewer code may use archive rows to enrich labels, dates, descriptions, and search text for videos and articles. Archive rows are external metadata only; do not present them as confirmation of bout results, fighter identity, or title lineage.
 
 ---
-
 ## Numbers Rich Integration
 
 Numbers-derived data uses:
@@ -189,13 +188,18 @@ numbersNameMatches
 numbersFightRecords
 ```
 
-The viewer's `DataRepository` automatically merges these into `fighters` and `bouts` objects via `getRichFighterInfo` and `getRichBoutInfo`:
+The viewer's `DataRepository` automatically merges these into `fighters` and `bouts` objects via `getRichFighterInfo` and `getRichBoutInfo` at runtime:
 
+- Discover fighters that only exist in Numbers matches.
 - Fill `unknown` fighter profiles (height, age, gym, summary) from Numbers.
-- Resolve `unknown` bout results and method details by matching Numbers personal fight records.
+- Display a **Numbers Stats Block** in fighter cards: total fights, wins, losses, and win rate.
+- Display **Achievement Markers**: crowns (👑) for belts and trophies (🏆) for tournament wins.
+- Resolve `unknown` bout results, divisions, and formats by matching Numbers personal fight records.
 - Display "名鑑確認済み" (Verified by Directory) badges when supplementation or verification occurs.
 
 When rendering Numbers-specific comparison UI (if any):
+...
+
 - show raw Numbers values separately from canonical values
 - surface unmatched names and generated candidate IDs clearly
 - flag contradictory win/loss marks

@@ -44,15 +44,17 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 - **Archive JSON Integration:** Generated and validated `youtube_archives.json` and `note_archives.json`.
 - **Viewer Enrichment:** Connected archive metadata to viewer video/article labels and global search without treating archive rows as confirmed fight facts.
 
-### Phase 7: Rich Data Supplementation (2026-05-25)
+### Phase 7: Rich Data Supplementation & Runtime Merging (2026-05-25)
 - **Automated Data Supplementation:** Updated `DataRepository` to automatically fill missing or `unknown` fighter profiles and bout results using the Numbers dataset.
-- **Rich Objects:** Introduced `getRichFighterInfo` and `getRichBoutInfo` to merge canonical facts with Numbers-derived comparison data on the client side.
-- **Numbers Verification Badges:** Added "名鑑確認済み" (Verified by Directory) badges to the viewer to indicate data supplemented or verified by the Apple Numbers dataset.
-- **Enriched Caching:** Implemented internal repository caching for rich objects to maintain performance and consistency.
+- **Maximized Numbers Utilization:** Expanded the enrichment to include aggregate fight stats (wins, losses), achievement markers (crowns/trophies), and detailed bout metadata (division, format).
+- **Client-Side Runtime Merging:** Refactored the architecture to ensure a "clean build." JSON generation now strictly reflects canonical CSV facts, while the viewer's `DataRepository` dynamically discovers and merges Numbers-only entities and supplements information at runtime.
+- **Numbers Verification Badges:** Added "名鑑確認済み" (Verified by Directory) badges and specialized stats blocks to the viewer to indicate data supplemented or verified by the Apple Numbers dataset.
+- **Enriched Caching:** Implemented internal repository caching for rich objects to maintain performance and consistency during client-side processing.
 
 ## Key Architectural Decisions
 - **Static First:** Chose a static site architecture (CSV -> JSON -> GitHub Pages) for low maintenance and high availability.
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.
 - **Context-Rich Viewer:** Focused on showing source context directly in the viewer to aid data verification.
-- **Numbers as Source of Truth for Supplementation:** Decided to treat Apple Numbers data as a definitive source for supplementing missing information in the viewer, while keeping canonical CSVs focused on reviewed relational facts.
+- **Clean Build, Rich Client:** Decided to keep the build process (CSV to JSON) strictly factual and perform all data supplementation, cross-referencing, and Numbers-data merging on the client side at runtime.
+- **Numbers as Priority Source of Truth:** Decided to treat human-curated Apple Numbers data as the highest priority source for supplementing missing information in the viewer, overwriting even canonical "unknown" states.
 - **Archives as External Metadata:** Treats archive CSVs as committed source metadata for display and review. Archive rows can enrich labels/search but do not confirm winners, fighter identities, methods, or title lineage.
