@@ -20,6 +20,8 @@ export const CORE_DATA_KEYS = [
   "numbersFighters",
   "numbersNameMatches",
   "numbersFightRecords",
+  "youtubeArchives",
+  "noteArchives",
 ];
 
 export const PUBLIC_REFERENCE_DATA_KEYS = [

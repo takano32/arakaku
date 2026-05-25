@@ -21,6 +21,8 @@ export const DATA_FILES = {
   numbersFighters: "./data/numbers_fighters.json",
   numbersNameMatches: "./data/numbers_name_matches.json",
   numbersFightRecords: "./data/numbers_fight_records.json",
+  youtubeArchives: "./data/youtube_archives.json",
+  noteArchives: "./data/note_archives.json",
   sourceEventReferences: "./data/source_event_references.json",
   sourceBoutReferences: "./data/source_bout_references.json",
   sourceVideoReferences: "./data/source_video_references.json",
