@@ -139,16 +139,19 @@ export class DataRepository {
     if (!nf) return fighter;
 
     const rich = { ...fighter };
-    if (!rich.display_name || rich.display_name === "unknown") rich.display_name = nf.display_name;
-    if (!rich.main_division || rich.main_division === "unknown") rich.main_division = nf.main_division;
-    if (!rich.main_promotion_id || rich.main_promotion_id === "unknown") rich.main_promotion_id = nf.main_promotion_id;
+    // Prioritize Numbers data as it is human-verified and treated as source of truth
+    if (nf.display_name) rich.display_name = nf.display_name;
+    if (nf.main_division) rich.main_division = nf.main_division;
+    if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
     
     rich.profile = { ...(rich.profile ?? {}) };
-    if (!rich.profile.height || rich.profile.height === "unknown") rich.profile.height = nf.profile?.height;
-    if (!rich.profile.age || rich.profile.age === "unknown") rich.profile.age = nf.profile?.age;
-    if (!rich.profile.gym || rich.profile.gym === "unknown") rich.profile.gym = nf.profile?.gym;
+    if (nf.profile?.height) rich.profile.height = nf.profile.height;
+    if (nf.profile?.age) rich.profile.age = nf.profile.age;
+    if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
 
-    if (!rich.summary) rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
+    if (nf.catchphrase || nf.notes) {
+      rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
+    }
     
     rich.numbers_data = nf;
     return rich;
@@ -162,23 +165,38 @@ export class DataRepository {
     const participants = (bout.fighters ?? []).map(f => ({ ...f }));
     const fighterIds = new Set(participants.map(f => f.fighter_id).filter(Boolean));
 
-    // Match by promotion, event number, and at least one fighter
+    // Match by promotion, event number, and at least one fighter (either matched or candidate)
     const records = this.numbersFightRecords.filter(r => 
       r.promotion_id === bout.promotion_id &&
       r.event_number_normalized === String(event.event_number) &&
-      (fighterIds.has(r.matched_fighter_id) || fighterIds.has(r.opponent_matched_fighter_id))
+      (
+        fighterIds.has(r.matched_fighter_id) || 
+        fighterIds.has(r.candidate_fighter_id) || 
+        fighterIds.has(r.opponent_matched_fighter_id) ||
+        fighterIds.has(r.opponent_candidate_fighter_id)
+      )
     );
 
     if (records.length === 0) return rich;
 
-    // Use Numbers records to fill unknown fields
+    // Use Numbers records to fill fields, prioritizing direct matches
     for (const p of participants) {
       if (!p.fighter_id) continue;
-      const r = records.find(rec => rec.matched_fighter_id === p.fighter_id);
-      if (!r) continue;
-
-      if (p.result === "unknown" && r.result) {
+      
+      // 1. Direct match: this participant is the main fighter of the record
+      let r = records.find(rec => rec.matched_fighter_id === p.fighter_id || rec.candidate_fighter_id === p.fighter_id);
+      if (r && r.result) {
         p.result = r.result;
+        continue;
+      }
+      
+      // 2. Opponent match: this participant is the opponent of the record
+      // Infer result if the record for the main fighter exists and has a result
+      r = records.find(rec => rec.opponent_matched_fighter_id === p.fighter_id || rec.opponent_candidate_fighter_id === p.fighter_id);
+      if (r && r.result) {
+        if (r.result === "win") p.result = "loss";
+        else if (r.result === "loss") p.result = "win";
+        continue;
       }
     }
     rich.fighters = participants;
@@ -189,12 +207,12 @@ export class DataRepository {
       rich.result_status = "numbers_verified";
     }
 
-    // Also supplement bout result details if unknown
-    const anyRecord = records[0];
-    if ((!rich.result?.method_raw || rich.result.method_raw === "unknown") && anyRecord.detail_raw) {
+    // Supplement bout result details from any available Numbers record
+    const recordWithDetail = records.find(r => r.detail_raw);
+    if (recordWithDetail) {
       rich.result = {
         ...(rich.result ?? {}),
-        method_raw: anyRecord.detail_raw,
+        method_raw: recordWithDetail.detail_raw,
       };
     }
 
