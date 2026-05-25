@@ -1,6 +1,11 @@
 import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
 import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 
+const REQUIRED_TAB_DATA_KEYS = {
+  sources: ["sourceDocuments"],
+  mentions: ["sourceDocuments", "sourceMentions"],
+};
+
 /** Facade: DOM 更新とフィルタ UI を統括 */
 export class ViewController {
   /** @param {import("./core/view-context.js").ViewContext} ctx */
@@ -12,6 +17,15 @@ export class ViewController {
 
   renderSummary() {
     const d = this.ctx.state.data;
+    const sourceDocumentCount = this.ctx.state.loadedDataKeys?.has("sourceDocuments")
+      ? d.sourceDocuments.length
+      : "...";
+    const sourceReferenceCount = ["sourceEventReferences", "sourceBoutReferences", "sourceVideoReferences"]
+      .every((key) => this.ctx.state.loadedDataKeys?.has(key))
+      ? (d.sourceEventReferences?.length ?? 0) +
+          (d.sourceBoutReferences?.length ?? 0) +
+          (d.sourceVideoReferences?.length ?? 0)
+      : "...";
     const items = [
       ["団体", d.promotions.length],
       ["大会", d.events.length],
@@ -19,13 +33,8 @@ export class ViewController {
       ["選手", d.fighters.length],
       ["王座", d.titles.length],
       ["動画", d.videos.length],
-      ["出典", d.sourceDocuments?.length ?? 0],
-      [
-        "出典候補",
-        (d.sourceEventReferences?.length ?? 0) +
-          (d.sourceBoutReferences?.length ?? 0) +
-          (d.sourceVideoReferences?.length ?? 0),
-      ],
+      ["出典", sourceDocumentCount],
+      ["出典候補", sourceReferenceCount],
     ];
 
     document.querySelector("#summary").innerHTML = items
@@ -141,6 +150,29 @@ export class ViewController {
   }
 
   renderContent() {
+    const requiredKeys = REQUIRED_TAB_DATA_KEYS[this.ctx.state.tab] ?? [];
+    const loadingKeys = requiredKeys.filter((key) => this.ctx.state.loadingDataKeys?.has(key));
+    if (loadingKeys.length > 0) {
+      document.querySelector("#content").innerHTML = `
+        <article class="card">
+          <h2>読み込み中</h2>
+          <p class="meta">管理ビューのデータを読み込んでいます。</p>
+        </article>
+      `;
+      return;
+    }
+
+    const missingKeys = requiredKeys.filter((key) => !this.ctx.state.loadedDataKeys?.has(key));
+    if (missingKeys.length > 0) {
+      document.querySelector("#content").innerHTML = `
+        <article class="card">
+          <h2>読み込み待ち</h2>
+          <p class="meta">管理ビューを表示するためのデータを準備しています。</p>
+        </article>
+      `;
+      return;
+    }
+
     document.querySelector("#content").innerHTML = this.tabRegistry.render(this.ctx.state.tab);
   }
 

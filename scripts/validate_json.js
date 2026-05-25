@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { DATA_FILES } from "../docs/assets/js/config.js";
-import { DataLoader } from "../docs/assets/js/data-loader.js";
+import { CORE_DATA_KEYS, DataLoader } from "../docs/assets/js/data-loader.js";
 import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/core/data-parser.js";
 import { QueryMatcher } from "../docs/assets/js/core/query-matcher.js";
 import { SourceRenderers } from "../docs/assets/js/services/source-renderers.js";
@@ -150,16 +150,27 @@ async function main() {
 
   const parsedData = parseDataFileEntries(parserEntries);
 
+  const initialState = makeTestState();
+  await new DataLoader(initialState, {
+    dataFiles: files,
+    fetchText: readTextWithFallback,
+  }).load();
+  for (const key of CORE_DATA_KEYS) {
+    assert(initialState.loadedDataKeys.has(key), `initial load must include core key: ${key}`);
+  }
+  assert(!initialState.loadedDataKeys.has("database"), "initial load must not include database.json");
+  assert(!initialState.loadedDataKeys.has("sourceDocuments"), "initial load must defer source documents");
+
   const state = makeTestState();
   await new DataLoader(state, {
     dataFiles: files,
     fetchText: readTextWithFallback,
-  }).load();
+  }).loadAll();
 
   assert(JSON.stringify(parsedData) === JSON.stringify(state.data), "parser and loader must produce identical data");
   validateLoadedData(state.data, state.repository);
   validateViewerSearchPaths(state);
-  assert(state.patchCount === 1, "DataLoader must notify state exactly once");
+  assert(state.patchCount >= 1, "DataLoader must notify state after loading data");
 
   console.log("viewer JSON parser/loader validation passed");
 }

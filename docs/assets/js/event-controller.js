@@ -7,11 +7,13 @@ export class EventController {
    * @param {import("./core/app-state.js").AppState} state
    * @param {import("./ui/navigation.js").Navigator} navigator
    * @param {import("./view-controller.js").ViewController} viewController
+   * @param {import("./data-loader.js").DataLoader} dataLoader
    */
-  constructor(state, navigator, viewController) {
+  constructor(state, navigator, viewController, dataLoader) {
     this.state = state;
     this.navigator = navigator;
     this.viewController = viewController;
+    this.dataLoader = dataLoader;
   }
 
   bind() {
@@ -61,6 +63,7 @@ export class EventController {
         focusFighterId: "",
         focusEventId: "",
       });
+      this.dataLoader.loadForTab(button.dataset.tab);
     });
 
     document.querySelector(".view-mode-switch")?.addEventListener("click", (event) => {
@@ -74,6 +77,7 @@ export class EventController {
         focusFighterId: "",
         focusEventId: "",
       });
+      this.dataLoader.loadForTab(this.state.tab);
     });
 
     this.state.subscribe(() => {

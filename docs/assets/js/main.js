@@ -23,11 +23,12 @@ ctx.bindServices({ sources, related, navigation, components, tabs });
 
 const tabRegistry = new TabRendererRegistry(tabs);
 const viewController = new ViewController(ctx, tabRegistry);
-const eventController = new EventController(state, navigation, viewController);
+const dataLoader = new DataLoader(state);
+const eventController = new EventController(state, navigation, viewController, dataLoader);
 
 eventController.bind();
 
-new DataLoader(state)
+dataLoader
   .load()
   .catch((error) => {
     renderLoadError(error);

@@ -14,6 +14,9 @@ export class AppState {
   mentionType = "";
   data = null;
   repository = null;
+  loadedDataKeys = new Set();
+  loadingDataKeys = new Set();
+  dataLoadErrors = {};
 
   #listeners = new Set();
 
