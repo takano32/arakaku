@@ -188,8 +188,8 @@ export class TabRenderers {
         <h2>${escapeHtml(f.display_name)}</h2>
         <p class="meta">${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}</p>
         ${this.renderFighterSnapshots(f.fighter_id)}
-        ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
         ${related.renderRelatedBouts(f.fighter_id)}
+        ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
         ${components.detailDisclosure([
           ["fighter_id", `<code>${escapeHtml(f.fighter_id)}</code>`],
           ["別名", renderTextList(f.aliases)],
@@ -218,10 +218,10 @@ export class TabRenderers {
         <h2>${escapeHtml(e.name)}</h2>
         <p class="meta">${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}</p>
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
-        ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), e.source_article_id)}
         ${sources.renderVideoLinks("event", e.event_id, repo.videoIdsLinkedToEventBouts(e.event_id))}
         ${related.renderEventBouts(e.event_id)}
         ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e))}
+        ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), e.source_article_id)}
         ${components.detailDisclosure([
           ["event_id", `<code>${escapeHtml(e.event_id)}</code>`],
           ["団体", repo.promotionName(e.promotion_id)],
@@ -269,9 +269,9 @@ export class TabRenderers {
         <span class="video-badge">${escapeHtml(labels.linkStatus(v.link_status))}</span>
       </div>
       ${components.section("動画URL", sources.renderVideoSourceBlock(v, v.url), "primary-links")}
+      ${sources.renderVideoDescriptionPreview(v)}
       ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), v.source_article_ids)}
       ${this.renderVideoLinkedEntities(v)}
-      ${sources.renderVideoDescriptionPreview(v)}
       ${components.detailDisclosure([
         ["video_id", `<code>${escapeHtml(v.video_id)}</code>`],
         ["原題", v.original_title],
@@ -305,7 +305,7 @@ export class TabRenderers {
         .join("");
       return `${header}<article class="card title-card">
         <h3>${escapeHtml(repo.titleDisplayName(t))}</h3>
-        ${components.detailDisclosure([["title_id", `<code>${escapeHtml(t.title_id)}</code>`], ["団体", repo.promotionName(t.promotion_id)], ["階級", t.division], ["変遷数", (t.lineage ?? []).length]])}
+        ${components.detailDisclosure([["title_id", `<code>${escapeHtml(t.title_id)}</code>`], ["団体", repo.promotionName(t.promotion_id)], ["階級", t.division], ["変遷数", (t.lineage ?? []).length]], "詳細", { open: true })}
         ${lineage ? components.relatedGrid(lineage) : ""}
       </article>`;
     });

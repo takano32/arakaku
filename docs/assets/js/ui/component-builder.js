@@ -51,9 +51,10 @@ export class ComponentFactory {
     return builder.build();
   }
 
-  detailDisclosure(rows, label = "詳細") {
+  detailDisclosure(rows, label = "詳細", options = {}) {
     const content = this.definitionList(rows);
-    return content ? `<details class="record-detail-toggle"><summary>${escapeHtml(label)}</summary>${content}</details>` : "";
+    const open = options.open ? " open" : "";
+    return content ? `<details class="record-detail-toggle"${open}><summary>${escapeHtml(label)}</summary>${content}</details>` : "";
   }
 
   primaryArticleRefs(renderArticleRefs, articleIds, title = "出典記事") {
