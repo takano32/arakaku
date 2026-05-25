@@ -73,16 +73,36 @@ note_url: 64
 
 ## 直近で追加・整備したもの
 
-### 本文DB
+### 本文DB・アーカイブ・パイプライン
 
 以下を追加済みです。
 
 ```text
 data-src/source_documents.csv
 data-src/source_mentions.csv
-docs/data/source_documents.json
-docs/data/source_mentions.json
+data-src/archives/youtube.csv
+data-src/archives/note.csv
+scripts/archive_metadata.py
 ```
+
+### アーカイブ戦略とパイプラインの変更 (2026-05-25)
+
+- メタデータアーカイブ: `scripts/archive_metadata.py` を実装し、YouTube / Note キャッシュからメタデータを抽出し `data-src/archives/*.csv` に集約・永続化する体制を構築しました。
+- アーカイブの JSON 化: `build_json.py` でこれら CSV を `youtube_archives.json` / `note_archives.json` に変換し、ビューアー側で利用可能にしました。
+- クライアントサイドマージ: ビューアーの `DataRepository` を更新し、サーバーサイドでのマージを廃止して、クライアントサイドでアーカイブデータとエンティティ（動画・記事）を結合するようにしました。
+- **注意: 現在の既知のバリデーション問題**: `scripts/validate_json.js` が `Cannot read properties of undefined (reading 'find')` エラーで失敗しています。これは `DataRepository` が正しくソースドキュメントを初期化できない、またはテスト用状態の構成ミスに起因する可能性があります。デバッグが必要です。
+
+---
+
+## 作業者への注意
+
+このプロジェクトでは「正しそうだから埋める」よりも、「不明なものを不明として残す」ことを優先してください。
+
+特に試合結果は、後で参照される重要データなので、曖昧な抽出結果をそのまま勝敗として反映しないでください。
+
+また、アーカイブのデータ突合ロジックを変更する際は、クライアントサイドでの null チェック（`this.data?.sourceDocuments ?? []` 等）を必ず行ってください。
+現在 `scripts/validate_json.js` のテストが通らない状態ですので、これを解消するのが最優先タスクです。
+
 
 ただし `docs/data/*.json` は生成物なのでコミットしません。
 
