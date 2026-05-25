@@ -41,6 +41,8 @@ Numbers-derived helper tables:
 
 These tables should not force immediate changes to the canonical relational tables. They exist to make client-side comparison, matching, and review easier.
 
+The static viewer now uses these tables for **Rich Data Supplementation**: if a canonical fighter or bout has `unknown` fields, the viewer's `DataRepository` automatically fills them using corresponding Numbers rows.
+
 Archive helper tables:
 
 - `archives/youtube.csv` is generated from `tmp/youtube-info/*.info.json`.
@@ -99,7 +101,7 @@ The source model is relational-style:
 - Unknown results remain explicit via `result_status=unknown` and participant `result=unknown`.
 - Automatically extracted mentions remain in `source_mentions.csv` or `review/*.csv` unless confirmed.
 
-Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer compare it with the canonical tables. Do not split the Numbers export into many narrow tables until there is a proven need. For example, profile text, current-looking stats, and achievement labels can stay together in a small number of Numbers-specific CSVs if that makes browser-side review clearer.
+Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer supplement and merge it with the canonical tables. The viewer's `DataRepository` implements `getRichFighterInfo` and `getRichBoutInfo` to provide a complete view without requiring manual updates to the canonical CSVs for every small detail.
 
 Recommended Numbers split:
 
@@ -201,6 +203,8 @@ Viewer-compatible generated files:
 - `youtube_archives.json`
 - `note_archives.json`
 - source reference candidate JSON from `review/*.csv`
+
+The `DataRepository` in the viewer automatically merges `numbers_fighters.json` and `numbers_fight_records.json` into the objects returned by the `fighters` and `bouts` accessors when supplementation is possible.
 
 The frontend may keep using the smaller per-view JSON files while `database.json` provides the ideal normalized snapshot for future simplification.
 

@@ -16,7 +16,7 @@ Ensure all mandatory fields (as defined in `scripts/validate_json.py`) are prese
 - If a result is not explicitly confirmed by a source, set `result_status=unknown`.
 - Do not infer winners from matchup order.
 - Use participant `result` values in `bout_participants.csv` only when the result is confirmed.
-- Numbers-derived fight records are review/comparison data; do not directly convert them into confirmed bouts.
+- Numbers-derived fight records are review/comparison data; do not directly convert them into confirmed bouts. The viewer will automatically supplement `unknown` results using this data.
 
 ## Key Files
 

@@ -192,9 +192,13 @@ These JSON files are generated artifacts and should be removed with `make clean-
 
 ## Viewer expectations
 
-The static viewer may load the Numbers JSON files for comparison.
+The static viewer loads Numbers JSON files for **Rich Data Supplementation**:
 
-Client-side JavaScript should handle:
+- `DataRepository.getRichFighterInfo` fills `unknown` canonical profiles from Numbers rows.
+- `DataRepository.getRichBoutInfo` fills `unknown` canonical results from Numbers records.
+- UI displays "名鑑確認済み" (Verified by Directory) badges for supplemented records.
+
+Client-side JavaScript should also handle:
 
 - Numbers name vs canonical fighter matching
 - profile difference display
@@ -202,7 +206,6 @@ Client-side JavaScript should handle:
 - one-sided fight record warnings
 - contradictory win/loss marks
 - `promotion_id + event_number_normalized` event matching candidates
-- possible links to canonical bouts and participants
 
 The viewer must not silently write canonical CSVs or hide conflicts.
 

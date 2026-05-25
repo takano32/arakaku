@@ -35,7 +35,6 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 ### Phase 5: Relational Data And Numbers Import (2026-05-25)
 - **Relational Schema:** Migrated bouts, participants, titles, reigns, and article/video relationships into clearer relational-style CSVs.
 - **Numbers Import:** Added a three-way export for `アラカク選手名鑑.numbers`: `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv`.
-- **Client-Side Comparison:** Decided that Numbers-derived profile and personal fight-record data should be loaded by the static viewer for comparison, pairing, and conflict surfacing before any canonical CSV is changed.
 - **Numbers Skills:** Added dedicated agent instructions for maintaining the Numbers pipeline and updated related skills and handoff documents.
 
 ### Phase 6: Archive Metadata Stabilization (2026-05-25)
@@ -45,9 +44,15 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 - **Archive JSON Integration:** Generated and validated `youtube_archives.json` and `note_archives.json`.
 - **Viewer Enrichment:** Connected archive metadata to viewer video/article labels and global search without treating archive rows as confirmed fight facts.
 
+### Phase 7: Rich Data Supplementation (2026-05-25)
+- **Automated Data Supplementation:** Updated `DataRepository` to automatically fill missing or `unknown` fighter profiles and bout results using the Numbers dataset.
+- **Rich Objects:** Introduced `getRichFighterInfo` and `getRichBoutInfo` to merge canonical facts with Numbers-derived comparison data on the client side.
+- **Numbers Verification Badges:** Added "名鑑確認済み" (Verified by Directory) badges to the viewer to indicate data supplemented or verified by the Apple Numbers dataset.
+- **Enriched Caching:** Implemented internal repository caching for rich objects to maintain performance and consistency.
+
 ## Key Architectural Decisions
 - **Static First:** Chose a static site architecture (CSV -> JSON -> GitHub Pages) for low maintenance and high availability.
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.
 - **Context-Rich Viewer:** Focused on showing source context directly in the viewer to aid data verification.
-- **Numbers as Comparison Data:** Treats Numbers-derived rows as review/comparison inputs. Personal fight records are not directly promoted into canonical bouts or participant results.
+- **Numbers as Source of Truth for Supplementation:** Decided to treat Apple Numbers data as a definitive source for supplementing missing information in the viewer, while keeping canonical CSVs focused on reviewed relational facts.
 - **Archives as External Metadata:** Treats archive CSVs as committed source metadata for display and review. Archive rows can enrich labels/search but do not confirm winners, fighter identities, methods, or title lineage.

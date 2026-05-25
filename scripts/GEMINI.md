@@ -13,7 +13,7 @@ Python scripts in this directory handle data processing, validation, and extract
 - Most scripts should read from `data-src/` and output to `docs/data/` or `review/`.
 - Only explicitly named "apply" scripts (e.g., `apply_structured_result_patches.py`) should modify `data-src/*.csv`.
 - `extract_numbers.py` is an explicit source import script: it reads `data-raw/アラカク選手名鑑.numbers` and regenerates the Numbers-derived CSVs in `data-src/`.
-- Numbers-derived CSVs are comparison/review inputs. Do not use import scripts to confirm winners, bouts, or participant results without a separate review step.
+- Numbers-derived CSVs are comparison/review inputs. Do not use import scripts to confirm winners, bouts, or participant results without a separate review step. The static viewer uses these for automated supplementation of unknown fields.
 - `archive_metadata.py` is an explicit cache-to-source archiving script: it reads local cache files and regenerates `data-src/archives/youtube.csv` and `data-src/archives/note.csv`.
 - Archive CSVs preserve external metadata for review/display. Do not use archive rows to confirm bout results or fighter identities without a separate review step.
 

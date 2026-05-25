@@ -95,6 +95,13 @@ scripts/archive_metadata.py
 - deterministic archive: `archive_metadata.py` は固定ヘッダ・固定ソートで出力し、既存 `archived_at` を維持します。新規 archive 行だけ実行時刻を持ちます。
 - 検証: `scripts/validate_json.py` と `scripts/validate_json.js` は archive JSON と viewer repository lookup を検証します。直近確認では `make check` が通っています。
 
+### 名鑑データによるリッチ化統合 (2026-05-25)
+
+- データ補完ロジック: `DataRepository` に `getRichFighterInfo` / `getRichBoutInfo` を実装し、`unknown` な選手プロフィールや試合結果を Numbers 由来データ（`numbers_fighters.json` / `numbers_fight_records.json`）で自動補完するようにしました。
+- UI表示: 補完・確認された項目に「名鑑確認済み」バッジを表示し、出典を明示しました。
+- キャッシュ: パフォーマンス維持のため、リポジトリ内でリッチ化済みオブジェクトをキャッシュします。
+- バリデーション更新: `scripts/validate_json.js` はオブジェクト再生成に対応するため、IDベースの一致チェックを行うように修正済みです。
+
 ---
 
 ## 作業者への注意

@@ -196,6 +196,8 @@ Important fields and meanings:
 - `result_status`: use `unknown` when not confirmed
 - method / round / time fields: only fill when confirmed
 
+The viewer automatically supplements `unknown` results using Numbers data and displays a "名鑑確認済み" badge.
+
 Do not derive winner/loser from matchup ordering.
 
 ### `data-src/bout_participants.csv`
@@ -256,7 +258,7 @@ Important fields and meanings:
 - some rows may be one-sided
 - contradictory result marks must be surfaced in the viewer, not silently resolved
 
-Do not directly convert this table into `bouts.csv` or `bout_participants.csv`.
+The viewer uses this table to supplement `unknown` canonical bout results via `DataRepository.getRichBoutInfo`. Do not directly convert this table into `bouts.csv` or `bout_participants.csv`.
 
 ### `data-src/titles.csv`
 

@@ -179,7 +179,7 @@ Viewer code may use archive rows to enrich labels, dates, descriptions, and sear
 
 ---
 
-## Numbers comparison data
+## Numbers Rich Integration
 
 Numbers-derived data uses:
 
@@ -189,15 +189,17 @@ numbersNameMatches
 numbersFightRecords
 ```
 
-These are comparison inputs from `data-raw/アラカク選手名鑑.numbers`.
+The viewer's `DataRepository` automatically merges these into `fighters` and `bouts` objects via `getRichFighterInfo` and `getRichBoutInfo`:
 
-When rendering Numbers comparison UI:
+- Fill `unknown` fighter profiles (height, age, gym, summary) from Numbers.
+- Resolve `unknown` bout results and method details by matching Numbers personal fight records.
+- Display "名鑑確認済み" (Verified by Directory) badges when supplementation or verification occurs.
 
+When rendering Numbers-specific comparison UI (if any):
 - show raw Numbers values separately from canonical values
 - surface unmatched names and generated candidate IDs clearly
-- pair personal fight records in JavaScript, not in the CSV export
-- flag one-sided records and contradictory win/loss marks
-- do not present Numbers-derived bout records as confirmed canonical bouts
+- flag contradictory win/loss marks
+- do not present Numbers-derived bout records as confirmed canonical bouts in the CSV sources
 
 ---
 
