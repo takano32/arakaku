@@ -97,28 +97,34 @@ input[type="search"]:focus {
   border-color: var(--accent);
 }
 
-.tabs {
+.tab-toolbar {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .view-mode-switch {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  margin: -8px 0 10px;
+  gap: 8px;
 }
 
 .view-mode-button {
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 10px 14px;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.86rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
