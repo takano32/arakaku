@@ -154,11 +154,12 @@ def build_metadata() -> dict[str, Any]:
 
 
 def build_articles() -> list[dict[str, Any]]:
+    archives = index_by(rows("archives/note.csv"), "webpage_url")
     return map_csv(
         "articles.csv",
         {
             "article_id": "article_id",
-            "title": "title",
+            "title": lambda row: archives.get(row["url"], {}).get("title") or row["title"],
             "url": "url",
             "source_type": field_or_default("source_type", "official_note"),
             "article_type": "article_type",
@@ -167,6 +168,7 @@ def build_articles() -> list[dict[str, Any]]:
             "last_checked_at": "last_checked_at",
             "status": field_or_default("status", "parsed"),
             "notes": field_or_empty("notes"),
+            "archive_description": lambda row: archives.get(row["url"], {}).get("description"),
         },
     )
 
@@ -403,6 +405,7 @@ def build_fighter_snapshots() -> list[dict[str, Any]]:
 
 
 def build_videos() -> list[dict[str, Any]]:
+    archives = index_by(rows("archives/youtube.csv"), "display_id")
     return map_csv(
         "videos.csv",
         {
@@ -410,10 +413,10 @@ def build_videos() -> list[dict[str, Any]]:
             "platform": field_or_default("platform", "youtube"),
             "platform_video_id": "platform_video_id",
             "url": "url",
-            "title": "title",
+            "title": lambda row: archives.get(row["platform_video_id"], {}).get("fulltitle") or row["title"],
             "original_title": "original_title",
-            "channel_name": "channel_name",
-            "published_at": "published_at",
+            "channel_name": lambda row: archives.get(row["platform_video_id"], {}).get("uploader") or row["channel_name"],
+            "published_at": lambda row: archives.get(row["platform_video_id"], {}).get("upload_date") or row["published_at"],
             "official_status": field_or_default("official_status", "unknown"),
             "video_type": field_or_default("video_type", "reference"),
             "link_status": field_or_default("link_status", "unlinked"),
@@ -421,6 +424,7 @@ def build_videos() -> list[dict[str, Any]]:
             "duplicate_note": "duplicate_note",
             "notes": field_or_empty("notes"),
             "source_article_ids": lambda row: article_ids_for("video", row["video_id"]),
+            "archive_metadata": lambda row: archives.get(row["platform_video_id"]),
         },
     )
 
