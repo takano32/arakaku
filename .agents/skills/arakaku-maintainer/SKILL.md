@@ -134,6 +134,12 @@ make clean-generated
 build → validate → pytest
 ```
 
+To normalize data order:
+
+```bash
+make reorder-data
+```
+
 For source document refreshes, run:
 
 ```bash
@@ -196,9 +202,15 @@ Important fields and meanings:
 - `result_status`: use `unknown` when not confirmed
 - method / round / time fields: only fill when confirmed
 
-The build process remains strictly factual. The viewer automatically supplements `unknown` results, divisions, and formats using Numbers data at runtime and displays a "名鑑確認済み" badge.
+The build process remains strictly factual. The viewer automatically supplements `unknown` results, divisions, and formats using Numbers data at runtime and displays a "名鑑確認済み" badge. **Human-verified Apple Numbers data takes absolute precedence.**
 
 Do not derive winner/loser from matchup ordering.
+
+### Sorting policy: CSV Ascending, Viewer Descending
+
+- **Canonical CSVs**: Must be sorted in **Ascending** order (oldest first). Use `make reorder-data` to normalize.
+- **Viewer Display**: Data is dynamically reversed to **Descending** order (newest first) by `DataRepository.js` at runtime.
+- **Exceptions**: Intra-event collections (like `boutsForEvent`) remain Ascending to match the event's chronological flow.
 
 ### `data-src/bout_participants.csv`
 
