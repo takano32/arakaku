@@ -107,8 +107,10 @@ The source model is relational-style:
 - Derived labels are generated, not stored as source facts.
 - Unknown results remain explicit via `result_status=unknown` and participant `result=unknown`.
 - Automatically extracted mentions remain in `source_mentions.csv` or `review/*.csv` unless confirmed.
+- **Sorting Policy**: Canonical CSV files (`data-src/*.csv`) are sorted in **Ascending** order (oldest to newest). The viewer's `DataRepository` dynamically reverses these collections to display them in **Descending** order (newest to oldest) for the user.
 
-Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer supplement and merge it with the canonical tables at runtime. The build process (`scripts/build_json.py`) remains strictly factual and does not merge Numbers data into the canonical JSON. The viewer's `DataRepository` dynamically discovers Numbers-only entities and implements `getRichFighterInfo` and `getRichBoutInfo` to provide a complete view (including stats, achievements, and results) without requiring manual updates to the canonical CSVs for every small detail.
+Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer supplement and merge it with the canonical tables at runtime.
+ The build process (`scripts/build_json.py`) remains strictly factual and does not merge Numbers data into the canonical JSON. The viewer's `DataRepository` dynamically discovers Numbers-only entities and implements `getRichFighterInfo` and `getRichBoutInfo` to provide a complete view (including stats, achievements, and results) without requiring manual updates to the canonical CSVs for every small detail.
 
 Recommended Numbers split:
 

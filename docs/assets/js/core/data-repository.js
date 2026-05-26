@@ -65,7 +65,7 @@ export class DataRepository {
   }
 
   // Collection Accessors
-  get events() { return this.data.events ?? []; }
+  get events() { return [...(this.data.events ?? [])].reverse(); }
   get promotions() { return this.data.promotions ?? []; }
   get articleLinks() { return this.data.articleLinks ?? []; }
   get fighters() { return this.data.fighters ?? []; }
@@ -93,20 +93,21 @@ export class DataRepository {
   get richBouts() {
     if (this.#richBouts) return this.#richBouts;
     const raw = this.bouts;
-    this.#richBouts = raw.map(b => this.getRichBoutInfo(b));
+    this.#richBouts = raw.map(b => this.getRichBoutInfo(b)).reverse();
     return this.#richBouts;
   }
   get boutParticipants() { return this.data.boutParticipants ?? []; }
   get titles() { return this.data.titles ?? []; }
   get titleReigns() { return this.data.titleReigns ?? []; }
   get videos() { return this.data.videos ?? []; }
-  get richVideos() { return this.videos.map(v => this.getRichVideoInfo(v)); }
+  get richVideos() { return [...this.videos.map(v => this.getRichVideoInfo(v))].reverse(); }
   get videoLinks() { return this.data.videoLinks ?? []; }
   get articles() { return this.data.articles ?? []; }
-  get richArticles() { return this.articles.map(a => this.getRichArticleInfo(a)); }
+  get richArticles() { return [...this.articles.map(a => this.getRichArticleInfo(a))].reverse(); }
   get fighterSnapshots() { return this.data.fighterSnapshots ?? []; }
-  get sourceDocuments() { return this.data?.sourceDocuments ?? []; }
-  get sourceMentions() { return this.data?.sourceMentions ?? []; }
+  get sourceDocuments() { return [...(this.data?.sourceDocuments ?? [])].reverse(); }
+  get sourceMentions() { return [...(this.data?.sourceMentions ?? [])].reverse(); }
+
   get numbersFighters() { return this.data.numbersFighters ?? []; }
   get numbersNameMatches() { return this.data.numbersNameMatches ?? []; }
   get numbersFightRecords() { return this.data.numbersFightRecords ?? []; }
@@ -341,12 +342,12 @@ export class DataRepository {
 
   relatedBoutsForFighter(fighterId) {
     if (!fighterId) return [];
-    return this.richBouts
-      .filter(b => (b.fighters ?? []).some(f => f.fighter_id === fighterId))
-      .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
+    // richBouts is already Newest Event first, Main Event first (Descending)
+    return this.richBouts.filter(b => (b.fighters ?? []).some(f => f.fighter_id === fighterId));
   }
 
   boutsForEvent(eventId) {
+    // For a single event, we usually want to show bouts in ascending order (Bout 1 -> Main Event)
     return this.richBouts
       .filter(b => b.event_id === eventId)
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
