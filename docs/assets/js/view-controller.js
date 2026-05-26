@@ -81,7 +81,9 @@ export class ViewController {
     const filters = document.querySelector("#title-filters");
     if (!filters) return;
 
-    filters.hidden = state.tab !== "titles";
+    const isActive = state.tab === "titles";
+    filters.hidden = !isActive;
+    if (!isActive) return;
 
     const promotionSelect = document.querySelector("#title-promotion-filter");
     const divisionSelect = document.querySelector("#title-division-filter");
@@ -105,7 +107,9 @@ export class ViewController {
     const filters = document.querySelector("#mention-filters");
     if (!filters) return;
 
-    filters.hidden = state.tab !== "mentions";
+    const isActive = state.tab === "mentions";
+    filters.hidden = !isActive;
+    if (!isActive) return;
 
     const mentionTypeSelect = document.querySelector("#mention-type-filter");
     if (!mentionTypeSelect || !state.data) return;

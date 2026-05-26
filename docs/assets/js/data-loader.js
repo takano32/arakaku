@@ -32,11 +32,6 @@ export const PUBLIC_REFERENCE_DATA_KEYS = [
   "sourceVideoReferences",
 ];
 
-export const ADMIN_DATA_KEYS = [
-  "sourceDocuments",
-  "sourceMentions",
-];
-
 export const TAB_DATA_KEYS = {
   sources: ["sourceDocuments"],
   mentions: ["sourceDocuments", "sourceMentions"],

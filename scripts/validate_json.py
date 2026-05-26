@@ -3,25 +3,21 @@ from __future__ import annotations
 import sys
 from typing import Any
 from arakaku_utils import DOCS_DATA, load_json
+from arakaku.validation import (
+    VALID_METHODS,
+    VALID_VIDEO_TYPES,
+    VALID_VIDEO_LINK_STATUSES,
+    VALID_VIDEO_RELATION_TYPES,
+    VALID_VIDEO_ENTITY_TYPES,
+    VALID_ARTICLE_ENTITY_TYPES,
+    VALID_ARTICLE_RELATION_TYPES,
+)
 
 ERRORS: list[str] = []
 WARNINGS: list[str] = []
 REQUIRED_JSON_FILES = {
     'metadata.json', 'articles.json', 'promotions.json', 'events.json', 'bouts.json', 'fighters.json'
 }
-VALID_METHODS = {'KO', 'TKO', 'SUB', 'DEC', 'DQ', 'NC'}
-VALID_VIDEO_TYPES = {
-    'full_fight', 'highlight', 'short', 'stream_archive', 'preview', 'interview', 'commentary', 'reference'
-}
-VALID_VIDEO_LINK_STATUSES = {'linked', 'partially_linked', 'unlinked', 'needs_review'}
-VALID_VIDEO_RELATION_TYPES = {
-    'full_fight', 'highlight', 'short', 'stream_archive', 'preview', 'interview', 'commentary', 'reference'
-}
-VALID_VIDEO_ENTITY_TYPES = {'event', 'bout', 'fighter', 'promotion', 'title'}
-VALID_ARTICLE_ENTITY_TYPES = {
-    'event', 'bout', 'fighter', 'fighter_snapshot', 'promotion', 'title', 'title_reign', 'video'
-}
-VALID_ARTICLE_RELATION_TYPES = {'source', 'reference'}
 
 def add_error(m: str) -> None:
     ERRORS.append(m)

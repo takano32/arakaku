@@ -9,6 +9,7 @@ import { CORE_DATA_KEYS, DataLoader } from "../docs/assets/js/data-loader.js";
 import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/core/data-parser.js";
 import { QueryMatcher } from "../docs/assets/js/core/query-matcher.js";
 import { SourceRenderers } from "../docs/assets/js/services/source-renderers.js";
+import { TabRenderers } from "../docs/assets/js/tabs/tab-renderers.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(SCRIPT_DIR, "..");
@@ -37,6 +38,13 @@ async function readTextWithFallback(path, fallback) {
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
+  }
+}
+
+function validateTabRendererMethods() {
+  const REQUIRED_METHODS = ["bouts", "fighters", "events", "promotions", "titles", "videos", "sources", "mentions"];
+  for (const method of REQUIRED_METHODS) {
+    assert(typeof TabRenderers.prototype[method] === "function", `TabRenderers.${method} must be a function`);
   }
 }
 
@@ -152,6 +160,7 @@ function makeTestState() {
 }
 
 async function main() {
+  validateTabRendererMethods();
   validateParserFallbacks();
 
   const files = localDataFiles();

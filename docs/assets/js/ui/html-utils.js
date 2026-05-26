@@ -58,3 +58,11 @@ export function externalLink(url, label) {
 export function emptyMessage() {
   return `<article class="card"><p>該当するデータがありません。</p></article>`;
 }
+
+export function boutResultText(bout) {
+  return [
+    bout.result?.round ? `${bout.result.round}R` : "",
+    bout.result?.time,
+    bout.result?.method_raw,
+  ].filter(Boolean).join(" ");
+}

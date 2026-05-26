@@ -1,4 +1,5 @@
 import {
+  boutResultText,
   escapeHtml,
   externalLink,
   joinPresent,
@@ -19,11 +20,6 @@ export class TabRenderers {
 
   focusedOrFiltered(focusedId, findRecord, records, predicate) {
     return focusedId ? [findRecord(focusedId)].filter(Boolean) : records.filter(predicate);
-  }
-
-  boutResultLine(bout) {
-    const res = [bout.result?.round ? `${bout.result.round}R` : "", bout.result?.time, bout.result?.method_raw].filter(Boolean);
-    return res.length > 0 ? res.join(" ") : "";
   }
 
   boutDecisionLine(bout) {
@@ -140,7 +136,7 @@ export class TabRenderers {
 
   renderBoutCard(b) {
     const { navigation, components, sources, repo, labels } = this.ctx;
-    const resultLine = this.boutResultLine(b);
+    const resultLine = boutResultText(b);
     const summary = navigation.renderBoutResultSummary(b);
     const hasResult = summary || resultLine;
 
@@ -173,6 +169,12 @@ export class TabRenderers {
         ])}
       </article>
     `;
+  }
+
+  bouts() {
+    const { query, repo } = this.ctx;
+    const list = repo.richBouts.filter(b => query.includes(query.boutSearchText(b)));
+    return this.recordList(list, (b) => this.renderBoutCard(b));
   }
 
   fighters() {

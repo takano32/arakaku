@@ -1,4 +1,4 @@
-import { escapeHtml } from "../ui/html-utils.js";
+import { boutResultText, escapeHtml } from "../ui/html-utils.js";
 
 /** 関連試合カードの描画サービス */
 export class RelatedRenderers {
@@ -8,13 +8,8 @@ export class RelatedRenderers {
   }
 
   renderBoutResultMeta(bout) {
-    return `
-      <p class="meta">
-        ${escapeHtml(bout.result?.round ? `${bout.result.round}R` : "")}
-        ${escapeHtml(bout.result?.time ?? "")}
-        ${escapeHtml(bout.result?.method_raw ?? "")}
-      </p>
-    `;
+    const text = boutResultText(bout);
+    return text ? `<p class="meta">${escapeHtml(text)}</p>` : "";
   }
 
   renderBoutCard(bout, { showEvent = false, showOrder = false } = {}) {
