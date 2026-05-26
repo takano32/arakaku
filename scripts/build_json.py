@@ -113,26 +113,7 @@ def is_title_bout(row: CsvRow) -> bool:
     return bool_from_text(row.get("is_title_bout")) or False
 
 
-def promotion_rules(row: CsvRow) -> dict[str, Any]:
-    return {
-        "venue": none_if_empty(row.get("rule_venue")),
-        "rounds": none_if_empty(row.get("rule_rounds")),
-        "judging": none_if_empty(row.get("rule_judging")),
-        "glove": none_if_empty(row.get("rule_glove")),
-        "elbows": bool_from_text(row.get("rule_elbows")),
-        "soccer_kicks": bool_from_text(row.get("rule_soccer_kicks")),
-        "stomps": bool_from_text(row.get("rule_stomps")),
-        "four_point_head_kicks": bool_from_text(row.get("rule_four_point_head_kicks")),
-        "four_point_head_knees": bool_from_text(row.get("rule_four_point_head_knees")),
-    }
-
-
-def fighter_profile(row: CsvRow) -> dict[str, Any]:
-    return {
-        "height": none_if_empty(row.get("height")),
-        "age": none_if_empty(row.get("age")),
-        "gym": none_if_empty(row.get("gym")),
-    }
+from arakaku.mapping import promotion_rules, fighter_profile, bout_result, bout_title
 
 
 def build_metadata() -> dict[str, Any]:
@@ -219,20 +200,8 @@ def build_bouts() -> list[dict[str, Any]]:
             "loser_id": lambda row: loser_from_participants(row, "fighter_id"),
             "loser": lambda row: loser_from_participants(row, "fighter_name"),
             "result_status": known_or_unknown_result,
-            "result": {
-                "round": int_field("round", strip_prefix="R"),
-                "time": "time",
-                "method_raw": "method_raw",
-                "method_normalized": "method_normalized",
-                "technique": "technique",
-                "decision_score": "decision_score",
-            },
-            "title": {
-                "is_title_bout": is_title_bout,
-                "title_id": "title_id",
-                "title_result": "title_result",
-                "note": field_or_empty("title_note"),
-            },
+            "result": lambda row: bout_result(row, int_field),
+            "title": lambda row: bout_title(row, is_title_bout),
             "source_article_id": lambda row: first_article_id_for("bout", row["bout_id"]),
             "notes": field_or_empty("notes"),
             "inferred_from_video_id": "inferred_from_video_id",

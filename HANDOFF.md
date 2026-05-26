@@ -95,7 +95,12 @@ scripts/archive_metadata.py
 - deterministic archive: `archive_metadata.py` は固定ヘッダ・固定ソートで出力し、既存 `archived_at` を維持します。新規 archive 行だけ実行時刻を持ちます。
 - 検証: `scripts/validate_json.py` と `scripts/validate_json.js` は archive JSON と viewer repository lookup を検証します。直近確認では `make check` が通っています。
 
-### 名鑑データによるリッチ化統合とクライアントサイドマージ (2026-05-25)
+### グローバル・リファクタリング (2026-05-25)
+
+- **Frontend リファクタリング**: `DataRepository.js` を `BaseRepository.js` (生データアクセス/インデックス管理) と `DataEnricher.js` (Rich Data 構築ロジック) に分割し、責務を明確にしました。
+- **Python スクリプトのモジュール化**: `scripts/arakaku/` パッケージを新設し、`mapping.py`, `models.py`, `utils.py` にロジックを整理しました。
+- **ビルドプロセスの簡素化**: `build_json.py` のマッピングロジックを外部モジュール化し、メンテナンス性を向上させました。
+- **後方互換性**: 既存のスクリプトを壊さないよう、`scripts/arakaku_utils.py` をプロキシとして維持しています。
 
 - データ補完ロジック: `DataRepository` に `getRichFighterInfo` / `getRichBoutInfo` を実装し、`unknown` な選手プロフィールや試合結果を Numbers 由来データ（`numbers_fighters.json` / `numbers_fight_records.json`）で自動補完するようにしました。
 - 情報の最大活用: 通算戦績、実績マーカー（👑 🏆）、階級・試合形式の補完など、名鑑に含まれる人手管理の情報を最大限に活用して表示します。
