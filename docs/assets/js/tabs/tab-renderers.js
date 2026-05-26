@@ -196,6 +196,11 @@ export class TabRenderers {
           ${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}
           ${nd ? `<span class="video-badge">名鑑確認済み</span>` : ""}
         </p>
+        ${f.summary ? `<p class="fighter-summary">${escapeHtml(f.summary)}</p>` : ""}
+        ${components.definitionList([
+          ["所属", f.profile?.gym],
+          ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
+        ])}
         ${nd ? `
           <div class="numbers-stats-block">
             <span class="numbers-stat">通算: ${escapeHtml(joinPresent([nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "", nd.stats?.wins ? `${nd.stats.wins}勝` : "", nd.stats?.losses ? `${nd.stats.losses}負` : ""], " "))}</span>
@@ -212,13 +217,10 @@ export class TabRenderers {
           ["別名", renderTextList(f.aliases)],
           ["主階級", f.main_division],
           ["主団体", repo.promotionName(f.main_promotion_id)],
-          ["所属", f.profile?.gym],
-          ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
           ["名鑑勝率", nd?.stats?.win_rate],
           ["名鑑出場大会", nd?.achievements?.tournament_entry_raw],
           ["推定元動画", renderIdList(f.inferred_from_video_ids)],
           ["推定信頼度", f.inferred_confidence],
-          ["概要", f.summary],
         ])}
       </article>
     `;
