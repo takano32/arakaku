@@ -15,7 +15,7 @@ export function uniqueSorted(values) {
 
 export function renderValue(value) {
   if (value === null || value === undefined || value === "") {
-    return "未入力";
+    return "";
   }
   return escapeHtml(value);
 }
@@ -34,7 +34,7 @@ export function renderBooleanJa(value) {
 export function renderIdList(values) {
   const items = (values ?? []).filter(Boolean);
   if (items.length === 0) {
-    return "未入力";
+    return "";
   }
   return items.map((value) => `<code>${escapeHtml(value)}</code>`).join(", ");
 }
@@ -42,7 +42,7 @@ export function renderIdList(values) {
 export function renderTextList(values) {
   const items = (values ?? []).filter(Boolean);
   if (items.length === 0) {
-    return "未入力";
+    return "";
   }
   return items.map((value) => escapeHtml(value)).join(", ");
 }

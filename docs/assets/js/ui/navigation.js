@@ -89,13 +89,13 @@ export class Navigator {
     const resultStatus = bout.result_status ?? "known";
 
     if (resultStatus === "unknown") {
-      return "勝敗未入力";
+      return "";
     }
 
     if (bout.winner && bout.loser) {
       return `${this.fighterLink(bout.winner_id, bout.winner)} def. ${this.fighterLink(bout.loser_id, bout.loser)}`;
     }
 
-    return "結果未入力";
+    return "";
   }
 }

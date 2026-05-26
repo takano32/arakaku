@@ -22,15 +22,13 @@ export class TabRenderers {
   }
 
   boutResultLine(bout) {
-    return joinPresent([
-      bout.result?.round ? `${bout.result.round}R` : "",
-      bout.result?.time,
-      bout.result?.method_raw,
-    ], "");
+    const res = [bout.result?.round ? `${bout.result.round}R` : "", bout.result?.time, bout.result?.method_raw].filter(Boolean);
+    return res.length > 0 ? res.join(" ") : "";
   }
 
   boutDecisionLine(bout) {
-    return joinPresent([bout.result?.method_normalized, bout.result?.technique, bout.result?.decision_score]);
+    const res = [bout.result?.method_normalized, bout.result?.technique, bout.result?.decision_score].filter(Boolean);
+    return res.length > 0 ? res.join(" ") : "";
   }
 
   promotionRuleRows(promotion) {
@@ -140,22 +138,20 @@ export class TabRenderers {
     `, "lineage-card");
   }
 
-  bouts() {
-    const { state, query, navigation, components, sources, repo, labels } = this.ctx;
-    const list = state.focusEventId
-      ? repo.boutsForEvent(state.focusEventId)
-      : repo.richBouts.filter((bout) => query.includes(query.boutSearchText(bout)));
-    return this.recordList(list, (b) => `
+  renderBoutCard(b) {
+    const { navigation, components, sources, repo, labels } = this.ctx;
+    const resultLine = this.boutResultLine(b);
+    const summary = navigation.renderBoutResultSummary(b);
+    const hasResult = summary || resultLine;
+
+    return `
       <article class="card record-card bout-card">
         <h2>${navigation.boutMatchup(b)}</h2>
         <p class="meta">
           ${navigation.eventLink(b.event_id, repo.eventName(b.event_id))} / ${escapeHtml(b.division ?? "")}
           ${b.numbers_records?.length ? `<span class="video-badge">名鑑確認済み</span>` : ""}
         </p>
-        <p class="result">
-          ${navigation.renderBoutResultSummary(b)}
-          ${escapeHtml(this.boutResultLine(b))}
-        </p>
+        ${hasResult ? `<p class="result">${summary} ${escapeHtml(resultLine)}</p>` : ""}
         ${b.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(b.title.note)}</p>` : ""}
         ${sources.renderVideoLinks("bout", b.bout_id)}
         ${sources.renderSourceReferences(sources.sourceReferencesForBout(b))}
@@ -176,7 +172,7 @@ export class TabRenderers {
           ["メモ", b.notes],
         ])}
       </article>
-    `);
+    `;
   }
 
   fighters() {
