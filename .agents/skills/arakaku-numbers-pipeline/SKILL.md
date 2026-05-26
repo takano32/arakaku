@@ -3,7 +3,7 @@ name: arakaku-numbers-pipeline
 description: Use this skill when working with data-raw/アラカク選手名鑑.numbers, scripts/extract_numbers.py, numbers_fighters.csv, numbers_name_matches.csv, numbers_fight_records.csv, generated Numbers JSON, or client-side comparison of Numbers-derived data.
 ---
 
-# ARAKAKU Numbers Pipeline Skill
+# Unofficial ARAKAKU Database Numbers Pipeline Skill
 
 Use this skill when importing, validating, documenting, or rendering data from:
 

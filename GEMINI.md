@@ -1,10 +1,10 @@
-# ARAKAKU Project Instructions
+# Unofficial ARAKAKU Database Project Instructions
 
 This file provides core instructions and context for `gemini-cli` and other AI agents working on the ARAKAKU project.
 
 ## Project Overview
 
-ARAKAKU is a CSV-backed static database and GitHub Pages viewer for organizing MMA promotions, events, bouts, fighters, titles, videos, source documents, and Numbers-derived comparison data.
+Unofficial ARAKAKU Database is a CSV-backed static database and GitHub Pages viewer for organizing MMA promotions, events, bouts, fighters, titles, videos, source documents, and Numbers-derived comparison data.
 
 - **Source Code & Data:** CSV files in `data-src/`
 - **Output:** JSON files in `docs/data/` (generated)

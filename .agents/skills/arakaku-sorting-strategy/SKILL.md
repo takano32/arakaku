@@ -3,7 +3,7 @@ name: arakaku-sorting-strategy
 description: Use this skill when maintaining the data sort order policy. It ensures that canonical CSVs remain ascending (oldest first) while the viewer displays data in descending order (newest first).
 ---
 
-# ARAKAKU Sorting Strategy Skill
+# Unofficial ARAKAKU Database Sorting Strategy Skill
 
 This skill governs the temporal organization of data in the `takano32/arakaku` project.
 

@@ -1,6 +1,6 @@
-# ARAKAKU Next Tasks
+# Unofficial ARAKAKU Database Next Tasks
 
-このファイルは、ARAKAKU の次回作業候補を優先度つきでまとめた TODO です。
+このファイルは、Unofficial ARAKAKU Database の次回作業候補を優先度つきでまとめた TODO です。
 
 ---
 

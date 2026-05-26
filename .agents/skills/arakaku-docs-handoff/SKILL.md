@@ -3,7 +3,7 @@ name: arakaku-docs-handoff
 description: Use this skill when updating README, AGENTS.md, SKILL.md, handoff notes, next task lists, operations checklists, or other project documentation for human and agent handoff.
 ---
 
-# ARAKAKU Documentation and Handoff Skill
+# Unofficial ARAKAKU Database Documentation and Handoff Skill
 
 Use this skill when updating project documentation.
 

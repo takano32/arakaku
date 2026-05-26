@@ -3,7 +3,7 @@ name: arakaku-review-workflow
 description: Use this skill when generating, inspecting, or applying review CSVs, especially result candidates, source mention candidates, structured result patches, or inferred bouts/events/fighters.
 ---
 
-# ARAKAKU Review Workflow Skill
+# Unofficial ARAKAKU Database Review Workflow Skill
 
 Use this skill when the task involves candidate extraction, review CSVs, or applying reviewed changes.
 

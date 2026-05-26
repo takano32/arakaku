@@ -3,7 +3,7 @@ name: arakaku-source-pipeline
 description: Use this skill when working on note HTML caching, YouTube info JSON caching, source_documents.csv, source_mentions.csv, source document extraction, or source text ingestion.
 ---
 
-# ARAKAKU Source Pipeline Skill
+# Unofficial ARAKAKU Database Source Pipeline Skill
 
 Use this skill when working with note bodies, YouTube descriptions, source documents, or extracted mentions.
 

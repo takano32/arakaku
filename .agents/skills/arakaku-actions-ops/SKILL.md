@@ -3,7 +3,7 @@ name: arakaku-actions-ops
 description: Use this skill when maintaining ARAKAKU GitHub Actions, Pages deployment, CI workflow files, Makefile validation commands, or Node.js action deprecation updates.
 ---
 
-# ARAKAKU Actions and Operations Skill
+# Unofficial ARAKAKU Database Actions and Operations Skill
 
 Use this skill when editing workflows or operational checks.
 

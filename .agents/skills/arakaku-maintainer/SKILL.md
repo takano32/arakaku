@@ -1,13 +1,13 @@
 ---
 name: arakaku-maintainer
-description: Use this skill when working on the takano32/arakaku project. It teaches Codex how to safely maintain the CSV-backed ARAKAKU database, generated JSON, GitHub Pages viewer, source document pipeline, review CSV workflow, and validation commands.
+description: Use this skill when working on the takano32/arakaku project. It teaches Codex how to safely maintain the CSV-backed Unofficial ARAKAKU Database, generated JSON, GitHub Pages viewer, source document pipeline, review CSV workflow, and validation commands.
 ---
 
-# ARAKAKU Maintainer Skill
+# Unofficial ARAKAKU Database Maintainer Skill
 
 This skill is for working on the `takano32/arakaku` repository.
 
-ARAKAKU is a CSV-backed static database and GitHub Pages viewer for organizing ARAKAKU promotions, events, bouts, fighters, titles, videos, source documents, and extracted source mentions.
+ARAKAKU is a CSV-backed static database and GitHub Pages viewer for organizing Unofficial ARAKAKU Database promotions, events, bouts, fighters, titles, videos, source documents, and extracted source mentions.
 
 Use this skill whenever the task touches:
 

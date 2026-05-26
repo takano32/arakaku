@@ -1,6 +1,6 @@
-# ARAKAKU Handoff Notes
+# Unofficial ARAKAKU Database Handoff Notes
 
-このファイルは、ARAKAKU リポジトリの現在状態を次の作業者・別エージェントへ引き継ぐためのメモです。
+このファイルは、Unofficial ARAKAKU Database リポジトリの現在状態を次の作業者・別エージェントへ引き継ぐためのメモです。
 
 README.md / AGENTS.md / .agents/skills/arakaku-maintainer/SKILL.md を読んだうえで、直近の状態確認に使ってください。
 

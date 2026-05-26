@@ -1,6 +1,6 @@
-# ARAKAKU Project Chronicle
+# Unofficial ARAKAKU Database Project Chronicle
 
-This file tracks the evolution of the ARAKAKU project based on its commit history.
+This file tracks the evolution of the Unofficial ARAKAKU Database project based on its commit history.
 
 ## Project Timeline
 

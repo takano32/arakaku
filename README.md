@@ -1,11 +1,11 @@
-# ARAKAKU
+# Unofficial ARAKAKU Database
 
 [![Test](https://github.com/takano32/arakaku/actions/workflows/test.yml/badge.svg)](https://github.com/takano32/arakaku/actions/workflows/test.yml)
 [![Deploy Pages](https://github.com/takano32/arakaku/actions/workflows/pages.yml/badge.svg)](https://github.com/takano32/arakaku/actions/workflows/pages.yml)
 
 公開ページ: https://takano32.github.io/arakaku/
 
-ARAKAKU は、アラカクの団体・大会・試合・選手・王座・動画・出典本文を整理する非公式データベースです。
+Unofficial ARAKAKU Database は、アラカクの団体・大会・試合・選手・王座・動画・出典本文を整理する非公式データベースです。
 
 CSV で管理しているソースデータを静的 JSON に変換し、GitHub Pages 上の viewer で検索・閲覧できるようにしています。
 

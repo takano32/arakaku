@@ -3,7 +3,7 @@ name: arakaku-data-curator
 description: Use this skill when editing ARAKAKU canonical CSV data under data-src, especially promotions, events, bouts, fighters, titles, videos, video_links, articles, aliases, source_documents, or source_mentions.
 ---
 
-# ARAKAKU Data Curator Skill
+# Unofficial ARAKAKU Database Data Curator Skill
 
 Use this skill when the task changes canonical project data.
 

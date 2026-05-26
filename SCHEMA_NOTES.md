@@ -1,4 +1,4 @@
-# ARAKAKU CSV Schema Notes
+# Unofficial ARAKAKU Database CSV Schema Notes
 
 ## Principle
 

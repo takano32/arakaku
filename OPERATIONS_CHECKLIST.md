@@ -1,6 +1,6 @@
-# ARAKAKU Operations Checklist
+# Unofficial ARAKAKU Database Operations Checklist
 
-このファイルは、ARAKAKU の日常運用・同期・検証・リリース確認のためのチェックリストです。
+このファイルは、Unofficial ARAKAKU Database の日常運用・同期・検証・リリース確認のためのチェックリストです。
 
 ---
 
