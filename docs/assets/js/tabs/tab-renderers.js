@@ -204,8 +204,8 @@ export class TabRenderers {
             ${nd.achievements?.tournament_win_marker ? `<span class="numbers-stat achievement-marker">🏆 ${escapeHtml(nd.achievements.tournament_win_marker)}</span>` : ""}
           </div>
         ` : ""}
-        ${this.renderFighterSnapshots(f.fighter_id)}
         ${related.renderRelatedBouts(f.fighter_id)}
+        ${this.renderFighterSnapshots(f.fighter_id)}
         ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
         ${components.detailDisclosure([
           ["fighter_id", `<code>${escapeHtml(f.fighter_id)}</code>`],
