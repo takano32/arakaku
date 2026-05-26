@@ -68,10 +68,11 @@ export class DataRepository {
   get events() { return this.data.events ?? []; }
   get promotions() { return this.data.promotions ?? []; }
   get articleLinks() { return this.data.articleLinks ?? []; }
-  get fighters() {
+  get fighters() { return this.data.fighters ?? []; }
+  get richFighters() {
     if (this.#richFighters) return this.#richFighters;
     
-    const canonical = this.data.fighters ?? [];
+    const canonical = this.fighters;
     const fighterIds = new Set(canonical.map(f => f.fighter_id));
     
     // Discover fighters that only exist in Numbers matches
@@ -88,9 +89,10 @@ export class DataRepository {
     this.#richFighters = raw.map(f => this.getRichFighterInfo(f));
     return this.#richFighters;
   }
-  get bouts() {
+  get bouts() { return this.data.bouts ?? []; }
+  get richBouts() {
     if (this.#richBouts) return this.#richBouts;
-    const raw = this.data.bouts ?? [];
+    const raw = this.bouts;
     this.#richBouts = raw.map(b => this.getRichBoutInfo(b));
     return this.#richBouts;
   }
@@ -98,8 +100,10 @@ export class DataRepository {
   get titles() { return this.data.titles ?? []; }
   get titleReigns() { return this.data.titleReigns ?? []; }
   get videos() { return this.data.videos ?? []; }
+  get richVideos() { return this.videos.map(v => this.getRichVideoInfo(v)); }
   get videoLinks() { return this.data.videoLinks ?? []; }
   get articles() { return this.data.articles ?? []; }
+  get richArticles() { return this.articles.map(a => this.getRichArticleInfo(a)); }
   get fighterSnapshots() { return this.data.fighterSnapshots ?? []; }
   get sourceDocuments() { return this.data?.sourceDocuments ?? []; }
   get sourceMentions() { return this.data?.sourceMentions ?? []; }
@@ -116,9 +120,13 @@ export class DataRepository {
   findEvent(id) { return this.#findById("events", id); }
   findPromotion(id) { return this.#findById("promotions", id); }
   findBout(id) { return this.#findById("bouts", id); }
+  findRichBout(id) { return this.richBouts.find(b => b.bout_id === id); }
   findFighter(id) { return this.#findById("fighters", id); }
+  findRichFighter(id) { return this.richFighters.find(f => f.fighter_id === id); }
   findArticle(id) { return this.#findById("articles", id); }
+  findRichArticle(id) { return this.richArticles.find(a => a.article_id === id); }
   videoById(id) { return this.#findById("videos", id); }
+  richVideoById(id) { return this.richVideos.find(v => v.video_id === id); }
   sourceDocumentById(id) { return this.#findById("sourceDocuments", id); }
   numbersFighterById(id) { return this.#findById("numbersFighters", id); }
 
@@ -127,6 +135,7 @@ export class DataRepository {
   findNoteArchive(url) { return this.#index("noteArchives:webpage_url", this.noteArchives, (r) => r.webpage_url).get(url); }
 
   getRichVideoInfo(video) {
+    if (!video) return video;
     const archive = this.findYoutubeArchive(video.platform_video_id);
     return {
       ...video,
@@ -139,6 +148,7 @@ export class DataRepository {
   }
 
   getRichArticleInfo(article) {
+    if (!article) return article;
     const archive = this.findNoteArchive(article.url);
     return {
       ...article,
@@ -146,6 +156,7 @@ export class DataRepository {
       archive_description: archive?.description,
     };
   }
+
 
   getRichFighterInfo(fighter) {
     const match = this.numbersNameMatches.find(m => m.matched_fighter_id === fighter.fighter_id || m.candidate_fighter_id === fighter.fighter_id);
@@ -204,7 +215,7 @@ export class DataRepository {
         continue;
       }
       
-      // 2. Opponent match: this participant is the opponent of the record
+    // 2. Opponent match: this participant is the opponent of the record
       // Infer result if the record for the main fighter exists and has a result
       r = records.find(rec => rec.opponent_matched_fighter_id === p.fighter_id || rec.opponent_candidate_fighter_id === p.fighter_id);
       if (r && r.result) {
@@ -215,24 +226,32 @@ export class DataRepository {
     }
     rich.fighters = participants;
 
-    const hasWinner = participants.some(p => p.result === "win");
-    const hasLoss = participants.some(p => p.result === "loss");
-    if (rich.result_status === "unknown" && (hasWinner || hasLoss)) {
-      rich.result_status = "numbers_verified";
+    // Recalculate top-level winner/loser fields based on Numbers data
+    const winner = participants.find(p => p.result === "win");
+    const loser = participants.find(p => p.result === "loss");
+    if (winner) {
+      rich.winner_id = winner.fighter_id;
+      rich.winner = winner.name;
+    }
+    if (loser) {
+      rich.loser_id = loser.fighter_id;
+      rich.loser = loser.name;
     }
 
-    // Supplement bout metadata from any available Numbers record
+    // Supplement bout metadata from any available Numbers record (Absolute precedence)
     const recordWithMeta = records.find(r => r.detail_raw || r.division || r.bout_format);
     if (recordWithMeta) {
-      if ((!rich.result?.method_raw || rich.result.method_raw === "unknown") && recordWithMeta.detail_raw) {
+      if (recordWithMeta.detail_raw) {
         rich.result = { ...(rich.result ?? {}), method_raw: recordWithMeta.detail_raw };
       }
-      if ((!rich.division || rich.division === "unknown") && recordWithMeta.division) {
+      if (recordWithMeta.division) {
         rich.division = recordWithMeta.division;
       }
-      if ((!rich.bout_type || rich.bout_type === "unknown") && recordWithMeta.bout_format) {
+      if (recordWithMeta.bout_format) {
         rich.bout_type = recordWithMeta.bout_format;
       }
+      // If we have any Numbers record for this bout, mark it as verified
+      rich.result_status = "numbers_verified";
     }
 
     rich.numbers_records = records;
@@ -242,7 +261,7 @@ export class DataRepository {
   // Label Methods
   eventName(id) { return this.findEvent(id)?.name ?? id; }
   promotionName(id) { return this.findPromotion(id)?.name ?? id; }
-  fighterName(id) { return this.findFighter(id)?.display_name ?? id; }
+  fighterName(id) { return this.findRichFighter(id)?.display_name ?? id; }
 
   // Source Document Resolution
   sourceDocumentForArticle(articleId) {
@@ -262,12 +281,12 @@ export class DataRepository {
   videosForEntity(type, id) {
     return this.videoLinks
       .filter(l => l.entity_type === type && l.entity_id === id)
-      .map(l => ({ link: l, video: this.videoById(l.video_id) }))
+      .map(l => ({ link: l, video: this.richVideoById(l.video_id) }))
       .filter(i => i.video);
   }
 
   videoIdsLinkedToEventBouts(eventId) {
-    const boutIds = new Set(this.bouts.filter(b => b.event_id === eventId).map(b => b.bout_id));
+    const boutIds = new Set(this.richBouts.filter(b => b.event_id === eventId).map(b => b.bout_id));
     return new Set(this.videoLinks.filter(l => l.entity_type === "bout" && boutIds.has(l.entity_id)).map(l => l.video_id));
   }
 
@@ -322,16 +341,17 @@ export class DataRepository {
 
   relatedBoutsForFighter(fighterId) {
     if (!fighterId) return [];
-    return this.bouts
+    return this.richBouts
       .filter(b => (b.fighters ?? []).some(f => f.fighter_id === fighterId))
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
   }
 
   boutsForEvent(eventId) {
-    return this.bouts
+    return this.richBouts
       .filter(b => b.event_id === eventId)
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
   }
+
 
   titleDisplayName(title) {
     const p = this.promotionName(title.promotion_id);

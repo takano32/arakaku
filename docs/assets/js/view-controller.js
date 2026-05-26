@@ -17,6 +17,7 @@ export class ViewController {
 
   renderSummary() {
     const d = this.ctx.state.data;
+    const { repo } = this.ctx;
     const sourceDocumentCount = this.ctx.state.loadedDataKeys?.has("sourceDocuments")
       ? d.sourceDocuments.length
       : "...";
@@ -29,10 +30,10 @@ export class ViewController {
     const items = [
       ["団体", d.promotions.length],
       ["大会", d.events.length],
-      ["試合", d.bouts.length],
-      ["選手", d.fighters.length],
+      ["試合", repo.richBouts.length],
+      ["選手", repo.richFighters.length],
       ["王座", d.titles.length],
-      ["動画", d.videos.length],
+      ["動画", repo.richVideos.length],
       ["出典", sourceDocumentCount],
       ["出典候補", sourceReferenceCount],
     ];

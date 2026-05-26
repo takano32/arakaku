@@ -22,10 +22,10 @@ export class SourceRenderers {
   }
 
   renderVideoSourceBlock(v, label = null) {
-    const video = v ? this.ctx.repo.getRichVideoInfo(v) : v;
+    const video = v ? (v.archive_metadata ? v : this.ctx.repo.getRichVideoInfo(v)) : v;
     const displayLabel = label || video?.title || video?.video_id || "動画";
     if (!video?.url) return `<code>${escapeHtml(video?.video_id || displayLabel)}</code>`;
-    const d = this.ctx.repo.sourceDocumentForVideo(v);
+    const d = this.ctx.repo.sourceDocumentForVideo(video);
     const detail = d?.content_text ? this.renderArticleSourceDetail(`<pre>${escapeHtml(d.content_text)}</pre>`) : "";
     const embed = this.renderVideoEmbed(video);
     return `<div class="video-source-block"><p class="video-source-title">${externalLink(video.url, displayLabel)}</p>${detail}${embed ? `<div class="video-source-embed">${embed}</div>` : ""}</div>`;
@@ -132,8 +132,7 @@ export class SourceRenderers {
   }
 
   renderArticleRef(id) {
-    const article = this.ctx.repo.findArticle(id);
-    const richArticle = article ? this.ctx.repo.getRichArticleInfo(article) : null;
+    const richArticle = this.ctx.repo.findRichArticle(id);
     const document = this.ctx.repo.sourceDocumentForArticle(id);
     const detail = document?.content_text ? this.renderArticleSourceDetail(`<pre>${escapeHtml(document.content_text)}</pre>`) : "";
     const link = richArticle?.url ? externalLink(richArticle.url, richArticle.title || id) : `<code>${escapeHtml(id)}</code>`;
@@ -144,10 +143,9 @@ export class SourceRenderers {
     const ids = (vids ?? []).filter(Boolean);
     if (ids.length === 0) return "未入力";
     return ids.map(id => {
-      const v = this.ctx.repo.videoById(id);
-      const richVideo = v ? this.ctx.repo.getRichVideoInfo(v) : null;
+      const richVideo = this.ctx.repo.richVideoById(id);
       if (opts.inline) return richVideo?.url ? externalLink(richVideo.url, richVideo.title || id) : `<code>${escapeHtml(id)}</code>`;
-      return v ? this.renderVideoSourceBlock(v, richVideo?.title || id) : `<code>${escapeHtml(id)}</code>`;
+      return richVideo ? this.renderVideoSourceBlock(richVideo, richVideo.title || id) : `<code>${escapeHtml(id)}</code>`;
     }).join(opts.inline ? ", " : "");
   }
 

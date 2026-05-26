@@ -115,7 +115,7 @@ export class TabRenderers {
     const id = link.entity_id;
     if (link.entity_type === "event") return navigation.eventLink(id, repo.eventName(id));
     if (link.entity_type === "bout") {
-      const b = repo.findBout(id);
+      const b = repo.findRichBout(id);
       return b ? navigation.boutMatchup(b) : `<code>${escapeHtml(id)}</code>`;
     }
     if (link.entity_type === "fighter") return navigation.fighterLink(id, repo.fighterName(id));
@@ -144,7 +144,7 @@ export class TabRenderers {
     const { state, query, navigation, components, sources, repo, labels } = this.ctx;
     const list = state.focusEventId
       ? repo.boutsForEvent(state.focusEventId)
-      : repo.bouts.filter((bout) => query.includes(query.boutSearchText(bout)));
+      : repo.richBouts.filter((bout) => query.includes(query.boutSearchText(bout)));
     return this.recordList(list, (b) => `
       <article class="card record-card bout-card">
         <h2>${navigation.boutMatchup(b)}</h2>
@@ -183,8 +183,8 @@ export class TabRenderers {
     const { state, query, components, sources, related, repo } = this.ctx;
     const list = this.focusedOrFiltered(
       state.focusFighterId,
-      repo.findFighter.bind(repo),
-      repo.fighters,
+      repo.findRichFighter.bind(repo),
+      repo.richFighters,
       (fighter) => query.fighterMatches(fighter)
     );
     return this.recordList(list, (f) => {
@@ -281,9 +281,8 @@ export class TabRenderers {
 
   videos() {
     const { query, components, labels, sources, repo } = this.ctx;
-    const list = repo.videos.filter(v => query.videoMatches(v));
-    return this.recordList(list, (v) => {
-      const video = repo.getRichVideoInfo(v);
+    const list = repo.richVideos.filter(v => query.videoMatches(v));
+    return this.recordList(list, (video) => {
       return components.recordCard("video-card", `<h2>${externalLink(video.url, video.title)}</h2>`, `
       <p class="meta">${escapeHtml(video.channel_name ?? "")}${video.published_at ? ` / ${escapeHtml(video.published_at)}` : ""}</p>
       <div class="video-badges">
@@ -291,7 +290,7 @@ export class TabRenderers {
         <span class="video-badge">${escapeHtml(labels.linkStatus(video.link_status))}</span>
       </div>
       ${components.section("動画URL", sources.renderVideoSourceBlock(video, video.url), "primary-links")}
-      ${sources.renderVideoDescriptionPreview(v)}
+      ${sources.renderVideoDescriptionPreview(video)}
       ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), video.source_article_ids)}
       ${this.renderVideoLinkedEntities(video)}
       ${components.detailDisclosure([

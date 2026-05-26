@@ -58,8 +58,8 @@ export class QueryMatcher {
   }
 
   videoMatches(video) {
-    const richVideo = this.ctx.repo.getRichVideoInfo(video);
-    const { reference, document } = this.ctx.repo.sourceContextForVideo(video);
+    const richVideo = video.archive_metadata ? video : this.ctx.repo.getRichVideoInfo(video);
+    const { reference, document } = this.ctx.repo.sourceContextForVideo(richVideo);
     return this.includes([
       richVideo.title, richVideo.original_title, richVideo.video_id, richVideo.url, richVideo.channel_name, richVideo.published_at,
       richVideo.archive_description, richVideo.platform, richVideo.platform_video_id, richVideo.official_status, richVideo.video_type, richVideo.link_status, richVideo.notes, richVideo.duplicate_group_id, richVideo.duplicate_note, richVideo.source_article_ids?.join(" "),
