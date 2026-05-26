@@ -124,7 +124,7 @@ Aim for a simple pipeline:
 1. Read real CSV files from `data-src/`.
 2. Normalize and validate the data explicitly.
 3. Generate deterministic JSON under `docs/data/`.
-4. Render the site from those JSON files, dynamically merging and supplementing missing or unknown fields with comparison data (e.g., Apple Numbers) via the viewer's `DataRepository` at runtime.
+4. Render the site from those JSON files, dynamically merging and supplementing missing or unknown fields with comparison data (e.g., Apple Numbers) via the viewer's `DataRepository` at runtime. **Human-verified Apple Numbers data takes absolute precedence** over canonical CSV data in this synthesis.
 5. Test the real data pipeline and generated output.
 6. Publish as static GitHub Pages content.
 

@@ -48,6 +48,7 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 - **Automated Data Supplementation:** Updated `DataRepository` to automatically fill missing or `unknown` fighter profiles and bout results using the Numbers dataset.
 - **Maximized Numbers Utilization:** Expanded the enrichment to include aggregate fight stats (wins, losses), achievement markers (crowns/trophies), and detailed bout metadata (division, format).
 - **Client-Side Runtime Merging:** Refactored the architecture to ensure a "clean build." JSON generation now strictly reflects canonical CSV facts, while the viewer's `DataRepository` dynamically discovers and merges Numbers-only entities and supplements information at runtime.
+- **Numbers Data Absolute Precedence:** Established a policy where human-verified Apple Numbers data unconditionally overwrites canonical CSV data (including results, divisions, and profiles) when a match exists, treating it as the ultimate source of truth for the viewer.
 - **Numbers Verification Badges:** Added "名鑑確認済み" (Verified by Directory) badges and specialized stats blocks to the viewer to indicate data supplemented or verified by the Apple Numbers dataset.
 - **Enriched Caching:** Implemented internal repository caching for rich objects to maintain performance and consistency during client-side processing.
 
@@ -56,5 +57,5 @@ This file tracks the evolution of the ARAKAKU project based on its commit histor
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.
 - **Context-Rich Viewer:** Focused on showing source context directly in the viewer to aid data verification.
 - **Clean Build, Rich Client:** Decided to keep the build process (CSV to JSON) strictly factual and perform all data supplementation, cross-referencing, and Numbers-data merging on the client side at runtime.
-- **Numbers as Priority Source of Truth:** Decided to treat human-curated Apple Numbers data as the highest priority source for supplementing missing information in the viewer, overwriting even canonical "unknown" states.
+- **Numbers Data as Absolute Truth:** Decided to treat human-curated Apple Numbers data as the absolute source of truth for the viewer, allowing it to unconditionally overwrite canonical CSV data when matches are confirmed.
 - **Archives as External Metadata:** Treats archive CSVs as committed source metadata for display and review. Archive rows can enrich labels/search but do not confirm winners, fighter identities, methods, or title lineage.

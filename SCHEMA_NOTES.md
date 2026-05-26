@@ -41,7 +41,14 @@ Numbers-derived helper tables:
 
 These tables should not force immediate changes to the canonical relational tables. They exist to make client-side comparison, matching, and review easier.
 
-The static viewer now uses these tables for **Rich Data Supplementation**: if a canonical fighter or bout has `unknown` fields, the viewer's `DataRepository` automatically fills them using corresponding Numbers rows.
+The static viewer now uses these tables for **Rich Data Supplementation**: if a canonical fighter or bout has `unknown` fields, or if human-verified Numbers data exists, the viewer's `DataRepository` automatically merges and prioritizes it. **Apple Numbers data is treated as having absolute precedence** because it is human-verified and manually curated.
+
+Key policies for Rich Data:
+- **Client-Side Synthesis**: All merging and supplementation happen at runtime in the browser via `DataRepository`. The static build process (`scripts/build_json.py`) remains strictly factual and does not merge Numbers data into the canonical JSON.
+- **Numbers Precedence**: When a conflict exists between canonical CSV data and Numbers data, the Numbers data **unconditionally overwrites** the canonical fields.
+- **Fighter Enrichment**: Profiles are supplemented with Numbers-provided stats, achievements (👑 crowns, 🏆 trophies), and exact profile metrics (height, age, gym).
+- **Bout Enrichment**: Results (winner, loser, method), divisions, and bout formats are recalculated or overwritten based on Numbers records.
+- **Verification Status**: Bouts matched with Numbers data are automatically marked as `numbers_verified` in the viewer.
 
 Archive helper tables:
 
