@@ -21,7 +21,7 @@ const tabs = new TabRenderers(ctx);
 
 ctx.bindServices({ sources, related, navigation, components, tabs });
 
-const tabRegistry = new TabRendererRegistry(tabs);
+const tabRegistry = new TabRendererRegistry(tabs, ctx);
 const viewController = new ViewController(ctx, tabRegistry);
 const dataLoader = new DataLoader(state);
 const eventController = new EventController(state, navigation, viewController, dataLoader);

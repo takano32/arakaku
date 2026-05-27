@@ -19,6 +19,7 @@ export class VirtualList {
   #el;
   #items = [];
   #renderItem = null;
+  #estimateSize = () => 500;
   #virtualizer = null;
   #rowEls = new Map();
   #pendingMeasure = new Set(); // #paint 完了後に測定するキュー
@@ -32,24 +33,15 @@ export class VirtualList {
 
   get el() { return this.#el; }
 
-  setItems(items, renderItem, estimateSize = () => 500) {
-    this.#items = items;
-    this.#renderItem = renderItem;
-    this.#rowEls.clear();
-    this.#pendingMeasure.clear();
-    this.#el.innerHTML = "";
-    window.scrollTo({ top: 0, behavior: "instant" });
-
+  #createVirtualizer(count, scrollMargin) {
     // 古いリスナーを解除してから新しい Virtualizer を作成
     this.#cleanupRect?.();
     this.#cleanupOffset?.();
 
-    const scrollMargin = this.#el.getBoundingClientRect().top + window.scrollY;
-
     this.#virtualizer = new Virtualizer({
-      count: items.length,
+      count,
       getScrollElement: () => window,
-      estimateSize,
+      estimateSize: this.#estimateSize,
       overscan: 3,
       observeElementRect: (el, cb) => { this.#cleanupRect = observeWindowRect(el, cb); return this.#cleanupRect; },
       observeElementOffset: (el, cb) => { this.#cleanupOffset = observeWindowOffset(el, cb); return this.#cleanupOffset; },
@@ -58,6 +50,33 @@ export class VirtualList {
       onChange: () => this.#paint(),
     });
     this.#virtualizer._willUpdate();
+  }
+
+  setItems(items, renderItem, estimateSize = () => 500) {
+    this.#items = items;
+    this.#renderItem = renderItem;
+    this.#estimateSize = estimateSize;
+    this.#rowEls.clear();
+    this.#pendingMeasure.clear();
+    this.#el.innerHTML = "";
+    window.scrollTo({ top: 0, behavior: "instant" });
+
+    const scrollMargin = this.#el.getBoundingClientRect().top + window.scrollY;
+    this.#createVirtualizer(items.length, scrollMargin);
+  }
+
+  extendItems(items) {
+    this.#items = items;
+    const scrollMargin = this.#virtualizer?.options.scrollMargin ?? (this.#el.getBoundingClientRect().top + window.scrollY);
+    this.#createVirtualizer(items.length, scrollMargin);
+  }
+
+  refreshItems(items) {
+    this.#items = items;
+    this.#rowEls.clear();
+    this.#pendingMeasure.clear();
+    const scrollMargin = this.#virtualizer?.options.scrollMargin ?? (this.#el.getBoundingClientRect().top + window.scrollY);
+    this.#createVirtualizer(items.length, scrollMargin);
   }
 
   #painting = false;

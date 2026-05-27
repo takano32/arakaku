@@ -48,3 +48,18 @@ export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "yo
 
 export const DEFAULT_TAB = "bouts";
 export const DEFAULT_ADMIN_TAB = "sources";
+
+// ストリーミングでインクリメンタルに描画するファイル群 (表示に直結するもの)
+export const PRIMARY_DATA_KEYS = [
+  "bouts", "boutParticipants", "fighters", "events", "promotions",
+  "videos", "titles", "titleReigns", "videoLinks", "aliases",
+  "fighterSnapshots", "articles", "articleLinks",
+];
+
+// PRIMARY の後にロードしてエンリッチに使うファイル群
+export const ENRICHMENT_DATA_KEYS = [
+  "metadata",
+  "numbersFighters", "numbersNameMatches", "numbersFightRecords",
+  "youtubeArchives", "noteArchives",
+  "sourceDocuments", "sourceMentions",
+];

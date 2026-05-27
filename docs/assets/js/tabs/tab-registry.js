@@ -4,7 +4,9 @@ import { VirtualList } from "../ui/virtual-list.js";
 /** Strategy: タブ ID から描画 Strategy を解決 */
 export class TabRendererRegistry {
   /** @param {import("./tab-renderers.js").TabRenderers} tabRenderers */
-  constructor(tabRenderers) {
+  /** @param {import("../core/view-context.js").ViewContext} ctx */
+  constructor(tabRenderers, ctx) {
+    this.#ctx = ctx;
     this.#strategies = new Map([
       ["bouts", () => tabRenderers.bouts()],
       ["fighters", () => tabRenderers.fighters()],
@@ -17,10 +19,40 @@ export class TabRendererRegistry {
     ]);
   }
 
+  #ctx;
   #strategies;
   #lists = new Map();
+  #currentTabId = null;
+  #prevCounts = new Map(); // tabId → 前回の items.length
+  #prevRepoRefs = new Map(); // tabId → 前回の DataRepository 参照
+  #prevFilters = new Map(); // tabId → 前回のフィルタ文字列
+
+  // 検索クエリ・フォーカス・フィルタ等、アイテム一覧に影響する state を文字列化
+  #filterFingerprint() {
+    const s = this.#ctx?.state;
+    if (!s) return "";
+    return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType].join("\0");
+  }
 
   renderTo(container, tabId) {
+    const repoRef = this.#ctx?.repo ?? null;
+    const fingerprint = this.#filterFingerprint();
+
+    const tabChanged = tabId !== this.#currentTabId;
+    const repoChanged = repoRef !== this.#prevRepoRefs.get(tabId);
+    const filterChanged = fingerprint !== this.#prevFilters.get(tabId);
+
+    if (!this.#lists.has(tabId)) {
+      this.#lists.set(tabId, new VirtualList());
+    }
+    const list = this.#lists.get(tabId);
+
+    if (!list.el.parentNode || list.el.parentNode !== container) {
+      container.replaceChildren(list.el);
+    }
+
+    if (!tabChanged && !repoChanged && !filterChanged) return;
+
     const strategy = this.#strategies.get(tabId) ?? this.#strategies.get(DEFAULT_TAB);
     let descriptor;
     try {
@@ -32,13 +64,20 @@ export class TabRendererRegistry {
     }
     const { items, renderItem, estimateSize } = descriptor;
 
-    if (!this.#lists.has(tabId)) {
-      this.#lists.set(tabId, new VirtualList());
-    }
-    const list = this.#lists.get(tabId);
+    const prevCount = this.#prevCounts.get(tabId) ?? -1;
 
-    // DOM に挿入してから setItems を呼ぶ (Virtualizer の要素測定に必要)
-    container.replaceChildren(list.el);
-    list.setItems(items, renderItem, estimateSize);
+    if (tabChanged || prevCount === -1) {
+      container.replaceChildren(list.el);
+      list.setItems(items, renderItem, estimateSize);
+      this.#currentTabId = tabId;
+    } else if (items.length > prevCount) {
+      list.extendItems(items);
+    } else {
+      list.refreshItems(items);
+    }
+
+    this.#prevCounts.set(tabId, items.length);
+    this.#prevRepoRefs.set(tabId, repoRef);
+    this.#prevFilters.set(tabId, fingerprint);
   }
 }
