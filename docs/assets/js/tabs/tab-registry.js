@@ -70,8 +70,6 @@ export class TabRendererRegistry {
       container.replaceChildren(list.el);
       list.setItems(items, renderItem, estimateSize);
       this.#currentTabId = tabId;
-    } else if (items.length > prevCount) {
-      list.extendItems(items);
     } else {
       list.refreshItems(items);
     }
