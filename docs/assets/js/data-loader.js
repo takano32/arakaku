@@ -108,12 +108,14 @@ export class DataLoader {
     } catch (err) {
       this.state.data[key] = fallbackForDataKey(key);
       this.state.dataLoadErrors[key] = err.message;
+      this.state.loadedDataKeys.add(key);
       return;
     }
 
     if (!response.ok) {
       this.state.data[key] = fallbackForDataKey(key);
       this.state.dataLoadErrors[key] = `HTTP ${response.status}`;
+      this.state.loadedDataKeys.add(key);
       return;
     }
 
@@ -195,8 +197,8 @@ export class DataLoader {
     this.state.repository = new DataRepository(this.state.data);
     this.state.patch({});
 
-    // Phase 2: ENRICHMENT キーを通常ロード (バックグラウンド)
-    this.#loadEnrichment();
+    // Phase 2: ENRICHMENT キーを通常ロード
+    await this.#loadEnrichment();
 
     this.loadPublicReferences();
     return this.state.data;
