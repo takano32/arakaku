@@ -18,7 +18,7 @@ export class SourceRenderers {
 
   renderVideoEmbed(v) {
     if (v.platform !== "youtube" || !v.platform_video_id) return "";
-    return `<div class="video-embed"><iframe width="320" height="240" src="https://www.youtube.com/embed/${escapeHtml(v.platform_video_id)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    return `<div class="video-embed"><iframe src="https://www.youtube.com/embed/${escapeHtml(v.platform_video_id)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
   }
 
   renderVideoSourceBlock(v, label = null) {

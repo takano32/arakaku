@@ -155,10 +155,11 @@ export class ViewController {
   }
 
   renderContent() {
+    const content = document.querySelector("#content");
     const requiredKeys = REQUIRED_TAB_DATA_KEYS[this.ctx.state.tab] ?? [];
     const loadingKeys = requiredKeys.filter((key) => this.ctx.state.loadingDataKeys?.has(key));
     if (loadingKeys.length > 0) {
-      document.querySelector("#content").innerHTML = `
+      content.innerHTML = `
         <article class="card">
           <h2>読み込み中</h2>
           <p class="meta">管理ビューのデータを読み込んでいます。</p>
@@ -169,7 +170,7 @@ export class ViewController {
 
     const missingKeys = requiredKeys.filter((key) => !this.ctx.state.loadedDataKeys?.has(key));
     if (missingKeys.length > 0) {
-      document.querySelector("#content").innerHTML = `
+      content.innerHTML = `
         <article class="card">
           <h2>読み込み待ち</h2>
           <p class="meta">管理ビューを表示するためのデータを準備しています。</p>
@@ -178,7 +179,7 @@ export class ViewController {
       return;
     }
 
-    document.querySelector("#content").innerHTML = this.tabRegistry.render(this.ctx.state.tab);
+    this.tabRegistry.renderTo(content, this.ctx.state.tab);
   }
 
   render() {

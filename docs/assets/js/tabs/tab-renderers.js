@@ -16,8 +16,6 @@ export class TabRenderers {
     this.ctx = ctx;
   }
 
-  recordList(records, renderItem) { return this.ctx.components.recordList(records, renderItem); }
-
   focusedOrFiltered(focusedId, findRecord, records, predicate) {
     return focusedId ? [findRecord(focusedId)].filter(Boolean) : records.filter(predicate);
   }
@@ -171,23 +169,10 @@ export class TabRenderers {
     `;
   }
 
-  bouts() {
-    const { query, repo } = this.ctx;
-    const list = repo.richBouts.filter(b => query.includes(query.boutSearchText(b)));
-    return this.recordList(list, (b) => this.renderBoutCard(b));
-  }
-
-  fighters() {
-    const { state, query, components, sources, related, repo } = this.ctx;
-    const list = this.focusedOrFiltered(
-      state.focusFighterId,
-      repo.findRichFighter.bind(repo),
-      repo.richFighters,
-      (fighter) => query.fighterMatches(fighter)
-    );
-    return this.recordList(list, (f) => {
-      const nd = f.numbers_data;
-      return `
+  renderFighterCard(f) {
+    const { components, sources, related, repo } = this.ctx;
+    const nd = f.numbers_data;
+    return `
       <article class="card record-card fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
         <p class="meta">
@@ -222,18 +207,11 @@ export class TabRenderers {
         ])}
       </article>
     `;
-    });
   }
 
-  events() {
-    const { state, query, navigation, components, sources, related, repo } = this.ctx;
-    const list = this.focusedOrFiltered(
-      state.focusEventId,
-      repo.findEvent.bind(repo),
-      repo.events,
-      (event) => query.eventMatches(event)
-    );
-    return this.recordList(list, (e) => `
+  renderEventCard(e) {
+    const { navigation, components, sources, related, repo } = this.ctx;
+    return `
       <article class="card record-card event-card">
         <h2>${escapeHtml(e.name)}</h2>
         <p class="meta">${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}</p>
@@ -253,13 +231,12 @@ export class TabRenderers {
           ["推定信頼度", e.inferred_confidence],
         ])}
       </article>
-    `);
+    `;
   }
 
-  promotions() {
-    const { query, components, sources, repo } = this.ctx;
-    const list = repo.promotions.filter(p => query.promotionMatches(p));
-    return this.recordList(list, (p) => `
+  renderPromotionCard(p) {
+    const { components, sources, repo } = this.ctx;
+    return `
       <article class="card record-card promotion-card">
         <h2>${escapeHtml(p.name)}</h2>
         <p class="meta">${escapeHtml(p.name_en ?? "")} / ${escapeHtml(p.category ?? "")}</p>
@@ -276,14 +253,12 @@ export class TabRenderers {
           ...this.promotionRuleRows(p),
         ])}
       </article>
-    `);
+    `;
   }
 
-  videos() {
-    const { query, components, labels, sources, repo } = this.ctx;
-    const list = repo.richVideos.filter(v => query.videoMatches(v));
-    return this.recordList(list, (video) => {
-      return components.recordCard("video-card", `<h2>${externalLink(video.url, video.title)}</h2>`, `
+  renderVideoCard(video) {
+    const { components, labels, sources, repo } = this.ctx;
+    return components.recordCard("video-card", `<h2>${externalLink(video.url, video.title)}</h2>`, `
       <p class="meta">${escapeHtml(video.channel_name ?? "")}${video.published_at ? ` / ${escapeHtml(video.published_at)}` : ""}</p>
       <div class="video-badges">
         <span class="video-badge">${escapeHtml(labels.videoType(video.video_type))}</span>
@@ -306,37 +281,24 @@ export class TabRenderers {
         ["メモ", video.notes],
       ])}
     `);
-    });
   }
 
-  titles() {
-    const { query, components, repo } = this.ctx;
-    const list = repo.titles.filter(t => query.titleMatches(t)).sort((a, b) => 
-      repo.promotionName(a.promotion_id).localeCompare(repo.promotionName(b.promotion_id), "ja") || String(a.division ?? "").localeCompare(String(b.division ?? ""), "ja")
-    );
-    if (list.length === 0) return this.recordList(list, () => "");
-
-    let prev = "";
-    return this.recordList(list, (t) => {
-      const g = `${repo.promotionName(t.promotion_id)} / ${t.division ?? "階級未設定"}`;
-      const header = g !== prev ? `<h2 class="title-group-heading">${escapeHtml(g)}</h2>` : "";
-      prev = g;
-      const lineage = [...(t.lineage ?? [])]
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((reign) => this.renderLineageCard(reign))
-        .join("");
-      return `${header}<article class="card title-card">
-        <h3>${escapeHtml(repo.titleDisplayName(t))}</h3>
-        ${components.detailDisclosure([["title_id", `<code>${escapeHtml(t.title_id)}</code>`], ["団体", repo.promotionName(t.promotion_id)], ["階級", t.division], ["変遷数", (t.lineage ?? []).length]], "詳細", { open: true })}
-        ${lineage ? components.relatedGrid(lineage) : ""}
-      </article>`;
-    });
+  renderTitleCard(t) {
+    const { components, repo } = this.ctx;
+    const lineage = [...(t.lineage ?? [])]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((reign) => this.renderLineageCard(reign))
+      .join("");
+    return `<article class="card title-card">
+      <h3>${escapeHtml(repo.titleDisplayName(t))}</h3>
+      ${components.detailDisclosure([["title_id", `<code>${escapeHtml(t.title_id)}</code>`], ["団体", repo.promotionName(t.promotion_id)], ["階級", t.division], ["変遷数", (t.lineage ?? []).length]], "詳細", { open: true })}
+      ${lineage ? components.relatedGrid(lineage) : ""}
+    </article>`;
   }
 
-  mentions() {
-    const { query, sources, labels, components, repo } = this.ctx;
-    const list = repo.sourceMentions.filter(m => query.mentionMatches(m));
-    return this.recordList(list, (m) => `
+  renderMentionCard(m) {
+    const { sources, labels, components } = this.ctx;
+    return `
       <article class="card record-card source-mention-card">
         <h2><span class="video-badge">${escapeHtml(labels.mentionType(m.mention_type))}</span> ${escapeHtml(m.entity_hint || m.matched_text || m.mention_id)}</h2>
         ${sources.renderSourceMentionLink(m)}
@@ -344,19 +306,116 @@ export class TabRenderers {
         <details class="source-body"><summary>文脈を表示</summary><pre>${escapeHtml(m.context || m.matched_text || "")}</pre></details>
         ${components.detailDisclosure([["mention_id", `<code>${escapeHtml(m.mention_id)}</code>`], ["source_id", `<code>${escapeHtml(m.source_id)}</code>`], ["entity_type", m.entity_type], ["confidence", m.confidence], ["line_number", m.line_number], ["source_ref_id", m.source_ref_id], ["notes", m.notes]])}
       </article>
-    `);
+    `;
   }
 
-  sources() {
-    const { query, sources, labels, components, repo } = this.ctx;
-    const list = repo.sourceDocuments.filter(d => query.sourceDocumentMatches(d));
-    return this.recordList(list, (d) => components.recordCard("source-card", `<h2>${escapeHtml(d.title || d.source_ref_id)}</h2>`, `
+  renderSourceCard(d) {
+    const { sources, labels, components } = this.ctx;
+    return components.recordCard("source-card", `<h2>${escapeHtml(d.title || d.source_ref_id)}</h2>`, `
       <p class="meta">${escapeHtml(labels.sourceType(d.source_type))} / ${escapeHtml(d.published_at || "日付未入力")} / ${escapeHtml(d.source_ref_id)}</p>
       ${d.url ? `<p>${externalLink(d.url, "出典を開く")}</p>` : ""}
       <p>${escapeHtml(d.content_preview || "プレビュー未入力")}</p>
       ${sources.renderSourceReferenceCounts(d.source_id)}
       ${sources.renderSourceBody(d)}
       ${components.detailDisclosure([["source_id", `<code>${escapeHtml(d.source_id)}</code>`], ["URL", d.url ? externalLink(d.url, d.url) : "未入力"], ["取得日時", d.fetched_at], ["content_hash", d.content_hash ? `<code>${escapeHtml(d.content_hash)}</code>` : "未入力"], ["notes", d.notes]])}
-    `));
+    `);
+  }
+
+  bouts() {
+    const { query, repo } = this.ctx;
+    return {
+      items: repo.richBouts.filter((b) => query.boutMatches(b)),
+      renderItem: (b) => this.renderBoutCard(b),
+    };
+  }
+
+  fighters() {
+    const { state, query, repo } = this.ctx;
+    return {
+      items: this.focusedOrFiltered(
+        state.focusFighterId,
+        repo.findRichFighter.bind(repo),
+        repo.richFighters,
+        (f) => query.fighterMatches(f)
+      ),
+      renderItem: (f) => this.renderFighterCard(f),
+    };
+  }
+
+  events() {
+    const { state, query, repo } = this.ctx;
+    return {
+      items: this.focusedOrFiltered(
+        state.focusEventId,
+        repo.findEvent.bind(repo),
+        repo.events,
+        (e) => query.eventMatches(e)
+      ),
+      renderItem: (e) => this.renderEventCard(e),
+    };
+  }
+
+  promotions() {
+    const { query, repo } = this.ctx;
+    return {
+      items: repo.promotions.filter((p) => query.promotionMatches(p)),
+      renderItem: (p) => this.renderPromotionCard(p),
+    };
+  }
+
+  videos() {
+    const { query, repo } = this.ctx;
+    return {
+      items: repo.richVideos.filter((v) => query.videoMatches(v)),
+      renderItem: (v) => this.renderVideoCard(v),
+    };
+  }
+
+  titles() {
+    const { query, repo } = this.ctx;
+    const list = repo.titles
+      .filter((t) => query.titleMatches(t))
+      .sort(
+        (a, b) =>
+          repo.promotionName(a.promotion_id).localeCompare(repo.promotionName(b.promotion_id), "ja") ||
+          String(a.division ?? "").localeCompare(String(b.division ?? ""), "ja")
+      );
+
+    // Flatten: interleave group headers as synthetic items
+    const flat = [];
+    let prev = "";
+    for (const t of list) {
+      const g = `${repo.promotionName(t.promotion_id)} / ${t.division ?? "階級未設定"}`;
+      if (g !== prev) {
+        flat.push({ _header: true, label: g });
+        prev = g;
+      }
+      flat.push(t);
+    }
+
+    return {
+      items: flat,
+      renderItem: (entry) =>
+        entry._header
+          ? `<h2 class="title-group-heading">${escapeHtml(entry.label)}</h2>`
+          : this.renderTitleCard(entry),
+      estimateSize: (i) => (flat[i]?._header ? 60 : 280),
+    };
+  }
+
+  mentions() {
+    const { query, repo } = this.ctx;
+    return {
+      items: repo.sourceMentions.filter((m) => query.mentionMatches(m)),
+      renderItem: (m) => this.renderMentionCard(m),
+    };
+  }
+
+  sources() {
+    const { query, repo } = this.ctx;
+    return {
+      items: repo.sourceDocuments.filter((d) => query.sourceDocumentMatches(d)),
+      renderItem: (d) => this.renderSourceCard(d),
+    };
   }
 }

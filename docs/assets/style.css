@@ -160,8 +160,16 @@ input[type="search"]:focus {
 }
 
 .content {
-  display: grid;
-  gap: 12px;
+  display: block;
+}
+
+.virtual-list {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-list > div {
+  padding-bottom: 12px;
 }
 
 .card h2,
@@ -299,13 +307,19 @@ dd {
 }
 
 .video-embed {
-  max-width: 100%;
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 4 / 3;
 }
 
 .video-embed iframe {
-  display: block;
-  max-width: 100%;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   border: 0;
+  display: block;
 }
 
 .article-source-detail pre,
@@ -383,7 +397,7 @@ dd {
 }
 
 .video-source-block .video-source-embed .video-embed {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .video-ref-list,

@@ -1,0 +1,124 @@
+import { Virtualizer, windowScroll } from "https://esm.sh/@tanstack/virtual-core@3";
+import { emptyMessage } from "./html-utils.js";
+
+const observeWindowRect = (_, cb) => {
+  const update = () => cb({ width: window.innerWidth, height: window.innerHeight });
+  update();
+  window.addEventListener("resize", update, { passive: true });
+  return () => window.removeEventListener("resize", update);
+};
+
+const observeWindowOffset = (_, cb) => {
+  const update = () => cb(window.scrollY);
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+  return () => window.removeEventListener("scroll", update);
+};
+
+export class VirtualList {
+  #el;
+  #items = [];
+  #renderItem = null;
+  #virtualizer = null;
+  #rowEls = new Map();
+  #pendingMeasure = new Set(); // #paint 完了後に測定するキュー
+  #cleanupRect = null;
+  #cleanupOffset = null;
+
+  constructor() {
+    this.#el = document.createElement("div");
+    this.#el.className = "virtual-list";
+  }
+
+  get el() { return this.#el; }
+
+  setItems(items, renderItem, estimateSize = () => 500) {
+    this.#items = items;
+    this.#renderItem = renderItem;
+    this.#rowEls.clear();
+    this.#pendingMeasure.clear();
+    this.#el.innerHTML = "";
+    window.scrollTo({ top: 0, behavior: "instant" });
+
+    // 古いリスナーを解除してから新しい Virtualizer を作成
+    this.#cleanupRect?.();
+    this.#cleanupOffset?.();
+
+    const scrollMargin = this.#el.getBoundingClientRect().top + window.scrollY;
+
+    this.#virtualizer = new Virtualizer({
+      count: items.length,
+      getScrollElement: () => window,
+      estimateSize,
+      overscan: 3,
+      observeElementRect: (el, cb) => { this.#cleanupRect = observeWindowRect(el, cb); return this.#cleanupRect; },
+      observeElementOffset: (el, cb) => { this.#cleanupOffset = observeWindowOffset(el, cb); return this.#cleanupOffset; },
+      scrollToFn: windowScroll,
+      scrollMargin,
+      onChange: () => this.#paint(),
+    });
+    this.#virtualizer._willUpdate();
+  }
+
+  #painting = false;
+
+  #paint() {
+    // 再入防止: 測定による onChange ループを断ち切る
+    if (this.#painting) return;
+    this.#painting = true;
+
+    try {
+      const vitems = this.#virtualizer.getVirtualItems();
+      const total = this.#virtualizer.getTotalSize();
+      const scrollMargin = this.#virtualizer.options.scrollMargin ?? 0;
+
+      this.#el.style.height = `${total}px`;
+
+      if (this.#items.length === 0) {
+        this.#el.innerHTML = emptyMessage();
+        return;
+      }
+
+      const visible = new Set(vitems.map((v) => v.index));
+
+      for (const [idx, el] of this.#rowEls) {
+        if (!visible.has(idx)) {
+          el.remove();
+          this.#rowEls.delete(idx);
+        }
+      }
+
+      for (const vitem of vitems) {
+        let row = this.#rowEls.get(vitem.index);
+        if (!row) {
+          row = document.createElement("div");
+          row.dataset.index = vitem.index;
+          row.style.cssText = "position:absolute;top:0;left:0;width:100%";
+          try {
+            row.innerHTML = this.#renderItem(this.#items[vitem.index]);
+          } catch (err) {
+            row.innerHTML = `<article class="card"><p class="meta">描画エラー: ${err.message}</p></article>`;
+            console.error("VirtualList renderItem error at index", vitem.index, err);
+          }
+          this.#el.appendChild(row);
+          this.#rowEls.set(vitem.index, row);
+          this.#pendingMeasure.add(row);
+        }
+        row.style.transform = `translateY(${vitem.start - scrollMargin}px)`;
+      }
+    } finally {
+      this.#painting = false;
+    }
+
+    // #paint 完了後に測定 → 次フレームで位置を再計算
+    if (this.#pendingMeasure.size > 0) {
+      const toMeasure = [...this.#pendingMeasure];
+      this.#pendingMeasure.clear();
+      requestAnimationFrame(() => {
+        for (const row of toMeasure) {
+          if (row.isConnected) this.#virtualizer.measureElement(row);
+        }
+      });
+    }
+  }
+}

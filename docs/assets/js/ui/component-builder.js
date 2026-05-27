@@ -1,4 +1,4 @@
-import { emptyMessage, escapeHtml } from "./html-utils.js";
+import { escapeHtml } from "./html-utils.js";
 
 /** Builder: definition list を段階的に組み立てる */
 export class DefinitionListBuilder {
@@ -76,8 +76,4 @@ export class ComponentFactory {
     return this.section(title, `<div class="video-ref-list">${renderVideoRefs(ids)}</div>`, "primary-links");
   }
 
-  recordList(items, renderItem) {
-    if (typeof renderItem === "function") return items.length > 0 ? items.map(renderItem).join("") : emptyMessage();
-    return items || emptyMessage();
-  }
 }
