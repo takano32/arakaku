@@ -16,14 +16,20 @@ export class EventController {
     this.dataLoader = dataLoader;
   }
 
+  #searchTimer = null;
+
   bind() {
     document.querySelector("#search")?.addEventListener("input", (event) => {
-      this.state.patch({
-        query: event.target.value,
-        focusFighterId: "",
-        focusEventId: "",
-      });
-      this.viewController.renderContent();
+      const value = event.target.value;
+      clearTimeout(this.#searchTimer);
+      this.#searchTimer = setTimeout(() => {
+        this.state.patch({
+          query: value,
+          focusFighterId: "",
+          focusEventId: "",
+        });
+        this.viewController.renderContent();
+      }, 150);
     });
 
     document.querySelector("#title-promotion-filter")?.addEventListener("change", (event) => {
