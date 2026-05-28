@@ -4,10 +4,12 @@ export class DataEnricher {
     this.repo = repo;
     this.#nameMatchIndex = null;
     this.#fightRecordIndex = null;
+    this.#officialPlayerIndex = null;
   }
 
   #nameMatchIndex;
   #fightRecordIndex;
+  #officialPlayerIndex;
 
   // fighter_id → numbersNameMatch (matched or candidate)
   get #nameMatches() {
@@ -58,26 +60,55 @@ export class DataEnricher {
     };
   }
 
+  // display_name → officialPlayer
+  get #officialPlayers() {
+    if (this.#officialPlayerIndex) return this.#officialPlayerIndex;
+    this.#officialPlayerIndex = new Map();
+    for (const p of this.repo.officialPlayers) {
+      if (p.name) this.#officialPlayerIndex.set(p.name, p);
+    }
+    return this.#officialPlayerIndex;
+  }
+
   enrichFighter(fighter) {
     const match = this.#nameMatches.get(fighter.fighter_id);
     const nf = match ? this.repo.numbersFighterById(match.numbers_fighter_id) : undefined;
-    if (!nf) return fighter;
+
+    const op = this.#officialPlayers.get(fighter.display_name);
+
+    if (!nf && !op) return fighter;
 
     const rich = { ...fighter };
-    if (nf.display_name) rich.display_name = nf.display_name;
-    if (nf.main_division) rich.main_division = nf.main_division;
-    if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
 
-    rich.profile = { ...(rich.profile ?? {}) };
-    if (nf.profile?.height) rich.profile.height = nf.profile.height;
-    if (nf.profile?.age) rich.profile.age = nf.profile.age;
-    if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
+    if (nf) {
+      if (nf.display_name) rich.display_name = nf.display_name;
+      if (nf.main_division) rich.main_division = nf.main_division;
+      if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
 
-    if (nf.catchphrase || nf.notes) {
-      rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
+      rich.profile = { ...(rich.profile ?? {}) };
+      if (nf.profile?.height) rich.profile.height = nf.profile.height;
+      if (nf.profile?.age) rich.profile.age = nf.profile.age;
+      if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
+
+      if (nf.catchphrase || nf.notes) {
+        rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
+      }
+
+      rich.numbers_data = nf;
     }
 
-    rich.numbers_data = nf;
+    if (op) {
+      rich.profile = { ...(rich.profile ?? {}) };
+      if (op.nickname) rich.profile.nickname = op.nickname;
+      if (op.nationality) rich.profile.nationality = op.nationality;
+      if (op.name_kana) rich.profile.name_kana = op.name_kana;
+      if (op.wins != null) rich.profile.wins = op.wins;
+      if (op.losses != null) rich.profile.losses = op.losses;
+      if (op.draws != null) rich.profile.draws = op.draws;
+      if (op.bio && !rich.summary) rich.summary = op.bio;
+      rich.official_data = op;
+    }
+
     return rich;
   }
 

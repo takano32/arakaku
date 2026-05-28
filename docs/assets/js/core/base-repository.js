@@ -83,6 +83,7 @@ export class BaseRepository {
   get sourceVideoReferences() { return this.data.sourceVideoReferences ?? []; }
   get youtubeArchives() { return this.data.youtubeArchives ?? []; }
   get noteArchives() { return this.data.noteArchives ?? []; }
+  get officialPlayers() { return this.data.officialPlayers ?? []; }
 
   // Simple Finders
   findEvent(id) { return this.findById("events", id); }

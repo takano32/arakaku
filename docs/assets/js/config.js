@@ -27,6 +27,7 @@ export const DATA_FILES = {
   sourceEventReferences: "./data/source_event_references.json",
   sourceBoutReferences: "./data/source_bout_references.json",
   sourceVideoReferences: "./data/source_video_references.json",
+  officialPlayers: "./data/official_players.json",
 };
 
 export const PUBLIC_TABS = [
@@ -63,4 +64,5 @@ export const ENRICHMENT_DATA_KEYS = [
   "numbersFighters", "numbersNameMatches", "numbersFightRecords",
   "youtubeArchives", "noteArchives",
   "sourceDocuments", "sourceMentions",
+  "officialPlayers",
 ];
