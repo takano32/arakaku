@@ -37,5 +37,5 @@ fetch_dir() {
   done
 }
 
-fetch_dir "src/data" "$DEST"
+fetch_dir "src" "$DEST"
 echo "Done. Files saved to ${DEST}/"

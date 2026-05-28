@@ -7,7 +7,7 @@ from pathlib import Path
 
 from arakaku_utils import DATA_SRC, ROOT, write_csv
 
-SRC = ROOT / "tmp" / "arakaku-site"
+SRC = ROOT / "tmp" / "arakaku-site" / "data"
 
 
 def load(filename: str) -> list:
