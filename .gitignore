@@ -14,3 +14,4 @@ tmp/*
 !tmp/.gitkeep
 !tmp/note-html/.gitkeep
 !tmp/youtube-info/.gitkeep
+!tmp/arakaku-site/.gitkeep
