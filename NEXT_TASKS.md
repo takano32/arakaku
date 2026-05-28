@@ -48,6 +48,10 @@ make clean-generated
 - Phase 2 エンリッチメント（`ENRICHMENT_DATA_KEYS`）バックグラウンドロードと `DataRepository` 再構築
 - `TabRenderers` の descriptor パターン移行（`{ items, renderItem, estimateSize? }`）
 - `TabRendererRegistry` の `DataRepository` 参照・フィルタフィンガープリントによる再描画最適化
+- `source_documents.json` の軽量化（`source_document_bodies.json` 分離・遅延ロード）
+- note記事 ○●🆚 構造化結果の抽出・照合・適用（88件、unknown 265→177）
+- Service Worker + Stale-While-Revalidate による JSON データキャッシュ（`docs/sw.js`）
+- `lite-youtube-embed` CDN web component による動画ファサード（クリックまで YouTube JS 不要）
 
 ---
 

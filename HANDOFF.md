@@ -75,6 +75,44 @@ note_url: 64
 
 ## 直近で追加・整備したもの
 
+### Phase 9: クライアントキャッシュ・CDNライブラリ・データ品質 (2026-05-28)
+
+#### Service Worker + Stale-While-Revalidate
+
+`docs/sw.js` を新設し、`/data/*.json` へのすべてのフェッチをインターセプトします。
+
+- キャッシュがあれば即座に返す（stale-while-revalidate）
+- バックグラウンドで `ETag`/`If-None-Match` 条件付きGETで再検証
+- データ更新を検出したら全ウィンドウに `DATA_UPDATED` を送信
+- `main.js` がバナー（`update-banner`）を一度だけ表示し、ボタンクリックで `location.reload()`
+- GitHub Pages はカスタム `Cache-Control` ヘッダを使えないため Service Worker で代替
+
+#### lite-youtube-embed（動画ファサード）
+
+`<iframe>` 埋め込みを `<lite-youtube>` web component に差し替えました。
+
+- Paul Irish 作、v0.3.4（2025年11月）、6.3k stars
+- `esm.sh` から import（`main.js` でサイドエフェクト import）
+- CSS は `style.css` にインライン化（追加ネットワークリクエスト不要）
+- クリックするまで YouTube JavaScript を一切ロードしない
+
+#### note記事構造化結果の抽出・適用（88件）
+
+○●🆚 記法のパースと bout_participants.csv を使った名前照合を修正し、88件の `result_status=unknown` 試合を `known` に更新しました。
+
+- `extract_note_structured_results.py`: ○●🆚 記法パーサーを実装
+- `make_structured_result_patch_candidates.py`: `bout_participants.csv` との結合で名前照合を修正
+- `apply_structured_result_patches.py`: サイドベース照合（red/blue）で勝敗を正しく反映
+- `result_status=unknown`: 265 → 177 件
+
+#### バグ修正
+
+- `refreshItems()` でDOMをクリアしていなかったため初回タブ表示でゴースト要素が残存 → `this.#el.innerHTML = ""` 追加
+- グローバル `dd { color: var(--muted) }` が `.record-details dd` に漏れて値が薄字 → `color: var(--ink)` オーバーライド追加
+- 試合結果の決まり手テキストに誤って `class="meta"` が付いて薄字 → クラス削除
+
+---
+
 ### バーチャルスクロール・ストリーミング実装 (2026-05-28)
 
 #### 仮想スクロール (`@tanstack/virtual-core@3`)

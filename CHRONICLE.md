@@ -61,6 +61,17 @@ This file tracks the evolution of the Unofficial ARAKAKU Database project based 
 - **Bug Fixes — extendItems Safety:** Discovered that `extendItems` (which reuses cached row DOM by index) is unsafe for `.reverse()` arrays because each streaming batch reshuffles every existing index. Also fixed a case where clearing a search filter (increasing item count) would incorrectly take the `extendItems` path. Fixed by removing `extendItems` from `TabRendererRegistry` entirely — all updates now go through `refreshItems`.
 - **Bug Fixes — loadedDataKeys Consistency:** Fixed `#streamKey` fetch/HTTP error paths that left keys absent from `loadedDataKeys` indefinitely. Fixed `load()` not awaiting `#loadEnrichment()`, which caused the CI validator to fail on `metadata`.
 
+### Phase 9: Client-Side Caching, CDN Libraries & Data Quality (2026-05-28)
+- **Service Worker + Stale-While-Revalidate:** Added `docs/sw.js` intercepting all `/data/*.json` fetches. Cached responses are served immediately on repeat visits; background revalidation uses `ETag`/`If-None-Match` conditional GET. When new data is detected, all open windows receive a `DATA_UPDATED` message and a fixed reload banner (`update-banner`) is shown once.
+- **Lazy YouTube Embedding:** Replaced `<iframe>` embeds with `lite-youtube-embed` web component (CDN, Paul Irish, v0.3.4, Nov 2025). Shows thumbnail + play button with zero YouTube JavaScript until the user clicks. CSS inlined into `style.css` to avoid an extra network round-trip.
+- **CDN Library Policy Formalized:** Each CDN dependency must have a recent release (within ~12 months) and address a genuinely complex problem. Current set: `@tanstack/virtual-core@3` (virtual scrolling), `@streamparser/json` (SAX streaming), `lite-youtube-embed` (video facade). Surveyed alternatives for all three; none were superior.
+- **source_documents Split:** Split `source_documents.json` into a lightweight index (preview + metadata) and a separate `source_document_bodies.json` (full text, lazy-loaded only when the 出典本文 tab is opened). Reduces initial payload for the common case.
+- **Note Article Structured Result Extraction:** Rewrote `extract_note_structured_results.py` to parse ○●🆚 result notation from cached note article text. Fixed `make_structured_result_patch_candidates.py` to join with `bout_participants.csv` for correct name matching. Fixed `apply_structured_result_patches.py` to use side-based matching. Applied 88 high-confidence patches, reducing `result_status=unknown` from 265 to 177.
+- **Bug Fixes:**
+  - Virtual-list ghost element on first tab open: `refreshItems()` cleared `#rowEls` map but not DOM. Fixed by adding `this.#el.innerHTML = ""`.
+  - `record-details dd` values rendering in muted gray: global `dd { color: var(--muted) }` bleeding in. Fixed with explicit `color: var(--ink)` on `.record-details dd`.
+  - Bout result 決まり手 text in fighter cards too faint: `renderBoutResultMeta` was incorrectly using `<p class="meta">`. Fixed by removing the class.
+
 ## Key Architectural Decisions
 - **Static First:** Chose a static site architecture (CSV -> JSON -> GitHub Pages) for low maintenance and high availability.
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.
@@ -68,3 +79,5 @@ This file tracks the evolution of the Unofficial ARAKAKU Database project based 
 - **Clean Build, Rich Client:** Decided to keep the build process (CSV to JSON) strictly factual and perform all data supplementation, cross-referencing, and Numbers-data merging on the client side at runtime.
 - **Numbers Data as Absolute Truth:** Decided to treat human-curated Apple Numbers data as the absolute source of truth for the viewer, allowing it to unconditionally overwrite canonical CSV data when matches are confirmed.
 - **Archives as External Metadata:** Treats archive CSVs as committed source metadata for display and review. Archive rows can enrich labels/search but do not confirm winners, fighter identities, methods, or title lineage.
+- **Service Worker as Transparent Cache Layer:** GitHub Pages does not support custom `Cache-Control` headers, so a Service Worker was chosen to implement stale-while-revalidate for JSON data files. Clients always get a fast cached response; the SW revalidates in the background and notifies clients when data changes without blocking the page.
+- **CDN Libraries with Quality Gate:** CDN dependencies are adopted only when actively maintained (recent release within ~12 months) and addressing a genuinely complex problem. Preference for high-star-count, widely-used libraries. Rejected mark.js (unmaintained since 2022). Surveyed and confirmed no better alternatives for the three adopted libraries.
