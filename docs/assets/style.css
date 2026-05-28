@@ -60,31 +60,32 @@ main {
 /* ── Summary grid ───────────────────────────────────────────── */
 
 .summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
-  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
 .summary-card {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  padding: 14px 16px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
 .summary-card strong {
-  display: block;
-  font-size: 1.7rem;
-  font-weight: 900;
-  line-height: 1.2;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
 .summary-card span {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 /* ── Cards ──────────────────────────────────────────────────── */
