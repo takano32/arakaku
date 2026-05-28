@@ -30,7 +30,7 @@ fetch_dir() {
     local type="${types[$i]}"
     if [ "$type" = "file" ]; then
       echo "Downloading ${path}/${name}"
-      curl -sSf "${RAW_BASE}/${path}/${name}" -o "${dest}/${name}"
+      curl -sSf --globoff "${RAW_BASE}/${path}/${name}" -o "${dest}/${name}"
     elif [ "$type" = "dir" ]; then
       fetch_dir "${path}/${name}" "${dest}/${name}"
     fi
