@@ -97,16 +97,20 @@ extract-numbers:
 #
 # Canonical CSVs (fighters, events, bouts, …) are restored from git.
 # ──────────────────────────────────────────────────────────────────
-.PHONY: generate-derived-csvs regenerate-csvs rebuild
+.PHONY: generate-derived-csvs generate-articles regenerate-csvs rebuild
 
 generate-derived-csvs:
 	python scripts/generate_promotions.py
 	python scripts/generate_titles.py
-	python scripts/generate_articles.py
 	python scripts/generate_aliases.py
 	python scripts/generate_video_links.py
 	python scripts/generate_article_links.py
 
-regenerate-csvs: extract-numbers archive-metadata build-sources reorder-data generate-derived-csvs
+# generate_articles.py must run before build-sources because build_source_documents.py
+# reads articles.csv to discover which note HTML files to process.
+regenerate-csvs: extract-numbers archive-metadata generate-articles build-sources reorder-data generate-derived-csvs
+
+generate-articles:
+	python scripts/generate_articles.py
 
 rebuild: clean-generated-csvs clean-generated regenerate-csvs check
