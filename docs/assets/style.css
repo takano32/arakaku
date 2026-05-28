@@ -39,15 +39,26 @@ body {
 }
 
 .site-header > div {
-  /* image is the title — hide text visually, keep for screen readers */
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 20px;
+  background: rgba(255, 255, 255, 0.88);
+  border-top: 1px solid var(--border);
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.site-header p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 /* ── Layout ─────────────────────────────────────────────────── */
