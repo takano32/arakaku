@@ -38,6 +38,9 @@ clean-generated-csvs:
 	rm -f data-src/numbers_fighters.csv
 	rm -f data-src/numbers_name_matches.csv
 	rm -f data-src/numbers_fight_records.csv
+	rm -f data-src/video_links.csv
+	rm -f data-src/aliases.csv
+	rm -f data-src/articles.csv
 
 # ──────────────────────────────────────────────────────────────────
 # Source crawl pipeline (requires network / local cache in tmp/)
@@ -91,8 +94,13 @@ extract-numbers:
 #
 # Canonical CSVs (fighters, events, bouts, …) are restored from git.
 # ──────────────────────────────────────────────────────────────────
-.PHONY: regenerate-csvs rebuild
+.PHONY: generate-derived-csvs regenerate-csvs rebuild
 
-regenerate-csvs: extract-numbers archive-metadata build-sources reorder-data
+generate-derived-csvs:
+	python scripts/generate_articles.py
+	python scripts/generate_aliases.py
+	python scripts/generate_video_links.py
+
+regenerate-csvs: extract-numbers archive-metadata build-sources reorder-data generate-derived-csvs
 
 rebuild: clean-generated-csvs clean-generated regenerate-csvs check
