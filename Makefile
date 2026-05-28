@@ -135,6 +135,7 @@ generate-stage2:
 	python scripts/generate_aliases.py
 	python scripts/generate_video_links.py
 	python scripts/generate_article_links.py
+	python scripts/generate_official_csvs.py
 
 regenerate-csvs: generate-stage1 generate-stage2
 
