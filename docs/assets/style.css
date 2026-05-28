@@ -781,3 +781,36 @@ a {
   background: var(--muted);
   color: #fff;
 }
+
+.update-banner {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-nested);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  white-space: nowrap;
+}
+
+.update-banner-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-nested);
+  padding: 0.35rem 0.8rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.update-banner-btn:hover {
+  opacity: 0.85;
+}

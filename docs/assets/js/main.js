@@ -33,3 +33,20 @@ dataLoader
   .catch((error) => {
     renderLoadError(error);
   });
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+
+  let updateBannerShown = false;
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type !== "DATA_UPDATED" || updateBannerShown) return;
+    updateBannerShown = true;
+
+    const banner = document.createElement("div");
+    banner.className = "update-banner";
+    banner.innerHTML =
+      'データが更新されました。<button class="update-banner-btn">再読み込み</button>';
+    banner.querySelector("button").addEventListener("click", () => location.reload());
+    document.body.appendChild(banner);
+  });
+}
