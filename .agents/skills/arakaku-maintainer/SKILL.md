@@ -597,10 +597,39 @@ Current viewer tabs:
 
 Current viewer behavior also includes:
 
+- virtual scrolling via `@tanstack/virtual-core@3` (CDN) — off-screen DOM is released
+- SAX streaming JSON parse via `@streamparser/json` (CDN) — data appears incrementally
+- two-phase data loading: PRIMARY files stream first, ENRICHMENT files load in the background
 - related source candidates on bout, event, and video cards
 - YouTube description previews on video cards
 - inline `▶ 詳細` / `▼ 詳細` disclosure controls for note article links, source candidate note links, and video links
 - candidate labels for inferred or extracted source references
+
+### Tab rendering
+
+`TabRenderers` methods return descriptor objects:
+
+```javascript
+{ items: [...], renderItem: (item) => html, estimateSize?: (i) => px }
+```
+
+`TabRendererRegistry.renderTo(container, tabId)` manages `VirtualList` per tab.
+
+Do NOT return raw HTML strings from `TabRenderers` methods.
+
+### Data loading keys
+
+`config.js` exports two key groups:
+
+- `PRIMARY_DATA_KEYS` — 13 display-critical files, streamed in Phase 1
+- `ENRICHMENT_DATA_KEYS` — 8 enrichment files, loaded normally in Phase 2
+- `CORE_DATA_KEYS = [...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys guaranteed present after `load()` resolves
+
+When adding a new data file, assign it to one of these groups.
+
+### extendItems safety
+
+`VirtualList.extendItems()` reuses cached row DOM and only renders new rows. This is only safe when items at indices 0..N-1 are **identical** between old and new arrays. Do NOT call `extendItems` for reversed arrays (`richBouts`, `richVideos`, `events`, `richArticles`). `TabRendererRegistry` uses only `refreshItems` for all non-tab-change updates.
 
 Expected navigation behavior:
 

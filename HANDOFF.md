@@ -75,6 +75,69 @@ note_url: 64
 
 ## 直近で追加・整備したもの
 
+### バーチャルスクロール・ストリーミング実装 (2026-05-28)
+
+#### 仮想スクロール (`@tanstack/virtual-core@3`)
+
+`docs/assets/js/ui/virtual-list.js` を新設し、全タブの描画をウィンドウスクロールベースの仮想リストに移行しました。
+
+- オフスクリーン DOM を解放し、大量データでもスムーズにスクロールできます。
+- `VirtualList` は `setItems` / `refreshItems` / `extendItems` の3メソッドを持ちます。
+- `@tanstack/virtual-core@3` を `https://esm.sh/` から CDN 動的インポートします。
+
+#### SAX ストリーミング JSON パース (`@streamparser/json`)
+
+`DataLoader.load()` を2フェーズ構成に変更しました。
+
+**Phase 1 — ストリーミング (PRIMARY_DATA_KEYS):**
+
+13ファイルを並列にストリーミングSAXパース（`@streamparser/json` CDN）します。30件ごと / 50ms ごとのバッチで `state.patch({})` を呼び、ページをインクリメンタルに描画します。
+
+```javascript
+PRIMARY_DATA_KEYS = [
+  "bouts", "boutParticipants", "fighters", "events", "promotions",
+  "videos", "titles", "titleReigns", "videoLinks", "aliases",
+  "fighterSnapshots", "articles", "articleLinks",
+]
+```
+
+**Phase 2 — エンリッチメント (ENRICHMENT_DATA_KEYS):**
+
+8ファイルを通常ロードし、完了後に `DataRepository` を再構築します。
+
+```javascript
+ENRICHMENT_DATA_KEYS = [
+  "metadata",
+  "numbersFighters", "numbersNameMatches", "numbersFightRecords",
+  "youtubeArchives", "noteArchives",
+  "sourceDocuments", "sourceMentions",
+]
+```
+
+#### タブ描画アーキテクチャ変更
+
+`TabRenderers` のメソッドは HTML 文字列ではなく descriptor オブジェクトを返します:
+
+```javascript
+{ items: [...], renderItem: (item) => html, estimateSize?: (i) => px }
+```
+
+`TabRendererRegistry.renderTo(container, tabId)` が `VirtualList` のライフサイクルを管理します。`DataRepository` 参照の変化とフィルタフィンガープリントで再描画を検出し、無駄な再描画を省略します。
+
+#### 発見・修正したバグ
+
+実装後のコードレビューで以下を修正しました:
+
+1. **`load()` が enrichment 完了前に解決していた** — `#loadEnrichment()` を `await` なしで呼んでいたため、バリデーターの `CORE_DATA_KEYS` チェックが失敗。`await this.#loadEnrichment()` に修正。
+
+2. **`#streamKey` のエラーパスで `loadedDataKeys.add()` 漏れ** — fetchエラー・HTTPエラー時にキーが「未ロード」状態のまま残り続ける。両パスに `loadedDataKeys.add(key)` を追加。
+
+3. **フィルタ変更時に `extendItems` が呼ばれてスタール DOM が残存** — アイテム数が増加するフィルタ変更（検索クリア等）で `extendItems` が使われ、旧フィルタ時の DOM が残存。このパスを `refreshItems` に修正。
+
+4. **`.reverse()` 配列でのストリーミング中に全インデックスが変化** — `richBouts`・`richVideos`・`events` は `.reverse()` で返されるため、各ストリーミングバッチで既存インデックスのアイテムがすべて変わる。`extendItems`（既存行を再レンダリングしない）を使うと古い DOM が残存。`TabRendererRegistry` から `extendItems` パスを完全削除し、常に `refreshItems` を使うよう変更。
+
+---
+
 ### 本文DB・アーカイブ・パイプライン
 
 以下を追加済みです。

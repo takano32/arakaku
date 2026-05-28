@@ -61,7 +61,19 @@ GitHub Pages viewer で以下を確認済みです。
 関連出典候補
 出典リンク横の詳細トグル
 archive 由来の動画・記事メタデータ補助表示
+仮想スクロール（@tanstack/virtual-core@3 CDN）
+SAX ストリーミング JSON パース（@streamparser/json CDN）
+Phase 1 インクリメンタル表示 → Phase 2 エンリッチメント更新
 ```
+
+ビューアーの描画アーキテクチャ概要:
+
+- `TabRenderers` メソッドは `{ items, renderItem, estimateSize? }` descriptor を返す
+- `TabRendererRegistry.renderTo()` が `VirtualList` のライフサイクルを管理
+- データは `PRIMARY_DATA_KEYS`（ストリーミング）と `ENRICHMENT_DATA_KEYS`（バッチ）に分離
+- `DataRepository` 参照の変化とフィルタフィンガープリントで無駄な再描画を省略
+
+詳細は `.agents/skills/arakaku-viewer-ui/SKILL.md` を参照してください。
 
 ---
 
@@ -94,8 +106,8 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 優先度の高い候補:
 
 ```text
-1. Pages 上で出典詳細トグルと archive 補助表示を確認する
-2. source_documents.json を軽量化する
+1. source_documents.json を軽量化する（既知の重さ問題）
+2. Pages 上でストリーミング・仮想スクロールの動作を目視確認する
 3. Numbers 由来データの viewer 突合表示を作る
 4. unknown 試合の結果補完を進める
 5. 選手プロフィールを補完する

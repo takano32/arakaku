@@ -52,6 +52,15 @@ This file tracks the evolution of the Unofficial ARAKAKU Database project based 
 - **Numbers Verification Badges:** Added "名鑑確認済み" (Verified by Directory) badges and specialized stats blocks to the viewer to indicate data supplemented or verified by the Apple Numbers dataset.
 - **Enriched Caching:** Implemented internal repository caching for rich objects to maintain performance and consistency during client-side processing.
 
+### Phase 8: Virtual Scrolling & Streaming Data Loading (2026-05-28)
+- **Virtual Scrolling:** Replaced full-DOM tab rendering with window-scroll virtual lists using `@tanstack/virtual-core@3` (CDN). Off-screen rows are unmounted, allowing large datasets to render smoothly without memory pressure.
+- **SAX Streaming JSON Parse:** Introduced `@streamparser/json` (CDN) for Phase 1 parallel streaming. Each of the 13 PRIMARY data files streams in independently; batches of 30 items (or every 50ms) trigger incremental UI updates so data appears progressively as it downloads.
+- **Two-Phase Data Loading:** Separated data keys into `PRIMARY_DATA_KEYS` (13 display-critical files, streamed) and `ENRICHMENT_DATA_KEYS` (8 enrichment files, loaded normally). Phase 1 gives users immediately usable data; Phase 2 enriches it silently in the background.
+- **Tab Descriptor Pattern:** Refactored `TabRenderers` to return `{ items, renderItem, estimateSize }` descriptors instead of HTML strings, decoupling list data from rendering infrastructure.
+- **Smart Re-render Detection:** `TabRendererRegistry` skips re-renders when `DataRepository` reference and filter fingerprint are both unchanged, preventing redundant paints during streaming.
+- **Bug Fixes — extendItems Safety:** Discovered that `extendItems` (which reuses cached row DOM by index) is unsafe for `.reverse()` arrays because each streaming batch reshuffles every existing index. Also fixed a case where clearing a search filter (increasing item count) would incorrectly take the `extendItems` path. Fixed by removing `extendItems` from `TabRendererRegistry` entirely — all updates now go through `refreshItems`.
+- **Bug Fixes — loadedDataKeys Consistency:** Fixed `#streamKey` fetch/HTTP error paths that left keys absent from `loadedDataKeys` indefinitely. Fixed `load()` not awaiting `#loadEnrichment()`, which caused the CI validator to fail on `metadata`.
+
 ## Key Architectural Decisions
 - **Static First:** Chose a static site architecture (CSV -> JSON -> GitHub Pages) for low maintenance and high availability.
 - **Human-in-the-loop:** Decided to use `review/` CSVs for all automated extractions to ensure high data quality.

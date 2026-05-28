@@ -45,6 +45,14 @@ The reversal of order happens in the browser via `docs/assets/js/core/data-repos
 - **Lazy Enriched Getters**: Use the `rich*` getters in `DataRepository` to provide the reversed, supplemented collections to the UI.
 - **Validation**: Always run `make check` after re-sorting to ensure that IDs and relationships remain intact and that the viewer's logic handles the reversed arrays correctly.
 
+## VirtualList and Reversed Arrays
+
+The viewer uses `VirtualList` with a cache of rendered DOM rows keyed by index. **`VirtualList.extendItems()` is NOT safe for reversed arrays.**
+
+Because each streaming batch appends to the underlying array before `.reverse()` is applied, every index 0..N-1 points to a different item after each new batch arrives. `extendItems` preserves cached rows by index without re-rendering them — stale DOM from the previous batch would be shown at those positions.
+
+**Rule:** Never call `extendItems` for `richBouts`, `richVideos`, `events`, `richArticles`, or any collection that is reversed or reordered after construction. `TabRendererRegistry` always uses `refreshItems` for non-tab-change updates precisely because of this invariant. If you add a new reversed getter, verify that no rendering path calls `extendItems` for it.
+
 ## Documenting Changes
 
 When adding new temporal data or adjusting sorting logic:

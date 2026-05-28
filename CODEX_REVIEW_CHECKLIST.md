@@ -126,6 +126,16 @@ pytest passed
 - archive 由来の文字列が検索対象に入っている
 - Console に viewer JS 由来のエラーがない
 
+仮想スクロール・ストリーミング固有:
+
+- データがインクリメンタルに表示される（一気に表示されるのではなく段階的に増える）
+- Phase 2 エンリッチメント後にスクロール位置がリセットされない
+- 検索クリア後（アイテム数が増加するフィルタ変更後）に古い内容が残らない
+- `TabRenderers` のメソッドが `{ items, renderItem, estimateSize? }` descriptor を返している（HTML文字列ではない）
+- `TabRendererRegistry` で `extendItems` を呼んでいない（常に `setItems` か `refreshItems` のみ）
+- `.virtual-list` に `position: relative` が当たっている
+- `node scripts/validate_json.js` が通る（`CORE_DATA_KEYS` 全件が `loadedDataKeys` に入っている）
+
 ---
 
 ## 7. Actions 変更の確認

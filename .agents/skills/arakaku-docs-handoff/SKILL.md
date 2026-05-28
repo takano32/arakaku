@@ -16,9 +16,13 @@ AGENTS.md
 .agents/skills/arakaku-numbers-pipeline/SKILL.md
 .agents/skills/arakaku-source-pipeline/SKILL.md
 .agents/skills/arakaku-viewer-ui/SKILL.md
+.agents/skills/arakaku-sorting-strategy/SKILL.md
 HANDOFF.md
 NEXT_TASKS.md
 OPERATIONS_CHECKLIST.md
+CODEX_REVIEW_CHECKLIST.md
+CODEX_START_HERE.md
+CHRONICLE.md
 SCHEMA_NOTES.md
 ```
 
@@ -116,6 +120,16 @@ Current viewer tabs:
 動画
 出典本文
 出典言及
+```
+
+Current viewer rendering architecture:
+
+```text
+TabRenderers → { items, renderItem, estimateSize? } descriptor
+TabRendererRegistry.renderTo(container, tabId) → VirtualList per tab
+VirtualList → @tanstack/virtual-core@3 (CDN)
+DataLoader.load() → Phase 1 streaming (PRIMARY_DATA_KEYS, @streamparser/json CDN)
+               → Phase 2 enrichment (ENRICHMENT_DATA_KEYS, normal fetch)
 ```
 
 Current actions:

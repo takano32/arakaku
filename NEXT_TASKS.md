@@ -43,41 +43,34 @@ make clean-generated
 - `youtube_archives.json` / `note_archives.json` を生成・検証し、viewer の動画表示・記事リンク・検索に補助連携
 - `make archive-metadata` を追加し、`make refresh-sources` に組み込み
 - `DataRepository` による名鑑データを用いた不明情報の自動補完と「名鑑確認済み」バッジ表示の実装
+- 仮想スクロール（`@tanstack/virtual-core@3` CDN）を全タブに導入
+- SAX ストリーミング JSON パース（`@streamparser/json` CDN）による Phase 1 インクリメンタル描画
+- Phase 2 エンリッチメント（`ENRICHMENT_DATA_KEYS`）バックグラウンドロードと `DataRepository` 再構築
+- `TabRenderers` の descriptor パターン移行（`{ items, renderItem, estimateSize? }`）
+- `TabRendererRegistry` の `DataRepository` 参照・フィルタフィンガープリントによる再描画最適化
 
 ---
 
-## P1: Pages 上で出典詳細トグルと archive 補助表示を確認する
+## P1: Pages 上でストリーミング・仮想スクロールを目視確認する
 
 ### 目的
 
-note本文リンク、出典候補の note本文リンク、動画リンクに追加した `▶ 詳細` / `▼ 詳細` と、archive 由来の動画・記事メタデータ補助表示が Pages 上でも見やすく動くか確認する。
-
-### 対象
-
-```text
-docs/assets/js/services/source-renderers.js
-docs/assets/js/tabs/tab-renderers.js
-docs/assets/js/core/data-repository.js
-docs/assets/js/core/query-matcher.js
-docs/assets/style.css
-```
+ストリーミング実装・仮想スクロールが Pages 上で正常に動くか目視確認する。CI は通っているが、ブラウザ動作の確認が未完了。
 
 ### 確認項目
 
-- note本文リンクの横に `▶ 詳細` がある
-- 展開すると `▼ 詳細` に変わる
-- 出典候補の note本文リンクでも同じ挙動になる
-- 動画リンクの横でも YouTube概要欄を展開できる
-- YouTube archive の `fulltitle` / `uploader` / `upload_date` が動画 view と関連動画リンクに補助表示される
-- note archive の `title` が記事リンク表示に補助利用される
-- archive 由来のタイトル・概要欄で検索できる
-- 長い本文がカード外へ大きく崩れない
-- モバイル幅でリンク、バッジ、詳細本文が重ならない
+- データがインクリメンタルに表示される（一気に出るのではなく段階的に増える）
+- スクロールが滑らか（大量データでも重くない）
+- Phase 2 エンリッチメント後にスクロール位置がリセットされない
+- 検索クリア後（アイテム数が増加するフィルタ変更）に古いカードが残らない
+- 全タブ（試合・選手・大会・団体・王座・動画）が表示される
+- 検索・フィルタが正しく動く
+- 出典本文・出典言及タブが表示される（遅延ロードのため切替後に表示される）
+- Console に JS エラーがない
 
 ### 完了条件
 
-- `make check` が通る
-- Pages で確認済み
+- 上記項目を目視で確認済み
 
 ---
 

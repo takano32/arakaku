@@ -211,6 +211,23 @@ docs/assets/style.css
 - archive 由来の文言で検索できる
 - Console に viewer JS 由来のエラーがない
 
+仮想スクロール・ストリーミング固有の確認:
+
+- データがインクリメンタルに増えていく（ストリーミング）
+- スクロールが滑らか
+- Phase 2 エンリッチメント後にスクロール位置がリセットされない
+- 検索クリア後に古いカードが残らない
+- `TabRenderers` のメソッドが descriptor `{ items, renderItem, estimateSize? }` を返している
+- `config.js` の `PRIMARY_DATA_KEYS` / `ENRICHMENT_DATA_KEYS` に追加したキーが入っている
+- `validate_json.js` が通る（`node scripts/validate_json.js`）
+
+新しいデータキーを追加したとき:
+
+- `DATA_FILES` に追加する
+- `PRIMARY_DATA_KEYS` または `ENRICHMENT_DATA_KEYS` に追加する（どちらかに必ず入れる）
+- `fallbackForDataKey` に追加する（配列なら `[]`、オブジェクトなら `{}`）
+- `validate_json.js` の `CORE_DATA_KEYS` チェックが通ることを確認する
+
 コマンド:
 
 ```bash
