@@ -37,6 +37,7 @@ export class KeyboardNav {
   #switchToTab(tabId) {
     this.#state.patch({ tab: tabId, focusFighterId: "", focusEventId: "" });
     this.#dataLoader.loadForTab(tabId);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   #switchTabBy(delta) {
