@@ -127,10 +127,25 @@ export class ViewController {
     if (!tabs) return;
 
     const visibleTabs = this.ctx.state.viewMode === "admin" ? ADMIN_TABS : PUBLIC_TABS;
+    const activeTab = this.ctx.state.tab;
     tabs.setAttribute("aria-label", this.ctx.state.viewMode === "admin" ? "管理ビュー切替" : "表示切替");
+
+    const existingButtons = tabs.querySelectorAll(".tab");
+    const existingIds = [...existingButtons].map((b) => b.dataset.tab);
+    const expectedIds = visibleTabs.map(([id]) => id);
+
+    if (existingIds.join(",") === expectedIds.join(",")) {
+      // タブ構成が同じならアクティブクラスだけ更新 — DOM 再構築でフォーカスを失わせない
+      for (const button of existingButtons) {
+        button.classList.toggle("active", button.dataset.tab === activeTab);
+      }
+      return;
+    }
+
+    // ビューモード切り替え時など構成が変わる場合は全再構築
     tabs.innerHTML = visibleTabs.map(
       ([tabId, label]) => `
-      <button type="button" class="tab ${tabId === this.ctx.state.tab ? "active" : ""}" data-tab="${escapeHtml(tabId)}">
+      <button type="button" class="tab ${tabId === activeTab ? "active" : ""}" data-tab="${escapeHtml(tabId)}">
         ${escapeHtml(label)}
       </button>
     `
