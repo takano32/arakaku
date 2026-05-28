@@ -5,11 +5,13 @@ export class DataEnricher {
     this.#nameMatchIndex = null;
     this.#fightRecordIndex = null;
     this.#officialPlayerIndex = null;
+    this.#officialTournamentIndex = null;
   }
 
   #nameMatchIndex;
   #fightRecordIndex;
   #officialPlayerIndex;
+  #officialTournamentIndex;
 
   // fighter_id → numbersNameMatch (matched or candidate)
   get #nameMatches() {
@@ -70,6 +72,37 @@ export class DataEnricher {
     return this.#officialPlayerIndex;
   }
 
+  // event_id → officialTournament (normalized id matching)
+  get #officialTournaments() {
+    if (this.#officialTournamentIndex) return this.#officialTournamentIndex;
+    this.#officialTournamentIndex = new Map();
+    for (const t of this.repo.officialTournaments) {
+      const normalized = t.id
+        .replace("maxbout-", "max-bout-")
+        .replace(/-light$/, "-lightweight")
+        .replace(/-middle$/, "-middleweight")
+        .replace(/-heavy$/, "-heavyweight");
+      this.#officialTournamentIndex.set(normalized, t);
+    }
+    return this.#officialTournamentIndex;
+  }
+
+  #officialPlayerFor(name) {
+    return this.#officialPlayers.get(name);
+  }
+
+  #applyOfficialPlayer(rich, op) {
+    rich.profile = { ...(rich.profile ?? {}) };
+    if (op.nickname) rich.profile.nickname = op.nickname;
+    if (op.nationality) rich.profile.nationality = op.nationality;
+    if (op.name_kana) rich.profile.name_kana = op.name_kana;
+    if (op.wins != null) rich.profile.wins = op.wins;
+    if (op.losses != null) rich.profile.losses = op.losses;
+    if (op.draws != null) rich.profile.draws = op.draws;
+    if (op.bio && !rich.summary) rich.summary = op.bio;
+    rich.official_data = op;
+  }
+
   enrichFighter(fighter) {
     const match = this.#nameMatches.get(fighter.fighter_id);
     const nf = match ? this.repo.numbersFighterById(match.numbers_fighter_id) : undefined;
@@ -97,25 +130,33 @@ export class DataEnricher {
       rich.numbers_data = nf;
     }
 
-    if (op) {
-      rich.profile = { ...(rich.profile ?? {}) };
-      if (op.nickname) rich.profile.nickname = op.nickname;
-      if (op.nationality) rich.profile.nationality = op.nationality;
-      if (op.name_kana) rich.profile.name_kana = op.name_kana;
-      if (op.wins != null) rich.profile.wins = op.wins;
-      if (op.losses != null) rich.profile.losses = op.losses;
-      if (op.draws != null) rich.profile.draws = op.draws;
-      if (op.bio && !rich.summary) rich.summary = op.bio;
-      rich.official_data = op;
-    }
+    if (op) this.#applyOfficialPlayer(rich, op);
 
     return rich;
   }
 
-  enrichEvent(event) { return event; }
+  enrichEvent(event) {
+    const ot = this.#officialTournaments.get(event.event_id);
+    if (!ot) return event;
+    return { ...event, official_data: ot };
+  }
   enrichPromotion(promotion) { return promotion; }
-  enrichFighterSnapshot(snapshot) { return snapshot; }
-  enrichBoutParticipant(participant) { return participant; }
+  enrichFighterSnapshot(snapshot) {
+    const fighter = this.repo.findFighter(snapshot.fighter_id);
+    const op = fighter ? this.#officialPlayerFor(fighter.display_name) : undefined;
+    if (!op) return snapshot;
+    const rich = { ...snapshot };
+    this.#applyOfficialPlayer(rich, op);
+    return rich;
+  }
+
+  enrichBoutParticipant(participant) {
+    const op = this.#officialPlayerFor(participant.fighter_name);
+    if (!op) return participant;
+    const rich = { ...participant };
+    this.#applyOfficialPlayer(rich, op);
+    return rich;
+  }
   enrichVideoLink(link) { return link; }
   enrichArticleLink(link) { return link; }
   enrichSourceMention(mention) { return mention; }

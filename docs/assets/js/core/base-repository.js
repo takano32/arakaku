@@ -84,6 +84,7 @@ export class BaseRepository {
   get youtubeArchives() { return this.data.youtubeArchives ?? []; }
   get noteArchives() { return this.data.noteArchives ?? []; }
   get officialPlayers() { return this.data.officialPlayers ?? []; }
+  get officialTournaments() { return this.data.officialTournaments ?? []; }
 
   // Simple Finders
   findEvent(id) { return this.findById("events", id); }

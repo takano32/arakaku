@@ -28,6 +28,7 @@ export const DATA_FILES = {
   sourceBoutReferences: "./data/source_bout_references.json",
   sourceVideoReferences: "./data/source_video_references.json",
   officialPlayers: "./data/official_players.json",
+  officialTournaments: "./data/official_tournaments.json",
 };
 
 export const PUBLIC_TABS = [
@@ -65,4 +66,5 @@ export const ENRICHMENT_DATA_KEYS = [
   "youtubeArchives", "noteArchives",
   "sourceDocuments", "sourceMentions",
   "officialPlayers",
+  "officialTournaments",
 ];
