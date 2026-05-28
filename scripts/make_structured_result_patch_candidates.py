@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
+PARTICIPANTS_CSV = ROOT / "data-src" / "bout_participants.csv"
 STRUCTURED_CSV = ROOT / "review" / "note_structured_results.csv"
 OUT_CSV = ROOT / "review" / "structured_result_patch_candidates.csv"
 
@@ -75,12 +76,33 @@ def result_quality(row: dict[str, str]) -> tuple[bool, bool, bool]:
     return has_winner, has_method, has_time
 
 
+def build_bout_fighter_names(participants: list[dict[str, str]]) -> dict[str, tuple[str, str]]:
+    """Return mapping of bout_id → (red_name, blue_name)."""
+    by_bout: dict[str, dict[str, str]] = {}
+    for p in participants:
+        bid = p.get("bout_id", "")
+        side = p.get("side", "")
+        name = p.get("fighter_name", "")
+        if bid and side in ("red", "blue") and name:
+            by_bout.setdefault(bid, {})
+            by_bout[bid][side] = name
+    return {
+        bid: (sides.get("red", ""), sides.get("blue", ""))
+        for bid, sides in by_bout.items()
+    }
+
+
 def main() -> int:
     with BOUTS_CSV.open("r", encoding="utf-8-sig", newline="") as f:
         bouts = list(csv.DictReader(f))
 
+    with PARTICIPANTS_CSV.open("r", encoding="utf-8-sig", newline="") as f:
+        participants = list(csv.DictReader(f))
+
     with STRUCTURED_CSV.open("r", encoding="utf-8-sig", newline="") as f:
         structured = list(csv.DictReader(f))
+
+    bout_names = build_bout_fighter_names(participants)
 
     rows: list[dict[str, str]] = []
 
@@ -106,9 +128,10 @@ def main() -> int:
         scored: list[tuple[float, str, bool, dict[str, str]]] = []
 
         for bout in event_bouts:
+            red_name, blue_name = bout_names.get(bout.get("bout_id", ""), ("", ""))
             score, reversed_pair = pair_score(
-                bout.get("fighter_a", ""),
-                bout.get("fighter_b", ""),
+                red_name,
+                blue_name,
                 fighter_a,
                 fighter_b,
             )
@@ -141,6 +164,25 @@ def main() -> int:
             elif match_reason == "event_and_bout_order" and (has_method or has_time):
                 confidence = "medium"
 
+            bout_id = bout.get("bout_id", "")
+            red_name, blue_name = bout_names.get(bout_id, ("", ""))
+
+            # Resolve winner/loser to actual participant names using reversed_pair
+            raw_winner = result.get("winner", "")
+            raw_loser = result.get("loser", "")
+            if raw_winner and red_name and blue_name:
+                if not reversed_pair:
+                    # fighter_a(red) ~ structured_fighter_a; winner is from structured
+                    resolved_winner = red_name if raw_winner == fighter_a else blue_name
+                    resolved_loser = blue_name if raw_winner == fighter_a else red_name
+                else:
+                    # fighter_a(red) ~ structured_fighter_b
+                    resolved_winner = red_name if raw_winner == fighter_b else blue_name
+                    resolved_loser = blue_name if raw_winner == fighter_b else red_name
+            else:
+                resolved_winner = raw_winner
+                resolved_loser = raw_loser
+
             rows.append(
                 {
                     "apply": "false",
@@ -148,15 +190,15 @@ def main() -> int:
                     "match_score": f"{score:.3f}",
                     "match_reason": match_reason,
                     "reversed_pair": "true" if reversed_pair else "false",
-                    "bout_id": bout.get("bout_id", ""),
+                    "bout_id": bout_id,
                     "event_id": bout.get("event_id", ""),
                     "bout_order": bout.get("bout_order", ""),
-                    "fighter_a": bout.get("fighter_a", ""),
-                    "fighter_b": bout.get("fighter_b", ""),
+                    "fighter_a": red_name,
+                    "fighter_b": blue_name,
                     "structured_fighter_a": fighter_a,
                     "structured_fighter_b": fighter_b,
-                    "winner": result.get("winner", ""),
-                    "loser": result.get("loser", ""),
+                    "winner": resolved_winner,
+                    "loser": resolved_loser,
                     "round": result.get("round", ""),
                     "time": result.get("time", ""),
                     "method_raw": result.get("method_raw", ""),

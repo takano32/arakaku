@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import html
 import re
-import urllib.request
 from pathlib import Path
 
-from arakaku_utils import DATA_SRC, REVIEW, ROOT, read_csv, safe_slug, write_csv
+from arakaku_utils import DATA_SRC, REVIEW, read_csv, write_csv
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"
+SOURCE_DOCUMENTS_CSV = DATA_SRC / "source_documents.csv"
 OUT_CSV = REVIEW / "note_structured_results.csv"
-CACHE_DIR = ROOT / "tmp" / "note-html"
 
 EVENT_PATTERNS = [
     ("target", re.compile(r"ターゲット\s*No\.?\s*([0-9０-９]+)", re.I)),
@@ -21,69 +19,26 @@ EVENT_PATTERNS = [
 ]
 
 METHOD_PATTERNS = [
-    ("TKO", re.compile(r"\bTKO\b|ＴＫＯ|TKO勝ち|TKO勝利", re.I)),
+    ("TKO", re.compile(r"\bTKO\b|ＴＫＯ|TKO勝ち|TKO勝利|コーナーストップ|タオル投入|タップアウト", re.I)),
     ("KO", re.compile(r"\bKO\b|ＫＯ|KO勝ち|KO勝利", re.I)),
-    ("SUB", re.compile(r"一本|一本勝ち|一本勝利|サブミッション|チョーク|腕十字|関節", re.I)),
-    ("DEC", re.compile(r"判定|判定勝ち|判定勝利", re.I)),
-    ("DQ", re.compile(r"失格|DQ", re.I)),
+    ("SUB", re.compile(r"一本|一本勝ち|チョーク|絞め|腕十字|アームバー|アームロック|ギロチン|三角|RNC|ネックロック|肩固め|肩はずし|関節|サブミッション", re.I)),
+    ("DEC", re.compile(r"判定|判定勝ち|判定勝利|判定\d-\d", re.I)),
+    ("DQ", re.compile(r"失格|DQ|反則", re.I)),
     ("NC", re.compile(r"ノーコンテスト|NC", re.I)),
 ]
 
-VS_RE = re.compile(r"(?i)\bvs\.?\b|ＶＳ|ｖｓ|対")
-ROUND_RE = re.compile(r"([1-5１-５])\s*(?:R|Ｒ|ラウンド)")
+ROUND_RE = re.compile(r"([1-5１-５])\s*(?:R|Ｒ|ラウンド)(?:終了)?")
 TIME_RE = re.compile(r"([0-9０-９]+)\s*分\s*([0-9０-９]+)\s*秒|([0-9０-９]+):([0-9０-９]{2})")
-RESULT_HINT_RE = re.compile(r"(KO|TKO|一本|判定|ドロー|ノーコンテスト|NC|失格|DQ|勝利|勝ち|敗北|防衛|王座|タイトル)", re.I)
+
+WIN_MARKS = {"○", "◯"}
+LOSS_MARKS = {"●"}
+FIGHTER_MARKS = WIN_MARKS | LOSS_MARKS
+
+FOOTER_MARKERS = {"ダウンロード", "copy", "いいなと思ったら", "noteプレミアム", "ヘルプ", "フィードバック", "特商法"}
 
 
 def normalize_digits(value: str) -> str:
     return value.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
-
-
-def strip_tags(text: str) -> str:
-    text = re.sub(r"<script\b.*?</script>", "\n", text, flags=re.S | re.I)
-    text = re.sub(r"<style\b.*?</style>", "\n", text, flags=re.S | re.I)
-    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
-    text = re.sub(r"</p>|</div>|</li>|</h[1-6]>", "\n", text, flags=re.I)
-    text = re.sub(r"<[^>]+>", "", text)
-    text = html.unescape(text)
-    text = re.sub(r"\r\n?", "\n", text)
-    return text
-
-
-def cache_name_for_article(article_id: str, url: str) -> str:
-    raw = article_id or url
-    return f"{safe_slug(raw)}.html"
-
-
-def fetch(url: str, cache_path: Path) -> str:
-    if cache_path.exists():
-        return cache_path.read_text(encoding="utf-8", errors="replace")
-
-    req = urllib.request.Request(
-        url,
-        headers={"User-Agent": "Mozilla/5.0 arakaku-note-structured-results/1.0"},
-    )
-
-    with urllib.request.urlopen(req, timeout=30) as res:
-        body = res.read().decode("utf-8", errors="replace")
-
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    cache_path.write_text(body, encoding="utf-8")
-    return body
-
-
-def clean_line(line: str) -> str:
-    line = re.sub(r"\s+", " ", line).strip()
-    line = line.replace("｜アラカク通信のーと", "")
-    return line
-
-
-def clean_name(value: str) -> str:
-    value = clean_line(value)
-    value = re.sub(r"^[☆★・\-—–●■◆\s]+", "", value)
-    value = value.strip("[]【】（）()「」『』,，:：")
-    value = re.sub(r"\s+", " ", value)
-    return value
 
 
 def infer_event_id(text: str, article: dict[str, str]) -> str:
@@ -100,7 +55,12 @@ def infer_event_id(text: str, article: dict[str, str]) -> str:
         number = normalize_digits(match.group(1)) if match else "unknown"
 
         if "ライト級" in joined:
-            suffix = "lightweight-gp" if "GP" in joined else "lightweight-tournament"
+            if "GP" in joined:
+                suffix = "lightweight-gp"
+            elif "トーナメント" in joined:
+                suffix = "lightweight-tournament"
+            else:
+                suffix = "lightweight-event"
         elif "ミドル級" in joined:
             suffix = "middleweight-tournament"
         else:
@@ -134,269 +94,245 @@ def infer_bout_type(text: str) -> str:
     return ""
 
 
-def extract_matchup(line: str) -> tuple[str, str] | None:
-    text = clean_line(line)
-    text = re.sub(r"^[☆★・\-—–●■◆\s]+", "", text)
-
-    if not VS_RE.search(text):
-        return None
-
-    parts = re.split(r"\s*(?:vs\.?|VS|ＶＳ|ｖｓ|対)\s*", text, maxsplit=1, flags=re.I)
-    if len(parts) != 2:
-        return None
-
-    left, right = parts
-
-    # Remove metadata from the left side.
-    for sep in ["】", "］", "]", "：", ":"]:
-        if sep in left:
-            left = left.split(sep)[-1]
-
-    # Remove metadata from the right side.
-    for marker in [
-        "ターゲットNo",
-        "エンペラーNo",
-        "マウンテン・ヒーローズNo",
-        "マウンテンヒーローズNo",
-        "MAXバウト",
-        "ライト級",
-        "ミドル級",
-        "ヘビー級",
-        "ワンマッチ",
-        "タイトルマッチ",
-        "王座",
-        "（",
-        "(",
-        "【",
-    ]:
-        idx = right.find(marker)
-        if idx >= 0:
-            right = right[:idx]
-
-    left = clean_name(left)
-    right = clean_name(right)
-
-    if not left or not right or left == right:
-        return None
-
-    if len(left) > 60 or len(right) > 60:
-        return None
-
-    return left, right
-
-
-def infer_method(line: str) -> tuple[str, str]:
+def infer_method(text: str) -> tuple[str, str]:
     for method, pattern in METHOD_PATTERNS:
-        match = pattern.search(line)
+        match = pattern.search(text)
         if match:
             return method, match.group(0)
     return "", ""
 
 
-def infer_round(line: str) -> str:
-    match = ROUND_RE.search(line)
+def infer_round(text: str) -> str:
+    match = ROUND_RE.search(text)
     if not match:
         return ""
-    return f"{normalize_digits(match.group(1))}R"
+    raw = normalize_digits(match.group(1))
+    suffix = "R終了" if "終了" in match.group(0) else "R"
+    return f"{raw}{suffix}"
 
 
-def infer_time(line: str) -> str:
-    match = TIME_RE.search(line)
+def infer_time(text: str) -> str:
+    match = TIME_RE.search(text)
     if not match:
         return ""
-
     if match.group(1) and match.group(2):
         return f"{normalize_digits(match.group(1))}分{normalize_digits(match.group(2))}秒"
-
     if match.group(3) and match.group(4):
         return f"{normalize_digits(match.group(3))}分{normalize_digits(match.group(4))}秒"
-
     return ""
 
 
-def compact_name(value: str) -> str:
-    return re.sub(r"\s+", "", value).replace("・", "").replace("　", "").lower()
+def clean_fighter_name(raw: str) -> str:
+    # Strip record 【X勝Y敗】 and trailing annotations like ＊①
+    name = re.sub(r"【[^】]*】", "", raw)
+    name = re.sub(r"＊[①②③④⑤⑥⑦⑧⑨⑩\d]+", "", name)
+    name = name.strip()
+    return name
 
 
-def infer_winner(context: str, fighter_a: str, fighter_b: str) -> tuple[str, str]:
-    compact = compact_name(context)
-    a = compact_name(fighter_a)
-    b = compact_name(fighter_b)
+def _make_row(
+    article_id: str,
+    event_id: str,
+    bout_order: int,
+    division: str,
+    bout_type: str,
+    fighter_a: str,
+    fighter_b: str,
+    winner: str,
+    loser: str,
+    result_text: str,
+    line_start: int,
+    line_end: int,
+    source_text: str,
+    confidence: str,
+) -> dict[str, str]:
+    method, method_raw = infer_method(result_text)
+    round_value = infer_round(result_text)
+    time_value = infer_time(result_text)
 
-    win_tokens = [
-        "勝ち",
-        "勝利",
-        "一本勝ち",
-        "判定勝ち",
-        "ko勝ち",
-        "tko勝ち",
-        "防衛成功",
-        "王座獲得",
-        "王者に",
-        "新王者",
-    ]
+    if not confidence:
+        if winner and method:
+            confidence = "high"
+        elif method and (round_value or time_value):
+            confidence = "medium"
+        elif winner or method:
+            confidence = "medium"
+        else:
+            confidence = "low"
 
-    for name, norm in [(fighter_a, a), (fighter_b, b)]:
-        if not norm:
-            continue
-
-        pos = compact.find(norm)
-        if pos < 0:
-            continue
-
-        tail = compact[pos:pos + 160]
-        head = compact[max(0, pos - 80):pos]
-
-        if any(token in tail for token in win_tokens):
-            loser = fighter_b if name == fighter_a else fighter_a
-            return name, loser
-
-        if any(token in head for token in ["勝者", "勝ったのは"]):
-            loser = fighter_b if name == fighter_a else fighter_a
-            return name, loser
-
-    # Pattern: Aが... / Aは... + result words
-    for name, norm in [(fighter_a, a), (fighter_b, b)]:
-        if not norm:
-            continue
-
-        for marker in [f"{norm}が", f"{norm}は"]:
-            pos = compact.find(marker)
-            if pos >= 0:
-                tail = compact[pos:pos + 160]
-                if any(token in tail for token in win_tokens):
-                    loser = fighter_b if name == fighter_a else fighter_a
-                    return name, loser
-
-    return "", ""
+    return {
+        "article_id": article_id,
+        "event_id": event_id,
+        "bout_order": str(bout_order),
+        "division": division,
+        "bout_type": bout_type,
+        "fighter_a": fighter_a,
+        "fighter_b": fighter_b,
+        "winner": winner,
+        "loser": loser,
+        "round": round_value,
+        "time": time_value,
+        "method_raw": method_raw,
+        "method_normalized": method,
+        "technique": "",
+        "source_line_start": str(line_start),
+        "source_line_end": str(line_end),
+        "source_text": source_text,
+        "confidence": confidence,
+    }
 
 
-def parse_article(article: dict[str, str]) -> list[dict[str, str]]:
-    url = article.get("url", "")
+def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, str]]:
     article_id = article.get("article_id", "")
+    lines = [l.strip() for l in content_text.split("\n")]
 
-    if "note.com" not in url:
-        return []
+    # Trim footer boilerplate
+    filtered: list[str] = []
+    for line in lines:
+        if any(m in line for m in FOOTER_MARKERS):
+            break
+        if line:
+            filtered.append(line)
 
-    raw = fetch(url, CACHE_DIR / cache_name_for_article(article_id, url))
-    text = strip_tags(raw)
-
-    lines = [
-        (index, clean_line(raw_line))
-        for index, raw_line in enumerate(text.splitlines(), start=1)
-        if len(clean_line(raw_line)) >= 3
-    ]
-
-    event_id = infer_event_id(" ".join(line for _, line in lines[:80]), article)
+    event_id = infer_event_id(" ".join(filtered[:80]), article)
 
     rows: list[dict[str, str]] = []
     current_division = ""
     current_bout_type = ""
     bout_order = 0
+    i = 0
+    n = len(filtered)
 
-    for idx, line in lines:
+    while i < n:
+        line = filtered[i]
+
+        # Section headers
         if "級" in line or "タイトルマッチ" in line or "王座決定戦" in line:
             current_division = infer_division(line) or current_division
             current_bout_type = infer_bout_type(line) or current_bout_type
 
-        matchup = extract_matchup(line)
-        if not matchup:
-            continue
+        # Single-line: [○●]name🆚[○●]name
+        if "🆚" in line and not line.startswith("（"):
+            parts = line.split("🆚", 1)
+            left, right = parts[0].strip(), parts[1].strip()
+            if (
+                left and left[0] in FIGHTER_MARKS
+                and right and right[0] in FIGHTER_MARKS
+            ):
+                left_mark = left[0]
+                left_name = clean_fighter_name(left[1:])
+                right_name = clean_fighter_name(right[1:])
+                winner = left_name if left_mark in WIN_MARKS else right_name
+                loser = right_name if left_mark in WIN_MARKS else left_name
+                result_line = filtered[i + 1] if i + 1 < n and filtered[i + 1].startswith("（") else ""
+                end_idx = i + 1 if result_line else i
+                bout_order += 1
+                rows.append(_make_row(
+                    article_id, event_id, bout_order, current_division, current_bout_type,
+                    left_name, right_name, winner, loser, result_line, i + 1, end_idx + 1, line, "",
+                ))
+                i = end_idx + 1
+                continue
 
-        fighter_a, fighter_b = matchup
-        bout_order += 1
+        # Single-line VS: [○●]name vs [○●]name
+        if re.search(r"(?i)\bvs\.?\b|ｖｓ|ＶＳ", line) and not line.startswith("（"):
+            parts = re.split(r"(?i)\s*(?:vs\.?|ＶＳ|ｖｓ)\s*", line, maxsplit=1)
+            if len(parts) == 2:
+                left, right = parts[0].strip(), parts[1].strip()
+                if left and left[0] in FIGHTER_MARKS and right and right[0] in FIGHTER_MARKS:
+                    left_mark = left[0]
+                    left_name = clean_fighter_name(left[1:])
+                    right_name = clean_fighter_name(right[1:])
+                    winner = left_name if left_mark in WIN_MARKS else right_name
+                    loser = right_name if left_mark in WIN_MARKS else left_name
+                    result_line = filtered[i + 1] if i + 1 < n and filtered[i + 1].startswith("（") else ""
+                    end_idx = i + 1 if result_line else i
+                    bout_order += 1
+                    rows.append(_make_row(
+                        article_id, event_id, bout_order, current_division, current_bout_type,
+                        left_name, right_name, winner, loser, result_line, i + 1, end_idx + 1, line, "",
+                    ))
+                    i = end_idx + 1
+                    continue
 
-        # Look near the matchup line for result lines.
-        nearby = [
-            (j, other)
-            for j, other in lines
-            if idx - 2 <= j <= idx + 12
-        ]
+        # Multi-line: [○●]name / 🆚 / [○●]name
+        if line and line[0] in FIGHTER_MARKS:
+            name1_mark = line[0]
+            name1 = clean_fighter_name(line[1:])
 
-        source_text = " / ".join(other for _, other in nearby)
-        result_line = next((other for _, other in nearby if RESULT_HINT_RE.search(other)), "")
+            # Find 🆚
+            j = i + 1
+            while j < n and not filtered[j]:
+                j += 1
 
-        method, method_raw = infer_method(source_text)
-        round_value = infer_round(source_text)
-        time_value = infer_time(source_text)
-        winner, loser = infer_winner(source_text, fighter_a, fighter_b)
+            if j < n and filtered[j] == "🆚":
+                k = j + 1
+                while k < n and not filtered[k]:
+                    k += 1
 
-        confidence = "low"
-        if winner and method:
-            confidence = "high"
-        elif method and (round_value or time_value):
-            confidence = "medium"
-        elif method or winner:
-            confidence = "medium"
+                if k < n and filtered[k] and filtered[k][0] in FIGHTER_MARKS:
+                    name2_mark = filtered[k][0]
+                    name2 = clean_fighter_name(filtered[k][1:])
 
-        if article.get("article_type") == "event_result" and confidence == "medium":
-            confidence = "high" if winner and method else "medium"
+                    winner = name1 if name1_mark in WIN_MARKS else name2
+                    loser = name2 if name1_mark in WIN_MARKS else name1
 
-        rows.append(
-            {
-                "article_id": article_id,
-                "event_id": event_id,
-                "bout_order": str(bout_order),
-                "division": current_division,
-                "bout_type": current_bout_type,
-                "fighter_a": fighter_a,
-                "fighter_b": fighter_b,
-                "winner": winner,
-                "loser": loser,
-                "round": round_value,
-                "time": time_value,
-                "method_raw": method_raw,
-                "method_normalized": method,
-                "technique": "",
-                "source_line_start": str(idx),
-                "source_line_end": str(nearby[-1][0]) if nearby else str(idx),
-                "source_text": source_text,
-                "confidence": confidence,
-            }
-        )
+                    result_line = ""
+                    end_idx = k
+                    m = k + 1
+                    while m < n and not filtered[m]:
+                        m += 1
+                    if m < n and filtered[m].startswith("（"):
+                        result_line = filtered[m]
+                        end_idx = m
+
+                    source = f"{line} / 🆚 / {filtered[k]}"
+                    if result_line:
+                        source += f" / {result_line}"
+
+                    bout_order += 1
+                    rows.append(_make_row(
+                        article_id, event_id, bout_order, current_division, current_bout_type,
+                        name1, name2, winner, loser, result_line, i + 1, end_idx + 1, source, "",
+                    ))
+                    i = end_idx + 1
+                    continue
+
+        i += 1
 
     return rows
 
 
 def main() -> int:
-    articles = read_csv(ARTICLES_CSV)
+    articles = {a["article_id"]: a for a in read_csv(ARTICLES_CSV)}
+    source_docs = {
+        d["source_ref_id"]: d
+        for d in read_csv(SOURCE_DOCUMENTS_CSV)
+        if d.get("source_type") == "note_article"
+    }
 
     rows: list[dict[str, str]] = []
 
-    for article in articles:
+    for article_id, article in sorted(articles.items()):
         article_type = article.get("article_type", "")
-        title = article.get("title", "")
+        if article_type not in {"event_result", "event_card", "note_article"}:
+            title = article.get("title", "")
+            if "試合" not in title:
+                continue
 
-        if article_type not in {"event_result", "event_card", "note_article"} and "試合" not in title:
+        doc = source_docs.get(article_id)
+        if not doc:
+            print(f"[skip] no source document for {article_id}")
             continue
 
-        print(f"[parse] {article.get('article_id')} {title}")
+        content_text = doc.get("content_text", "")
+        if not content_text.strip():
+            print(f"[skip] empty content for {article_id}")
+            continue
 
-        try:
-            rows.extend(parse_article(article))
-        except Exception as exc:
-            rows.append(
-                {
-                    "article_id": article.get("article_id", ""),
-                    "event_id": "",
-                    "bout_order": "",
-                    "division": "",
-                    "bout_type": "",
-                    "fighter_a": "",
-                    "fighter_b": "",
-                    "winner": "",
-                    "loser": "",
-                    "round": "",
-                    "time": "",
-                    "method_raw": "",
-                    "method_normalized": "",
-                    "technique": "",
-                    "source_line_start": "",
-                    "source_line_end": "",
-                    "source_text": f"parse_error: {exc}",
-                    "confidence": "error",
-                }
-            )
+        print(f"[parse] {article_id} {article.get('title', '')}")
+        parsed = parse_article(content_text, article)
+        rows.extend(parsed)
 
     fieldnames = [
         "article_id",
@@ -420,7 +356,11 @@ def main() -> int:
     ]
     write_csv(OUT_CSV, fieldnames, rows)
 
-    print(f"[rows] {len(rows)}")
+    total = len(rows)
+    with_winner = sum(1 for r in rows if r.get("winner"))
+    with_method = sum(1 for r in rows if r.get("method_normalized"))
+    high = sum(1 for r in rows if r.get("confidence") == "high")
+    print(f"[rows] {total}  winner={with_winner}  method={with_method}  high={high}")
 
     return 0
 
