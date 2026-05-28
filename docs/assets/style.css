@@ -1063,3 +1063,67 @@ footer {
     gap: 2px;
   }
 }
+
+/* ── Keyboard help dialog ───────────────────────────────────── */
+
+#keyboard-help {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 24px 28px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+
+#keyboard-help::backdrop {
+  background: rgba(0,0,0,0.4);
+}
+
+#keyboard-help h2 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+#keyboard-help table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+#keyboard-help td {
+  padding: 5px 0;
+  vertical-align: middle;
+}
+
+#keyboard-help td:first-child {
+  white-space: nowrap;
+  padding-right: 16px;
+  color: var(--muted);
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  font-family: inherit;
+  font-size: 0.8rem;
+}
+
+#keyboard-help-close {
+  margin-top: 16px;
+  padding: 6px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+#keyboard-help-close:hover {
+  background: var(--accent-dark);
+}

@@ -19,6 +19,16 @@ export class KeyboardNav {
 
   bind() {
     document.addEventListener("keydown", (e) => this.#onKeyDown(e));
+
+    const dialog = document.querySelector("#keyboard-help");
+    document.querySelector("#keyboard-help-close")?.addEventListener("click", () => dialog?.close());
+    dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+  }
+
+  #toggleHelp() {
+    const dialog = document.querySelector("#keyboard-help");
+    if (!dialog) return;
+    dialog.open ? dialog.close() : dialog.showModal();
   }
 
   #onKeyDown(e) {
@@ -27,10 +37,14 @@ export class KeyboardNav {
     const inInput = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 
     if (inInput) {
-      if (e.key === "Escape") {
-        document.activeElement.blur();
-      }
+      if (e.key === "Escape") document.activeElement.blur();
       return;
+    }
+
+    if (e.key === "?" || e.key === "Escape") {
+      const dialog = document.querySelector("#keyboard-help");
+      if (e.key === "Escape" && dialog?.open) { dialog.close(); return; }
+      if (e.key === "?") { e.preventDefault(); this.#toggleHelp(); return; }
     }
 
     // modifier key 付きは無視
