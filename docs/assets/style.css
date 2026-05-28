@@ -32,37 +32,22 @@ body {
 /* ── Header ────────────────────────────────────────────────── */
 
 .site-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  padding: 0 20px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  background: var(--panel);
+  background: var(--panel) url("./images/header.webp") center / contain no-repeat;
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.site-header h1 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-}
-
-.site-header p {
-  margin: 0 0 0 12px;
-  opacity: 0.55;
-  font-size: 0.82rem;
-  color: var(--muted);
+  min-height: 140px;
 }
 
 .site-header > div {
-  display: flex;
-  align-items: baseline;
-  gap: 0;
+  /* image is the title — hide text visually, keep for screen readers */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 /* ── Layout ─────────────────────────────────────────────────── */
