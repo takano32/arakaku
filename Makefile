@@ -96,21 +96,37 @@ extract-numbers:
 #   data-raw/アラカク選手名鑑.numbers
 #
 # Canonical CSVs (fighters, events, bouts, …) are restored from git.
+#
+# generate-stage1: raw data ingestion (Numbers + crawl cache → base CSVs)
+#   extract_numbers   → numbers_*.csv
+#   archive_metadata  → archives/youtube.csv, archives/note.csv
+#   generate_articles → articles.csv  (must precede build_source_documents)
+#   build_source_documents → source_documents.csv, source_mentions.csv
+#   reorder_data      → stable row order for all CSVs
+#
+# generate-stage2: derivation (stage1 CSVs → derived CSVs)
+#   generate_promotions   → promotions.csv
+#   generate_titles       → titles.csv
+#   generate_aliases      → aliases.csv
+#   generate_video_links  → video_links.csv
+#   generate_article_links → article_links.csv
 # ──────────────────────────────────────────────────────────────────
-.PHONY: generate-derived-csvs generate-articles regenerate-csvs rebuild
+.PHONY: generate-stage1 generate-stage2 regenerate-csvs rebuild
 
-generate-derived-csvs:
+generate-stage1:
+	python scripts/extract_numbers.py
+	python scripts/archive_metadata.py
+	python scripts/generate_articles.py
+	python scripts/build_source_documents.py
+	python scripts/reorder_data.py
+
+generate-stage2:
 	python scripts/generate_promotions.py
 	python scripts/generate_titles.py
 	python scripts/generate_aliases.py
 	python scripts/generate_video_links.py
 	python scripts/generate_article_links.py
 
-# generate_articles.py must run before build-sources because build_source_documents.py
-# reads articles.csv to discover which note HTML files to process.
-regenerate-csvs: extract-numbers archive-metadata generate-articles build-sources reorder-data generate-derived-csvs
-
-generate-articles:
-	python scripts/generate_articles.py
+regenerate-csvs: generate-stage1 generate-stage2
 
 rebuild: clean-generated-csvs clean-generated regenerate-csvs check
