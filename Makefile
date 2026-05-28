@@ -41,6 +41,9 @@ clean-generated-csvs:
 	rm -f data-src/video_links.csv
 	rm -f data-src/aliases.csv
 	rm -f data-src/articles.csv
+	rm -f data-src/promotions.csv
+	rm -f data-src/titles.csv
+	rm -f data-src/article_links.csv
 
 # ──────────────────────────────────────────────────────────────────
 # Source crawl pipeline (requires network / local cache in tmp/)
@@ -97,9 +100,12 @@ extract-numbers:
 .PHONY: generate-derived-csvs regenerate-csvs rebuild
 
 generate-derived-csvs:
+	python scripts/generate_promotions.py
+	python scripts/generate_titles.py
 	python scripts/generate_articles.py
 	python scripts/generate_aliases.py
 	python scripts/generate_video_links.py
+	python scripts/generate_article_links.py
 
 regenerate-csvs: extract-numbers archive-metadata build-sources reorder-data generate-derived-csvs
 
