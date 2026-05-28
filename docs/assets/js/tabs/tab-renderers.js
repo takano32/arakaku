@@ -143,7 +143,7 @@ export class TabRenderers {
         <h2>${navigation.boutMatchup(b)}</h2>
         <p class="meta">
           ${navigation.eventLink(b.event_id, repo.eventName(b.event_id))} / ${escapeHtml(b.division ?? "")}
-          ${b.numbers_records?.length ? `<span class="video-badge">名鑑確認済み</span>` : ""}
+          ${b.numbers_records?.length ? `<span class="video-badge">名鑑</span>` : ""}
         </p>
         ${hasResult ? `<p class="result">${summary} ${escapeHtml(resultLine)}</p>` : ""}
         ${b.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(b.title.note)}</p>` : ""}
@@ -181,8 +181,8 @@ export class TabRenderers {
         </h2>
         <p class="meta">
           ${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}
-          ${nd ? `<span class="video-badge">名鑑確認済み</span>` : ""}
-          ${od ? `<span class="video-badge official-badge">公式確認済み</span>` : ""}
+          ${nd ? `<span class="video-badge">名鑑</span>` : ""}
+          ${od ? `<span class="video-badge official-badge">公式</span>` : ""}
         </p>
         ${f.summary ? `<p class="fighter-summary">${escapeHtml(f.summary)}</p>` : ""}
         ${components.definitionList([
@@ -228,7 +228,7 @@ export class TabRenderers {
         <h2>${escapeHtml(e.name)}</h2>
         <p class="meta">
           ${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}
-          ${od ? `<span class="video-badge official-badge">公式データあり</span>` : ""}
+          ${od ? `<span class="video-badge official-badge">公式</span>` : ""}
         </p>
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
         ${od?.champion ? `
