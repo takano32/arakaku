@@ -40,16 +40,16 @@ body {
 
 .site-header > div {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 6px 20px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 20px;
   background: rgba(255, 255, 255, 0.88);
   border-top: 1px solid var(--border);
 }
 
 .site-header h1 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: 0.02em;
@@ -57,7 +57,7 @@ body {
 
 .site-header p {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: var(--muted);
 }
 
