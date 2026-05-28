@@ -6,29 +6,64 @@ export class DataRepository extends BaseRepository {
   constructor(data) {
     super(data);
     this.enricher = new DataEnricher(this);
+    this.#richEvents = null;
+    this.#richPromotions = null;
     this.#richFighters = null;
     this.#richBouts = null;
     this.#richVideos = null;
     this.#richArticles = null;
+    this.#richTitles = null;
     this.#sourceDocuments = null;
+    this.#richFighterSnapshots = null;
+    this.#richBoutParticipants = null;
+    this.#richVideoLinks = null;
+    this.#richArticleLinks = null;
+    this.#richSourceMentions = null;
+    this.#richSourceEventReferences = null;
+    this.#richSourceBoutReferences = null;
+    this.#richSourceVideoReferences = null;
   }
 
+  #richEvents;
+  #richPromotions;
   #richFighters;
   #richBouts;
   #richVideos;
   #richArticles;
+  #richTitles;
   #sourceDocuments;
+  #richFighterSnapshots;
+  #richBoutParticipants;
+  #richVideoLinks;
+  #richArticleLinks;
+  #richSourceMentions;
+  #richSourceEventReferences;
+  #richSourceBoutReferences;
+  #richSourceVideoReferences;
 
   // Collection Accessors (Overriding with Rich and Sorted logic)
   get events() { return [...super.events].reverse(); }
+  get richEvents() {
+    if (this.#richEvents) return this.#richEvents;
+    this.#richEvents = super.events.map(e => this.enricher.enrichEvent(e)).reverse();
+    return this.#richEvents;
+  }
+
+  get promotions() { return super.promotions; }
+  get richPromotions() {
+    if (this.#richPromotions) return this.#richPromotions;
+    this.#richPromotions = super.promotions.map(p => this.enricher.enrichPromotion(p));
+    return this.#richPromotions;
+  }
+
   get fighters() { return super.fighters; } // Base fighters list
 
   get richFighters() {
     if (this.#richFighters) return this.#richFighters;
-    
+
     const canonical = this.fighters;
     const fighterIds = new Set(canonical.map(f => f.fighter_id));
-    
+
     // Discover fighters that only exist in Numbers matches
     const discovered = [];
     for (const match of this.numbersNameMatches) {
@@ -38,7 +73,7 @@ export class DataRepository extends BaseRepository {
         fighterIds.add(fid);
       }
     }
-    
+
     const raw = [...canonical, ...discovered];
     this.#richFighters = raw.map(f => this.enricher.enrichFighter(f));
     return this.#richFighters;
@@ -82,8 +117,64 @@ export class DataRepository extends BaseRepository {
   }
 
   get sourceMentions() { return [...super.sourceMentions].reverse(); }
+  get richSourceMentions() {
+    if (this.#richSourceMentions) return this.#richSourceMentions;
+    this.#richSourceMentions = super.sourceMentions.map(m => this.enricher.enrichSourceMention(m)).reverse();
+    return this.#richSourceMentions;
+  }
+
+  get fighterSnapshots() { return super.fighterSnapshots; }
+  get richFighterSnapshots() {
+    if (this.#richFighterSnapshots) return this.#richFighterSnapshots;
+    this.#richFighterSnapshots = super.fighterSnapshots.map(s => this.enricher.enrichFighterSnapshot(s));
+    return this.#richFighterSnapshots;
+  }
+
+  get boutParticipants() { return super.boutParticipants; }
+  get richBoutParticipants() {
+    if (this.#richBoutParticipants) return this.#richBoutParticipants;
+    this.#richBoutParticipants = super.boutParticipants.map(p => this.enricher.enrichBoutParticipant(p));
+    return this.#richBoutParticipants;
+  }
+
+  get videoLinks() { return super.videoLinks; }
+  get richVideoLinks() {
+    if (this.#richVideoLinks) return this.#richVideoLinks;
+    this.#richVideoLinks = super.videoLinks.map(l => this.enricher.enrichVideoLink(l));
+    return this.#richVideoLinks;
+  }
+
+  get articleLinks() { return super.articleLinks; }
+  get richArticleLinks() {
+    if (this.#richArticleLinks) return this.#richArticleLinks;
+    this.#richArticleLinks = super.articleLinks.map(l => this.enricher.enrichArticleLink(l));
+    return this.#richArticleLinks;
+  }
+
+  get sourceEventReferences() { return super.sourceEventReferences; }
+  get richSourceEventReferences() {
+    if (this.#richSourceEventReferences) return this.#richSourceEventReferences;
+    this.#richSourceEventReferences = super.sourceEventReferences.map(r => this.enricher.enrichSourceEventReference(r));
+    return this.#richSourceEventReferences;
+  }
+
+  get sourceBoutReferences() { return super.sourceBoutReferences; }
+  get richSourceBoutReferences() {
+    if (this.#richSourceBoutReferences) return this.#richSourceBoutReferences;
+    this.#richSourceBoutReferences = super.sourceBoutReferences.map(r => this.enricher.enrichSourceBoutReference(r));
+    return this.#richSourceBoutReferences;
+  }
+
+  get sourceVideoReferences() { return super.sourceVideoReferences; }
+  get richSourceVideoReferences() {
+    if (this.#richSourceVideoReferences) return this.#richSourceVideoReferences;
+    this.#richSourceVideoReferences = super.sourceVideoReferences.map(r => this.enricher.enrichSourceVideoReference(r));
+    return this.#richSourceVideoReferences;
+  }
 
   // Rich Finders
+  findRichEvent(id) { return this.richEvents.find(e => e.event_id === id); }
+  findRichPromotion(id) { return this.richPromotions.find(p => p.promotion_id === id); }
   findRichBout(id) { return this.richBouts.find(b => b.bout_id === id); }
   findRichFighter(id) { return this.richFighters.find(f => f.fighter_id === id); }
   findRichArticle(id) { return this.richArticles.find(a => a.article_id === id); }
@@ -100,14 +191,14 @@ export class DataRepository extends BaseRepository {
 
   // Relationship Methods
   sourceDocumentForArticle(articleId) {
-    return this.sourceDocuments?.find(d => 
+    return this.sourceDocuments?.find(d =>
       d.source_type === "note_article" && (d.source_ref_id === articleId || d.source_id === `note:${articleId}`)
     );
   }
 
   sourceDocumentForVideo(video) {
-    return this.sourceDocuments?.find(d => 
-      d.source_type === "youtube_description" && 
+    return this.sourceDocuments?.find(d =>
+      d.source_type === "youtube_description" &&
       (d.source_ref_id === video.video_id || d.source_id === `youtube_description:${video.video_id}` || d.url === video.url)
     );
   }
@@ -184,12 +275,27 @@ export class DataRepository extends BaseRepository {
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
   }
 
-  #richTitles = null;
-
   get richTitles() {
     if (this.#richTitles) return this.#richTitles;
+
+    // Build source_video_id → event_id map from bouts.inferred_from_video_id
+    const videoEventMap = new Map();
+    for (const bout of super.bouts) {
+      if (bout.inferred_from_video_id && bout.event_id) {
+        videoEventMap.set(bout.inferred_from_video_id, bout.event_id);
+      }
+    }
+
     this.#richTitles = this.titles.map((title) => {
       const lineage = (title.lineage ?? []).map((r) => ({ ...r }));
+
+      // Derive won_at from source_video_id via bouts cross-reference
+      for (const reign of lineage) {
+        if (!reign.won_at_event_id && reign.source_video_id) {
+          const eventId = videoEventMap.get(reign.source_video_id);
+          if (eventId) reign.won_at_event_id = eventId;
+        }
+      }
 
       // Forward pass: derive lost_at from next reign's won_at
       for (let i = 0; i < lineage.length - 1; i++) {

@@ -50,6 +50,17 @@ export class DataEnricher {
     return rich;
   }
 
+  enrichEvent(event) { return event; }
+  enrichPromotion(promotion) { return promotion; }
+  enrichFighterSnapshot(snapshot) { return snapshot; }
+  enrichBoutParticipant(participant) { return participant; }
+  enrichVideoLink(link) { return link; }
+  enrichArticleLink(link) { return link; }
+  enrichSourceMention(mention) { return mention; }
+  enrichSourceEventReference(ref) { return ref; }
+  enrichSourceBoutReference(ref) { return ref; }
+  enrichSourceVideoReference(ref) { return ref; }
+
   enrichBout(bout) {
     const rich = { ...bout };
     const event = this.repo.findEvent(bout.event_id);
