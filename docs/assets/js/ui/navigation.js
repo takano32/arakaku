@@ -41,7 +41,7 @@ export class Navigator {
       searchInput.value = this.ctx.state.query;
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   jumpToFighter(fighterId, fighterNameValue) {
@@ -58,7 +58,7 @@ export class Navigator {
       searchInput.value = this.ctx.state.query;
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   boutMatchup(bout) {

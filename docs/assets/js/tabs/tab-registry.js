@@ -26,6 +26,7 @@ export class TabRendererRegistry {
   #prevCounts = new Map(); // tabId → 前回の items.length
   #prevRepoRefs = new Map(); // tabId → 前回の DataRepository 参照
   #prevFilters = new Map(); // tabId → 前回のフィルタ文字列
+  #prevFocusKey = ""; // フォーカス変化の検出用
 
   // 検索クエリ・フォーカス・フィルタ等、アイテム一覧に影響する state を文字列化
   #filterFingerprint() {
@@ -34,10 +35,19 @@ export class TabRendererRegistry {
     return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType].join("\0");
   }
 
+  // フォーカス（ジャンプ）が変化したか
+  #focusKey() {
+    const s = this.#ctx?.state;
+    if (!s) return "";
+    return [s.focusFighterId, s.focusEventId].join("\0");
+  }
+
   renderTo(container, tabId) {
     const repoRef = this.#ctx?.repo ?? null;
     const fingerprint = this.#filterFingerprint();
 
+    const focusKey = this.#focusKey();
+    const focusChanged = focusKey !== this.#prevFocusKey;
     const tabChanged = tabId !== this.#currentTabId;
     const repoChanged = repoRef !== this.#prevRepoRefs.get(tabId);
     const filterChanged = fingerprint !== this.#prevFilters.get(tabId);
@@ -72,10 +82,12 @@ export class TabRendererRegistry {
       this.#currentTabId = tabId;
     } else {
       list.refreshItems(items);
+      if (focusChanged) window.scrollTo({ top: 0, behavior: "instant" });
     }
 
     this.#prevCounts.set(tabId, items.length);
     this.#prevRepoRefs.set(tabId, repoRef);
     this.#prevFilters.set(tabId, fingerprint);
+    this.#prevFocusKey = focusKey;
   }
 }
