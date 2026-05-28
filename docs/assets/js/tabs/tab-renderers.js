@@ -373,7 +373,7 @@ export class TabRenderers {
 
   titles() {
     const { query, repo } = this.ctx;
-    const list = repo.titles
+    const list = repo.richTitles
       .filter((t) => query.titleMatches(t))
       .sort(
         (a, b) =>

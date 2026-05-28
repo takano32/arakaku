@@ -152,7 +152,7 @@ export class DataRepository extends BaseRepository {
       .sort((a, b) => String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja"));
   }
 
-  titlesForPromotion(promotionId) { return this.findManyByField("titles", "promotion_id", promotionId); }
+  titlesForPromotion(promotionId) { return this.richTitles.filter(t => t.promotion_id === promotionId); }
   videoLinksForVideo(videoId) { return this.findManyByField("videoLinks", "video_id", videoId); }
 
   // Statistics Methods
@@ -182,6 +182,31 @@ export class DataRepository extends BaseRepository {
     return this.richBouts
       .filter(b => b.event_id === eventId)
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
+  }
+
+  #richTitles = null;
+
+  get richTitles() {
+    if (this.#richTitles) return this.#richTitles;
+    this.#richTitles = this.titles.map((title) => {
+      const lineage = (title.lineage ?? []).map((r) => ({ ...r }));
+
+      // Forward pass: derive lost_at from next reign's won_at
+      for (let i = 0; i < lineage.length - 1; i++) {
+        if (!lineage[i].lost_at_event_id && lineage[i + 1].won_at_event_id) {
+          lineage[i].lost_at_event_id = lineage[i + 1].won_at_event_id;
+        }
+      }
+      // Backward pass: derive won_at from previous reign's lost_at
+      for (let i = lineage.length - 1; i > 0; i--) {
+        if (!lineage[i].won_at_event_id && lineage[i - 1].lost_at_event_id) {
+          lineage[i].won_at_event_id = lineage[i - 1].lost_at_event_id;
+        }
+      }
+
+      return { ...title, lineage };
+    });
+    return this.#richTitles;
   }
 
   titleDisplayName(title) {
