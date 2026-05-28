@@ -411,7 +411,14 @@ JSON_BUILDERS = {
     "videos.json": build_videos,
     "video_links.json": build_video_links,
     "aliases.json": build_aliases,
-    "source_documents.json": lambda: rows("source_documents.csv"),
+    "source_documents.json": lambda: [
+        {k: v for k, v in row.items() if k != "content_text"}
+        for row in rows("source_documents.csv")
+    ],
+    "source_document_bodies.json": lambda: [
+        {"source_id": row["source_id"], "content_text": row.get("content_text", "")}
+        for row in rows("source_documents.csv")
+    ],
     "source_mentions.json": lambda: rows("source_mentions.csv"),
     "numbers_fighters.json": build_numbers_fighters,
     "numbers_name_matches.json": lambda: rows("numbers_name_matches.csv"),

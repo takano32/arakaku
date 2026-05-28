@@ -352,6 +352,17 @@ def validate_source_documents(data: list[Any]) -> None:
         if not row.get("content_hash"):
             add_error(f"source_documents.json[{index}]: missing content_hash")
 
+def validate_source_document_bodies(data: list[Any]) -> None:
+    seen: set[str] = set()
+    for index, row in enumerate(data):
+        source_id = row.get("source_id")
+        if not source_id:
+            add_error(f"source_document_bodies.json[{index}]: missing source_id")
+            continue
+        if source_id in seen:
+            add_error(f"source_document_bodies.json[{index}]: duplicate source_id: {source_id}")
+        seen.add(source_id)
+
 def validate_source_mentions(data: list[Any]) -> None:
     seen = set()
     for index, row in enumerate(data):
@@ -452,7 +463,7 @@ def main() -> int:
         'database.json', 'article_links.json', 'titles.json', 'title_reigns.json',
         'bout_participants.json', 'fighter_snapshots.json', 'videos.json',
         'video_links.json', 'aliases.json', 'metadata.json',
-        'source_documents.json', 'source_mentions.json',
+        'source_documents.json', 'source_document_bodies.json', 'source_mentions.json',
         'numbers_fighters.json', 'numbers_name_matches.json',
         'numbers_fight_records.json',
         'youtube_archives.json', 'note_archives.json',
@@ -497,6 +508,7 @@ def main() -> int:
     validate_video_links(video_links, video_ids, event_ids, bout_ids, fighter_ids, promotion_ids, title_ids)
     validate_article_links(article_links, article_ids, event_ids, bout_ids, fighter_ids, snapshot_ids, promotion_ids, title_ids, reign_ids, video_ids)
     validate_source_documents(load_json('source_documents.json', []))
+    validate_source_document_bodies(load_json('source_document_bodies.json', []))
     validate_source_mentions(load_json('source_mentions.json', []))
     validate_source_references(load_json('source_event_references.json', []), 'source_event_references.json', 'event_id', event_ids)
     validate_source_references(load_json('source_bout_references.json', []), 'source_bout_references.json', 'bout_id', bout_ids)

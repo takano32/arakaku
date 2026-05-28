@@ -65,6 +65,7 @@ export class BaseRepository {
   get videos() { return this.data.videos ?? []; }
   get articles() { return this.data.articles ?? []; }
   get sourceDocuments() { return this.data.sourceDocuments ?? []; }
+  get sourceDocumentBodies() { return this.data.sourceDocumentBodies ?? []; }
   get sourceMentions() { return this.data.sourceMentions ?? []; }
 
   // Relationship and Metadata tables

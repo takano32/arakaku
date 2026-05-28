@@ -10,12 +10,14 @@ export class DataRepository extends BaseRepository {
     this.#richBouts = null;
     this.#richVideos = null;
     this.#richArticles = null;
+    this.#sourceDocuments = null;
   }
 
   #richFighters;
   #richBouts;
   #richVideos;
   #richArticles;
+  #sourceDocuments;
 
   // Collection Accessors (Overriding with Rich and Sorted logic)
   get events() { return [...super.events].reverse(); }
@@ -63,7 +65,22 @@ export class DataRepository extends BaseRepository {
     return this.#richArticles;
   }
 
-  get sourceDocuments() { return [...super.sourceDocuments].reverse(); }
+  get sourceDocuments() {
+    if (this.#sourceDocuments) return this.#sourceDocuments;
+    const docs = [...super.sourceDocuments].reverse();
+    const bodies = this.data.sourceDocumentBodies;
+    if (!bodies?.length) {
+      this.#sourceDocuments = docs;
+      return docs;
+    }
+    const bodyMap = this.index("sourceDocumentBodies:source_id", bodies, b => b.source_id);
+    this.#sourceDocuments = docs.map(d => {
+      const body = bodyMap.get(d.source_id);
+      return body ? { ...d, content_text: body.content_text } : d;
+    });
+    return this.#sourceDocuments;
+  }
+
   get sourceMentions() { return [...super.sourceMentions].reverse(); }
 
   // Rich Finders

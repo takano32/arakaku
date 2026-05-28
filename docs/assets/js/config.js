@@ -17,6 +17,7 @@ export const DATA_FILES = {
   fighterSnapshots: "./data/fighter_snapshots.json",
   aliases: "./data/aliases.json",
   sourceDocuments: "./data/source_documents.json",
+  sourceDocumentBodies: "./data/source_document_bodies.json",
   sourceMentions: "./data/source_mentions.json",
   numbersFighters: "./data/numbers_fighters.json",
   numbersNameMatches: "./data/numbers_name_matches.json",

@@ -51,6 +51,7 @@ function validateTabRendererMethods() {
 function validateParserFallbacks() {
   assert(Array.isArray(fallbackForDataKey("bouts")), "bouts fallback must be an array");
   assert(Array.isArray(fallbackForDataKey("sourceDocuments")), "sourceDocuments fallback must be an array");
+  assert(Array.isArray(fallbackForDataKey("sourceDocumentBodies")), "sourceDocumentBodies fallback must be an array");
   assert(Array.isArray(fallbackForDataKey("sourceMentions")), "sourceMentions fallback must be an array");
   assert(!Array.isArray(fallbackForDataKey("database")), "database fallback must be an object");
   assert(!Array.isArray(fallbackForDataKey("metadata")), "metadata fallback must be an object");
@@ -70,6 +71,7 @@ function validateLoadedData(data, repository) {
   assert(Array.isArray(data.titleReigns), "titleReigns must be an array");
   assert(Array.isArray(data.videoLinks), "videoLinks must be an array");
   assert(Array.isArray(data.sourceDocuments), "sourceDocuments must be an array");
+  assert(Array.isArray(data.sourceDocumentBodies), "sourceDocumentBodies must be an array");
   assert(Array.isArray(data.sourceMentions), "sourceMentions must be an array");
   assert(typeof data.metadata === "object" && !Array.isArray(data.metadata), "metadata must be an object");
   assert(typeof data.database === "object" && !Array.isArray(data.database), "database must be an object");
@@ -182,6 +184,7 @@ async function main() {
     assert(initialState.loadedDataKeys.has(key), `initial load must include core key: ${key}`);
   }
   assert(!initialState.loadedDataKeys.has("database"), "initial load must not include database.json");
+  assert(!initialState.loadedDataKeys.has("sourceDocumentBodies"), "initial load must not include sourceDocumentBodies (lazy-loaded on sources tab)");
 
   const state = makeTestState();
   await new DataLoader(state, {
