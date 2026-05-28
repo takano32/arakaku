@@ -172,18 +172,29 @@ export class TabRenderers {
   renderFighterCard(f) {
     const { components, sources, related, repo } = this.ctx;
     const nd = f.numbers_data;
+    const od = f.official_data;
     return `
       <article class="card record-card fighter-card">
-        <h2>${escapeHtml(f.display_name)}</h2>
+        <h2>
+          ${escapeHtml(f.display_name)}
+          ${od?.nickname ? `<span class="fighter-nickname">「${escapeHtml(od.nickname)}」</span>` : ""}
+        </h2>
         <p class="meta">
           ${escapeHtml(f.main_division ?? "")} / ${escapeHtml(repo.promotionName(f.main_promotion_id))}
           ${nd ? `<span class="video-badge">名鑑確認済み</span>` : ""}
+          ${od ? `<span class="video-badge official-badge">公式確認済み</span>` : ""}
         </p>
         ${f.summary ? `<p class="fighter-summary">${escapeHtml(f.summary)}</p>` : ""}
         ${components.definitionList([
           ["所属", f.profile?.gym],
           ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
+          ["国籍", f.profile?.nationality],
         ])}
+        ${od?.wins != null ? `
+          <div class="official-stats-block">
+            <span class="official-stat">${od.wins}勝 ${od.losses}敗${od.draws ? ` ${od.draws}分` : ""}</span>
+          </div>
+        ` : ""}
         ${nd ? `
           <div class="numbers-stats-block">
             <span class="numbers-stat">通算: ${escapeHtml(joinPresent([nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "", nd.stats?.wins ? `${nd.stats.wins}勝` : "", nd.stats?.losses ? `${nd.stats.losses}負` : ""], " "))}</span>
@@ -211,11 +222,21 @@ export class TabRenderers {
 
   renderEventCard(e) {
     const { navigation, components, sources, related, repo } = this.ctx;
+    const od = e.official_data;
     return `
       <article class="card record-card event-card">
         <h2>${escapeHtml(e.name)}</h2>
-        <p class="meta">${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}</p>
+        <p class="meta">
+          ${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}
+          ${od ? `<span class="video-badge official-badge">公式データあり</span>` : ""}
+        </p>
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
+        ${od?.champion ? `
+          <div class="official-stats-block">
+            <span class="official-stat">優勝: ${escapeHtml(od.champion)}</span>
+            ${od.runner_up ? `<span class="official-stat">準優勝: ${escapeHtml(od.runner_up)}</span>` : ""}
+          </div>
+        ` : ""}
         ${sources.renderVideoLinks("event", e.event_id, repo.videoIdsLinkedToEventBouts(e.event_id))}
         ${related.renderEventBouts(e.event_id)}
         ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e))}

@@ -859,6 +859,40 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   background: #fefdf0;
 }
 
+/* ── Official data ───────────────────────────────────────────── */
+
+.fighter-nickname {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 0.3em;
+}
+
+.official-badge {
+  background: #edf7f0;
+  color: #2a7a4b;
+  border-color: #b2ddc4;
+}
+
+.official-stats-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+  font-size: 0.88rem;
+}
+
+.official-stat {
+  display: inline-block;
+  padding: 3px 9px;
+  background: #edf7f0;
+  border-radius: var(--radius-nested);
+  border: 1px solid #b2ddc4;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #2a7a4b;
+}
+
 /* ── Source card ─────────────────────────────────────────────── */
 
 .source-card details {
