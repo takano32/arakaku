@@ -75,6 +75,88 @@ note_url: 64
 
 ## 直近で追加・整備したもの
 
+### Phase 10: 公式データ統合・UI改善・キーボードナビゲーション (2026-05-29)
+
+#### 公式データパイプライン
+
+`kobayashi856/arakaku-site` リポジトリから公式サイトデータを取得し、enrichment に使う体制を整えました。
+
+- `scripts/download_official_data.sh`: GitHub API 経由で `tmp/arakaku-site/` にダウンロード（`make cache-sources` に組み込み）
+- `scripts/generate_official_csvs.py`: `tmp/arakaku-site/src/data/*.json` → `data-src/official_*.csv`（stage-1）
+- `scripts/build_official_json.py`: `data-src/official_*.csv` → `docs/data/official_players.json`, `docs/data/official_tournaments.json`（`make build-official`）
+- enrichment は **クライアントサイドのみ**（`data-enricher.js`）。`build_json.py` は一切変更しない。
+
+生成 CSV:
+
+```text
+data-src/official_players.csv
+data-src/official_tournaments.csv
+data-src/official_matches.csv
+data-src/official_history.csv
+```
+
+#### クライアントサイド enrichment 拡張
+
+`data-enricher.js` で `richFighter`, `richFighterSnapshot`, `richBoutParticipant`, `richEvent` に公式データを付与するようにしました。
+
+- 選手カード: ニックネーム・国籍・通算戦績（勝/敗）・「公式」バッジ
+- 大会カード: champion/runner_up・「公式」バッジ
+- バッジ表記統一: "名鑑確認済み" → "名鑑"、"公式確認済み" → "公式"
+
+#### ビジュアル改善
+
+- バナーヘッダ復活: `header.webp` をライトテーマに合わせて表示
+- ヘッダタイトル: フォント大きめ・2行分割・背景透明化
+- サマリーカード: コンパクトなインラインピル型レイアウトに変更
+
+#### スクロール挙動修正
+
+複数の scroll-to-top バグを修正しました:
+
+- タブ切り替えボタンのクリックでスクロールしないよう `renderTabs()` を修正（DOM 再構築をやめアクティブクラスのみ更新）
+- `VirtualList.setItems()` から自動 scroll-to-top を削除
+- ジャンプナビゲーション（選手リンク/大会リンク）の `scrollTo` を `state.patch()` 後に移動して DOM 変更によるキャンセルを防止
+- フォーカス変化検出を `TabRendererRegistry` に追加し、`refreshItems` パスでもスクロールするように対応
+
+#### 検索UIの改善
+
+- 検索ボックス右端に目立つ `✕` ボタン（テキスト入力中のみ表示）
+- Escape キーでもクリア
+- ネイティブ webkit cancel ボタンは非表示にして競合を防止
+
+#### URLパーマリンク
+
+`docs/assets/js/core/url-sync.js` を新設し、アプリ状態を URL クエリ文字列に同期しました。
+
+- `?tab=fighters&q=山本&fighter=waku` のような URL で状態を共有・復元できる
+- `history.replaceState` で URL 更新（履歴は増やさない）
+- 対応パラメータ: `tab`, `q`, `fighter`, `event`, `promotion`, `division`, `mention`
+
+#### キーボードナビゲーション
+
+`docs/assets/js/ui/keyboard-nav.js` を新設し、Vim スタイルのキーボード操作を実装しました。
+
+| キー | 動作 |
+|------|------|
+| `j` / `↓` | 次のアイテムへ（仮想リストカーソル移動、上端揃え） |
+| `k` / `↑` | 前のアイテムへ |
+| `g` / `G` | 先頭 / 末尾へ |
+| `Enter` | フォーカスアイテムの最初のボタンをクリック |
+| `o` | フォーカスアイテムの詳細を展開/折りたたむ |
+| `h` / `←` | 前のタブへ（循環） |
+| `l` / `→` | 次のタブへ（循環） |
+| `1`〜`6` | タブ直接切り替え |
+| `c` | 現在の URL をコピー（トースト表示） |
+| `Space` / `Shift+Space` | 半ページスクロール |
+| `r` | ページ再読み込み |
+| `/` | 検索ボックスにフォーカス |
+| `?` | ヘルプダイアログ表示 |
+| `Esc` | 検索ボックスをブラー / ヘルプを閉じる |
+
+仮想リスト (`VirtualList`) にカーソルインデックス管理を追加。`align: "start"` で上下移動を上端揃えに統一。タブ切り替え時はカーソルリセット＋スクロールトップ。
+
+---
+
 ### Phase 9: クライアントキャッシュ・CDNライブラリ・データ品質 (2026-05-28)
 
 #### Service Worker + Stale-While-Revalidate
@@ -447,10 +529,11 @@ make clean-generated
 優先度順のおすすめです。
 
 1. `source_documents.json` の軽量化
-2. Pages 上で archive 補助表示・検索・出典詳細トグルを確認する
+2. 公式データの選手マッチング精度向上（現在は display_name 一致、77人中71人がマッチ）
 3. Numbers データの更なる突合（対戦カードの不一致検出など）
 4. 王座変遷の精度向上
 5. UI のアクセシビリティ改善
+6. キーボードナビ: `u` で前の状態に戻る（ナビゲーション履歴）
 
 ---
 

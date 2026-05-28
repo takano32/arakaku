@@ -46,6 +46,76 @@ Do not edit generated JSON directly. Always edit source CSVs or scripts, then re
 
 ---
 
+## Official data pipeline
+
+A second data source exists alongside the Numbers/crawl pipeline: official site data fetched from `kobayashi856/arakaku-site`.
+
+### Download
+
+```bash
+make download-official-data
+```
+
+Downloads JSON files from the official site GitHub repo into:
+
+```text
+tmp/arakaku-site/
+```
+
+This runs as part of `make cache-sources` (sequential, after crawl).
+
+### Generate official CSVs (stage 1)
+
+```bash
+make generate-stage1
+```
+
+`scripts/generate_official_csvs.py` reads `tmp/arakaku-site/src/data/*.json` and writes:
+
+```text
+data-src/official_players.csv
+data-src/official_tournaments.csv
+data-src/official_matches.csv
+data-src/official_history.csv
+```
+
+These are stage-1 outputs (raw ingestion from `tmp/`), not derived from other CSVs.
+
+### Build official JSON
+
+```bash
+make build-official
+```
+
+`scripts/build_official_json.py` reads `data-src/official_*.csv` and writes:
+
+```text
+docs/data/official_players.json
+docs/data/official_tournaments.json
+```
+
+These are loaded as ENRICHMENT_DATA_KEYS (`officialPlayers`, `officialTournaments`).
+
+### Client-side enrichment (CRITICAL)
+
+**Never add official data to `scripts/build_json.py`.** Enrichment from official data must happen exclusively in `docs/assets/js/core/data-enricher.js` at runtime.
+
+The enricher builds indexes in lazy getters:
+
+- `#officialPlayers`: `Map<display_name → officialPlayer>`
+- `#officialTournaments`: `Map<normalized_event_id → tournament>`
+
+And calls `#applyOfficialPlayer(rich, op)` to merge:
+
+- `profile.nickname`, `profile.nationality`, `profile.name_kana`
+- `profile.wins`, `profile.losses`, `profile.draws`
+- `summary` (bio fallback)
+- `official_data` (raw object for renderer use)
+
+Enrichment is applied to: `enrichFighter`, `enrichFighterSnapshot`, `enrichBoutParticipant`, `enrichEvent`.
+
+---
+
 ## Critical rules
 
 ### Do not edit generated JSON directly
@@ -86,6 +156,14 @@ __pycache__/
 ```
 
 Only `.gitkeep` files under `tmp/` should be tracked.
+
+### Do not enrich via build_json.py
+
+Official data enrichment (from `official_players.json`, `official_tournaments.json`, or any future official source) must NOT be added to `scripts/build_json.py`.
+
+All enrichment must happen client-side in `docs/assets/js/core/data-enricher.js`.
+
+**Why:** build_json.py outputs are canonical CSV facts only. Enrichment at build time couples the Python pipeline to the client data model and makes the JSON output non-reproducible from CSVs alone.
 
 ### Do not invent confirmed facts
 
@@ -594,6 +672,13 @@ Current viewer tabs:
 出典本文
 出典言及
 ```
+
+Current viewer features also include:
+
+- **URL permalink sync** (`docs/assets/js/core/url-sync.js`): state (tab, query, fighter focus, event focus, filters) is reflected in URL query params (`?tab=fighters&q=山本&fighter=waku`). On load, URL params restore state. Uses `history.replaceState`.
+- **Keyboard navigation** (`docs/assets/js/ui/keyboard-nav.js`): j/k move cursor through virtual list; h/l switch tabs; 1-6 jump to tab; g/G go to first/last; Enter activates focused item; o opens detail toggle; c copies URL; Space/Shift+Space scrolls half page; / focuses search; r reloads; ? opens help dialog.
+- **Search clear button**: visible `✕` button appears inside search input when text is present. Also cleared by Escape key.
+- **Official data badges**: "公式" badge on fighter/event cards when `official_data` is present. "名鑑" badge when Numbers data is confirmed.
 
 Current viewer behavior also includes:
 
