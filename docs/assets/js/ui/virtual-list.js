@@ -55,6 +55,10 @@ export class VirtualList {
     target?.click();
   }
 
+  getCursorEl() {
+    return this.#rowEls.get(this.#cursorIndex) ?? null;
+  }
+
   #updateCursorClass() {
     for (const [idx, row] of this.#rowEls) {
       row.classList.toggle("virtual-cursor", idx === this.#cursorIndex);

@@ -112,4 +112,8 @@ export class TabRendererRegistry {
   activateCursor() {
     this.#currentList()?.activateCursor();
   }
+
+  getCursorEl() {
+    return this.#currentList()?.getCursorEl() ?? null;
+  }
 }

@@ -25,6 +25,15 @@ export class KeyboardNav {
     dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
   }
 
+  #toast(msg) {
+    const el = document.createElement("div");
+    el.className = "keyboard-toast";
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("keyboard-toast--show"));
+    setTimeout(() => el.remove(), 2000);
+  }
+
   #switchToTab(tabId) {
     this.#state.patch({ tab: tabId, focusFighterId: "", focusEventId: "" });
     this.#dataLoader.loadForTab(tabId);
@@ -100,6 +109,30 @@ export class KeyboardNav {
       case "ArrowRight":
         e.preventDefault();
         this.#switchTabBy(1);
+        break;
+
+      case "o": {
+        e.preventDefault();
+        const row = this.#tabRegistry.getCursorEl();
+        row?.querySelector("details > summary, .record-detail-toggle button")?.click();
+        break;
+      }
+
+      case "c":
+        e.preventDefault();
+        navigator.clipboard?.writeText(location.href)
+          .then(() => this.#toast("URLをコピーしました"))
+          .catch(() => this.#toast("コピーに失敗しました"));
+        break;
+
+      case " ":
+        e.preventDefault();
+        window.scrollBy({ top: e.shiftKey ? -window.innerHeight * 0.6 : window.innerHeight * 0.6, behavior: "smooth" });
+        break;
+
+      case "r":
+        e.preventDefault();
+        location.reload();
         break;
 
       case "/":
