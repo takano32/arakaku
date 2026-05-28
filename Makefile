@@ -18,19 +18,20 @@ check: build validate test
 # ──────────────────────────────────────────────────────────────────
 # Clean targets
 #
-# clean-generated      : remove generated docs/data/*.json only
-# clean-generated-csvs : remove CSVs that are produced by scripts
-#                        (archives, source_documents, source_mentions,
-#                         numbers_*). Canonical/handcrafted CSVs are
-#                         NOT touched — they are the source of truth.
+# clean-generated        : remove generated docs/data/*.json only
+# clean-stage1-csvs      : remove stage1 outputs (numbers, archives,
+#                          source_documents, source_mentions, articles)
+# clean-stage2-csvs      : remove stage2 outputs (promotions, titles,
+#                          aliases, video_links, article_links)
+# clean-generated-csvs   : clean-stage1-csvs + clean-stage2-csvs
 # ──────────────────────────────────────────────────────────────────
-.PHONY: clean-generated clean-generated-csvs
+.PHONY: clean-generated clean-stage1-csvs clean-stage2-csvs clean-generated-csvs
 
 clean-generated:
 	rm -f docs/data/*.json
 	touch docs/data/.gitkeep
 
-clean-generated-csvs:
+clean-stage1-csvs:
 	rm -f data-src/archives/youtube.csv
 	rm -f data-src/archives/note.csv
 	rm -f data-src/source_documents.csv
@@ -38,12 +39,16 @@ clean-generated-csvs:
 	rm -f data-src/numbers_fighters.csv
 	rm -f data-src/numbers_name_matches.csv
 	rm -f data-src/numbers_fight_records.csv
-	rm -f data-src/video_links.csv
-	rm -f data-src/aliases.csv
 	rm -f data-src/articles.csv
+
+clean-stage2-csvs:
 	rm -f data-src/promotions.csv
 	rm -f data-src/titles.csv
+	rm -f data-src/aliases.csv
+	rm -f data-src/video_links.csv
 	rm -f data-src/article_links.csv
+
+clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 
 # ──────────────────────────────────────────────────────────────────
 # Source crawl pipeline (requires network / local cache in tmp/)
@@ -111,7 +116,7 @@ extract-numbers:
 #   generate_video_links  → video_links.csv
 #   generate_article_links → article_links.csv
 # ──────────────────────────────────────────────────────────────────
-.PHONY: generate-stage1 generate-stage2 regenerate-csvs rebuild
+.PHONY: generate-stage1 generate-stage2 regenerate-csvs rebuild rebuild-stage2
 
 generate-stage1:
 	python scripts/extract_numbers.py
@@ -130,3 +135,5 @@ generate-stage2:
 regenerate-csvs: generate-stage1 generate-stage2
 
 rebuild: clean-generated-csvs clean-generated regenerate-csvs check
+
+rebuild-stage2: clean-stage2-csvs clean-generated generate-stage2 check
