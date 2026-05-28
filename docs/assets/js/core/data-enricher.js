@@ -2,6 +2,37 @@
 export class DataEnricher {
   constructor(repo) {
     this.repo = repo;
+    this.#nameMatchIndex = null;
+    this.#fightRecordIndex = null;
+  }
+
+  #nameMatchIndex;
+  #fightRecordIndex;
+
+  // fighter_id → numbersNameMatch (matched or candidate)
+  get #nameMatches() {
+    if (this.#nameMatchIndex) return this.#nameMatchIndex;
+    this.#nameMatchIndex = new Map();
+    for (const m of this.repo.numbersNameMatches) {
+      if (m.matched_fighter_id && !this.#nameMatchIndex.has(m.matched_fighter_id))
+        this.#nameMatchIndex.set(m.matched_fighter_id, m);
+      if (m.candidate_fighter_id && !this.#nameMatchIndex.has(m.candidate_fighter_id))
+        this.#nameMatchIndex.set(m.candidate_fighter_id, m);
+    }
+    return this.#nameMatchIndex;
+  }
+
+  // "promotion_id:event_number_normalized" → [records]
+  get #fightRecords() {
+    if (this.#fightRecordIndex) return this.#fightRecordIndex;
+    this.#fightRecordIndex = new Map();
+    for (const r of this.repo.numbersFightRecords) {
+      const key = `${r.promotion_id}:${r.event_number_normalized}`;
+      const group = this.#fightRecordIndex.get(key) ?? [];
+      group.push(r);
+      this.#fightRecordIndex.set(key, group);
+    }
+    return this.#fightRecordIndex;
   }
 
   enrichVideo(video) {
@@ -28,7 +59,7 @@ export class DataEnricher {
   }
 
   enrichFighter(fighter) {
-    const match = this.repo.numbersNameMatches.find(m => m.matched_fighter_id === fighter.fighter_id || m.candidate_fighter_id === fighter.fighter_id);
+    const match = this.#nameMatches.get(fighter.fighter_id);
     const nf = match ? this.repo.numbersFighterById(match.numbers_fighter_id) : undefined;
     if (!nf) return fighter;
 
@@ -36,7 +67,7 @@ export class DataEnricher {
     if (nf.display_name) rich.display_name = nf.display_name;
     if (nf.main_division) rich.main_division = nf.main_division;
     if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
-    
+
     rich.profile = { ...(rich.profile ?? {}) };
     if (nf.profile?.height) rich.profile.height = nf.profile.height;
     if (nf.profile?.age) rich.profile.age = nf.profile.age;
@@ -45,7 +76,7 @@ export class DataEnricher {
     if (nf.catchphrase || nf.notes) {
       rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
     }
-    
+
     rich.numbers_data = nf;
     return rich;
   }
@@ -69,28 +100,26 @@ export class DataEnricher {
     const participants = (bout.fighters ?? []).map(f => ({ ...f }));
     const fighterIds = new Set(participants.map(f => f.fighter_id).filter(Boolean));
 
-    const records = this.repo.numbersFightRecords.filter(r => 
-      r.promotion_id === bout.promotion_id &&
-      r.event_number_normalized === String(event.event_number) &&
-      (
-        fighterIds.has(r.matched_fighter_id) || 
-        fighterIds.has(r.candidate_fighter_id) || 
-        fighterIds.has(r.opponent_matched_fighter_id) ||
-        fighterIds.has(r.opponent_candidate_fighter_id)
-      )
+    const key = `${bout.promotion_id}:${String(event.event_number)}`;
+    const candidates = this.#fightRecords.get(key) ?? [];
+    const records = candidates.filter(r =>
+      fighterIds.has(r.matched_fighter_id) ||
+      fighterIds.has(r.candidate_fighter_id) ||
+      fighterIds.has(r.opponent_matched_fighter_id) ||
+      fighterIds.has(r.opponent_candidate_fighter_id)
     );
 
     if (records.length === 0) return rich;
 
     for (const p of participants) {
       if (!p.fighter_id) continue;
-      
+
       let r = records.find(rec => rec.matched_fighter_id === p.fighter_id || rec.candidate_fighter_id === p.fighter_id);
       if (r && r.result) {
         p.result = r.result;
         continue;
       }
-      
+
       r = records.find(rec => rec.opponent_matched_fighter_id === p.fighter_id || rec.opponent_candidate_fighter_id === p.fighter_id);
       if (r && r.result) {
         if (r.result === "win") p.result = "loss";
