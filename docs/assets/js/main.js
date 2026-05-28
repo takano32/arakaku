@@ -1,3 +1,4 @@
+import "https://esm.sh/lite-youtube-embed";
 import { AppState } from "./core/app-state.js";
 import { ViewContext } from "./core/view-context.js";
 import { ComponentFactory } from "./ui/component-builder.js";
