@@ -75,6 +75,7 @@ export class VirtualList {
     this.#items = items;
     this.#rowEls.clear();
     this.#pendingMeasure.clear();
+    this.#el.innerHTML = "";
     const scrollMargin = this.#virtualizer?.options.scrollMargin ?? (this.#el.getBoundingClientRect().top + window.scrollY);
     this.#createVirtualizer(items.length, scrollMargin);
   }
