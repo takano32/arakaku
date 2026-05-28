@@ -79,6 +79,7 @@ export class TabRendererRegistry {
     if (tabChanged || prevCount === -1) {
       container.replaceChildren(list.el);
       list.setItems(items, renderItem, estimateSize);
+      list.resetCursor();
       this.#currentTabId = tabId;
     } else {
       list.refreshItems(items);
@@ -89,5 +90,26 @@ export class TabRendererRegistry {
     this.#prevRepoRefs.set(tabId, repoRef);
     this.#prevFilters.set(tabId, fingerprint);
     this.#prevFocusKey = focusKey;
+  }
+
+  #currentList() {
+    return this.#lists.get(this.#currentTabId);
+  }
+
+  moveCursor(delta) {
+    const list = this.#currentList();
+    if (!list) return;
+    const next = list.cursorIndex === -1 ? (delta > 0 ? 0 : list.count - 1) : list.cursorIndex + delta;
+    list.setCursor(next);
+  }
+
+  setCursorToEdge(edge) {
+    const list = this.#currentList();
+    if (!list) return;
+    list.setCursor(edge === "first" ? 0 : list.count - 1);
+  }
+
+  activateCursor() {
+    this.#currentList()?.activateCursor();
   }
 }

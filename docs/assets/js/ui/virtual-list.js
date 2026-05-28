@@ -25,6 +25,7 @@ export class VirtualList {
   #pendingMeasure = new Set(); // #paint 完了後に測定するキュー
   #cleanupRect = null;
   #cleanupOffset = null;
+  #cursorIndex = -1;
 
   constructor() {
     this.#el = document.createElement("div");
@@ -32,6 +33,33 @@ export class VirtualList {
   }
 
   get el() { return this.#el; }
+  get count() { return this.#items.length; }
+  get cursorIndex() { return this.#cursorIndex; }
+
+  setCursor(index) {
+    const clamped = Math.max(0, Math.min(index, this.#items.length - 1));
+    this.#cursorIndex = clamped;
+    this.#virtualizer?.scrollToIndex(clamped, { align: "auto" });
+    this.#updateCursorClass();
+  }
+
+  resetCursor() {
+    this.#cursorIndex = -1;
+    this.#updateCursorClass();
+  }
+
+  activateCursor() {
+    const row = this.#rowEls.get(this.#cursorIndex);
+    if (!row) return;
+    const target = row.querySelector("button, a");
+    target?.click();
+  }
+
+  #updateCursorClass() {
+    for (const [idx, row] of this.#rowEls) {
+      row.classList.toggle("virtual-cursor", idx === this.#cursorIndex);
+    }
+  }
 
   #createVirtualizer(count, scrollMargin) {
     // 古いリスナーを解除してから新しい Virtualizer を作成
@@ -119,6 +147,7 @@ export class VirtualList {
             row.innerHTML = `<article class="card"><p class="meta">描画エラー: ${err.message}</p></article>`;
             console.error("VirtualList renderItem error at index", vitem.index, err);
           }
+          row.classList.toggle("virtual-cursor", vitem.index === this.#cursorIndex);
           this.#el.appendChild(row);
           this.#rowEls.set(vitem.index, row);
           this.#pendingMeasure.add(row);

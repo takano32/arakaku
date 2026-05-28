@@ -11,6 +11,7 @@ import { TabRendererRegistry } from "./tabs/tab-registry.js";
 import { ViewController } from "./view-controller.js";
 import { DataLoader } from "./data-loader.js";
 import { EventController, renderLoadError } from "./event-controller.js";
+import { KeyboardNav } from "./ui/keyboard-nav.js";
 
 const state = AppState.getInstance();
 
@@ -42,6 +43,7 @@ const dataLoader = new DataLoader(state);
 const eventController = new EventController(state, navigation, viewController, dataLoader);
 
 eventController.bind();
+new KeyboardNav(tabRegistry, state, dataLoader).bind();
 
 dataLoader
   .load()
