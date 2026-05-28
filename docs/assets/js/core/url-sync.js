@@ -1,0 +1,35 @@
+import { DEFAULT_TAB } from "../config.js";
+
+const PARAM_MAP = {
+  tab:            "tab",
+  q:              "query",
+  fighter:        "focusFighterId",
+  event:          "focusEventId",
+  promotion:      "titlePromotion",
+  division:       "titleDivision",
+  mention:        "mentionType",
+};
+
+/** URL クエリ文字列から state の初期値を返す */
+export function readFromURL() {
+  const params = new URLSearchParams(location.search);
+  const patch = {};
+  for (const [param, stateKey] of Object.entries(PARAM_MAP)) {
+    const value = params.get(param);
+    if (value !== null) patch[stateKey] = value;
+  }
+  return patch;
+}
+
+/** state を URL クエリ文字列に反映する（履歴は増やさない） */
+export function writeToURL(state) {
+  const params = new URLSearchParams();
+  for (const [param, stateKey] of Object.entries(PARAM_MAP)) {
+    const value = state[stateKey];
+    if (value && value !== (stateKey === "tab" ? DEFAULT_TAB : "")) {
+      params.set(param, value);
+    }
+  }
+  const search = params.size > 0 ? `?${params}` : location.pathname;
+  history.replaceState(null, "", search);
+}
