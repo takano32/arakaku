@@ -25,6 +25,18 @@ export class KeyboardNav {
     dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
   }
 
+  #switchToTab(tabId) {
+    this.#state.patch({ tab: tabId, focusFighterId: "", focusEventId: "" });
+    this.#dataLoader.loadForTab(tabId);
+  }
+
+  #switchTabBy(delta) {
+    const tabs = PUBLIC_TABS.map(([id]) => id);
+    const current = tabs.indexOf(this.#state.tab);
+    const next = (current + delta + tabs.length) % tabs.length;
+    this.#switchToTab(tabs[next]);
+  }
+
   #toggleHelp() {
     const dialog = document.querySelector("#keyboard-help");
     if (!dialog) return;
@@ -78,6 +90,18 @@ export class KeyboardNav {
         this.#tabRegistry.activateCursor();
         break;
 
+      case "h":
+      case "ArrowLeft":
+        e.preventDefault();
+        this.#switchTabBy(-1);
+        break;
+
+      case "l":
+      case "ArrowRight":
+        e.preventDefault();
+        this.#switchTabBy(1);
+        break;
+
       case "/":
         e.preventDefault();
         document.querySelector("#search")?.focus();
@@ -87,9 +111,7 @@ export class KeyboardNav {
         // 数字キー 1〜n でタブ切り替え
         const num = parseInt(e.key, 10);
         if (num >= 1 && num <= PUBLIC_TABS.length) {
-          const [tabId] = PUBLIC_TABS[num - 1];
-          this.#state.patch({ tab: tabId, focusFighterId: "", focusEventId: "" });
-          this.#dataLoader.loadForTab(tabId);
+          this.#switchToTab(PUBLIC_TABS[num - 1][0]);
         }
         break;
       }
