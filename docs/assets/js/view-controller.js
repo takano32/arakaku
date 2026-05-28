@@ -64,7 +64,7 @@ export class ViewController {
   }
 
   sortedMentionTypes() {
-    return uniqueSorted(this.ctx.repo.sourceMentions.map((mention) => mention.mention_type)).sort(
+    return uniqueSorted(this.ctx.repo.richSourceMentions.map((mention) => mention.mention_type)).sort(
       (a, b) => {
         const orderA = MENTION_TYPE_ORDER.indexOf(a);
         const orderB = MENTION_TYPE_ORDER.indexOf(b);
@@ -89,8 +89,8 @@ export class ViewController {
     const divisionSelect = document.querySelector("#title-division-filter");
     if (!promotionSelect || !divisionSelect || !state.data) return;
 
-    const promotionIds = uniqueSorted(repo.titles.map((title) => title.promotion_id));
-    const divisions = uniqueSorted(repo.titles.map((title) => title.division));
+    const promotionIds = uniqueSorted(repo.richTitles.map((title) => title.promotion_id));
+    const divisions = uniqueSorted(repo.richTitles.map((title) => title.division));
 
     promotionSelect.innerHTML = this.renderSelectOptions(
       promotionIds,

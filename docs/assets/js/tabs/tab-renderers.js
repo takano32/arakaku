@@ -347,8 +347,8 @@ export class TabRenderers {
     return {
       items: this.focusedOrFiltered(
         state.focusEventId,
-        repo.findEvent.bind(repo),
-        repo.events,
+        repo.findRichEvent.bind(repo),
+        repo.richEvents,
         (e) => query.eventMatches(e)
       ),
       renderItem: (e) => this.renderEventCard(e),
@@ -358,7 +358,7 @@ export class TabRenderers {
   promotions() {
     const { query, repo } = this.ctx;
     return {
-      items: repo.promotions.filter((p) => query.promotionMatches(p)),
+      items: repo.richPromotions.filter((p) => query.promotionMatches(p)),
       renderItem: (p) => this.renderPromotionCard(p),
     };
   }
@@ -406,7 +406,7 @@ export class TabRenderers {
   mentions() {
     const { query, repo } = this.ctx;
     return {
-      items: repo.sourceMentions.filter((m) => query.mentionMatches(m)),
+      items: repo.richSourceMentions.filter((m) => query.mentionMatches(m)),
       renderItem: (m) => this.renderMentionCard(m),
     };
   }
