@@ -18,9 +18,23 @@ export class EventController {
 
   #searchTimer = null;
 
+  #clearSearch() {
+    const searchInput = document.querySelector("#search");
+    const clearButton = document.querySelector("#search-clear");
+    if (searchInput) searchInput.value = "";
+    if (clearButton) clearButton.hidden = true;
+    clearTimeout(this.#searchTimer);
+    this.state.patch({ query: "", focusFighterId: "", focusEventId: "" });
+    this.viewController.renderContent();
+  }
+
   bind() {
-    document.querySelector("#search")?.addEventListener("input", (event) => {
+    const searchInput = document.querySelector("#search");
+    const clearButton = document.querySelector("#search-clear");
+
+    searchInput?.addEventListener("input", (event) => {
       const value = event.target.value;
+      if (clearButton) clearButton.hidden = !value;
       clearTimeout(this.#searchTimer);
       this.#searchTimer = setTimeout(() => {
         this.state.patch({
@@ -30,6 +44,12 @@ export class EventController {
         });
         this.viewController.renderContent();
       }, 150);
+    });
+
+    clearButton?.addEventListener("click", () => this.#clearSearch());
+
+    searchInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") this.#clearSearch();
     });
 
     document.querySelector("#title-promotion-filter")?.addEventListener("change", (event) => {
