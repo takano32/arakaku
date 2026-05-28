@@ -9,7 +9,7 @@ export class RelatedRenderers {
 
   renderBoutResultMeta(bout) {
     const text = boutResultText(bout);
-    return text ? `<p class="meta">${escapeHtml(text)}</p>` : "";
+    return text ? `<p>${escapeHtml(text)}</p>` : "";
   }
 
   renderBoutCard(bout, { showEvent = false, showOrder = false } = {}) {
