@@ -39,7 +39,7 @@ export class VirtualList {
   setCursor(index) {
     const clamped = Math.max(0, Math.min(index, this.#items.length - 1));
     this.#cursorIndex = clamped;
-    this.#virtualizer?.scrollToIndex(clamped, { align: "auto" });
+    this.#virtualizer?.scrollToIndex(clamped, { align: "start" });
     this.#updateCursorClass();
   }
 
