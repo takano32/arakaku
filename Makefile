@@ -54,6 +54,7 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 # Source crawl pipeline (requires network / local cache in tmp/)
 # ──────────────────────────────────────────────────────────────────
 .PHONY: cache-note-html cache-youtube-info cache-sources \
+        download-official-data \
         archive-metadata build-sources refresh-sources \
         source-mention-result-candidates source-reference-candidates \
         reorder-data
@@ -64,7 +65,10 @@ cache-note-html:
 cache-youtube-info:
 	python scripts/cache_youtube_info.py
 
-cache-sources: cache-note-html cache-youtube-info
+download-official-data:
+	bash scripts/download_official_data.sh
+
+cache-sources: cache-note-html cache-youtube-info download-official-data
 
 archive-metadata:
 	python scripts/archive_metadata.py
