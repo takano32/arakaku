@@ -59,7 +59,6 @@ export class VirtualList {
     this.#rowEls.clear();
     this.#pendingMeasure.clear();
     this.#el.innerHTML = "";
-    window.scrollTo({ top: 0, behavior: "instant" });
 
     const scrollMargin = this.#el.getBoundingClientRect().top + window.scrollY;
     this.#createVirtualizer(items.length, scrollMargin);
