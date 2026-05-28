@@ -127,6 +127,7 @@ generate-stage1:
 	python scripts/archive_metadata.py
 	python scripts/generate_articles.py
 	python scripts/build_source_documents.py
+	python scripts/generate_official_csvs.py
 	python scripts/reorder_data.py
 
 generate-stage2:
@@ -135,7 +136,6 @@ generate-stage2:
 	python scripts/generate_aliases.py
 	python scripts/generate_video_links.py
 	python scripts/generate_article_links.py
-	python scripts/generate_official_csvs.py
 
 regenerate-csvs: generate-stage1 generate-stage2
 
