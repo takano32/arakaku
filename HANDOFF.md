@@ -124,7 +124,7 @@ note_url: 64
   - `content/news/*.md` → `data-src/official_news.csv`（slug, title, date, category, summary, body_md）
   - `pages/about.astro`, `pages/history.astro` → `data-src/official_pages.csv`（slug, title, description, body_html）
   - Astro 固有構文除去：Tailwind class, frontmatter, JSX map 式展開, `{base}` 補間
-- **`scripts/build_official_pages_json.py`** (`make build-official`):
+- **`scripts/build_official_pages_json.py`** (`make build`):
   - CSV → `docs/data/official_news.json` / `docs/data/official_pages.json`
   - `tmp/arakaku-site/public/` の画像を Base64 データ URI として埋め込む
 - **`scripts/download_official_data.sh`**: `public/` ディレクトリも取得するよう拡張
@@ -151,7 +151,7 @@ PUBLIC_TABS の先頭（左端）に `["official", "公式"]` を追加しまし
 
 - `scripts/download_official_data.sh`: GitHub API 経由で `tmp/arakaku-site/` にダウンロード（`make cache-sources` に組み込み）
 - `scripts/generate_official_csvs.py`: `tmp/arakaku-site/src/data/*.json` → `data-src/official_*.csv`（stage-1）
-- `scripts/build_official_json.py`: `data-src/official_*.csv` → `docs/data/official_players.json`, `docs/data/official_tournaments.json`（`make build-official`）
+- `scripts/build_official_json.py`: `data-src/official_*.csv` → `docs/data/official_players.json`, `docs/data/official_tournaments.json`（`make build`）
 - enrichment は **クライアントサイドのみ**（`data-enricher.js`）。`build_json.py` は一切変更しない。
 
 生成 CSV:

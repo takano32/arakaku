@@ -1,13 +1,11 @@
 # ──────────────────────────────────────────────────────────────────
 # Core build pipeline (JSON generation + validation + tests)
 # ──────────────────────────────────────────────────────────────────
-.PHONY: build build-official validate test check
+.PHONY: build validate test check
 
 build:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_json.py
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_numbers_json.py
-
-build-official:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_json.py
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_pages_json.py
 

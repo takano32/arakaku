@@ -29,11 +29,7 @@ jobs:
           python-version: "3.12"
 
       - name: Build JSON
-        run: |
-          python scripts/build_json.py
-          python scripts/build_numbers_json.py
-          python scripts/build_official_json.py
-          python scripts/build_official_pages_json.py
+        run: make build
 
       - name: Validate JSON
         run: |
