@@ -18,6 +18,7 @@ export class EventController {
 
   #searchTimer = null;
   #prevPublicTab = DEFAULT_TAB;
+  #prevAdminTab = DEFAULT_ADMIN_TAB;
 
   #clearSearch() {
     const searchInput = document.querySelector("#search");
@@ -99,9 +100,10 @@ export class EventController {
 
       const viewMode = button.dataset.viewMode;
       if (viewMode === "admin") this.#prevPublicTab = this.state.tab;
+      else this.#prevAdminTab = this.state.tab;
       this.state.patch({
         viewMode,
-        tab: viewMode === "admin" ? DEFAULT_ADMIN_TAB : this.#prevPublicTab,
+        tab: viewMode === "admin" ? this.#prevAdminTab : this.#prevPublicTab,
         focusFighterId: "",
         focusEventId: "",
       });
