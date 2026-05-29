@@ -19,14 +19,28 @@ make clean-generated: DONE
 
 GitHub Pages viewer でも、以下の正常動作を確認済みです。
 
+**通常ビュー（PUBLIC_TABS）:**
+
+- 公式 view（公式ページ + 公式ニュース）
 - 試合 view
 - 選手 view
 - 大会 view
 - 団体 view
 - 王座 view
 - 動画 view
+
+**管理ビュー（ADMIN_TABS）:**
+
 - 出典本文 view
 - 出典言及 view
+- 名鑑選手 view
+- 名前対応 view
+- 名鑑記録 view
+- 公式選手 view
+- 公式 view（officialMisc: トーナメント・試合・沿革）
+
+**共通:**
+
 - 試合・大会・動画カードの関連出典候補
 - note本文リンクと動画リンクの `▶ 詳細` / `▼ 詳細` 展開
 
@@ -52,6 +66,12 @@ source_documents.csv: 479 rows
 source_mentions.csv: 1794 rows
 archives/youtube.csv: 360 rows
 archives/note.csv: 120 rows
+official_players.csv: 77 rows
+official_tournaments.csv: 1 row
+official_matches.csv: 4 rows
+official_history.csv: 9 rows
+official_news.csv: 2 rows
+official_pages.csv: 2 rows
 ```
 
 `source_documents.csv` の内訳:
@@ -74,6 +94,54 @@ note_url: 64
 ---
 
 ## 直近で追加・整備したもの
+
+### Phase 11: 管理ビュー拡張・公式ドキュメントタブ・Safari バグ修正 (2026-05-29)
+
+#### 管理ビュー 5タブ追加
+
+管理ビュー（ADMIN_TABS）に名鑑・公式由来のタブを追加しました。
+
+- **名鑑選手**（`numbersFighters`）: 選手プロフィール・マッチング状況
+- **名前対応**（`numbersNameMatches`）: Numbers 名 → fighters.csv ID のマッピング・信頼度
+- **名鑑記録**（`numbersFightRecords`）: 個人成績シートの試合記録・bout 対応状況
+- **公式選手**（`officialPlayers`）: 公式サイト選手データ
+- **公式**（`officialMisc`）: official_tournaments + official_matches + official_history を type バッジ付きで混在表示
+
+`officialMisc` という ID 名は、将来 PUBLIC_TABS に `official` を追加したときの衝突を避けるために選定。
+
+#### Safari replaceState レート制限バグ修正
+
+`docs/assets/js/core/url-sync.js` の `writeToURL()` を修正しました。
+
+- **問題**: `state.patch({})` がストリーミング中に 30件ごと・50ms ごとに呼ばれ、その都度 `history.replaceState()` が走っていた。Safari は 10秒あたり 100回の制限があり超過していた。
+- **修正**: 前回書いた URL と同じ文字列なら `replaceState` をスキップするよう `_lastSearch` キャッシュを追加。URL に関係するのはユーザー操作（tab/query/focus）だけであり、データロード状態変化では URL は変わらないため、これで十分に抑制できる。
+
+#### 公式ドキュメント CSV/JSON パイプライン
+
+`tmp/arakaku-site` 内の Markdown・Astro ドキュメントを CSV/JSON 化するパイプラインを追加しました。
+
+- **`scripts/generate_official_pages_csv.py`** (stage-2):
+  - `content/news/*.md` → `data-src/official_news.csv`（slug, title, date, category, summary, body_md）
+  - `pages/about.astro`, `pages/history.astro` → `data-src/official_pages.csv`（slug, title, description, body_html）
+  - Astro 固有構文除去：Tailwind class, frontmatter, JSX map 式展開, `{base}` 補間
+- **`scripts/build_official_pages_json.py`** (`make build-official`):
+  - CSV → `docs/data/official_news.json` / `docs/data/official_pages.json`
+  - `tmp/arakaku-site/public/` の画像を Base64 データ URI として埋め込む
+- **`scripts/download_official_data.sh`**: `public/` ディレクトリも取得するよう拡張
+- `maxbout.astro`（データ駆動）と `index.astro`（ナビ専用）は対象外
+
+#### 通常ビュー「公式」タブ追加
+
+PUBLIC_TABS の先頭（左端）に `["official", "公式"]` を追加しました。
+
+- `official_pages`（about・history HTML）と `official_news`（Markdown）をタブ切替時に遅延ロード（`TAB_DATA_KEYS.official`）
+- Markdown レンダリングに `marked`（esm.sh CDN）を使用
+  - Node.js が `https:` 静的 import を解釈できないため、module-level dynamic import + `.catch(() => {})` パターンで lazy 初期化
+  - ロード前はエスケープテキストで fallback 表示
+- キーボードショートカットのヒントを `1〜6` → `1〜7` に更新
+- タブ数が増えたため、将来「公式ページ」「公式ニュース」への分割を NEXT_TASKS.md に記録済み
+
+---
 
 ### Phase 10: 公式データ統合・UI改善・キーボードナビゲーション (2026-05-29)
 
@@ -145,7 +213,7 @@ data-src/official_history.csv
 | `o` | フォーカスアイテムの詳細を展開/折りたたむ |
 | `h` / `←` | 前のタブへ（循環） |
 | `l` / `→` | 次のタブへ（循環） |
-| `1`〜`6` | タブ直接切り替え |
+| `1`〜`7` | タブ直接切り替え |
 | `c` | 現在の URL をコピー（トースト表示） |
 | `Space` / `Shift+Space` | 半ページスクロール |
 | `r` | ページ再読み込み |
@@ -526,14 +594,13 @@ make clean-generated
 
 ## 次にやるとよい作業
 
-優先度順のおすすめです。
+優先度順のおすすめです。詳細は `NEXT_TASKS.md` を参照。
 
-1. `source_documents.json` の軽量化
-2. 公式データの選手マッチング精度向上（現在は display_name 一致、77人中71人がマッチ）
-3. Numbers データの更なる突合（対戦カードの不一致検出など）
-4. 王座変遷の精度向上
-5. UI のアクセシビリティ改善
-6. キーボードナビ: `u` で前の状態に戻る（ナビゲーション履歴）
+1. 公式データの選手マッチング精度向上（現在は display_name 一致、77人中71人がマッチ）
+2. `source_documents.json` の軽量化（現在約 1.1MB、遅延ロード済みだが本文増加に備えて分離を検討）
+3. 公式ページ・ニュースが増えたら「公式ページ」「公式ニュース」タブに分割（NEXT_TASKS.md 参照）
+4. Numbers データの更なる突合（対戦カードの不一致検出など）
+5. 王座変遷の精度向上
 
 ---
 
