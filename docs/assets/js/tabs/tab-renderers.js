@@ -10,7 +10,9 @@ import {
 } from "../ui/html-utils.js";
 
 let _marked = null;
-import("https://esm.sh/marked").then(m => { _marked = m.marked; }).catch(() => {});
+if (typeof window !== "undefined") {
+  import("https://esm.sh/marked").then(m => { _marked = m.marked; }).catch(() => {});
+}
 
 /** Template Method の具象: 各タブの HTML 生成 */
 export class TabRenderers {

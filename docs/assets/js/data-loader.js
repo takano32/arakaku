@@ -22,11 +22,15 @@ async function fetchJsonText(path, fallback) {
   return response.text();
 }
 
-// JSONParser の dynamic import を一度だけ行いキャッシュ
+// JSONParser の dynamic import を一度だけ行いキャッシュ (ブラウザのみ)
 let jsonParserImportPromise = null;
 function getJSONParser() {
   if (!jsonParserImportPromise) {
-    jsonParserImportPromise = import("https://esm.sh/@streamparser/json").then((m) => m.JSONParser);
+    if (typeof window === "undefined") {
+      jsonParserImportPromise = Promise.resolve(null);
+    } else {
+      jsonParserImportPromise = import("https://esm.sh/@streamparser/json").then((m) => m.JSONParser);
+    }
   }
   return jsonParserImportPromise;
 }
@@ -208,35 +212,7 @@ export class DataLoader {
   async #loadEnrichment() {
     const keys = ENRICHMENT_DATA_KEYS.filter((key) => key in this.dataFiles);
     if (keys.length === 0) return;
-
-    const entries = await Promise.all(
-      keys.map(async (key) => {
-        const path = this.dataFiles[key];
-        const fallback = JSON.stringify(fallbackForDataKey(key));
-        try {
-          return [key, await this.fetchText(path, fallback)];
-        } catch (_) {
-          return [key, fallback];
-        }
-      })
-    );
-
-    let parsed;
-    try {
-      parsed = parseDataFileEntries(entries);
-    } catch (err) {
-      console.error("DataLoader: enrichment parse error", err);
-      return;
-    }
-
-    Object.assign(this.state.data, parsed);
-    for (const key of keys) {
-      this.state.loadedDataKeys.add(key);
-      delete this.state.dataLoadErrors[key];
-    }
-
-    this.state.repository = new DataRepository(this.state.data);
-    this.state.patch({});
+    await Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
   }
 
   loadPublicReferences() {
@@ -244,7 +220,12 @@ export class DataLoader {
   }
 
   loadForTab(tabId) {
-    return this.loadKeys(TAB_DATA_KEYS[tabId] ?? []);
+    const keys = (TAB_DATA_KEYS[tabId] ?? []).filter(
+      (key) => key in this.dataFiles && !this.state.loadedDataKeys?.has(key)
+    );
+    if (keys.length === 0) return Promise.resolve();
+    this.ensureStateData();
+    return Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
   }
 
   loadAll() {

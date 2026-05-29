@@ -2,14 +2,8 @@ import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
 import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 
 const REQUIRED_TAB_DATA_KEYS = {
-  official:            ["officialPages", "officialNews"],
-  sources:             ["sourceDocuments"],
-  mentions:            ["sourceDocuments", "sourceMentions"],
-  numbersFighters:     ["numbersFighters"],
-  numbersNameMatches:  ["numbersNameMatches"],
-  numbersFightRecords: ["numbersFightRecords"],
-  officialPlayers:     ["officialPlayers"],
-  officialMisc:        ["officialTournaments", "officialMatches", "officialHistory"],
+  sources: ["sourceDocuments"],
+  mentions: ["sourceDocuments", "sourceMentions"],
 };
 
 /** Facade: DOM 更新とフィルタ UI を統括 */
