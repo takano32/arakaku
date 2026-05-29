@@ -53,6 +53,15 @@ Pages should build generated JSON, upload artifact, and deploy.
 
 Generated JSON is not committed. It is produced during workflow build.
 
+The CI uses `make build` which runs all four build scripts:
+
+```text
+scripts/build_json.py
+scripts/build_numbers_json.py
+scripts/build_official_json.py
+scripts/build_official_pages_json.py
+```
+
 Expected generated files include:
 
 ```text
@@ -74,6 +83,12 @@ docs/data/numbers_name_matches.json
 docs/data/numbers_fight_records.json
 docs/data/youtube_archives.json
 docs/data/note_archives.json
+docs/data/official_players.json
+docs/data/official_tournaments.json
+docs/data/official_matches.json
+docs/data/official_history.json
+docs/data/official_news.json
+docs/data/official_pages.json
 ```
 
 ---

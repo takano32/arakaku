@@ -32,16 +32,32 @@ Do not edit generated JSON directly.
 
 ## Current viewer tabs
 
+PUBLIC_TABS (通常ビュー, keyboard shortcuts 1–8):
+
 ```text
-試合
-選手
-大会
-団体
-王座
-動画
-出典本文
-出典言及
+1: 公式   (official)  ← official_pages (about/history, collapsed <details>) + official_news (Markdown)
+2: 通信   (tsushin)   ← note_article source documents (120 articles)
+3: 試合   (bouts)
+4: 選手   (fighters)
+5: 大会   (events)
+6: 団体   (promotions)
+7: 王座   (titles)
+8: 動画   (videos)
 ```
+
+ADMIN_TABS (管理ビュー, toggled via 管理ビュー button):
+
+```text
+出典本文 (sources)
+出典言及 (mentions)
+名鑑選手 (numbersFighters)
+名前対応 (numbersNameMatches)
+名鑑記録 (numbersFightRecords)
+公式選手 (officialPlayers)
+公式     (officialMisc)  ← official_tournaments + official_matches + official_history, type-badged
+```
+
+The view-mode switch remembers the last active tab in each view (`#prevPublicTab`, `#prevAdminTab` in `EventController`), and restores it when switching back.
 
 Expected behavior:
 
@@ -133,7 +149,7 @@ Intermediate batches (every 30 items or 50ms) call `state.patch({})`, triggering
 
 **Phase 2 — enrichment (ENRICHMENT_DATA_KEYS):**
 
-8 files load normally (not streaming) and then all applied at once:
+All enrichment files also stream via `#streamKey()` in parallel (same mechanism as Phase 1):
 
 ```javascript
 export const ENRICHMENT_DATA_KEYS = [
@@ -141,10 +157,12 @@ export const ENRICHMENT_DATA_KEYS = [
   "numbersFighters", "numbersNameMatches", "numbersFightRecords",
   "youtubeArchives", "noteArchives",
   "sourceDocuments", "sourceMentions",
+  "officialPlayers", "officialTournaments", "officialMatches", "officialHistory",
+  "officialPages", "officialNews",
 ];
 ```
 
-Phase 2 is `await`ed inside `load()`. When done, a new `DataRepository` is created and `state.patch({})` is called, triggering re-render with enriched data.
+Phase 2 streams all enrichment keys in parallel via `#streamKey()`. Each batch triggers `state.patch({})` and incremental re-renders. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` after Phase 2.
 
 `CORE_DATA_KEYS = [...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
 
@@ -225,27 +243,36 @@ When adding a new JSON data file, update `DATA_FILES` in `config.js` and add the
 
 When adding a new tab:
 
-1. Add it to `docs/assets/js/config.js` (`TABS`).
-2. Add a method on `TabRenderers` in `docs/assets/js/tabs/tab-renderers.js` that returns `{ items, renderItem, estimateSize? }`.
+1. Add it to `PUBLIC_TABS` or `ADMIN_TABS` in `docs/assets/js/config.js`.
+2. Add a method on `TabRenderers` in `docs/assets/js/tabs/tab-renderers.js` returning `{ items, renderItem, estimateSize? }`.
 3. Register it in `TabRendererRegistry` (`docs/assets/js/tabs/tab-registry.js`).
-4. Add required data keys to `TAB_DATA_KEYS` in `data-loader.js` if the tab needs keys outside of CORE.
-5. Confirm search behavior.
-6. Confirm tab click behavior.
+4. If data is needed on-demand (not in ENRICHMENT_DATA_KEYS), add to `TAB_DATA_KEYS` in `data-loader.js`.
+5. If data should auto-load before tab click, add key to `ENRICHMENT_DATA_KEYS` in `config.js`.
+6. Confirm search behavior and keyboard shortcut numbering.
 
 ---
 
 ## CDN dependencies
 
-The viewer loads two external libraries at runtime from `https://esm.sh/`:
+The viewer loads three external libraries at runtime from `https://esm.sh/`:
 
 | Library | Import | Used in |
 |---------|--------|---------|
 | `@tanstack/virtual-core@3` | `Virtualizer`, `windowScroll` | `ui/virtual-list.js` |
-| `@streamparser/json` | `JSONParser` | `data-loader.js` (Phase 1 streaming) |
+| `@streamparser/json` | `JSONParser` | `data-loader.js` (all streaming) |
+| `lite-youtube-embed` | side-effect import | `main.js` (YouTube facade) |
 
-Both imports are cached after first load (module import cache and `jsonParserImportPromise` respectively).
+`@streamparser/json` is used for ALL `#streamKey()` calls (both Phase 1 and Phase 2). `getJSONParser()` guards with `typeof window !== "undefined"` for Node.js compatibility. If CDN fails, `#streamKey` falls back to `response.text() + JSON.parse()`.
 
-If `@streamparser/json` fails to load (e.g., offline, CDN unreachable), `#streamKey` throws, the outer `.catch()` in `load()` sets fallback data, and the tab renders empty arrays. Phase 2 enrichment is unaffected (it uses `fetchText`, not streaming).
+`marked` CDN was removed. Markdown rendering uses inline `mdToHtml()` in `tab-renderers.js`.
+
+## VirtualList loading state
+
+`VirtualList` has a `#loading` flag (set via `setLoading(bool)`). When `items.length === 0`:
+- `#loading === true` → shows "読み込み中..."
+- `#loading === false` → shows blank (no message)
+
+`TabRendererRegistry.renderTo()` calls `list.setLoading(loadingDataKeys.size > 0)` on every render.
 
 ---
 

@@ -90,6 +90,9 @@ archives/note.csv: 120 rows
 numbers_fighters.csv: 101 rows
 numbers_name_matches.csv: 101 rows
 numbers_fight_records.csv: 543 rows
+official_players.csv: 77 rows
+official_news.csv: 2 rows
+official_pages.csv: 2 rows
 ```
 
 Current source document types:
@@ -99,27 +102,26 @@ youtube_description
 note_article
 ```
 
-Current mention types:
+Current viewer PUBLIC_TABS (通常ビュー):
 
 ```text
-event
-youtube_url
-result
-matchup
-note_url
+公式 (official)    ← official pages + news
+通信 (tsushin)     ← アラカク通信のーと note articles
+試合 (bouts)
+選手 (fighters)
+大会 (events)
+団体 (promotions)
+王座 (titles)
+動画 (videos)
 ```
 
-Current viewer tabs:
+Current viewer ADMIN_TABS (管理ビュー):
 
 ```text
-試合
-選手
-大会
-団体
-王座
-動画
-出典本文
-出典言及
+出典本文 (sources)
+出典言及 (mentions)
+名鑑選手 / 名前対応 / 名鑑記録 (numbers data)
+公式選手 / 公式 (official data)
 ```
 
 Current viewer rendering architecture:
@@ -127,9 +129,20 @@ Current viewer rendering architecture:
 ```text
 TabRenderers → { items, renderItem, estimateSize? } descriptor
 TabRendererRegistry.renderTo(container, tabId) → VirtualList per tab
-VirtualList → @tanstack/virtual-core@3 (CDN)
+VirtualList → @tanstack/virtual-core@3 (CDN), #loading flag for empty-state
 DataLoader.load() → Phase 1 streaming (PRIMARY_DATA_KEYS, @streamparser/json CDN)
-               → Phase 2 enrichment (ENRICHMENT_DATA_KEYS, normal fetch)
+               → Phase 2 streaming (ENRICHMENT_DATA_KEYS, same #streamKey mechanism)
+               → PUBLIC_REFERENCE_DATA_KEYS also streamed via #streamKey
+loadForTab(tabId) → TAB_DATA_KEYS keys streamed via #streamKey on demand
+```
+
+Build scripts (all run by `make build`):
+
+```text
+scripts/build_json.py
+scripts/build_numbers_json.py
+scripts/build_official_json.py
+scripts/build_official_pages_json.py
 ```
 
 Current actions:

@@ -178,7 +178,7 @@ make clean-generated
 
 `scripts/extract_numbers.py` is allowed to write the three Numbers-derived CSVs under `data-src/`.
 
-Do not edit generated JSON directly. `scripts/build_json.py` generates:
+Do not edit generated JSON directly. `scripts/build_numbers_json.py` generates:
 
 ```text
 docs/data/numbers_fighters.json
@@ -186,9 +186,23 @@ docs/data/numbers_name_matches.json
 docs/data/numbers_fight_records.json
 ```
 
+Note: Numbers JSON is built by `scripts/build_numbers_json.py`, not `scripts/build_json.py`. All build scripts run together via `make build`.
+
 These JSON files are generated artifacts and should be removed with `make clean-generated` before finishing.
 
 ---
+
+## Admin view tabs
+
+The viewer's admin view (管理ビュー) includes three Numbers-specific tabs:
+
+```text
+名鑑選手 (numbersFighters)     ← fighter profiles + match status
+名前対応 (numbersNameMatches)  ← name mapping table with confidence
+名鑑記録 (numbersFightRecords) ← fight records + bout correspondence
+```
+
+These tabs load from ENRICHMENT_DATA_KEYS (streamed in Phase 2 automatically).
 
 ## Viewer expectations
 
