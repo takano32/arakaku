@@ -134,27 +134,6 @@ export class VirtualList {
     this.#createVirtualizer(items.length, scrollMargin);
   }
 
-  // ソート中インクリメンタル更新: DOM wipeなしに表示中の行だけin-placeで更新する
-  softUpdate(items) {
-    this.#items = items;
-    for (const [idx, row] of [...this.#rowEls]) {
-      if (idx >= items.length) {
-        row.remove();
-        this.#rowEls.delete(idx);
-      } else {
-        try {
-          row.innerHTML = this.#renderItem(items[idx]);
-        } catch (err) {
-          row.innerHTML = `<article class="card"><p class="meta">描画エラー: ${err.message}</p></article>`;
-          console.error("VirtualList softUpdate error at index", idx, err);
-        }
-        this.#pendingMeasure.add(row);
-      }
-    }
-    const scrollMargin = this.#virtualizer?.options.scrollMargin ??
-      (this.#el.getBoundingClientRect().top + window.scrollY);
-    this.#createVirtualizer(items.length, scrollMargin);
-  }
 
   #loading = false;
   #painting = false;

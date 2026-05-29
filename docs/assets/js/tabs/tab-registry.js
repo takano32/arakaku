@@ -80,13 +80,29 @@ export class TabRendererRegistry {
     const isLoading = (this.#ctx?.state?.loadingDataKeys?.size ?? 0) > 0;
     list.setLoading(isLoading);
 
-    // 選手タブのソート完了状態を追跡してバナーを制御
+    // 選手タブ: ソートデータ完了まではロード表示し、完了時に1回だけ描画
     const isSortLoaded = this.#isSortLoaded();
     const wasSortLoaded = this.#prevSortLoaded.get(tabId) ?? false;
     const sortJustCompleted = tabId === "fighters" && isSortLoaded && !wasSortLoaded;
     if (tabId === "fighters") {
       this.#prevSortLoaded.set(tabId, isSortLoaded);
-      list.setBanner(isSortLoaded ? null : "ソート中...");
+      list.setBanner(isSortLoaded ? null : "読み込み中...");
+    }
+
+    // 選手タブでソート未完了: 初回表示のみ空リスト+ロード中を設定し、以降の更新はスキップ
+    if (tabId === "fighters" && !isSortLoaded) {
+      if (tabChanged || this.#prevCounts.get(tabId) === undefined) {
+        container.replaceChildren(list.el);
+        list.setItems([], () => "", () => 500);
+        list.setLoading(true);
+        list.resetCursor();
+        this.#currentTabId = tabId;
+        this.#prevCounts.set(tabId, 0);
+        this.#prevRepoRefs.set(tabId, repoRef);
+        this.#prevFilters.set(tabId, fingerprint);
+        this.#prevFocusKey = focusKey;
+      }
+      return;
     }
 
     if (!tabChanged && !repoChanged && !filterChanged && !sortJustCompleted) return;
@@ -109,10 +125,6 @@ export class TabRendererRegistry {
       list.setItems(items, renderItem, estimateSize);
       list.resetCursor();
       this.#currentTabId = tabId;
-    } else if (tabId === "fighters" && !isSortLoaded) {
-      // ソート中: DOM wipeなしにin-placeで更新
-      list.softUpdate(items);
-      if (focusChanged) window.scrollTo({ top: 0, behavior: "instant" });
     } else {
       list.refreshItems(items);
       if (focusChanged) window.scrollTo({ top: 0, behavior: "instant" });
