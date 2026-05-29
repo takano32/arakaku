@@ -104,14 +104,16 @@ export class DataEnricher {
   }
 
   enrichFighter(fighter) {
+    const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
     const match = this.#nameMatches.get(fighter.fighter_id);
     const nf = match ? this.repo.numbersFighterById(match.numbers_fighter_id) : undefined;
-
     const op = this.#officialPlayers.get(fighter.display_name);
 
-    if (!nf && !op) return fighter;
+    const needsClear = fighter.summary === PLACEHOLDER;
+    if (!nf && !op) return needsClear ? { ...fighter, summary: "" } : fighter;
 
     const rich = { ...fighter };
+    if (needsClear) rich.summary = "";
 
     if (nf) {
       if (nf.display_name) rich.display_name = nf.display_name;
