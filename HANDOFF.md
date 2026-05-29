@@ -95,6 +95,45 @@ note_url: 64
 
 ## 直近で追加・整備したもの
 
+### Phase 12: ビルド整理・ストリーミング統一・UI改善 (2026-05-29)
+
+#### ビルドスクリプト分割・整理
+
+- `build_numbers_json.py` を新設し `build_json.py` から numbers ビルダーを分離
+- `build-official` Makefile ターゲットを廃止し `build` ターゲットに統合
+- CI (`pages.yml` / `test.yml`) を `make build` 一本に統一
+- `make build` = `build_json.py` + `build_numbers_json.py` + `build_official_json.py` + `build_official_pages_json.py`
+
+#### 全データキーのストリーミング統一
+
+すべてのデータキーが `#streamKey()` SAX ストリーミングに統一されました。
+
+- `ENRICHMENT_DATA_KEYS`: バッチロードから `#streamKey()` 並列に変更（管理タブのデータが届き次第表示）
+- `TAB_DATA_KEYS`: `loadKeys()` から `#streamKey()` に変更
+- `PUBLIC_REFERENCE_DATA_KEYS`: `loadPublicReferences()` も `#streamKey()` 並列に変更
+- `officialPages` / `officialNews` を `ENRICHMENT_DATA_KEYS` に移動（タブクリック前から Phase 2 でロード開始）
+- CDN import の Node.js 互換: `getJSONParser()` と `marked` に `typeof window` ガードを追加（Node.js v26 対応）
+
+#### 空状態の改善
+
+- `VirtualList` に `#loading` フラグを追加。ロード中は「読み込み中...」、ロード完了後の空は空欄（メッセージなし）
+- `TabRendererRegistry` で `loadingDataKeys.size > 0` を判定して VirtualList に通知
+
+#### marked CDN 廃止
+
+- `marked`（esm.sh CDN）を削除し、自前 `mdToHtml()` 関数（約30行）に置き換え
+- ニュース記事2件・基本 Markdown のみという実態に対して CDN fetch は過剰だったため
+- CDN ライブラリ3つの深堀り評価: `@streamparser/json`・`@tanstack/virtual-core@3`・`lite-youtube-embed` は全て維持
+
+#### 「公式」タブ UI 改善
+
+- ページ（アラカクとは・歴史の流れ）を `<details>` で折りたたみ表示
+  - summary をボタン風（背景色・角丸）にスタイリング、▶ が 90° 回転して開閉を示す
+  - ニュース記事は末尾にそのまま表示
+- フッターに「公式サイト」（kobayashi856.github.io/arakaku-site/）と「YouTube」を追加
+
+---
+
 ### Phase 11: 管理ビュー拡張・公式ドキュメントタブ・Safari バグ修正 (2026-05-29)
 
 #### 管理ビュー 5タブ追加
