@@ -366,6 +366,35 @@ dd {
   font-size: 1.1rem;
 }
 
+.official-page-doc-card details summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  background: var(--surface2, #f0f0f0);
+  user-select: none;
+  list-style: none;
+}
+.official-page-doc-card details summary::-webkit-details-marker { display: none; }
+.official-page-doc-card details summary::before {
+  content: "▶";
+  font-size: 0.75rem;
+  color: var(--accent);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.official-page-doc-card details[open] summary::before {
+  transform: rotate(90deg);
+}
+.official-page-doc-card details summary:hover {
+  background: var(--surface3, #e4e4e4);
+}
+.official-page-doc-card details[open] .official-doc-body {
+  margin-top: 0.8rem;
+}
+
 .record-detail-toggle summary:hover,
 .source-body summary:hover {
   color: var(--accent-dark);
