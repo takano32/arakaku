@@ -134,7 +134,7 @@ export class VirtualList {
       this.#el.style.height = `${total}px`;
 
       if (this.#items.length === 0) {
-        this.#el.innerHTML = this.#loading ? loadingMessage() : emptyMessage();
+        this.#el.innerHTML = this.#loading ? loadingMessage() : "";
         return;
       }
 
