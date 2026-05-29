@@ -38,4 +38,5 @@ fetch_dir() {
 }
 
 fetch_dir "src" "$DEST"
+fetch_dir "public" "$DEST/public"
 echo "Done. Files saved to ${DEST}/"

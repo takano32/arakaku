@@ -8,6 +8,7 @@ build:
 
 build-official:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_json.py
+	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_pages_json.py
 
 validate:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/validate_json.py
@@ -139,6 +140,7 @@ generate-stage2:
 	python scripts/generate_aliases.py
 	python scripts/generate_video_links.py
 	python scripts/generate_article_links.py
+	python scripts/generate_official_pages_csv.py
 
 regenerate-csvs: generate-stage1 generate-stage2
 
