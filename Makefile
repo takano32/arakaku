@@ -5,6 +5,7 @@
 
 build:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_json.py
+	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_numbers_json.py
 
 build-official:
 	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_json.py

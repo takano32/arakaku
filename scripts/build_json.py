@@ -233,41 +233,6 @@ def build_fighters() -> list[dict[str, Any]]:
     )
 
 
-def build_numbers_fighters() -> list[dict[str, Any]]:
-    return map_csv(
-        "numbers_fighters.csv",
-        {
-            "numbers_fighter_id": "numbers_fighter_id",
-            "source_sheet": "source_sheet",
-            "source_row": int_field("source_row"),
-            "display_name": "display_name",
-            "main_division": "main_division",
-            "main_promotion_raw": "main_promotion_raw",
-            "main_promotion_id": "main_promotion_id",
-            "profile": {
-                "age": "age",
-                "height": "height",
-                "gym": "gym",
-            },
-            "stats": {
-                "fight_count": int_field("fight_count"),
-                "wins": int_field("wins"),
-                "losses": int_field("losses"),
-                "win_rate": "win_rate",
-            },
-            "achievements": {
-                "white_glove_count": int_field("white_glove_count"),
-                "tournament_win_marker": "tournament_win_marker",
-                "tournament_entry_raw": "tournament_entry_raw",
-                "belt_marker": "belt_marker",
-            },
-            "catchphrase": "catchphrase",
-            "notes": field_or_empty("notes"),
-            "source_confidence": "source_confidence",
-        },
-    )
-
-
 def build_titles() -> list[dict[str, Any]]:
     reigns_by_title = group_by(TITLE_REIGNS, "title_id")
     out = []
@@ -386,7 +351,7 @@ def build_database() -> dict[str, Any]:
             "aliases": rows("aliases.csv"),
             "source_documents": rows("source_documents.csv"),
             "source_mentions": rows("source_mentions.csv"),
-            "numbers_fighters": build_numbers_fighters(),
+            "numbers_fighters": rows("numbers_fighters.csv"),
             "numbers_name_matches": rows("numbers_name_matches.csv"),
             "numbers_fight_records": rows("numbers_fight_records.csv"),
             "youtube_archives": rows("archives/youtube.csv"),
@@ -420,9 +385,6 @@ JSON_BUILDERS = {
         for row in rows("source_documents.csv")
     ],
     "source_mentions.json": lambda: rows("source_mentions.csv"),
-    "numbers_fighters.json": build_numbers_fighters,
-    "numbers_name_matches.json": lambda: rows("numbers_name_matches.csv"),
-    "numbers_fight_records.json": lambda: rows("numbers_fight_records.csv"),
     "youtube_archives.json": lambda: rows("archives/youtube.csv"),
     "note_archives.json": lambda: rows("archives/note.csv"),
     "source_event_references.json": lambda: read_csv(REVIEW / "source_event_reference_candidates.csv"),
