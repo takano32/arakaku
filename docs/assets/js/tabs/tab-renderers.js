@@ -377,9 +377,13 @@ export class TabRenderers {
     const el = document.createElement("article");
     el.className = "card record-card official-page-doc-card";
     el.innerHTML = `
-      <h2>${escapeHtml(page.title)}</h2>
-      <p class="meta">${escapeHtml(page.description ?? "")}</p>
-      <div class="official-doc-body">${page.body_html}</div>
+      <details>
+        <summary>
+          <h2 class="inline">${escapeHtml(page.title)}</h2>
+          <span class="meta">${escapeHtml(page.description ?? "")}</span>
+        </summary>
+        <div class="official-doc-body">${page.body_html}</div>
+      </details>
     `;
     return el.outerHTML;
   }
