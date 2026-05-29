@@ -9,6 +9,9 @@ import {
   renderValue,
 } from "../ui/html-utils.js";
 
+let _marked = null;
+import("https://esm.sh/marked").then(m => { _marked = m.marked; }).catch(() => {});
+
 /** Template Method の具象: 各タブの HTML 生成 */
 export class TabRenderers {
   /** @param {import("../core/view-context.js").ViewContext} ctx */
@@ -340,6 +343,44 @@ export class TabRenderers {
       ${sources.renderSourceBody(d)}
       ${components.detailDisclosure([["source_id", `<code>${escapeHtml(d.source_id)}</code>`], ["URL", d.url ? externalLink(d.url, d.url) : "未入力"], ["取得日時", d.fetched_at], ["content_hash", d.content_hash ? `<code>${escapeHtml(d.content_hash)}</code>` : "未入力"], ["notes", d.notes]])}
     `);
+  }
+
+  renderOfficialPageDocCard(page) {
+    const el = document.createElement("article");
+    el.className = "card record-card official-page-doc-card";
+    el.innerHTML = `
+      <h2>${escapeHtml(page.title)}</h2>
+      <p class="meta">${escapeHtml(page.description ?? "")}</p>
+      <div class="official-doc-body">${page.body_html}</div>
+    `;
+    return el.outerHTML;
+  }
+
+  renderOfficialNewsDocCard(article) {
+    const el = document.createElement("article");
+    el.className = "card record-card official-news-doc-card";
+    el.innerHTML = `
+      <h2>${escapeHtml(article.title)}</h2>
+      <p class="meta">${escapeHtml(joinPresent([article.date, article.category]))}</p>
+      <div class="official-doc-body">${_marked ? _marked.parse(article.body_md ?? "") : escapeHtml(article.body_md ?? "")}</div>
+    `;
+    return el.outerHTML;
+  }
+
+  official() {
+    const { repo } = this.ctx;
+    const pages = repo.officialPages.map(p => ({ _kind: "page", ...p }));
+    const news = [...repo.officialNews]
+      .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
+      .map(n => ({ _kind: "news", ...n }));
+    const items = [...pages, ...news];
+    return {
+      items,
+      renderItem: (item) =>
+        item._kind === "page"
+          ? this.renderOfficialPageDocCard(item)
+          : this.renderOfficialNewsDocCard(item),
+    };
   }
 
   bouts() {

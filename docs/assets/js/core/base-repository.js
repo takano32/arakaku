@@ -87,6 +87,8 @@ export class BaseRepository {
   get officialTournaments() { return this.data.officialTournaments ?? []; }
   get officialMatches() { return this.data.officialMatches ?? []; }
   get officialHistory() { return this.data.officialHistory ?? []; }
+  get officialPages() { return this.data.officialPages ?? []; }
+  get officialNews() { return this.data.officialNews ?? []; }
 
   // Simple Finders
   findEvent(id) { return this.findById("events", id); }

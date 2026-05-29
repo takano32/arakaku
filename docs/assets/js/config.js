@@ -31,9 +31,12 @@ export const DATA_FILES = {
   officialTournaments: "./data/official_tournaments.json",
   officialMatches: "./data/official_matches.json",
   officialHistory: "./data/official_history.json",
+  officialPages: "./data/official_pages.json",
+  officialNews: "./data/official_news.json",
 };
 
 export const PUBLIC_TABS = [
+  ["official", "公式"],
   ["bouts", "試合"],
   ["fighters", "選手"],
   ["events", "大会"],
