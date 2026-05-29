@@ -31,6 +31,8 @@ jobs:
       - name: Build JSON
         run: |
           python scripts/build_json.py
+          python scripts/build_official_json.py
+          python scripts/build_official_pages_json.py
 
       - name: Validate JSON
         run: |
