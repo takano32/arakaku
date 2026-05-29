@@ -9,6 +9,7 @@ export class TabRendererRegistry {
     this.#ctx = ctx;
     this.#strategies = new Map([
       ["official", () => tabRenderers.official()],
+      ["tsushin", () => tabRenderers.tsushin()],
       ["bouts", () => tabRenderers.bouts()],
       ["fighters", () => tabRenderers.fighters()],
       ["events", () => tabRenderers.events()],

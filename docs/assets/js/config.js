@@ -37,6 +37,7 @@ export const DATA_FILES = {
 
 export const PUBLIC_TABS = [
   ["official", "公式"],
+  ["tsushin", "通信"],
   ["bouts", "試合"],
   ["fighters", "選手"],
   ["events", "大会"],

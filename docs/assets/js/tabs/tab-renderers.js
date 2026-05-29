@@ -412,6 +412,51 @@ export class TabRenderers {
     };
   }
 
+  #cleanNoteBody(text) {
+    if (!text) return "";
+    const m = text.match(/\d{4}年\d{1,2}月\d{1,2}日[^\n]*/);
+    return m ? text.slice(m.index + m[0].length).trim() : text.trim();
+  }
+
+  #articleTypeLabel(type) {
+    return { event_result: "試合結果", event_card: "対戦カード",
+             promotion_profile: "団体情報", note_article: "ノート",
+             youtube_description_source: "YouTube概要欄" }[type] ?? type ?? "";
+  }
+
+  renderNoteArticleCard(doc) {
+    const { repo, labels } = this.ctx;
+    const archive = repo.findNoteArchive(doc.url);
+    const article = repo.findArticle(doc.source_ref_id);
+    const description = archive?.description ?? doc.content_preview ?? "";
+    const articleType = article?.article_type;
+    const body = this.#cleanNoteBody(doc.content_text);
+    return `
+      <article class="card record-card note-article-card">
+        <h2>${externalLink(doc.url, doc.title)}</h2>
+        <p class="meta">
+          ${articleType ? `<span class="video-badge">${escapeHtml(this.#articleTypeLabel(articleType))}</span>` : ""}
+          <span class="video-badge">${escapeHtml(labels.sourceType(doc.source_type))}</span>
+        </p>
+        ${description ? `<p>${escapeHtml(description)}</p>` : ""}
+        ${body ? `
+          <details class="source-body">
+            <summary>本文を表示</summary>
+            <pre class="note-body-text">${escapeHtml(body)}</pre>
+          </details>` : ""}
+      </article>
+    `;
+  }
+
+  tsushin() {
+    const { repo } = this.ctx;
+    const items = repo.sourceDocuments.filter(d => d.source_type === "note_article");
+    return {
+      items,
+      renderItem: (d) => this.renderNoteArticleCard(d),
+    };
+  }
+
   bouts() {
     const { query, repo } = this.ctx;
     return {
