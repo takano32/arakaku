@@ -361,6 +361,11 @@ dd {
   font-size: 0.9rem;
 }
 
+.summary-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
 .record-detail-toggle summary:hover,
 .source-body summary:hover {
   color: var(--accent-dark);

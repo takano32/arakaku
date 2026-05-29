@@ -378,10 +378,7 @@ export class TabRenderers {
     el.className = "card record-card official-page-doc-card";
     el.innerHTML = `
       <details>
-        <summary>
-          <h2 class="inline">${escapeHtml(page.title)}</h2>
-          <span class="meta">${escapeHtml(page.description ?? "")}</span>
-        </summary>
+        <summary><span class="summary-title">${escapeHtml(page.title)}</span> <span class="meta">${escapeHtml(page.description ?? "")}</span></summary>
         <div class="official-doc-body">${page.body_html}</div>
       </details>
     `;
