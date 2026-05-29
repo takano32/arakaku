@@ -74,7 +74,20 @@ export class DataRepository extends BaseRepository {
       }
     }
 
+    // Build numbers order: numbers_fighter_id sequence → fighter_id rank
+    const numbersOrder = new Map();
+    for (const nf of this.numbersFighters) {
+      const match = this.numbersNameMatches.find(m => m.numbers_fighter_id === nf.numbers_fighter_id);
+      const fid = match?.matched_fighter_id || match?.candidate_fighter_id;
+      if (fid && !numbersOrder.has(fid)) numbersOrder.set(fid, numbersOrder.size);
+    }
+
     const raw = [...canonical, ...discovered];
+    raw.sort((a, b) => {
+      const ai = numbersOrder.has(a.fighter_id) ? numbersOrder.get(a.fighter_id) : Infinity;
+      const bi = numbersOrder.has(b.fighter_id) ? numbersOrder.get(b.fighter_id) : Infinity;
+      return ai - bi;
+    });
     this.#richFighters = raw.map(f => this.enricher.enrichFighter(f));
     return this.#richFighters;
   }
