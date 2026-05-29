@@ -21,6 +21,8 @@ export function readFromURL() {
   return patch;
 }
 
+let _lastSearch = "";
+
 /** state を URL クエリ文字列に反映する（履歴は増やさない） */
 export function writeToURL(state) {
   const params = new URLSearchParams();
@@ -31,5 +33,7 @@ export function writeToURL(state) {
     }
   }
   const search = params.size > 0 ? `?${params}` : location.pathname;
+  if (search === _lastSearch) return;
+  _lastSearch = search;
   history.replaceState(null, "", search);
 }
