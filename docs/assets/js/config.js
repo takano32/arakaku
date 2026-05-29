@@ -29,6 +29,8 @@ export const DATA_FILES = {
   sourceVideoReferences: "./data/source_video_references.json",
   officialPlayers: "./data/official_players.json",
   officialTournaments: "./data/official_tournaments.json",
+  officialMatches: "./data/official_matches.json",
+  officialHistory: "./data/official_history.json",
 };
 
 export const PUBLIC_TABS = [
@@ -43,6 +45,11 @@ export const PUBLIC_TABS = [
 export const ADMIN_TABS = [
   ["sources", "出典本文"],
   ["mentions", "出典言及"],
+  ["numbersFighters", "名鑑選手"],
+  ["numbersNameMatches", "名前対応"],
+  ["numbersFightRecords", "名鑑記録"],
+  ["officialPlayers", "公式選手"],
+  ["officialMisc", "公式"],
 ];
 
 export const TABS = [...PUBLIC_TABS, ...ADMIN_TABS];
@@ -67,4 +74,6 @@ export const ENRICHMENT_DATA_KEYS = [
   "sourceDocuments", "sourceMentions",
   "officialPlayers",
   "officialTournaments",
+  "officialMatches",
+  "officialHistory",
 ];

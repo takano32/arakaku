@@ -439,4 +439,206 @@ export class TabRenderers {
       renderItem: (d) => this.renderSourceCard(d),
     };
   }
+
+  renderNumbersFighterCard(f) {
+    const { components } = this.ctx;
+    const stats = [
+      f.fight_count ? `${f.fight_count}戦` : null,
+      f.wins != null ? `${f.wins}勝` : null,
+      f.losses != null ? `${f.losses}負` : null,
+    ].filter(Boolean).join(" ");
+    return `
+      <article class="card record-card numbers-fighter-card">
+        <h2>${escapeHtml(f.display_name)}</h2>
+        <p class="meta">
+          ${escapeHtml(joinPresent([f.main_division, f.main_promotion_id]))}
+          <span class="video-badge">${f.source_confidence === "numbers" ? "名鑑" : escapeHtml(f.source_confidence ?? "")}</span>
+        </p>
+        ${stats ? `<p class="meta">${escapeHtml(stats)}</p>` : ""}
+        ${f.belt_marker ? `<p class="meta">👑 ${escapeHtml(f.belt_marker)}</p>` : ""}
+        ${f.tournament_win_marker ? `<p class="meta">🏆 ${escapeHtml(f.tournament_win_marker)}</p>` : ""}
+        ${components.detailDisclosure([
+          ["numbers_fighter_id", `<code>${escapeHtml(f.numbers_fighter_id)}</code>`],
+          ["キャッチコピー", f.catchphrase],
+          ["メモ", f.notes],
+        ])}
+      </article>
+    `;
+  }
+
+  renderNumbersNameMatchCard(m) {
+    const { components } = this.ctx;
+    const matchedLabel = m.matched_fighter_id
+      ? `→ ${escapeHtml(m.matched_display_name || m.matched_fighter_id)}`
+      : "→ 未対応";
+    return `
+      <article class="card record-card numbers-match-card">
+        <h2>${escapeHtml(m.numbers_name)} ${matchedLabel}</h2>
+        <p class="meta">
+          <span class="video-badge">${escapeHtml(m.match_confidence || "未対応")}</span>
+          ${m.match_method ? escapeHtml(m.match_method) : ""}
+        </p>
+        ${components.detailDisclosure([
+          ["numbers_fighter_id", `<code>${escapeHtml(m.numbers_fighter_id)}</code>`],
+          ["matched_fighter_id", m.matched_fighter_id ? `<code>${escapeHtml(m.matched_fighter_id)}</code>` : "未対応"],
+          ["candidate_fighter_id", m.candidate_fighter_id ? `<code>${escapeHtml(m.candidate_fighter_id)}</code>` : ""],
+          ["メモ", m.notes],
+        ])}
+      </article>
+    `;
+  }
+
+  renderNumbersFightRecordCard(r) {
+    const { components } = this.ctx;
+    const matchup = `${escapeHtml(r.fighter_name)} vs ${escapeHtml(r.opponent_name || "不明")}`;
+    const eventMeta = joinPresent([
+      r.division,
+      r.promotion_id,
+      r.event_number_normalized ? `第${r.event_number_normalized}回` : "",
+    ]);
+    return `
+      <article class="card record-card numbers-record-card">
+        <h2>${matchup}</h2>
+        <p class="meta">${escapeHtml(eventMeta)}</p>
+        ${r.result ? `<p class="result">${escapeHtml(r.result_mark || "")} ${escapeHtml(r.result)}</p>` : ""}
+        ${components.detailDisclosure([
+          ["record_id", `<code>${escapeHtml(r.record_id)}</code>`],
+          ["matched_fighter_id", r.matched_fighter_id ? `<code>${escapeHtml(r.matched_fighter_id)}</code>` : "未対応"],
+          ["形式", r.bout_format],
+          ["詳細", r.detail_raw],
+        ])}
+      </article>
+    `;
+  }
+
+  renderOfficialPlayerCard(p) {
+    const { components } = this.ctx;
+    const record = [
+      p.wins != null ? `${p.wins}勝` : null,
+      p.losses != null ? `${p.losses}敗` : null,
+      p.draws ? `${p.draws}分` : null,
+    ].filter(Boolean).join(" ");
+    return `
+      <article class="card record-card official-player-card">
+        <h2>
+          ${escapeHtml(p.name)}
+          ${p.nickname ? `<span class="fighter-nickname">「${escapeHtml(p.nickname)}」</span>` : ""}
+        </h2>
+        <p class="meta">
+          ${escapeHtml(joinPresent([p.weight_class, p.organization, p.nationality]))}
+          <span class="video-badge official-badge">公式</span>
+        </p>
+        ${record ? `<p class="meta">${escapeHtml(record)}</p>` : ""}
+        ${p.bio ? `<p>${escapeHtml(p.bio)}</p>` : ""}
+        ${components.detailDisclosure([
+          ["id", `<code>${escapeHtml(p.id)}</code>`],
+          ["読み", p.name_kana],
+          ["年齢", p.age],
+          ["身長", p.height],
+          ["デビュー", p.debut],
+          ["所属", p.gym],
+        ])}
+      </article>
+    `;
+  }
+
+  numbersFighters() {
+    const { repo } = this.ctx;
+    return {
+      items: repo.numbersFighters,
+      renderItem: (f) => this.renderNumbersFighterCard(f),
+    };
+  }
+
+  numbersNameMatches() {
+    const { repo } = this.ctx;
+    return {
+      items: repo.numbersNameMatches,
+      renderItem: (m) => this.renderNumbersNameMatchCard(m),
+    };
+  }
+
+  numbersFightRecords() {
+    const { repo } = this.ctx;
+    return {
+      items: repo.numbersFightRecords,
+      renderItem: (r) => this.renderNumbersFightRecordCard(r),
+    };
+  }
+
+  officialPlayers() {
+    const { repo } = this.ctx;
+    return {
+      items: repo.officialPlayers,
+      renderItem: (p) => this.renderOfficialPlayerCard(p),
+    };
+  }
+
+  renderOfficialTournamentCard(t) {
+    const { components } = this.ctx;
+    return `
+      <article class="card record-card official-tournament-card">
+        <h2>${escapeHtml(t.name)}</h2>
+        <p class="meta">
+          ${escapeHtml(t.date ?? "")}
+          <span class="video-badge official-badge">トーナメント</span>
+        </p>
+        ${t.champion ? `<p class="meta">優勝: ${escapeHtml(t.champion)}${t.runner_up ? ` / 準優勝: ${escapeHtml(t.runner_up)}` : ""}</p>` : ""}
+        ${components.detailDisclosure([
+          ["id", `<code>${escapeHtml(t.id)}</code>`],
+          ["video_id", t.video_id ? `<code>${escapeHtml(t.video_id)}</code>` : ""],
+        ])}
+      </article>
+    `;
+  }
+
+  renderOfficialMatchCard(m) {
+    const { components } = this.ctx;
+    return `
+      <article class="card record-card official-match-card">
+        <h2>${escapeHtml(m.fighter1 ?? "")} vs ${escapeHtml(m.fighter2 ?? "")}</h2>
+        <p class="meta">
+          ${escapeHtml(joinPresent([m.event, m.date, m.weight_class]))}
+          <span class="video-badge official-badge">試合</span>
+        </p>
+        ${m.result ? `<p class="result">${escapeHtml(m.result)}</p>` : ""}
+        ${components.detailDisclosure([
+          ["id", `<code>${escapeHtml(m.id)}</code>`],
+          ["決着", m.method],
+          ["ラウンド", m.round],
+          ["メモ", m.notes],
+        ])}
+      </article>
+    `;
+  }
+
+  renderOfficialHistoryCard(h) {
+    return `
+      <article class="card record-card official-history-card">
+        <h2>${escapeHtml(h.title)}</h2>
+        <p class="meta">
+          ${escapeHtml(joinPresent([h.year, h.era, h.month ? `${h.month}月` : ""]))}
+          <span class="video-badge official-badge">沿革</span>
+        </p>
+        ${h.description ? `<p>${escapeHtml(h.description)}</p>` : ""}
+      </article>
+    `;
+  }
+
+  officialMisc() {
+    const { repo } = this.ctx;
+    const items = [
+      ...repo.officialTournaments.map((t) => ({ _type: "tournament", ...t })),
+      ...repo.officialMatches.map((m) => ({ _type: "match", ...m })),
+      ...repo.officialHistory.map((h) => ({ _type: "history", ...h })),
+    ];
+    return {
+      items,
+      renderItem: (item) => {
+        if (item._type === "tournament") return this.renderOfficialTournamentCard(item);
+        if (item._type === "match") return this.renderOfficialMatchCard(item);
+        return this.renderOfficialHistoryCard(item);
+      },
+    };
+  }
 }

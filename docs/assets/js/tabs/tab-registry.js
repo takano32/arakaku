@@ -16,6 +16,11 @@ export class TabRendererRegistry {
       ["videos", () => tabRenderers.videos()],
       ["sources", () => tabRenderers.sources()],
       ["mentions", () => tabRenderers.mentions()],
+      ["numbersFighters", () => tabRenderers.numbersFighters()],
+      ["numbersNameMatches", () => tabRenderers.numbersNameMatches()],
+      ["numbersFightRecords", () => tabRenderers.numbersFightRecords()],
+      ["officialPlayers", () => tabRenderers.officialPlayers()],
+      ["officialMisc", () => tabRenderers.officialMisc()],
     ]);
   }
 
