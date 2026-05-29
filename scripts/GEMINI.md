@@ -16,6 +16,9 @@ Python scripts in this directory handle data processing, validation, and extract
 - Numbers-derived CSVs are comparison/review inputs. Do not use import scripts to confirm winners, bouts, or participant results without a separate review step. The static viewer uses these for automated supplementation of unknown fields.
 - `archive_metadata.py` is an explicit cache-to-source archiving script: it reads local cache files and regenerates `data-src/archives/youtube.csv` and `data-src/archives/note.csv`.
 - Archive CSVs preserve external metadata for review/display. Do not use archive rows to confirm bout results or fighter identities without a separate review step.
+- `download_official_data.sh` downloads the full `src/` tree from `kobayashi856/arakaku-site` into `tmp/arakaku-site/`. Run via `make download-official-data` (included in `make cache-sources`).
+- `generate_official_csvs.py` reads `tmp/arakaku-site/data/*.json` and writes `data-src/official_*.csv`. This is a stage-1 script (raw ingestion from `tmp/`). Do not derive values from other CSVs here.
+- `build_official_json.py` reads `data-src/official_*.csv` and writes `docs/data/official_players.json` and `docs/data/official_tournaments.json`. Run via `make build-official`. **IMPORTANT: never add official data enrichment to `build_json.py`** — all enrichment happens client-side in `data-enricher.js`.
 
 ### 3. Verification
 - All scripts contributing to the build should be compatible with `make check`.
@@ -23,9 +26,12 @@ Python scripts in this directory handle data processing, validation, and extract
 
 ## Key Scripts
 
-- `build_json.py`: The core build script. Rebuilds all JSON artifacts.
+- `build_json.py`: The core build script. Rebuilds all JSON artifacts. **Do not add enrichment logic here.**
+- `build_official_json.py`: Builds `official_players.json` and `official_tournaments.json` from `data-src/official_*.csv`. Run via `make build-official`.
 - `validate_json.py`: Ensures structural integrity and referential correctness.
 - `extract_numbers.py`: Exports `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv` from the Numbers file.
+- `download_official_data.sh`: Downloads `src/` tree from official site repo into `tmp/arakaku-site/`.
+- `generate_official_csvs.py`: Converts `tmp/arakaku-site/data/*.json` to `data-src/official_*.csv`.
 - `cache_*.py`: Fetch external data and cache it in `../tmp/`.
 - `archive_metadata.py`: Extracts critical metadata from cached data into `data-src/archives/` for permanent storage.
 - `make_*_candidates.py`: Analyze data and generate review candidates.

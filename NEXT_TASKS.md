@@ -52,6 +52,30 @@ make clean-generated
 - note記事 ○●🆚 構造化結果の抽出・照合・適用（88件、unknown 265→177）
 - Service Worker + Stale-While-Revalidate による JSON データキャッシュ（`docs/sw.js`）
 - `lite-youtube-embed` CDN web component による動画ファサード（クリックまで YouTube JS 不要）
+- 公式サイト（kobayashi856/arakaku-site）データのダウンロード・CSV化・JSON化パイプライン整備
+- クライアントサイド enrichment で公式データ（nickname, nationality, wins/losses/draws, champion）を richFighter / richEvent 等に統合
+- バッジ表記統一（"名鑑" / "公式"）、バナーヘッダ復活、サマリーカードのコンパクト化
+- スクロール挙動修正（タブ切り替え・ジャンプナビ・フォーカス変化）
+- 検索クリアボタン（✕ ボタン + Escape キー）
+- URL パーマリンク同期（url-sync.js）
+- キーボードナビゲーション（keyboard-nav.js）: j/k/h/l/g/G/Enter/o/c/Space/r/1-6/?
+
+---
+
+## P1: 公式データの選手マッチング精度向上
+
+### 背景
+
+現在 `display_name` 一致で 77 人中 71 人がマッチ。残り 6 人は名前表記の差異でマッチしていない。
+
+### 案
+
+- `aliases.csv` を活用して官公式名から canonical fighter_id へのマッピングを追加
+- または `data-enricher.js` の `#officialPlayerFor()` に表記揺れ正規化を追加
+
+### 完了条件
+
+- マッチ率が 77/77 または残り 6 人の不一致理由が文書化されている
 
 ---
 

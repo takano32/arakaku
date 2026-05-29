@@ -27,6 +27,10 @@ Current canonical source tables:
 - `videos.csv`: video metadata.
 - `archives/youtube.csv`: archived metadata extracted from cached YouTube info JSON.
 - `archives/note.csv`: archived metadata extracted from cached note HTML.
+- `official_players.csv`: player profiles extracted from `tmp/arakaku-site/data/players.json` (official site).
+- `official_tournaments.csv`: tournament results extracted from `tmp/arakaku-site/data/tournaments.json`.
+- `official_matches.csv`: match records extracted from `tmp/arakaku-site/data/matches.json`.
+- `official_history.csv`: flattened history entries from `tmp/arakaku-site/data/history.json`.
 - `article_links.csv`: article-to-entity relationships.
 - `video_links.csv`: video-to-entity relationships.
 - `aliases.csv`: alias-to-canonical entity mappings.
