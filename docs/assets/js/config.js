@@ -79,4 +79,6 @@ export const ENRICHMENT_DATA_KEYS = [
   "officialTournaments",
   "officialMatches",
   "officialHistory",
+  "officialPages",
+  "officialNews",
 ];

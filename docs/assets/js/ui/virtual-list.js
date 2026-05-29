@@ -1,6 +1,9 @@
 import { Virtualizer, windowScroll } from "https://esm.sh/@tanstack/virtual-core@3";
 import { emptyMessage } from "./html-utils.js";
 
+const loadingMessage = () =>
+  `<article class="card"><p class="meta">読み込み中...</p></article>`;
+
 const observeWindowRect = (_, cb) => {
   const update = () => cb({ width: window.innerWidth, height: window.innerHeight });
   update();
@@ -111,7 +114,12 @@ export class VirtualList {
     this.#createVirtualizer(items.length, scrollMargin);
   }
 
+  #loading = false;
   #painting = false;
+
+  setLoading(loading) {
+    this.#loading = loading;
+  }
 
   #paint() {
     // 再入防止: 測定による onChange ループを断ち切る
@@ -126,7 +134,7 @@ export class VirtualList {
       this.#el.style.height = `${total}px`;
 
       if (this.#items.length === 0) {
-        this.#el.innerHTML = emptyMessage();
+        this.#el.innerHTML = this.#loading ? loadingMessage() : emptyMessage();
         return;
       }
 

@@ -11,7 +11,6 @@ export const PUBLIC_REFERENCE_DATA_KEYS = [
 ];
 
 export const TAB_DATA_KEYS = {
-  official: ["officialPages", "officialNews"],
   sources: ["sourceDocuments", "sourceDocumentBodies"],
   mentions: ["sourceDocuments", "sourceMentions"],
 };

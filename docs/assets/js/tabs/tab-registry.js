@@ -67,6 +67,9 @@ export class TabRendererRegistry {
       container.replaceChildren(list.el);
     }
 
+    const isLoading = (this.#ctx?.state?.loadingDataKeys?.size ?? 0) > 0;
+    list.setLoading(isLoading);
+
     if (!tabChanged && !repoChanged && !filterChanged) return;
 
     const strategy = this.#strategies.get(tabId) ?? this.#strategies.get(DEFAULT_TAB);
