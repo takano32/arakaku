@@ -216,7 +216,12 @@ export class DataLoader {
   }
 
   loadPublicReferences() {
-    return this.loadKeys(PUBLIC_REFERENCE_DATA_KEYS);
+    this.ensureStateData();
+    return Promise.all(
+      PUBLIC_REFERENCE_DATA_KEYS
+        .filter((key) => key in this.dataFiles && !this.state.loadedDataKeys.has(key))
+        .map((key) => this.#streamKey(key, () => {}))
+    );
   }
 
   loadForTab(tabId) {
