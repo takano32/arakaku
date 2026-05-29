@@ -165,6 +165,25 @@ source_documents_full.json
 
 ---
 
+## P3: 公式タブを「公式ページ」と「公式ニュース」に分割する
+
+### 背景
+
+現在、通常ビューの「公式」タブには `official_pages`（about・history）と `official_news` が混在している。
+今は合計4件しかなく、分けるとタブあたり2件になるためまとめたままにしている。
+
+### 分割のタイミング
+
+公式ニュースが10件程度に増えたタイミングが目安。「最新情報だけ確認したい」という使い方に応えられるようになってから検討する。
+
+### 実装メモ
+
+- `config.js` の `PUBLIC_TABS` で `["official", "公式"]` を `["officialPages", "公式ページ"]` と `["officialNews", "公式ニュース"]` に分割
+- `TAB_DATA_KEYS` も対応して分割（officialPages → officialPages のみ、officialNews → officialNews のみ）
+- `tab-registry.js` と `tab-renderers.js` で descriptor を分けるだけで済む
+
+---
+
 ## P3: 王座変遷の精度向上
 
 
