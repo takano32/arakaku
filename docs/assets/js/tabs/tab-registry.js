@@ -34,6 +34,10 @@ export class TabRendererRegistry {
   #prevRepoRefs = new Map(); // tabId → 前回の DataRepository 参照
   #prevFilters = new Map(); // tabId → 前回のフィルタ文字列
   #prevFocusKey = ""; // フォーカス変化の検出用
+  #prevSortLoaded = new Map(); // tabId → 前回のソート完了状態
+
+  // 選手タブのソート順確定に必要なキー
+  static #SORT_KEYS = ["numbersFighters", "numbersNameMatches"];
 
   // 検索クエリ・フォーカス・フィルタ等、アイテム一覧に影響する state を文字列化
   #filterFingerprint() {
@@ -47,6 +51,11 @@ export class TabRendererRegistry {
     const s = this.#ctx?.state;
     if (!s) return "";
     return [s.focusFighterId, s.focusEventId].join("\0");
+  }
+
+  #isSortLoaded() {
+    const loaded = this.#ctx?.state?.loadedDataKeys;
+    return TabRendererRegistry.#SORT_KEYS.every(k => loaded?.has(k));
   }
 
   renderTo(container, tabId) {
@@ -71,7 +80,16 @@ export class TabRendererRegistry {
     const isLoading = (this.#ctx?.state?.loadingDataKeys?.size ?? 0) > 0;
     list.setLoading(isLoading);
 
-    if (!tabChanged && !repoChanged && !filterChanged) return;
+    // 選手タブのソート完了状態を追跡してバナーを制御
+    const isSortLoaded = this.#isSortLoaded();
+    const wasSortLoaded = this.#prevSortLoaded.get(tabId) ?? false;
+    const sortJustCompleted = tabId === "fighters" && isSortLoaded && !wasSortLoaded;
+    if (tabId === "fighters") {
+      this.#prevSortLoaded.set(tabId, isSortLoaded);
+      list.setBanner(isSortLoaded ? null : "ソート中...");
+    }
+
+    if (!tabChanged && !repoChanged && !filterChanged && !sortJustCompleted) return;
 
     const strategy = this.#strategies.get(tabId) ?? this.#strategies.get(DEFAULT_TAB);
     let descriptor;
@@ -86,11 +104,15 @@ export class TabRendererRegistry {
 
     const prevCount = this.#prevCounts.get(tabId) ?? -1;
 
-    if (tabChanged || prevCount === -1) {
+    if (tabChanged || prevCount === -1 || sortJustCompleted) {
       container.replaceChildren(list.el);
       list.setItems(items, renderItem, estimateSize);
       list.resetCursor();
       this.#currentTabId = tabId;
+    } else if (tabId === "fighters" && !isSortLoaded) {
+      // ソート中: DOM wipeなしにin-placeで更新
+      list.softUpdate(items);
+      if (focusChanged) window.scrollTo({ top: 0, behavior: "instant" });
     } else {
       list.refreshItems(items);
       if (focusChanged) window.scrollTo({ top: 0, behavior: "instant" });

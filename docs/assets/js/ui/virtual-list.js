@@ -19,6 +19,8 @@ const observeWindowOffset = (_, cb) => {
 };
 
 export class VirtualList {
+  #wrapper;
+  #bannerEl;
   #el;
   #items = [];
   #renderItem = null;
@@ -31,11 +33,29 @@ export class VirtualList {
   #cursorIndex = -1;
 
   constructor() {
+    this.#bannerEl = document.createElement("div");
+    this.#bannerEl.className = "sort-banner";
+    this.#bannerEl.hidden = true;
+
     this.#el = document.createElement("div");
     this.#el.className = "virtual-list";
+
+    this.#wrapper = document.createElement("div");
+    this.#wrapper.className = "virtual-list-wrapper";
+    this.#wrapper.appendChild(this.#bannerEl);
+    this.#wrapper.appendChild(this.#el);
   }
 
-  get el() { return this.#el; }
+  get el() { return this.#wrapper; }
+
+  setBanner(text) {
+    if (text) {
+      this.#bannerEl.textContent = text;
+      this.#bannerEl.hidden = false;
+    } else {
+      this.#bannerEl.hidden = true;
+    }
+  }
   get count() { return this.#items.length; }
   get cursorIndex() { return this.#cursorIndex; }
 
@@ -111,6 +131,28 @@ export class VirtualList {
     this.#pendingMeasure.clear();
     this.#el.innerHTML = "";
     const scrollMargin = this.#virtualizer?.options.scrollMargin ?? (this.#el.getBoundingClientRect().top + window.scrollY);
+    this.#createVirtualizer(items.length, scrollMargin);
+  }
+
+  // ソート中インクリメンタル更新: DOM wipeなしに表示中の行だけin-placeで更新する
+  softUpdate(items) {
+    this.#items = items;
+    for (const [idx, row] of [...this.#rowEls]) {
+      if (idx >= items.length) {
+        row.remove();
+        this.#rowEls.delete(idx);
+      } else {
+        try {
+          row.innerHTML = this.#renderItem(items[idx]);
+        } catch (err) {
+          row.innerHTML = `<article class="card"><p class="meta">描画エラー: ${err.message}</p></article>`;
+          console.error("VirtualList softUpdate error at index", idx, err);
+        }
+        this.#pendingMeasure.add(row);
+      }
+    }
+    const scrollMargin = this.#virtualizer?.options.scrollMargin ??
+      (this.#el.getBoundingClientRect().top + window.scrollY);
     this.#createVirtualizer(items.length, scrollMargin);
   }
 
