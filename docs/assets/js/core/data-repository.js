@@ -1,5 +1,12 @@
 import { BaseRepository } from "./base-repository.js";
 import { DataEnricher } from "./data-enricher.js";
+import {
+  boutReliability,
+  eventReliability,
+  fighterReliability,
+  lowReliabilityLast,
+  videoReliability,
+} from "./reliability.js";
 
 /** Repository: JSON データへの参照・検索を集約。Rich Data への変換とキャッシュを管理。 */
 export class DataRepository extends BaseRepository {
@@ -45,7 +52,8 @@ export class DataRepository extends BaseRepository {
   get events() { return [...super.events].reverse(); }
   get richEvents() {
     if (this.#richEvents) return this.#richEvents;
-    this.#richEvents = super.events.map(e => this.enricher.enrichEvent(e)).reverse();
+    const enriched = super.events.map(e => this.enricher.enrichEvent(e)).reverse();
+    this.#richEvents = lowReliabilityLast(enriched, eventReliability);
     return this.#richEvents;
   }
 
@@ -94,21 +102,24 @@ export class DataRepository extends BaseRepository {
       if (bi === Infinity) return -1;
       return ai - bi;
     });
-    this.#richFighters = raw.map(f => this.enricher.enrichFighter(f));
+    const enriched = raw.map(f => this.enricher.enrichFighter(f));
+    this.#richFighters = lowReliabilityLast(enriched, fighterReliability);
     return this.#richFighters;
   }
 
   get bouts() { return super.bouts; }
   get richBouts() {
     if (this.#richBouts) return this.#richBouts;
-    this.#richBouts = super.bouts.map(b => this.enricher.enrichBout(b)).reverse();
+    const enriched = super.bouts.map(b => this.enricher.enrichBout(b)).reverse();
+    this.#richBouts = lowReliabilityLast(enriched, boutReliability);
     return this.#richBouts;
   }
 
   get videos() { return super.videos; }
   get richVideos() {
     if (this.#richVideos) return this.#richVideos;
-    this.#richVideos = super.videos.map(v => this.enricher.enrichVideo(v)).reverse();
+    const enriched = super.videos.map(v => this.enricher.enrichVideo(v)).reverse();
+    this.#richVideos = lowReliabilityLast(enriched, videoReliability);
     return this.#richVideos;
   }
 
