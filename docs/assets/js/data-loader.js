@@ -205,7 +205,13 @@ export class DataLoader {
     // Phase 2: ENRICHMENT キーを通常ロード
     await this.#loadEnrichment();
 
-    this.loadPublicReferences();
+    // Public references を並列ストリーミングして完了を待つ
+    await this.loadPublicReferences();
+
+    // 全てのデータロード完了後に確定 patch
+    this.state.repository = new DataRepository(this.state.data);
+    this.state.patch({});
+
     return this.state.data;
   }
 
@@ -224,13 +230,15 @@ export class DataLoader {
     );
   }
 
-  loadForTab(tabId) {
+  async loadForTab(tabId) {
     const keys = (TAB_DATA_KEYS[tabId] ?? []).filter(
       (key) => key in this.dataFiles && !this.state.loadedDataKeys?.has(key)
     );
-    if (keys.length === 0) return Promise.resolve();
+    if (keys.length === 0) return;
     this.ensureStateData();
-    return Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
+    await Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
+    this.state.repository = new DataRepository(this.state.data);
+    this.state.patch({});
   }
 
   loadAll() {
