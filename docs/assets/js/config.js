@@ -60,7 +60,7 @@ export const TABS = [...PUBLIC_TABS, ...ADMIN_TABS];
 
 export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
 
-export const DEFAULT_TAB = "bouts";
+export const DEFAULT_TAB = "official";
 export const DEFAULT_ADMIN_TAB = "sources";
 
 // ストリーミングでインクリメンタルに描画するファイル群 (表示に直結するもの)
