@@ -69,6 +69,23 @@ export class EventController {
       this.viewController.renderContent();
     });
 
+    document.querySelector("#fighter-filters")?.addEventListener("click", (event) => {
+      const btn = event.target.closest(".filter-button");
+      if (!btn) return;
+
+      const type = btn.dataset.filterType;
+      const val = btn.dataset.filterVal;
+
+      if (type === "division") {
+        const nextVal = this.state.fighterDivision === val ? "" : val;
+        this.state.patch({ fighterDivision: nextVal });
+      } else if (type === "promotion") {
+        const nextVal = this.state.fighterPromotion === val ? "" : val;
+        this.state.patch({ fighterPromotion: nextVal });
+      }
+      this.viewController.renderContent();
+    });
+
     document.querySelector("#content")?.addEventListener("click", (event) => {
       const fighterButton = event.target.closest(".fighter-link");
       if (fighterButton) {

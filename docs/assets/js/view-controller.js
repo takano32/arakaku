@@ -122,6 +122,26 @@ export class ViewController {
     );
   }
 
+  renderFighterFilters() {
+    const { state } = this.ctx;
+    const filters = document.querySelector("#fighter-filters");
+    if (!filters) return;
+
+    const isActive = state.tab === "fighters";
+    filters.hidden = !isActive;
+    if (!isActive) return;
+
+    filters.querySelectorAll(".filter-button").forEach((btn) => {
+      const type = btn.dataset.filterType;
+      const val = btn.dataset.filterVal;
+      if (type === "division") {
+        btn.classList.toggle("active", state.fighterDivision === val);
+      } else if (type === "promotion") {
+        btn.classList.toggle("active", state.fighterPromotion === val);
+      }
+    });
+  }
+
   renderTabs() {
     const tabs = document.querySelector(".tabs");
     if (!tabs) return;
@@ -205,6 +225,7 @@ export class ViewController {
     this.renderTabs();
     this.renderTitleFilters();
     this.renderMentionFilters();
+    this.renderFighterFilters();
     this.renderContent();
   }
 }

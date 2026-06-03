@@ -260,16 +260,68 @@ input[type="search"]::-webkit-search-cancel-button {
 /* ── Filters ────────────────────────────────────────────────── */
 
 .title-filters,
-.mention-filters {
+.mention-filters,
+.fighter-filters {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin: 0 0 16px;
 }
 
+.fighter-filters {
+  flex-direction: column;
+  gap: 12px;
+}
+
 .title-filters[hidden],
-.mention-filters[hidden] {
+.mention-filters[hidden],
+.fighter-filters[hidden] {
   display: none;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 48px;
+}
+
+.filter-button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-button {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.filter-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #eaf0fb;
+}
+
+.filter-button.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 
 .title-filters select,

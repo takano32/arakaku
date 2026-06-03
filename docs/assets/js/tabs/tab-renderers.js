@@ -472,7 +472,31 @@ export class TabRenderers {
         state.focusFighterId,
         repo.findRichFighter.bind(repo),
         repo.richFighters,
-        (f) => query.fighterMatches(f)
+        (f) => {
+          if (!query.fighterMatches(f)) return false;
+
+          if (state.fighterDivision) {
+            if (state.fighterDivision === "other") {
+              if (f.main_division === "ライト級" || f.main_division === "ミドル級" || f.main_division === "ヘビー級") {
+                return false;
+              }
+            } else {
+              if (f.main_division !== state.fighterDivision) return false;
+            }
+          }
+
+          if (state.fighterPromotion) {
+            if (state.fighterPromotion === "other") {
+              if (f.main_promotion_id === "target" || f.main_promotion_id === "emperor" || f.main_promotion_id === "mh") {
+                return false;
+              }
+            } else {
+              if (f.main_promotion_id !== state.fighterPromotion) return false;
+            }
+          }
+
+          return true;
+        }
       ),
       renderItem: (f) => this.renderFighterCard(f),
     };

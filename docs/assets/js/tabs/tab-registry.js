@@ -43,7 +43,7 @@ export class TabRendererRegistry {
   #filterFingerprint() {
     const s = this.#ctx?.state;
     if (!s) return "";
-    return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType].join("\0");
+    return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType, s.fighterDivision, s.fighterPromotion].join("\0");
   }
 
   // フォーカス（ジャンプ）が変化したか
