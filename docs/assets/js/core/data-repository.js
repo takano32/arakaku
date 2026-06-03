@@ -83,9 +83,15 @@ export class DataRepository extends BaseRepository {
     }
 
     const raw = [...canonical, ...discovered];
+    const originalIndex = new Map(raw.map((f, idx) => [f.fighter_id, idx]));
     raw.sort((a, b) => {
       const ai = numbersOrder.has(a.fighter_id) ? numbersOrder.get(a.fighter_id) : Infinity;
       const bi = numbersOrder.has(b.fighter_id) ? numbersOrder.get(b.fighter_id) : Infinity;
+      if (ai === Infinity && bi === Infinity) {
+        return originalIndex.get(a.fighter_id) - originalIndex.get(b.fighter_id);
+      }
+      if (ai === Infinity) return 1;
+      if (bi === Infinity) return -1;
       return ai - bi;
     });
     this.#richFighters = raw.map(f => this.enricher.enrichFighter(f));
