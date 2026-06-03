@@ -41,6 +41,13 @@ def clean_number(value: str) -> str:
     return value
 
 
+def clean_division(value: str) -> str:
+    raw = clean_text(value)
+    if raw in ["ライト", "ミドル", "ヘビー"]:
+        return raw + "級"
+    return raw
+
+
 def promotion_id(value: str) -> str:
     raw = clean_text(value)
     return PROMOTION_MAP.get(raw, raw.lower())
@@ -134,7 +141,7 @@ def extract_fighters(doc: Document, name_to_id: dict[str, str]) -> tuple[list[di
             "source_sheet": "全体",
             "source_row": str(source_row),
             "display_name": name,
-            "main_division": clean_text(raw["階級"]),
+            "main_division": clean_division(raw["階級"]),
             "main_promotion_raw": clean_text(raw["主戦団体"]),
             "main_promotion_id": promotion_id(raw["主戦団体"]),
             "age": clean_number(raw["年齢"]),
@@ -211,7 +218,7 @@ def extract_fight_records(doc: Document, fighters_by_name: dict[str, dict[str, s
                 "fighter_name": fighter_name,
                 "matched_fighter_id": fighter_match.get("matched_fighter_id", ""),
                 "candidate_fighter_id": fighter_match.get("candidate_fighter_id", ""),
-                "division": clean_text(raw["階級"]),
+                "division": clean_division(raw["階級"]),
                 "promotion_raw": clean_text(raw["団体"]),
                 "promotion_id": promotion_id(raw["団体"]),
                 "event_number_raw": clean_text(raw["No"]),
