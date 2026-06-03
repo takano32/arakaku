@@ -1,5 +1,6 @@
 import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
 import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
+import { FIGHTER_FILTERS, filterButtons } from "./fighter-filters.js";
 
 const REQUIRED_TAB_DATA_KEYS = {
   sources: ["sourceDocuments"],
@@ -131,15 +132,25 @@ export class ViewController {
     filters.hidden = !isActive;
     if (!isActive) return;
 
-    filters.querySelectorAll(".filter-button").forEach((btn) => {
-      const type = btn.dataset.filterType;
-      const val = btn.dataset.filterVal;
-      if (type === "division") {
-        btn.classList.toggle("active", state.fighterDivision === val);
-      } else if (type === "promotion") {
-        btn.classList.toggle("active", state.fighterPromotion === val);
-      }
-    });
+    filters.innerHTML = FIGHTER_FILTERS.map((group) => {
+      const selected = state[group.stateKey];
+      const buttons = filterButtons(group)
+        .map(
+          (option) => `
+        <button type="button" class="filter-button ${selected === option.value ? "active" : ""}"
+                data-filter-type="${escapeHtml(group.type)}" data-filter-val="${escapeHtml(option.value)}">
+          ${escapeHtml(option.label)}
+        </button>
+      `
+        )
+        .join("");
+      return `
+      <div class="filter-row">
+        <span class="filter-label">${escapeHtml(group.label)}：</span>
+        <div class="filter-button-group">${buttons}</div>
+      </div>
+    `;
+    }).join("");
   }
 
   renderTabs() {

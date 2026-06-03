@@ -1,4 +1,5 @@
 import { DEFAULT_TAB } from "../config.js";
+import { FIGHTER_FILTERS } from "../fighter-filters.js";
 import { VirtualList } from "../ui/virtual-list.js";
 
 /** Strategy: タブ ID から描画 Strategy を解決 */
@@ -43,7 +44,8 @@ export class TabRendererRegistry {
   #filterFingerprint() {
     const s = this.#ctx?.state;
     if (!s) return "";
-    return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType, s.fighterDivision, s.fighterPromotion].join("\0");
+    const fighterFilters = FIGHTER_FILTERS.map((group) => s[group.stateKey]);
+    return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType, ...fighterFilters].join("\0");
   }
 
   // フォーカス（ジャンプ）が変化したか

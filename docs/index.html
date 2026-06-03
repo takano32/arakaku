@@ -55,26 +55,8 @@
       </select>
     </section>
 
-    <section id="fighter-filters" class="fighter-filters" hidden>
-      <div class="filter-row">
-        <span class="filter-label">階級：</span>
-        <div class="filter-button-group">
-          <button type="button" class="filter-button" data-filter-type="division" data-filter-val="ライト級">ライト</button>
-          <button type="button" class="filter-button" data-filter-type="division" data-filter-val="ミドル級">ミドル</button>
-          <button type="button" class="filter-button" data-filter-type="division" data-filter-val="ヘビー級">ヘビー</button>
-          <button type="button" class="filter-button" data-filter-type="division" data-filter-val="other">その他</button>
-        </div>
-      </div>
-      <div class="filter-row">
-        <span class="filter-label">団体：</span>
-        <div class="filter-button-group">
-          <button type="button" class="filter-button" data-filter-type="promotion" data-filter-val="target">ターゲット</button>
-          <button type="button" class="filter-button" data-filter-type="promotion" data-filter-val="emperor">エンペラー</button>
-          <button type="button" class="filter-button" data-filter-type="promotion" data-filter-val="mh">マウンテンヒーローズ</button>
-          <button type="button" class="filter-button" data-filter-type="promotion" data-filter-val="other">その他</button>
-        </div>
-      </div>
-    </section>
+    <!-- ボタンは fighter-filters.js の FIGHTER_FILTERS から ViewController が生成 -->
+    <section id="fighter-filters" class="fighter-filters" hidden></section>
 
     <section id="content" class="content"></section>
   </main>
