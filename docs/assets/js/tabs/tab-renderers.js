@@ -486,16 +486,16 @@ export class TabRenderers {
         state.focusEventId,
         repo.findRichEvent.bind(repo),
         repo.richEvents,
-        (e) => query.eventMatches(e)
+        (e) => query.eventMatches(e) && itemPassesFilters(e, TAB_FILTERS.events, state)
       ),
       renderItem: (e) => this.renderEventCard(e),
     };
   }
 
   promotions() {
-    const { query, repo } = this.ctx;
+    const { state, query, repo } = this.ctx;
     return {
-      items: repo.richPromotions.filter((p) => query.promotionMatches(p)),
+      items: repo.richPromotions.filter((p) => query.promotionMatches(p) && itemPassesFilters(p, TAB_FILTERS.promotions, state)),
       renderItem: (p) => this.renderPromotionCard(p),
     };
   }

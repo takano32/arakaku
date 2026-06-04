@@ -16,6 +16,9 @@ export class AppState {
   fighterPromotion = "";
   boutDivision = "";
   boutPromotion = "";
+  eventPromotion = "";
+  eventType = "";
+  promotionCategory = "";
   data = null;
   repository = null;
   loadedDataKeys = new Set();

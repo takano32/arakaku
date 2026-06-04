@@ -15,6 +15,20 @@ const PROMOTION_OPTIONS = [
   { value: "max_bout", label: "MAXバウト" },
 ];
 
+const EVENT_TYPE_OPTIONS = [
+  { value: "numbered_event", label: "通常大会" },
+  { value: "tournament", label: "トーナメント" },
+  { value: "special_event", label: "特別大会" },
+];
+
+const PROMOTION_CATEGORY_OPTIONS = [
+  { value: "major", label: "主要" },
+  { value: "special_event_series", label: "特別大会シリーズ" },
+  { value: "minor", label: "マイナー" },
+  { value: "event_series", label: "イベントシリーズ" },
+  { value: "unclassified", label: "未分類" },
+];
+
 /**
  * タブごとの絞り込みフィルタ定義。ボタン HTML・絞り込み・クリック・再描画判定の単一の真実。
  *
@@ -38,6 +52,13 @@ export const TAB_FILTERS = {
   titles: [
     { type: "division", label: "階級", stateKey: "titleDivision", field: "division", otherLabel: "その他", options: DIVISION_OPTIONS },
     { type: "promotion", label: "団体", stateKey: "titlePromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
+  events: [
+    { type: "promotion", label: "団体", stateKey: "eventPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+    { type: "event_type", label: "種別", stateKey: "eventType", field: "event_type", otherLabel: "その他", options: EVENT_TYPE_OPTIONS },
+  ],
+  promotions: [
+    { type: "category", label: "区分", stateKey: "promotionCategory", field: "category", options: PROMOTION_CATEGORY_OPTIONS },
   ],
 };
 

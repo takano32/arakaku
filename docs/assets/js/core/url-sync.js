@@ -12,6 +12,9 @@ const PARAM_MAP = {
   fighter_promo:  "fighterPromotion",
   bout_div:       "boutDivision",
   bout_promo:     "boutPromotion",
+  event_promo:    "eventPromotion",
+  event_type:     "eventType",
+  promo_cat:      "promotionCategory",
 };
 
 /** URL クエリ文字列から state の初期値を返す */
