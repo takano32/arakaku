@@ -15,6 +15,10 @@ const PARAM_MAP = {
   event_promo:    "eventPromotion",
   event_type:     "eventType",
   promo_cat:      "promotionCategory",
+  video_div:      "videoDivision",
+  video_promo:    "videoPromotion",
+  tsushin_div:    "tsushinDivision",
+  tsushin_promo:  "tsushinPromotion",
 };
 
 /** URL クエリ文字列から state の初期値を返す */

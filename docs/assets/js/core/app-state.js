@@ -19,6 +19,10 @@ export class AppState {
   eventPromotion = "";
   eventType = "";
   promotionCategory = "";
+  videoDivision = "";
+  videoPromotion = "";
+  tsushinDivision = "";
+  tsushinPromotion = "";
   data = null;
   repository = null;
   loadedDataKeys = new Set();

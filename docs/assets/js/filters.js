@@ -60,6 +60,14 @@ export const TAB_FILTERS = {
   promotions: [
     { type: "category", label: "区分", stateKey: "promotionCategory", field: "category", options: PROMOTION_CATEGORY_OPTIONS },
   ],
+  videos: [
+    { type: "division", label: "階級", stateKey: "videoDivision", field: "division", otherLabel: "その他", options: DIVISION_OPTIONS },
+    { type: "promotion", label: "団体", stateKey: "videoPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
+  tsushin: [
+    { type: "division", label: "階級", stateKey: "tsushinDivision", field: "divisions", otherLabel: "その他", options: DIVISION_OPTIONS },
+    { type: "promotion", label: "団体", stateKey: "tsushinPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
 };
 
 /** 「その他」(既知の option 以外) を表す予約値 */
@@ -76,18 +84,24 @@ export function filterButtons(group) {
 
 const matchOf = (option) => option.match ?? option.value;
 
-/** item が groups の選択値すべてを通過するか */
+/**
+ * item が groups の選択値すべてを通過するか。
+ * field の値は単一でも配列でもよい (例: 1記事が複数階級を含む)。配列の場合はいずれかが一致すれば通過。
+ */
 export function itemPassesFilters(item, groups, state) {
   return groups.every((group) => {
     const selected = state[group.stateKey];
     if (!selected) return true;
 
     const forcedOther = group.forceOther ? group.forceOther(item) : false;
-    const fieldValue = item[group.field];
+    const raw = item[group.field];
+    const values = Array.isArray(raw) ? raw : raw == null || raw === "" ? [] : [raw];
+    const knownMatches = group.options.map(matchOf);
+
     if (selected === OTHER_VALUE) {
-      return forcedOther || !group.options.some((option) => matchOf(option) === fieldValue);
+      return forcedOther || !values.some((v) => knownMatches.includes(v));
     }
     const option = group.options.find((o) => o.value === selected);
-    return !forcedOther && option != null && fieldValue === matchOf(option);
+    return !forcedOther && option != null && values.includes(matchOf(option));
   });
 }

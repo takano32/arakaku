@@ -42,7 +42,7 @@ export class DataEnricher {
   enrichVideo(video) {
     if (!video) return video;
     const archive = this.repo.findYoutubeArchive(video.platform_video_id);
-    return {
+    const rich = {
       ...video,
       title: archive?.fulltitle ?? video.title,
       channel_name: archive?.uploader ?? video.channel_name,
@@ -50,6 +50,20 @@ export class DataEnricher {
       archive_description: archive?.description,
       archive_metadata: archive,
     };
+    // 関連 bout(階級+団体)/event(団体) から絞り込み用フィールドを導出 (動画は単一値)
+    for (const link of this.repo.findManyByField("videoLinks", "video_id", video.video_id)) {
+      if (link.entity_type === "bout") {
+        const bout = this.repo.findBout(link.entity_id);
+        if (bout) {
+          rich.promotion_id ??= bout.promotion_id;
+          rich.division ??= bout.division;
+        }
+      } else if (link.entity_type === "event") {
+        const event = this.repo.findEvent(link.entity_id);
+        if (event) rich.promotion_id ??= event.promotion_id;
+      }
+    }
+    return rich;
   }
 
   enrichArticle(article) {

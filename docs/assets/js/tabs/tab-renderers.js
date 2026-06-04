@@ -463,9 +463,25 @@ export class TabRenderers {
     `;
   }
 
-  tsushin() {
+  // note 記事に絞り込み用フィールド (団体: article から / 階級: article_links→bout から複数) を付与
+  #withNoteFilterFields(doc) {
     const { repo } = this.ctx;
-    const items = repo.sourceDocuments.filter(d => d.source_type === "note_article");
+    const article = repo.findArticle(doc.source_ref_id);
+    const divisions = [...new Set(
+      repo.findManyByField("articleLinks", "article_id", doc.source_ref_id)
+        .filter((l) => l.entity_type === "bout")
+        .map((l) => repo.findBout(l.entity_id)?.division)
+        .filter(Boolean)
+    )];
+    return { ...doc, promotion_id: article?.promotion_id, divisions };
+  }
+
+  tsushin() {
+    const { state, repo } = this.ctx;
+    const items = repo.sourceDocuments
+      .filter((d) => d.source_type === "note_article")
+      .map((d) => this.#withNoteFilterFields(d))
+      .filter((d) => itemPassesFilters(d, TAB_FILTERS.tsushin, state));
     return {
       items,
       renderItem: (d) => this.renderNoteArticleCard(d),
@@ -515,9 +531,9 @@ export class TabRenderers {
   }
 
   videos() {
-    const { query, repo } = this.ctx;
+    const { state, query, repo } = this.ctx;
     return {
-      items: repo.richVideos.filter((v) => query.videoMatches(v)),
+      items: repo.richVideos.filter((v) => query.videoMatches(v) && itemPassesFilters(v, TAB_FILTERS.videos, state)),
       renderItem: (v) => this.renderVideoCard(v),
     };
   }
