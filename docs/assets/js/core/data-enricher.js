@@ -115,6 +115,9 @@ export class DataEnricher {
     const rich = { ...fighter };
     if (needsClear) rich.summary = "";
 
+    // 信頼性の低い順に重ねる: base(通信/YouTube) → 公式 → 名鑑
+    if (op) this.#applyOfficialPlayer(rich, op);
+
     if (nf) {
       if (nf.display_name) rich.display_name = nf.display_name;
       if (nf.main_division) rich.main_division = nf.main_division;
@@ -125,14 +128,15 @@ export class DataEnricher {
       if (nf.profile?.age) rich.profile.age = nf.profile.age;
       if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
 
-      if (nf.catchphrase || nf.notes) {
-        rich.summary = [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n");
-      }
-
       rich.numbers_data = nf;
     }
 
-    if (op) this.#applyOfficialPlayer(rich, op);
+    // summary は信頼性順に決定: 名鑑(catchphrase/notes) > 公式(bio) > base(通信/YouTube)
+    const numbersSummary = nf && (nf.catchphrase || nf.notes)
+      ? [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n")
+      : "";
+    if (numbersSummary) rich.summary = numbersSummary;
+    else if (op?.bio) rich.summary = op.bio;
 
     return rich;
   }

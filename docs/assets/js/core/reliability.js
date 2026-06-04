@@ -39,8 +39,9 @@ export function eventReliability(e) {
 }
 
 export function videoReliability(v) {
+  if (v.official_status === "official") return RELIABILITY.official; // 団体公式チャンネル
   if (has(v.source_article_ids)) return RELIABILITY.note;
-  return RELIABILITY.youtube; // 動画は本質的に YouTube 由来
+  return RELIABILITY.youtube;
 }
 
 /** 入力順を保ったまま、低信頼の要素だけを末尾へ寄せる安定パーティション */
