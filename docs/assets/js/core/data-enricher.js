@@ -103,6 +103,29 @@ export class DataEnricher {
     rich.official_data = op;
   }
 
+  // 公式選手データを fighter に重ねる (base を上書き; 名鑑が後でさらに上書きする)
+  #applyOfficialFighter(rich, op) {
+    this.#applyOfficialPlayer(rich, op);
+    if (op.weight_class) rich.main_division = op.weight_class;
+    const promotionId = this.repo.promotionIdByName(op.organization);
+    if (promotionId) rich.main_promotion_id = promotionId;
+    if (op.gym) rich.profile.gym = op.gym;
+    if (op.age != null && op.age !== "") rich.profile.age = op.age;
+    if (op.height) rich.profile.height = /^\d+$/.test(String(op.height)) ? `${op.height}cm` : op.height;
+  }
+
+  // 名鑑データを fighter に重ねる (最優先)
+  #applyNumbersFighter(rich, nf) {
+    if (nf.display_name) rich.display_name = nf.display_name;
+    if (nf.main_division) rich.main_division = nf.main_division;
+    if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
+    rich.profile = { ...(rich.profile ?? {}) };
+    if (nf.profile?.height) rich.profile.height = nf.profile.height;
+    if (nf.profile?.age) rich.profile.age = nf.profile.age;
+    if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
+    rich.numbers_data = nf;
+  }
+
   enrichFighter(fighter) {
     const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
     const match = this.#nameMatches.get(fighter.fighter_id);
@@ -116,29 +139,8 @@ export class DataEnricher {
     if (needsClear) rich.summary = "";
 
     // 信頼性の低い順に重ねる: base(通信/YouTube) → 公式 → 名鑑
-    if (op) {
-      this.#applyOfficialPlayer(rich, op);
-      // 公式の階級・団体・プロフィールで base を上書き (名鑑が後でさらに上書きする)
-      if (op.weight_class) rich.main_division = op.weight_class;
-      const officialPromotionId = this.repo.promotionIdByName(op.organization);
-      if (officialPromotionId) rich.main_promotion_id = officialPromotionId;
-      if (op.gym) rich.profile.gym = op.gym;
-      if (op.age != null && op.age !== "") rich.profile.age = op.age;
-      if (op.height) rich.profile.height = /^\d+$/.test(String(op.height)) ? `${op.height}cm` : op.height;
-    }
-
-    if (nf) {
-      if (nf.display_name) rich.display_name = nf.display_name;
-      if (nf.main_division) rich.main_division = nf.main_division;
-      if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
-
-      rich.profile = { ...(rich.profile ?? {}) };
-      if (nf.profile?.height) rich.profile.height = nf.profile.height;
-      if (nf.profile?.age) rich.profile.age = nf.profile.age;
-      if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
-
-      rich.numbers_data = nf;
-    }
+    if (op) this.#applyOfficialFighter(rich, op);
+    if (nf) this.#applyNumbersFighter(rich, nf);
 
     // summary は信頼性順に決定: 名鑑(catchphrase/notes) > 公式(bio) > base(通信/YouTube)
     const numbersSummary = nf && (nf.catchphrase || nf.notes)
