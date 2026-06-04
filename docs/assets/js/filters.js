@@ -8,10 +8,11 @@ const DIVISION_OPTIONS = [
   { value: "heavyweight", label: "ヘビー", match: "ヘビー級" },
 ];
 
-const MAJOR_PROMOTION_OPTIONS = [
+const PROMOTION_OPTIONS = [
   { value: "target", label: "ターゲット" },
   { value: "emperor", label: "エンペラー" },
   { value: "mh", label: "マウンテンヒーローズ" },
+  { value: "max_bout", label: "MAXバウト" },
 ];
 
 /**
@@ -28,11 +29,11 @@ const MAJOR_PROMOTION_OPTIONS = [
 export const TAB_FILTERS = {
   fighters: [
     { type: "division", label: "階級", stateKey: "fighterDivision", field: "main_division", otherLabel: "その他", options: DIVISION_OPTIONS, forceOther: isMinimalFighter },
-    { type: "promotion", label: "団体", stateKey: "fighterPromotion", field: "main_promotion_id", otherLabel: "その他", options: MAJOR_PROMOTION_OPTIONS, forceOther: isMinimalFighter },
+    { type: "promotion", label: "団体", stateKey: "fighterPromotion", field: "main_promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS, forceOther: isMinimalFighter },
   ],
   bouts: [
     { type: "division", label: "階級", stateKey: "boutDivision", field: "division", otherLabel: "その他", options: DIVISION_OPTIONS },
-    { type: "promotion", label: "団体", stateKey: "boutPromotion", field: "promotion_id", otherLabel: "その他", options: [...MAJOR_PROMOTION_OPTIONS, { value: "max_bout", label: "MAXバウト" }] },
+    { type: "promotion", label: "団体", stateKey: "boutPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
   ],
 };
 
