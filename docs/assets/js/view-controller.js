@@ -3,6 +3,7 @@ import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 import { TAB_FILTERS, filterButtons } from "./filters.js";
 
 const REQUIRED_TAB_DATA_KEYS = {
+  tsushin: ["sourceDocuments", "sourceDocumentBodies"],
   sources: ["sourceDocuments"],
   mentions: ["sourceDocuments", "sourceMentions"],
 };

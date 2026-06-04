@@ -47,6 +47,7 @@ new KeyboardNav(tabRegistry, state, dataLoader).bind();
 
 dataLoader
   .load()
+  .then(() => dataLoader.loadForTab(state.tab))
   .catch((error) => {
     renderLoadError(error);
   });
