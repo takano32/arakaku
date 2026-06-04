@@ -17,7 +17,10 @@ function isMinimalFighter(fighter) {
  * - stateKey: AppState 上の選択値フィールド名
  * - field:    選手レコードの照合対象フィールド名
  * - otherLabel: 設定すると「その他」(既知値以外) ボタンを末尾に追加する
- * - options:  個別の選択肢 { value, label }
+ * - options:  個別の選択肢 { value, label, match }
+ *     value: URL / state 上のトークン (英語で統一)
+ *     label: ボタン表示テキスト
+ *     match: 選手レコードの実値 (省略時は value と同じ)
  */
 export const FIGHTER_FILTERS = [
   {
@@ -27,9 +30,9 @@ export const FIGHTER_FILTERS = [
     field: "main_division",
     otherLabel: "その他",
     options: [
-      { value: "ライト級", label: "ライト" },
-      { value: "ミドル級", label: "ミドル" },
-      { value: "ヘビー級", label: "ヘビー" },
+      { value: "lightweight", label: "ライト", match: "ライト級" },
+      { value: "middleweight", label: "ミドル", match: "ミドル級" },
+      { value: "heavyweight", label: "ヘビー", match: "ヘビー級" },
     ],
   },
   {
@@ -67,9 +70,11 @@ export function fighterPassesFilters(fighter, state) {
     if (!selected) return true;
 
     const fieldValue = fighter[group.field];
+    const matchOf = (option) => option.match ?? option.value;
     if (selected === OTHER_VALUE) {
-      return minimal || !group.options.some((option) => option.value === fieldValue);
+      return minimal || !group.options.some((option) => matchOf(option) === fieldValue);
     }
-    return !minimal && fieldValue === selected;
+    const option = group.options.find((o) => o.value === selected);
+    return !minimal && option != null && fieldValue === matchOf(option);
   });
 }
