@@ -413,10 +413,26 @@ export class TabRenderers {
     };
   }
 
-  #cleanNoteBody(text) {
+  // note 記事スクレイプから本文だけを抽出する。
+  // 日付行の後 ～ フッタ (応援・ハッシュタグ等) の前を本文とし、
+  // 見出しと重複する先頭行を落とす。記事本文が無ければ "" を返す。
+  #cleanNoteBody(text, title) {
     if (!text) return "";
-    const m = text.match(/\d{4}年\d{1,2}月\d{1,2}日[^\n]*/);
-    return m ? text.slice(m.index + m[0].length).trim() : text.trim();
+    const dateRe = /\d{4}年\d{1,2}月\d{1,2}日/;
+    const footerMarkers = new Set(["ダウンロード", "copy", "いいなと思ったら応援しよう！", "チップで応援する"]);
+    const lines = text.split("\n");
+    const dateIdx = lines.findIndex((l) => dateRe.test(l));
+    if (dateIdx === -1) return "";
+
+    let body = lines.slice(dateIdx + 1);
+    const footerIdx = body.findIndex((l) => footerMarkers.has(l.trim()));
+    if (footerIdx !== -1) body = body.slice(0, footerIdx);
+
+    const heading = (title || "").trim();
+    while (body.length && (body[0].trim() === "" || body[0].trim() === heading)) {
+      body = body.slice(1);
+    }
+    return body.join("\n").trim();
   }
 
   #articleTypeLabel(type) {
@@ -429,9 +445,10 @@ export class TabRenderers {
     const { repo, labels } = this.ctx;
     const archive = repo.findNoteArchive(doc.url);
     const article = repo.findArticle(doc.source_ref_id);
-    const description = archive?.description ?? doc.content_preview ?? "";
     const articleType = article?.article_type;
-    const body = this.#cleanNoteBody(doc.content_text);
+    const body = this.#cleanNoteBody(doc.content_text, doc.title);
+    // 本文があれば本文をそのまま表示。無ければ概要 (og:description) をフォールバック表示。
+    const fallback = archive?.description ?? doc.content_preview ?? "";
     return `
       <article class="card record-card note-article-card">
         <h2>${externalLink(doc.url, doc.title)}</h2>
@@ -439,12 +456,9 @@ export class TabRenderers {
           ${articleType ? `<span class="video-badge">${escapeHtml(this.#articleTypeLabel(articleType))}</span>` : ""}
           <span class="video-badge">${escapeHtml(labels.sourceType(doc.source_type))}</span>
         </p>
-        ${description ? `<p>${escapeHtml(description)}</p>` : ""}
-        ${body ? `
-          <details class="source-body">
-            <summary>本文を表示</summary>
-            <pre class="note-body-text">${escapeHtml(body)}</pre>
-          </details>` : ""}
+        ${body
+          ? `<div class="note-body">${escapeHtml(body)}</div>`
+          : (fallback ? `<p>${escapeHtml(fallback)}</p>` : "")}
       </article>
     `;
   }

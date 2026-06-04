@@ -702,6 +702,19 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   line-height: 1.7;
 }
 
+.note-body {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-card);
+  background: #f6f8fc;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .video-source-block {
   display: grid;
   gap: 0.5rem;
