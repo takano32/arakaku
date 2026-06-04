@@ -1,6 +1,6 @@
 import { DEFAULT_ADMIN_TAB, DEFAULT_TAB } from "./config.js";
 import { escapeHtml } from "./ui/html-utils.js";
-import { FIGHTER_FILTERS } from "./fighter-filters.js";
+import { TAB_FILTERS } from "./filters.js";
 
 /** Command: UI イベントを状態更新へマッピング */
 export class EventController {
@@ -70,11 +70,12 @@ export class EventController {
       this.viewController.renderContent();
     });
 
-    document.querySelector("#fighter-filters")?.addEventListener("click", (event) => {
+    document.querySelector("#tab-filters")?.addEventListener("click", (event) => {
       const btn = event.target.closest(".filter-button");
       if (!btn) return;
 
-      const group = FIGHTER_FILTERS.find((g) => g.type === btn.dataset.filterType);
+      const groups = TAB_FILTERS[this.state.tab];
+      const group = groups?.find((g) => g.type === btn.dataset.filterType);
       if (!group) return;
 
       const val = btn.dataset.filterVal;

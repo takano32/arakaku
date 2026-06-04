@@ -14,6 +14,8 @@ export class AppState {
   mentionType = "";
   fighterDivision = "";
   fighterPromotion = "";
+  boutDivision = "";
+  boutPromotion = "";
   data = null;
   repository = null;
   loadedDataKeys = new Set();

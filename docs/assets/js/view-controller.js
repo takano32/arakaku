@@ -1,6 +1,6 @@
 import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
 import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
-import { FIGHTER_FILTERS, filterButtons } from "./fighter-filters.js";
+import { TAB_FILTERS, filterButtons } from "./filters.js";
 
 const REQUIRED_TAB_DATA_KEYS = {
   sources: ["sourceDocuments"],
@@ -123,16 +123,16 @@ export class ViewController {
     );
   }
 
-  renderFighterFilters() {
+  renderTabFilters() {
     const { state } = this.ctx;
-    const filters = document.querySelector("#fighter-filters");
+    const filters = document.querySelector("#tab-filters");
     if (!filters) return;
 
-    const isActive = state.tab === "fighters";
-    filters.hidden = !isActive;
-    if (!isActive) return;
+    const groups = TAB_FILTERS[state.tab];
+    filters.hidden = !groups;
+    if (!groups) return;
 
-    filters.innerHTML = FIGHTER_FILTERS.map((group) => {
+    filters.innerHTML = groups.map((group) => {
       const selected = state[group.stateKey];
       const buttons = filterButtons(group)
         .map(
@@ -236,7 +236,7 @@ export class ViewController {
     this.renderTabs();
     this.renderTitleFilters();
     this.renderMentionFilters();
-    this.renderFighterFilters();
+    this.renderTabFilters();
     this.renderContent();
   }
 }

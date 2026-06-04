@@ -10,6 +10,8 @@ const PARAM_MAP = {
   mention:        "mentionType",
   fighter_div:    "fighterDivision",
   fighter_promo:  "fighterPromotion",
+  bout_div:       "boutDivision",
+  bout_promo:     "boutPromotion",
 };
 
 /** URL クエリ文字列から state の初期値を返す */

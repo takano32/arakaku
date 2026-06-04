@@ -8,7 +8,7 @@ import {
   renderTextList,
   renderValue,
 } from "../ui/html-utils.js";
-import { fighterPassesFilters } from "../fighter-filters.js";
+import { TAB_FILTERS, itemPassesFilters } from "../filters.js";
 
 function mdToHtml(md) {
   let s = md.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -459,9 +459,9 @@ export class TabRenderers {
   }
 
   bouts() {
-    const { query, repo } = this.ctx;
+    const { state, query, repo } = this.ctx;
     return {
-      items: repo.richBouts.filter((b) => query.boutMatches(b)),
+      items: repo.richBouts.filter((b) => query.boutMatches(b) && itemPassesFilters(b, TAB_FILTERS.bouts, state)),
       renderItem: (b) => this.renderBoutCard(b),
     };
   }
@@ -473,7 +473,7 @@ export class TabRenderers {
         state.focusFighterId,
         repo.findRichFighter.bind(repo),
         repo.richFighters,
-        (f) => query.fighterMatches(f) && fighterPassesFilters(f, state)
+        (f) => query.fighterMatches(f) && itemPassesFilters(f, TAB_FILTERS.fighters, state)
       ),
       renderItem: (f) => this.renderFighterCard(f),
     };
