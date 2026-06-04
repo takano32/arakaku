@@ -217,6 +217,14 @@ export class DataRepository extends BaseRepository {
   // Label Methods
   eventName(id) { return this.findEvent(id)?.name ?? id; }
   promotionName(id) { return this.findPromotion(id)?.name ?? id; }
+
+  // 団体名 → promotion_id (中黒・空白を無視した正規化照合)
+  promotionIdByName(name) {
+    if (!name) return undefined;
+    const norm = (s) => String(s).replace(/[・·\s]/g, "");
+    const index = this.index("promotions:normName", this.promotions, (p) => norm(p.name));
+    return index.get(norm(name))?.promotion_id;
+  }
   fighterName(id) { return this.findRichFighter(id)?.display_name ?? id; }
 
   // Relationship Methods

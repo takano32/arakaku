@@ -116,7 +116,16 @@ export class DataEnricher {
     if (needsClear) rich.summary = "";
 
     // 信頼性の低い順に重ねる: base(通信/YouTube) → 公式 → 名鑑
-    if (op) this.#applyOfficialPlayer(rich, op);
+    if (op) {
+      this.#applyOfficialPlayer(rich, op);
+      // 公式の階級・団体・プロフィールで base を上書き (名鑑が後でさらに上書きする)
+      if (op.weight_class) rich.main_division = op.weight_class;
+      const officialPromotionId = this.repo.promotionIdByName(op.organization);
+      if (officialPromotionId) rich.main_promotion_id = officialPromotionId;
+      if (op.gym) rich.profile.gym = op.gym;
+      if (op.age != null && op.age !== "") rich.profile.age = op.age;
+      if (op.height) rich.profile.height = /^\d+$/.test(String(op.height)) ? `${op.height}cm` : op.height;
+    }
 
     if (nf) {
       if (nf.display_name) rich.display_name = nf.display_name;
