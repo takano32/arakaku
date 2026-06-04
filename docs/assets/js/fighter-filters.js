@@ -1,4 +1,11 @@
+import { RELIABILITY, fighterReliability } from "./core/reliability.js";
+
 /** @typedef {import("./core/app-state.js").AppState} AppState */
+
+/** 履歴のための最小登録 (YouTube 抽出のみ / 未登録) の選手か */
+function isMinimalFighter(fighter) {
+  return fighterReliability(fighter) <= RELIABILITY.youtube;
+}
 
 /**
  * 選手タブの絞り込みフィルタ定義。
@@ -53,14 +60,16 @@ export function filterButtons(group) {
 
 /** state の選択値で fighter が全フィルタを通過するか */
 export function fighterPassesFilters(fighter, state) {
+  // 最小登録の選手は実際の階級・団体に関わらず「その他」扱い
+  const minimal = isMinimalFighter(fighter);
   return FIGHTER_FILTERS.every((group) => {
     const selected = state[group.stateKey];
     if (!selected) return true;
 
     const fieldValue = fighter[group.field];
     if (selected === OTHER_VALUE) {
-      return !group.options.some((option) => option.value === fieldValue);
+      return minimal || !group.options.some((option) => option.value === fieldValue);
     }
-    return fieldValue === selected;
+    return !minimal && fieldValue === selected;
   });
 }
