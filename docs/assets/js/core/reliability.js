@@ -16,19 +16,20 @@ const LOW_MAX = RELIABILITY.youtube;
 
 const has = (v) => (Array.isArray(v) ? v.length > 0 : v != null && v !== "");
 
-// 最小登録 (履歴のためだけの登録 / YouTube 抽出で詳細未入力) を示す summary マーカー
-const MINIMAL_SUMMARY_MARKERS = ["最小登録", "詳細未入力"];
+// 履歴のためだけの最小登録を示す summary マーカー
+const MINIMAL_SUMMARY_MARKER = "最小登録";
 
 /**
- * 名鑑・公式で補強されていない最小登録の選手か。
- * ノート記事への言及 (source_article_ids) があっても、プロフィール自体が
- * 最小登録なら最下位扱いとする。
+ * 名鑑・公式・YouTube・通信いずれの実データも持たない、履歴のための最小登録の選手か。
+ * - YouTube 動画データ (inferred_from_video_ids) があれば最小登録ではない (YouTube tier)。
+ * - ノート記事への言及 (source_article_ids) は本文データではないため、
+ *   「最小登録」マーカーがある場合は最小登録のままとする。
  */
 export function isMinimalFighter(f) {
   if (f.numbers_data || f.official_data) return false;
-  if (f.inferred_confidence === "medium") return true;
-  const summary = f.summary || "";
-  return MINIMAL_SUMMARY_MARKERS.some((marker) => summary.includes(marker));
+  if (has(f.inferred_from_video_ids)) return false;
+  if (has(f.source_article_ids) && !(f.summary || "").includes(MINIMAL_SUMMARY_MARKER)) return false;
+  return true;
 }
 
 export function fighterReliability(f) {
