@@ -55,16 +55,6 @@ export class EventController {
       if (event.key === "Escape") this.#clearSearch();
     });
 
-    document.querySelector("#title-promotion-filter")?.addEventListener("change", (event) => {
-      this.state.patch({ titlePromotion: event.target.value });
-      this.viewController.renderContent();
-    });
-
-    document.querySelector("#title-division-filter")?.addEventListener("change", (event) => {
-      this.state.patch({ titleDivision: event.target.value });
-      this.viewController.renderContent();
-    });
-
     document.querySelector("#mention-type-filter")?.addEventListener("change", (event) => {
       this.state.patch({ mentionType: event.target.value });
       this.viewController.renderContent();

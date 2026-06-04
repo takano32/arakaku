@@ -102,9 +102,7 @@ export class QueryMatcher {
   }
 
   titleMatches(title) {
-    const { state, repo } = this.ctx;
-    if (state.titlePromotion && title.promotion_id !== state.titlePromotion) return false;
-    if (state.titleDivision && title.division !== state.titleDivision) return false;
+    const { repo } = this.ctx;
     return this.#matchQuery(this.#cachedText(`t:${title.title_id}`, () => [
       title.title_id, title.division, repo.promotionName(title.promotion_id),
       ...(title.lineage ?? []).flatMap(r => [r.fighter_name, r.reign_label, r.won_at_event_id, r.lost_at_event_id, r.source_article_id, r.source_video_id]),

@@ -35,6 +35,10 @@ export const TAB_FILTERS = {
     { type: "division", label: "階級", stateKey: "boutDivision", field: "division", otherLabel: "その他", options: DIVISION_OPTIONS },
     { type: "promotion", label: "団体", stateKey: "boutPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
   ],
+  titles: [
+    { type: "division", label: "階級", stateKey: "titleDivision", field: "division", otherLabel: "その他", options: DIVISION_OPTIONS },
+    { type: "promotion", label: "団体", stateKey: "titlePromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
 };
 
 /** 「その他」(既知の option 以外) を表す予約値 */

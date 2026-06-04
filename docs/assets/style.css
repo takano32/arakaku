@@ -259,7 +259,6 @@ input[type="search"]::-webkit-search-cancel-button {
 
 /* ── Filters ────────────────────────────────────────────────── */
 
-.title-filters,
 .mention-filters,
 .tab-filters {
   display: flex;
@@ -273,7 +272,6 @@ input[type="search"]::-webkit-search-cancel-button {
   gap: 12px;
 }
 
-.title-filters[hidden],
 .mention-filters[hidden],
 .tab-filters[hidden] {
   display: none;
@@ -324,7 +322,6 @@ input[type="search"]::-webkit-search-cancel-button {
   border-color: var(--accent);
 }
 
-.title-filters select,
 .mention-filters select {
   flex: 1 1 220px;
   padding: 8px 12px;
@@ -336,7 +333,6 @@ input[type="search"]::-webkit-search-cancel-button {
   font-family: inherit;
 }
 
-.title-filters select:focus,
 .mention-filters select:focus {
   outline: 2px solid var(--accent);
   border-color: var(--accent);

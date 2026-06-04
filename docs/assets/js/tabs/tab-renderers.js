@@ -509,9 +509,9 @@ export class TabRenderers {
   }
 
   titles() {
-    const { query, repo } = this.ctx;
+    const { state, query, repo } = this.ctx;
     const list = repo.richTitles
-      .filter((t) => query.titleMatches(t))
+      .filter((t) => query.titleMatches(t) && itemPassesFilters(t, TAB_FILTERS.titles, state))
       .sort(
         (a, b) =>
           repo.promotionName(a.promotion_id).localeCompare(repo.promotionName(b.promotion_id), "ja") ||

@@ -77,32 +77,6 @@ export class ViewController {
     );
   }
 
-  renderTitleFilters() {
-    const { state, repo } = this.ctx;
-    const filters = document.querySelector("#title-filters");
-    if (!filters) return;
-
-    const isActive = state.tab === "titles";
-    filters.hidden = !isActive;
-    if (!isActive) return;
-
-    const promotionSelect = document.querySelector("#title-promotion-filter");
-    const divisionSelect = document.querySelector("#title-division-filter");
-    if (!promotionSelect || !divisionSelect || !state.data) return;
-
-    const promotionIds = uniqueSorted(repo.richTitles.map((title) => title.promotion_id));
-    const divisions = uniqueSorted(repo.richTitles.map((title) => title.division));
-
-    promotionSelect.innerHTML = this.renderSelectOptions(
-      promotionIds,
-      state.titlePromotion,
-      "すべての団体",
-      (promotionId) => repo.promotionName(promotionId)
-    );
-
-    divisionSelect.innerHTML = this.renderSelectOptions(divisions, state.titleDivision, "すべての階級");
-  }
-
   renderMentionFilters() {
     const { state, labels } = this.ctx;
     const filters = document.querySelector("#mention-filters");
@@ -234,7 +208,6 @@ export class ViewController {
     this.renderSummary();
     this.renderViewModeSwitch();
     this.renderTabs();
-    this.renderTitleFilters();
     this.renderMentionFilters();
     this.renderTabFilters();
     this.renderContent();

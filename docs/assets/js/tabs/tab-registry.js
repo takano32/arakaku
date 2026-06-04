@@ -45,7 +45,7 @@ export class TabRendererRegistry {
     const s = this.#ctx?.state;
     if (!s) return "";
     const tabFilters = Object.values(TAB_FILTERS).flat().map((group) => s[group.stateKey]);
-    return [s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType, ...tabFilters].join("\0");
+    return [s.query, s.focusFighterId, s.focusEventId, s.mentionType, ...tabFilters].join("\0");
   }
 
   // フォーカス（ジャンプ）が変化したか
