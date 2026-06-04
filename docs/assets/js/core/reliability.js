@@ -16,11 +16,27 @@ const LOW_MAX = RELIABILITY.youtube;
 
 const has = (v) => (Array.isArray(v) ? v.length > 0 : v != null && v !== "");
 
+// 最小登録 (履歴のためだけの登録 / YouTube 抽出で詳細未入力) を示す summary マーカー
+const MINIMAL_SUMMARY_MARKERS = ["最小登録", "詳細未入力"];
+
+/**
+ * 名鑑・公式で補強されていない最小登録の選手か。
+ * ノート記事への言及 (source_article_ids) があっても、プロフィール自体が
+ * 最小登録なら最下位扱いとする。
+ */
+export function isMinimalFighter(f) {
+  if (f.numbers_data || f.official_data) return false;
+  if (f.inferred_confidence === "medium") return true;
+  const summary = f.summary || "";
+  return MINIMAL_SUMMARY_MARKERS.some((marker) => summary.includes(marker));
+}
+
 export function fighterReliability(f) {
   if (f.numbers_data) return RELIABILITY.numbers;
   if (f.official_data) return RELIABILITY.official;
+  if (isMinimalFighter(f)) return RELIABILITY.none; // 最小登録は通信言及より優先して最下位
   if (has(f.source_article_ids)) return RELIABILITY.note;
-  if (has(f.inferred_from_video_ids) || f.inferred_confidence === "medium") return RELIABILITY.youtube;
+  if (has(f.inferred_from_video_ids)) return RELIABILITY.youtube;
   return RELIABILITY.none;
 }
 

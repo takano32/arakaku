@@ -1,11 +1,6 @@
-import { RELIABILITY, fighterReliability } from "./core/reliability.js";
+import { isMinimalFighter } from "./core/reliability.js";
 
 /** @typedef {import("./core/app-state.js").AppState} AppState */
-
-/** 履歴のための最小登録 (YouTube 抽出のみ / 未登録) の選手か */
-function isMinimalFighter(fighter) {
-  return fighterReliability(fighter) <= RELIABILITY.youtube;
-}
 
 /**
  * 選手タブの絞り込みフィルタ定義。
