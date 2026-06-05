@@ -31,6 +31,15 @@ When adding a source, apply it in the correct ascending position so it overwrite
 
 `promotionIdByName(name)` maps a Japanese promotion name → id with 中黒/空白-insensitive matching (官 `マウンテンヒーローズ` ↔ promotions `マウンテン・ヒーローズ`).
 
+## Duplicate-fighter merge (runtime)
+
+`richFighters` collapses fighters whose names differ only by 中黒/空白/ピリオド (same `normalizeFighterName`) into one survivor (`#mergeDuplicateFighters`). This is a **viewer-side merge only** — `data-src/fighters.csv` rows are untouched (some genuine duplicate rows exist there, e.g. `パット・バミューダ`/`パットバミューダ`). Rules:
+
+- A group is merged only when its members do **not** have conflicting `main_promotion_id` (guards against merging two distinct people who happen to normalize alike).
+- Survivor = canonical row (in `fighters.csv`) with the most relations (videos+articles), then 名鑑-bearing. It keeps its `fighter_id`/`display_name`; merged-away `display_name`s become `aliases`.
+- Survivor absorbs `numbers_data`/`official_data`, unions `inferred_from_video_ids`/`source_article_ids`, and fills missing `profile`/summary/division/promotion.
+- `merged_fighter_ids` lists every member id. `#fighterAliasIndex` maps **every** member id → survivor, so `findRichFighter(aliasId)` resolves to the survivor and `relatedBoutsForFighter`/`fighterSnapshotsForFighter` query across all member ids (bouts/snapshots referencing a merged-away id still attach).
+
 ## Per-entity reliability signals
 
 In `reliability.js`, each `*Reliability(entity)` returns the entity's best available tier:

@@ -16,6 +16,7 @@ export class DataRepository extends BaseRepository {
     this.#richEvents = null;
     this.#richPromotions = null;
     this.#richFighters = null;
+    this.#fighterAliasIndex = null;
     this.#richBouts = null;
     this.#richVideos = null;
     this.#richArticles = null;
@@ -34,6 +35,7 @@ export class DataRepository extends BaseRepository {
   #richEvents;
   #richPromotions;
   #richFighters;
+  #fighterAliasIndex;
   #richBouts;
   #richVideos;
   #richArticles;
@@ -116,8 +118,71 @@ export class DataRepository extends BaseRepository {
       return ai - bi;
     });
     const enriched = raw.map(f => this.enricher.enrichFighter(f));
-    this.#richFighters = lowReliabilityLast(enriched, fighterReliability);
+    const merged = this.#mergeDuplicateFighters(enriched, new Set(canonical.map(f => f.fighter_id)));
+    this.#richFighters = lowReliabilityLast(merged, fighterReliability);
     return this.#richFighters;
+  }
+
+  /**
+   * 表記ゆれだけが異なる重複選手 (例: 「ビル・ジャガー」と「ビルジャガー」) を 1 人に統合する。
+   * 関連グラフ (試合/動画/記事) を保持する canonical 行を survivor とし、
+   * 他行の numbers/official データ・動画/記事 ID・別名を吸収する。統合された fighter_id は
+   * `merged_fighter_ids` と `#fighterAliasIndex` で survivor に解決できるようにする。
+   * 団体が矛盾する組は誤統合を避けて統合しない。
+   */
+  #mergeDuplicateFighters(fighters, canonicalIds) {
+    const groups = new Map();
+    for (const f of fighters) {
+      const key = normalizeFighterName(f.display_name);
+      (groups.get(key) ?? groups.set(key, []).get(key)).push(f);
+    }
+
+    this.#fighterAliasIndex = new Map();
+    const survivors = [];
+    for (const group of groups.values()) {
+      const promotions = new Set(group.map(f => f.main_promotion_id).filter(Boolean));
+      // 1 人だけ、または団体が矛盾する組は統合しない
+      if (group.length === 1 || promotions.size > 1) {
+        for (const f of group) {
+          f.merged_fighter_ids = [f.fighter_id];
+          this.#fighterAliasIndex.set(f.fighter_id, f);
+          survivors.push(f);
+        }
+        continue;
+      }
+      survivors.push(this.#mergeFighterGroup(group, canonicalIds));
+    }
+    return survivors;
+  }
+
+  #mergeFighterGroup(group, canonicalIds) {
+    const relCount = f => (f.inferred_from_video_ids?.length ?? 0) + (f.source_article_ids?.length ?? 0);
+    // survivor: canonical 優先 → 関連が多い → 名鑑あり
+    const [primary, ...rest] = [...group].sort((a, b) =>
+      (canonicalIds.has(b.fighter_id) - canonicalIds.has(a.fighter_id)) ||
+      (relCount(b) - relCount(a)) ||
+      ((b.numbers_data ? 1 : 0) - (a.numbers_data ? 1 : 0))
+    );
+
+    const survivor = { ...primary, profile: { ...(primary.profile ?? {}) } };
+    const union = (a, b) => [...new Set([...(a ?? []), ...(b ?? [])])];
+    for (const other of rest) {
+      survivor.numbers_data ??= other.numbers_data;
+      survivor.official_data ??= other.official_data;
+      survivor.summary ||= other.summary;
+      survivor.main_division ||= other.main_division;
+      survivor.main_promotion_id ||= other.main_promotion_id;
+      survivor.inferred_from_video_ids = union(survivor.inferred_from_video_ids, other.inferred_from_video_ids);
+      survivor.source_article_ids = union(survivor.source_article_ids, other.source_article_ids);
+      survivor.aliases = union(survivor.aliases, [...(other.aliases ?? []), other.display_name]);
+      for (const [k, v] of Object.entries(other.profile ?? {})) survivor.profile[k] ??= v;
+    }
+    survivor.aliases = (survivor.aliases ?? []).filter(a => a && a !== survivor.display_name);
+    survivor.merged_fighter_ids = group.map(f => f.fighter_id);
+
+    for (const member of group) this.#fighterAliasIndex.set(member.fighter_id, survivor);
+    this.#fighterAliasIndex.set(survivor.fighter_id, survivor);
+    return survivor;
   }
 
   get bouts() { return super.bouts; }
@@ -219,7 +284,11 @@ export class DataRepository extends BaseRepository {
   findRichEvent(id) { return this.richEvents.find(e => e.event_id === id); }
   findRichPromotion(id) { return this.richPromotions.find(p => p.promotion_id === id); }
   findRichBout(id) { return this.richBouts.find(b => b.bout_id === id); }
-  findRichFighter(id) { return this.richFighters.find(f => f.fighter_id === id); }
+  findRichFighter(id) {
+    if (!id) return undefined;
+    void this.richFighters; // alias index を構築させる
+    return this.#fighterAliasIndex.get(id);
+  }
   findRichArticle(id) { return this.richArticles.find(a => a.article_id === id); }
   richVideoById(id) { return this.richVideos.find(v => v.video_id === id); }
 
@@ -285,7 +354,9 @@ export class DataRepository extends BaseRepository {
   }
 
   fighterSnapshotsForFighter(fighterId) {
-    return [...this.findManyByField("fighterSnapshots", "fighter_id", fighterId)]
+    const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
+    return this.fighterSnapshots
+      .filter(s => ids.has(s.fighter_id))
       .sort((a, b) => String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
   }
 
@@ -317,7 +388,8 @@ export class DataRepository extends BaseRepository {
 
   relatedBoutsForFighter(fighterId) {
     if (!fighterId) return [];
-    return this.richBouts.filter(b => (b.fighters ?? []).some(f => f.fighter_id === fighterId));
+    const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
+    return this.richBouts.filter(b => (b.fighters ?? []).some(f => ids.has(f.fighter_id)));
   }
 
   boutsForEvent(eventId) {
