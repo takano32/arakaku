@@ -19,6 +19,13 @@ const PARAM_MAP = {
   video_promo:    "videoPromotion",
   tsushin_div:    "tsushinDivision",
   tsushin_promo:  "tsushinPromotion",
+  src_type:       "sourceType",
+  nf_div:         "nfDivision",
+  nf_promo:       "nfPromotion",
+  nr_div:         "nrDivision",
+  nr_promo:       "nrPromotion",
+  op_div:         "opDivision",
+  op_promo:       "opPromotion",
 };
 
 /** URL クエリ文字列から state の初期値を返す */

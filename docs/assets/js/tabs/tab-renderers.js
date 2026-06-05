@@ -579,9 +579,9 @@ export class TabRenderers {
   }
 
   sources() {
-    const { query, repo } = this.ctx;
+    const { state, query, repo } = this.ctx;
     return {
-      items: repo.sourceDocuments.filter((d) => query.sourceDocumentMatches(d)),
+      items: repo.sourceDocuments.filter((d) => query.sourceDocumentMatches(d) && itemPassesFilters(d, TAB_FILTERS.sources, state)),
       renderItem: (d) => this.renderSourceCard(d),
     };
   }
@@ -689,9 +689,9 @@ export class TabRenderers {
   }
 
   numbersFighters() {
-    const { repo } = this.ctx;
+    const { state, repo } = this.ctx;
     return {
-      items: repo.numbersFighters,
+      items: repo.numbersFighters.filter((f) => itemPassesFilters(f, TAB_FILTERS.numbersFighters, state)),
       renderItem: (f) => this.renderNumbersFighterCard(f),
     };
   }
@@ -705,17 +705,20 @@ export class TabRenderers {
   }
 
   numbersFightRecords() {
-    const { repo } = this.ctx;
+    const { state, repo } = this.ctx;
     return {
-      items: repo.numbersFightRecords,
+      items: repo.numbersFightRecords.filter((r) => itemPassesFilters(r, TAB_FILTERS.numbersFightRecords, state)),
       renderItem: (r) => this.renderNumbersFightRecordCard(r),
     };
   }
 
   officialPlayers() {
-    const { repo } = this.ctx;
+    const { state, repo } = this.ctx;
+    const items = repo.officialPlayers
+      .map((p) => ({ ...p, promotion_id: repo.promotionIdByName(p.organization) }))
+      .filter((p) => itemPassesFilters(p, TAB_FILTERS.officialPlayers, state));
     return {
-      items: repo.officialPlayers,
+      items,
       renderItem: (p) => this.renderOfficialPlayerCard(p),
     };
   }

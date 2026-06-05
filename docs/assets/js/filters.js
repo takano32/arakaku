@@ -29,6 +29,11 @@ const PROMOTION_CATEGORY_OPTIONS = [
   { value: "unclassified", label: "未分類" },
 ];
 
+const SOURCE_TYPE_OPTIONS = [
+  { value: "note_article", label: "ノート" },
+  { value: "youtube_description", label: "YouTube概要" },
+];
+
 /**
  * タブごとの絞り込みフィルタ定義。ボタン HTML・絞り込み・クリック・再描画判定の単一の真実。
  *
@@ -67,6 +72,22 @@ export const TAB_FILTERS = {
   tsushin: [
     { type: "division", label: "階級", stateKey: "tsushinDivision", field: "divisions", otherLabel: "その他", options: DIVISION_OPTIONS },
     { type: "promotion", label: "団体", stateKey: "tsushinPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
+  // 管理ビューのタブ
+  sources: [
+    { type: "source_type", label: "種別", stateKey: "sourceType", field: "source_type", options: SOURCE_TYPE_OPTIONS },
+  ],
+  numbersFighters: [
+    { type: "division", label: "階級", stateKey: "nfDivision", field: "main_division", otherLabel: "その他", options: DIVISION_OPTIONS },
+    { type: "promotion", label: "団体", stateKey: "nfPromotion", field: "main_promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
+  numbersFightRecords: [
+    { type: "division", label: "階級", stateKey: "nrDivision", field: "division", otherLabel: "その他", options: DIVISION_OPTIONS },
+    { type: "promotion", label: "団体", stateKey: "nrPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
+  ],
+  officialPlayers: [
+    { type: "division", label: "階級", stateKey: "opDivision", field: "weight_class", otherLabel: "その他", options: DIVISION_OPTIONS },
+    { type: "promotion", label: "団体", stateKey: "opPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
   ],
 };
 

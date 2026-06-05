@@ -23,6 +23,13 @@ export class AppState {
   videoPromotion = "";
   tsushinDivision = "";
   tsushinPromotion = "";
+  sourceType = "";
+  nfDivision = "";
+  nfPromotion = "";
+  nrDivision = "";
+  nrPromotion = "";
+  opDivision = "";
+  opPromotion = "";
   data = null;
   repository = null;
   loadedDataKeys = new Set();
