@@ -208,12 +208,11 @@ These tabs load from ENRICHMENT_DATA_KEYS (streamed in Phase 2 automatically).
 
 The static viewer loads Numbers JSON files for **Rich Data Supplementation** at runtime:
 
-- `DataRepository.fighters` dynamically discovers and merges Numbers-only entities.
-- `DataRepository.getRichFighterInfo` fills `unknown` canonical profiles from Numbers rows.
-- Displays a **Numbers Stats Block** in fighter cards (fights, wins, losses, rate).
-- Displays **Achievement Markers** (👑 crowns, 🏆 trophies) on fighter cards.
-- `DataRepository.getRichBoutInfo` fills `unknown` canonical results, divisions, and formats from Numbers records.
-- UI displays "名鑑確認済み" (Verified by Directory) badges for supplemented records.
+- `DataRepository.richFighters` dynamically discovers and merges Numbers-only (and official-only) entities.
+- `DataEnricher.enrichFighter` fills missing canonical profiles from Numbers rows (after 公式; 名鑑 is highest tier).
+- Displays a **Numbers Stats Block** (`renderNumbersBlock`, blue `.source-block.source-numbers`) in fighter cards (fights, wins, losses) with achievement markers (👑 belts, 🏆 tournament wins).
+- `DataEnricher.enrichBout` fills unknown canonical results, divisions, and formats from Numbers records and sets `result_status = "numbers_verified"`.
+- UI marks the source with a `名鑑` badge (`.video-badge`); 公式 data uses a `公式` badge and a green `.source-block.source-official` block. See `arakaku-reliability-layering` and `arakaku-viewer-ui`.
 
 Client-side JavaScript also handles:
 ...

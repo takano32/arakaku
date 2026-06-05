@@ -185,13 +185,18 @@ If enrichment parse fails entirely (`parseDataFileEntries` throws), `#loadEnrich
 
 ## Filter fingerprint
 
-`TabRendererRegistry` detects filter changes via:
+`TabRendererRegistry.#filterFingerprint()` detects filter changes via query/focus
+plus **every** filter group's `stateKey`, read generically from `TAB_FILTERS`:
 
 ```javascript
-[s.query, s.focusFighterId, s.focusEventId, s.titlePromotion, s.titleDivision, s.mentionType].join("\0")
+const tabFilters = Object.values(TAB_FILTERS).flat().map((g) => s[g.stateKey]);
+[s.query, s.focusFighterId, s.focusEventId, s.mentionType, ...tabFilters].join("\0")
 ```
 
-Any change in these fields triggers `refreshItems` on the current tab. New filter state fields must be added here.
+Because it iterates `TAB_FILTERS` automatically, adding a tab filter needs **no**
+fingerprint edit — just add the group in `filters.js`. The per-tab 階級/団体/種別/区分
+button filters (public + admin) are a config-driven subsystem; see the
+**arakaku-filters** skill for the data model and the add-a-filter checklist.
 
 ---
 
@@ -204,9 +209,9 @@ state.tab
 state.query
 state.focusFighterId
 state.focusEventId
-state.titlePromotion
-state.titleDivision
 state.mentionType
+state.<tab>Division / <tab>Promotion / eventType / promotionCategory / sourceType ...
+                          ← one per filter group stateKey in TAB_FILTERS (filters.js)
 state.data
 state.repository          ← DataRepository instance (replaced on each load batch)
 state.loadedDataKeys      ← Set<string> of settled keys (loaded or failed)
@@ -353,31 +358,47 @@ Viewer code may use archive rows to enrich labels, dates, descriptions, and sear
 
 ---
 
-## Numbers Rich Integration
+## Rich integration (Numbers + official)
 
-Numbers-derived data uses:
+`DataRepository` builds `richFighters` / `richBouts` / `richEvents` / `richVideos`
+at runtime via `DataEnricher.enrich*` (`core/data-enricher.js`). The reliability
+ordering and the layering/merge rules live in the **arakaku-reliability-layering**
+skill; this section is just the viewer-facing behavior.
 
-```text
-numbersFighters
-numbersNameMatches
-numbersFightRecords
-```
+Numbers-derived data (`numbersFighters` / `numbersNameMatches` /
+`numbersFightRecords`) and official-site data (`officialPlayers` etc.) are merged
+into fighters/bouts at runtime:
 
-The viewer's `DataRepository` automatically merges these into `fighters` and `bouts` objects via `getRichFighterInfo` and `getRichBoutInfo` at runtime:
+- Discover fighters that exist only in Numbers matches **or** only in official-site
+  data, so they still appear on the 選手 tab.
+- Fill missing fighter profile fields (height, age, gym, summary) from 公式 then 名鑑
+  (higher tier wins).
+- Resolve unknown bout results/divisions/formats from Numbers personal fight
+  records; such bouts get `result_status = "numbers_verified"`.
+- Collapse duplicate fighters whose names differ only by 中黒/空白/ピリオド into one
+  survivor (kept-away names become `aliases`; `merged_fighter_ids` + the repo alias
+  index keep related bouts/snapshots attached). CSV rows are not modified.
 
-- Discover fighters that only exist in Numbers matches.
-- Fill `unknown` fighter profiles (height, age, gym, summary) from Numbers.
-- Display a **Numbers Stats Block** in fighter cards: total fights, wins, losses, and win rate.
-- Display **Achievement Markers**: crowns (👑) for belts and trophies (🏆) for tournament wins.
-- Resolve `unknown` bout results, divisions, and formats by matching Numbers personal fight records.
-- Display "名鑑確認済み" (Verified by Directory) badges when supplementation or verification occurs.
+### Source-provenance display
 
-When rendering Numbers-specific comparison UI (if any):
+Cards show **where each fact came from** using the badge colors:
 
-- show raw Numbers values separately from canonical values
-- surface unmatched names and generated candidate IDs clearly
-- flag contradictory win/loss marks
-- do not present Numbers-derived bout records as confirmed canonical bouts in the CSV sources
+- Top-of-card badges: `名鑑` (`.video-badge`, blue) and `公式`
+  (`.video-badge.official-badge`, green).
+- Grouped data blocks reuse those colors: `renderNumbersBlock` →
+  `.source-block.source-numbers` (blue, "名鑑データ"), `renderOfficialBlock` →
+  `.source-block.source-official` (green, "公式データ"). The official block holds the
+  公式 record (wins/losses) and `renderOfficialBio` (`.official-bio`, 「／」-split
+  title/tournament history), which **filters out segments already in the summary**
+  so 名鑑 notes (which usually echo the bio) don't duplicate it.
+- Admin single-source cards carry a colored left border (青=名鑑系, 緑=公式系).
+- Numbers stats block: total fights/wins/losses plus achievement markers
+  (👑 belts, 🏆 tournament wins).
+
+When rendering source comparison UI: show raw Numbers/official values distinctly,
+surface unmatched names and generated candidate IDs clearly, flag contradictory
+win/loss marks, and never present Numbers-/archive-derived bout records as
+confirmed canonical CSV bouts.
 
 ---
 
@@ -389,14 +410,23 @@ Existing important classes include:
 
 ```text
 card
-video-badge
+video-badge                 ← 名鑑 badge (blue); + .official-badge = 公式 (green)
 source-card
 source-body
 source-mention-card
 related-bout-grid
 related-bout-card
 link-button
-virtual-list        ← position: relative; required for absolute-positioned rows
+virtual-list                ← position: relative; required for absolute-positioned rows
+
+# 出所ボックス (= バッジ色)  ── see Source-provenance display above
+source-block / source-numbers (青) / source-official (緑) / source-block-label
+official-bio                ← 公式 bio リスト
+fighter-summary
+
+# タブ絞り込み (config-driven, see arakaku-filters skill)
+tab-filters / filter-row / filter-label / filter-button-group
+filter-button / filter-button.active
 ```
 
 The `.virtual-list` container must have `position: relative` for the absolute-positioned row divs inside it to work correctly. Its `height` is set dynamically by `VirtualList` to match the Virtualizer's `getTotalSize()`.

@@ -135,7 +135,9 @@ ADMIN_TABS (管理ビュー):
 公式     (officialMisc)  ← tournaments + matches + history combined
 ```
 
-See `arakaku-viewer-ui` for rendering architecture.
+See `arakaku-viewer-ui` for rendering architecture, `arakaku-filters` for the
+config-driven per-tab 階級/団体/種別 filters, and `arakaku-reliability-layering` for
+source-tier enrichment, sorting, and the duplicate-fighter merge.
 
 ---
 
