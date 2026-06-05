@@ -1,5 +1,5 @@
 import { BaseRepository } from "./base-repository.js";
-import { DataEnricher } from "./data-enricher.js";
+import { DataEnricher, normalizeFighterName } from "./data-enricher.js";
 import {
   boutReliability,
   eventReliability,
@@ -80,6 +80,19 @@ export class DataRepository extends BaseRepository {
         discovered.push({ fighter_id: fid, display_name: match.numbers_name || fid });
         fighterIds.add(fid);
       }
+    }
+
+    // Discover official-site players who have no canonical/Numbers fighter yet.
+    // enrichFighter は display_name で公式データを突き合わせるため、合成行の
+    // display_name を公式名にしておけば official_data が付与される。
+    const knownNames = new Set([...canonical, ...discovered].map(f => normalizeFighterName(f.display_name)));
+    for (const op of this.officialPlayers) {
+      if (!op.name || knownNames.has(normalizeFighterName(op.name))) continue;
+      const fid = fighterIds.has(op.id) ? `official_${op.id}` : op.id;
+      if (fighterIds.has(fid)) continue;
+      discovered.push({ fighter_id: fid, display_name: op.name });
+      fighterIds.add(fid);
+      knownNames.add(normalizeFighterName(op.name));
     }
 
     // Build numbers order: numbers_fighter_id sequence → fighter_id rank

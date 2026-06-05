@@ -1036,6 +1036,21 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   color: #2a7a4b;
 }
 
+.official-bio {
+  margin: 8px 0;
+  padding: 8px 12px 8px 28px;
+  list-style: disc;
+  background: #edf7f0;
+  border: 1px solid #b2ddc4;
+  border-radius: var(--radius-nested);
+  font-size: 0.88rem;
+  color: #2a7a4b;
+}
+
+.official-bio li {
+  margin: 2px 0;
+}
+
 /* ── Source card ─────────────────────────────────────────────── */
 
 .source-card details {

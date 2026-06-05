@@ -201,6 +201,28 @@ export class TabRenderers {
     `;
   }
 
+  /**
+   * 公式 bio (王座履歴・トーナメント成績など) を「／」区切りで分解してリスト表示する。
+   * summary (名鑑/通信由来) に既出のセグメントは重複を避けて除外する
+   * (名鑑 notes が公式 bio をほぼ網羅している選手が多いため)。
+   */
+  renderOfficialBio(od, summary) {
+    const bio = od?.bio;
+    if (!bio) return "";
+    const ref = (summary ?? "").replace(/[\s／/、,]/g, "");
+    const items = bio
+      .split(/[／/]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((item) => !ref.includes(item.replace(/[\s／/、,]/g, "")));
+    if (items.length === 0) return "";
+    return `
+      <ul class="official-bio">
+        ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    `;
+  }
+
   renderFighterCard(f) {
     const { components, sources, related, repo } = this.ctx;
     const nd = f.numbers_data;
@@ -227,6 +249,7 @@ export class TabRenderers {
             <span class="official-stat">${od.wins}勝 ${od.losses}敗${od.draws ? ` ${od.draws}分` : ""}</span>
           </div>
         ` : ""}
+        ${this.renderOfficialBio(od, f.summary)}
         ${nd ? `
           <div class="numbers-stats-block">
             <span class="numbers-stat">通算: ${escapeHtml(joinPresent([nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "", nd.stats?.wins ? `${nd.stats.wins}勝` : "", nd.stats?.losses ? `${nd.stats.losses}負` : ""], " "))}</span>

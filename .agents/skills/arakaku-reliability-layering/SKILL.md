@@ -23,7 +23,7 @@ Two independent uses of this ranking:
 
 `DataEnricher` (`docs/assets/js/core/data-enricher.js`) layers sources in **ascending** reliability so the most reliable value lands last:
 
-- `enrichFighter`: base CSV (通信/YouTube) → **公式** (`#applyOfficialPlayer` + `weight_class`→`main_division`, `organization`→`main_promotion_id` via `repo.promotionIdByName`, height/age/gym) → **名鑑** (`numbers_data` overwrites). Summary is decided explicitly in order 名鑑(catchphrase/notes) > 公式(bio) > base.
+- `enrichFighter`: base CSV (通信/YouTube) → **公式** (`#applyOfficialPlayer` + `weight_class`→`main_division`, `organization`→`main_promotion_id` via `repo.promotionIdByName`, height/age/gym) → **名鑑** (`numbers_data` overwrites). Official players are matched by `display_name` (exact, then `normalizeFighterName` fallback that ignores 中黒/空白/ピリオド差, e.g. `ローリングJr`↔`ローリングJr.`). `richFighters` also synthesizes fighters that only exist in official-site data (in addition to Numbers-only matches). Summary is 名鑑(catchphrase/notes) > base(通信/YouTube); 公式 `bio` is **not** folded into summary — the fighter card renders it in a dedicated `.official-bio` block (`renderOfficialBio`), filtering out segments already present in summary so 名鑑 notes (which usually echo the bio) don't duplicate it.
 - `enrichBout`: base → **名鑑** (`numbers_records` overwrite result/division/winner; sets `result_status="numbers_verified"`).
 - `enrichEvent` / `enrichVideo`: attach official/archive data; no higher-tier field overwrite is available in current data.
 

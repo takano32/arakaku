@@ -1,3 +1,15 @@
+/**
+ * 公式選手名と fighter の display_name を緩く突き合わせるための正規化キー。
+ * 中黒・空白・ピリオドの有無や全半角差のみ異なる表記ゆれを吸収する
+ * (例: 「ローリングJr」=「ローリングJr.」)。完全一致が取れなかった場合の
+ * フォールバックにのみ用いる。
+ */
+export function normalizeFighterName(name) {
+  let s = (name ?? "").normalize("NFKC");
+  for (const ch of ["・", "　", " ", ".", "．"]) s = s.split(ch).join("");
+  return s.toLowerCase();
+}
+
 /** DataEnricher: 各エンティティの Supplementation (名鑑データやアーカイブとの合成) を担当 */
 export class DataEnricher {
   constructor(repo) {
@@ -5,12 +17,14 @@ export class DataEnricher {
     this.#nameMatchIndex = null;
     this.#fightRecordIndex = null;
     this.#officialPlayerIndex = null;
+    this.#officialPlayerNormIndex = null;
     this.#officialTournamentIndex = null;
   }
 
   #nameMatchIndex;
   #fightRecordIndex;
   #officialPlayerIndex;
+  #officialPlayerNormIndex;
   #officialTournamentIndex;
 
   // fighter_id → numbersNameMatch (matched or candidate)
@@ -80,10 +94,28 @@ export class DataEnricher {
   get #officialPlayers() {
     if (this.#officialPlayerIndex) return this.#officialPlayerIndex;
     this.#officialPlayerIndex = new Map();
+    this.#officialPlayerNormIndex = new Map();
+    const ambiguousNorm = new Set();
     for (const p of this.repo.officialPlayers) {
-      if (p.name) this.#officialPlayerIndex.set(p.name, p);
+      if (!p.name) continue;
+      this.#officialPlayerIndex.set(p.name, p);
+      const key = normalizeFighterName(p.name);
+      // 同じ正規化キーに複数の公式選手がいる場合は曖昧として除外する
+      if (this.#officialPlayerNormIndex.has(key) && this.#officialPlayerNormIndex.get(key).name !== p.name) {
+        ambiguousNorm.add(key);
+      }
+      this.#officialPlayerNormIndex.set(key, p);
     }
+    for (const key of ambiguousNorm) this.#officialPlayerNormIndex.delete(key);
     return this.#officialPlayerIndex;
+  }
+
+  // 完全一致を優先し、取れなければ表記ゆれを吸収した正規化キーで突き合わせる
+  #officialPlayerByName(name) {
+    if (!name) return undefined;
+    const exact = this.#officialPlayers.get(name);
+    if (exact) return exact;
+    return this.#officialPlayerNormIndex.get(normalizeFighterName(name));
   }
 
   // event_id → officialTournament (normalized id matching)
@@ -102,7 +134,7 @@ export class DataEnricher {
   }
 
   #officialPlayerFor(name) {
-    return this.#officialPlayers.get(name);
+    return this.#officialPlayerByName(name);
   }
 
   #applyOfficialPlayer(rich, op) {
@@ -144,7 +176,7 @@ export class DataEnricher {
     const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
     const match = this.#nameMatches.get(fighter.fighter_id);
     const nf = match ? this.repo.numbersFighterById(match.numbers_fighter_id) : undefined;
-    const op = this.#officialPlayers.get(fighter.display_name);
+    const op = this.#officialPlayerByName(fighter.display_name);
 
     const needsClear = fighter.summary === PLACEHOLDER;
     if (!nf && !op) return needsClear ? { ...fighter, summary: "" } : fighter;
@@ -156,12 +188,13 @@ export class DataEnricher {
     if (op) this.#applyOfficialFighter(rich, op);
     if (nf) this.#applyNumbersFighter(rich, nf);
 
-    // summary は信頼性順に決定: 名鑑(catchphrase/notes) > 公式(bio) > base(通信/YouTube)
+    // summary は 名鑑(catchphrase/notes) > base(通信/YouTube) で決定する。
+    // 公式 bio は summary に流用せず、official_data 経由でカードが専用ブロックに表示する
+    // (名鑑が無い選手では bio が唯一のプロフィールになるが、それはカード側で表示される)。
     const numbersSummary = nf && (nf.catchphrase || nf.notes)
       ? [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n")
       : "";
-    if (numbersSummary) rich.summary = numbersSummary;
-    else if (op?.bio) rich.summary = op.bio;
+    rich.summary = numbersSummary || (needsClear ? "" : (fighter.summary || ""));
 
     return rich;
   }
