@@ -1051,6 +1051,76 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   margin: 2px 0;
 }
 
+/* ── Source-provenance blocks ────────────────────────────────────
+   名鑑/公式 由来データを、それぞれのバッジと同じ背景色の丸角ボックスで囲う */
+.source-block {
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-nested);
+  border: 1px solid;
+}
+
+.source-block-label {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.source-numbers {
+  background: #eaf0fb; /* = 名鑑バッジ */
+  border-color: #c8d8f8;
+}
+
+.source-numbers .source-block-label {
+  color: var(--accent-dark);
+}
+
+.source-official {
+  background: #edf7f0; /* = 公式バッジ */
+  border-color: #b2ddc4;
+}
+
+.source-official .source-block-label {
+  color: #2a7a4b;
+}
+
+/* 着色ボックス内の要素は白地にして可読性を確保する */
+.source-block .numbers-stats-block,
+.source-block .official-stats-block {
+  margin: 0;
+}
+
+.source-numbers .numbers-stat {
+  background: #fff;
+}
+
+.source-official .official-stat {
+  background: #fff;
+}
+
+.source-official .official-bio {
+  margin: 0;
+  padding: 0 0 0 18px;
+  background: transparent;
+  border: none;
+}
+
+/* 管理ビューの単一出所カードは左端の色帯で出所を示す */
+.numbers-fighter-card,
+.numbers-match-card,
+.numbers-record-card {
+  border-left: 4px solid #7da6f0; /* 名鑑 (青) */
+}
+
+.official-player-card,
+.official-tournament-card,
+.official-match-card,
+.official-history-card {
+  border-left: 4px solid #6cc091; /* 公式 (緑) */
+}
+
 /* ── Source card ─────────────────────────────────────────────── */
 
 .source-card details {

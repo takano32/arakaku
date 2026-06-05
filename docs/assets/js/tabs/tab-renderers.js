@@ -223,6 +223,44 @@ export class TabRenderers {
     `;
   }
 
+  /** 公式サイト由来のデータを「公式バッジ」と同じ背景色の丸角ボックスにまとめる。 */
+  renderOfficialBlock(od, summary) {
+    if (!od) return "";
+    const stats = od.wins != null
+      ? `<span class="official-stat">${od.wins}勝 ${od.losses}敗${od.draws ? ` ${od.draws}分` : ""}</span>`
+      : "";
+    const bio = this.renderOfficialBio(od, summary);
+    if (!stats && !bio) return "";
+    return `
+      <section class="source-block source-official">
+        <span class="source-block-label">公式データ</span>
+        ${stats ? `<div class="official-stats-block">${stats}</div>` : ""}
+        ${bio}
+      </section>
+    `;
+  }
+
+  /** 名鑑由来のデータを「名鑑バッジ」と同じ背景色の丸角ボックスにまとめる。 */
+  renderNumbersBlock(nd) {
+    if (!nd) return "";
+    const total = escapeHtml(joinPresent([
+      nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "",
+      nd.stats?.wins ? `${nd.stats.wins}勝` : "",
+      nd.stats?.losses ? `${nd.stats.losses}負` : "",
+    ], " "));
+    return `
+      <section class="source-block source-numbers">
+        <span class="source-block-label">名鑑データ</span>
+        <div class="numbers-stats-block">
+          <span class="numbers-stat">通算: ${total}</span>
+          ${nd.achievements?.white_glove_count ? `<span class="numbers-stat">白グローブ: ${nd.achievements.white_glove_count}回</span>` : ""}
+          ${nd.achievements?.belt_marker ? `<span class="numbers-stat achievement-marker">👑 ${escapeHtml(nd.achievements.belt_marker)}</span>` : ""}
+          ${nd.achievements?.tournament_win_marker ? `<span class="numbers-stat achievement-marker">🏆 ${escapeHtml(nd.achievements.tournament_win_marker)}</span>` : ""}
+        </div>
+      </section>
+    `;
+  }
+
   renderFighterCard(f) {
     const { components, sources, related, repo } = this.ctx;
     const nd = f.numbers_data;
@@ -244,20 +282,8 @@ export class TabRenderers {
           ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
           ["国籍", f.profile?.nationality],
         ])}
-        ${od?.wins != null ? `
-          <div class="official-stats-block">
-            <span class="official-stat">${od.wins}勝 ${od.losses}敗${od.draws ? ` ${od.draws}分` : ""}</span>
-          </div>
-        ` : ""}
-        ${this.renderOfficialBio(od, f.summary)}
-        ${nd ? `
-          <div class="numbers-stats-block">
-            <span class="numbers-stat">通算: ${escapeHtml(joinPresent([nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "", nd.stats?.wins ? `${nd.stats.wins}勝` : "", nd.stats?.losses ? `${nd.stats.losses}負` : ""], " "))}</span>
-            ${nd.achievements?.white_glove_count ? `<span class="numbers-stat">白グローブ: ${nd.achievements.white_glove_count}回</span>` : ""}
-            ${nd.achievements?.belt_marker ? `<span class="numbers-stat achievement-marker">👑 ${escapeHtml(nd.achievements.belt_marker)}</span>` : ""}
-            ${nd.achievements?.tournament_win_marker ? `<span class="numbers-stat achievement-marker">🏆 ${escapeHtml(nd.achievements.tournament_win_marker)}</span>` : ""}
-          </div>
-        ` : ""}
+        ${this.renderOfficialBlock(od, f.summary)}
+        ${this.renderNumbersBlock(nd)}
         ${related.renderRelatedBouts(f.fighter_id)}
         ${this.renderFighterSnapshots(f.fighter_id)}
         ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}
@@ -287,10 +313,13 @@ export class TabRenderers {
         </p>
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
         ${od?.champion ? `
-          <div class="official-stats-block">
-            <span class="official-stat">優勝: ${escapeHtml(od.champion)}</span>
-            ${od.runner_up ? `<span class="official-stat">準優勝: ${escapeHtml(od.runner_up)}</span>` : ""}
-          </div>
+          <section class="source-block source-official">
+            <span class="source-block-label">公式データ</span>
+            <div class="official-stats-block">
+              <span class="official-stat">優勝: ${escapeHtml(od.champion)}</span>
+              ${od.runner_up ? `<span class="official-stat">準優勝: ${escapeHtml(od.runner_up)}</span>` : ""}
+            </div>
+          </section>
         ` : ""}
         ${sources.renderVideoLinks("event", e.event_id, repo.videoIdsLinkedToEventBouts(e.event_id))}
         ${related.renderEventBouts(e.event_id)}
