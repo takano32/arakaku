@@ -10,6 +10,7 @@ import {
 } from "../ui/html-utils.js";
 import { TAB_FILTERS, itemPassesFilters } from "../filters.js";
 import { mdToHtml } from "../ui/markdown.js";
+import { numbersAchievementLabels } from "../core/data-enricher.js";
 
 /**
  * 役割: 各タブ用の「descriptor 生成メソッド」(official/bouts/fighters…) と、その中で使う
@@ -214,9 +215,16 @@ export class TabRenderers {
     `;
   }
 
-  // 統合済み戦績 (profile.record) を「N戦 X勝Y敗Z分 (勝率 R%)」の 1 行にする。
-  // win_rate は名鑑由来の 0〜1 の分数 (文字列)。生値は冗長なので表示はパーセント 1 桁に整形する
-  // (正確な値は raw numbers_data 経由で詳細に残る)。
+  // 名鑑の win_rate (0〜1 の分数文字列) をパーセント 1 桁に整形する。生値は冗長なため。
+  // 非数値/空は "" を返す。#recordText・選手カード詳細・管理名鑑カードで共用する。
+  #winRatePercent(value) {
+    if (value == null || value === "") return "";
+    const n = Number(value);
+    return Number.isFinite(n) ? `${(n * 100).toFixed(1)}%` : "";
+  }
+
+  // 戦績 (record: {fight_count,wins,losses,draws,win_rate}) を
+  // 「N戦 X勝Y敗Z分 (勝率 R%)」の 1 行にする。公開選手カード・管理名鑑/公式カードで共用。
   #recordText(r) {
     const base = joinPresent([
       r.fight_count != null ? `${r.fight_count}戦` : "",
@@ -224,10 +232,7 @@ export class TabRenderers {
       r.losses != null ? `${r.losses}敗` : "",
       r.draws ? `${r.draws}分` : "",
     ], " ");
-    const n = Number(r.win_rate);
-    const wr = r.win_rate != null && r.win_rate !== "" && Number.isFinite(n)
-      ? `${(n * 100).toFixed(1)}%`
-      : "";
+    const wr = this.#winRatePercent(r.win_rate);
     return wr ? `${base} (勝率 ${wr})` : base;
   }
 
@@ -283,7 +288,7 @@ export class TabRenderers {
           ["別名", renderTextList(f.aliases)],
           ["主階級", f.main_division],
           ["主団体", repo.promotionName(f.main_promotion_id)],
-          ["名鑑勝率", nd?.stats?.win_rate],
+          ["名鑑勝率", this.#winRatePercent(nd?.stats?.win_rate)],
           ["名鑑出場大会", nd?.achievements?.tournament_entry_raw],
           ["推定元動画", renderIdList(f.inferred_from_video_ids)],
           ["推定信頼度", f.inferred_confidence],
@@ -632,11 +637,16 @@ export class TabRenderers {
 
   renderNumbersFighterCard(f) {
     const { components } = this.ctx;
-    const stats = [
-      f.fight_count ? `${f.fight_count}戦` : null,
-      f.wins != null ? `${f.wins}勝` : null,
-      f.losses != null ? `${f.losses}負` : null,
-    ].filter(Boolean).join(" ");
+    // JSON は stats/achievements/profile を入れ子で持つ (フラットに読まないこと)。照合済みの選手は
+    // 公開「選手」カードにも出るが、未照合の名鑑選手はこのカードが唯一の表示先なので全項目を見せる。
+    const record = this.#recordText({
+      fight_count: f.stats?.fight_count ?? null,
+      wins: f.stats?.wins ?? null,
+      losses: f.stats?.losses ?? null,
+      draws: null,
+      win_rate: f.stats?.win_rate ?? null,
+    });
+    const achievements = numbersAchievementLabels(f.achievements);
     return `
       <article class="card record-card numbers-fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
@@ -644,11 +654,16 @@ export class TabRenderers {
           ${escapeHtml(joinPresent([f.main_division, f.main_promotion_id]))}
           <span class="video-badge">${f.source_confidence === "numbers" ? "名鑑" : escapeHtml(f.source_confidence ?? "")}</span>
         </p>
-        ${stats ? `<p class="meta">${escapeHtml(stats)}</p>` : ""}
-        ${f.belt_marker ? `<p class="meta">👑 ${escapeHtml(f.belt_marker)}</p>` : ""}
-        ${f.tournament_win_marker ? `<p class="meta">🏆 ${escapeHtml(f.tournament_win_marker)}</p>` : ""}
+        ${record ? `<p class="meta">通算 ${escapeHtml(record)}</p>` : ""}
+        ${achievements.length ? `<p class="meta">${achievements.map((a) => escapeHtml(a)).join(" ／ ")}</p>` : ""}
+        ${components.definitionList([
+          ["所属", renderValue(f.profile?.gym)],
+          ["身長・年齢", renderValue(joinPresent([f.profile?.height, f.profile?.age]))],
+        ])}
         ${components.detailDisclosure([
           ["numbers_fighter_id", `<code>${escapeHtml(f.numbers_fighter_id)}</code>`],
+          ["団体(原文)", f.main_promotion_raw],
+          ["出場大会", f.achievements?.tournament_entry_raw],
           ["キャッチコピー", f.catchphrase],
           ["メモ", f.notes],
         ])}
@@ -694,7 +709,10 @@ export class TabRenderers {
         ${components.detailDisclosure([
           ["record_id", `<code>${escapeHtml(r.record_id)}</code>`],
           ["matched_fighter_id", r.matched_fighter_id ? `<code>${escapeHtml(r.matched_fighter_id)}</code>` : "未対応"],
+          ["相手 matched_fighter_id", r.opponent_matched_fighter_id ? `<code>${escapeHtml(r.opponent_matched_fighter_id)}</code>` : ""],
           ["形式", r.bout_format],
+          ["団体(原文)", r.promotion_raw],
+          ["大会番号(原文)", r.event_number_raw],
           ["詳細", r.detail_raw],
         ])}
       </article>
@@ -703,11 +721,9 @@ export class TabRenderers {
 
   renderOfficialPlayerCard(p) {
     const { components } = this.ctx;
-    const record = [
-      p.wins != null ? `${p.wins}勝` : null,
-      p.losses != null ? `${p.losses}敗` : null,
-      p.draws ? `${p.draws}分` : null,
-    ].filter(Boolean).join(" ");
+    const record = this.#recordText({
+      fight_count: null, wins: p.wins ?? null, losses: p.losses ?? null, draws: p.draws ?? null, win_rate: null,
+    });
     return `
       <article class="card record-card official-player-card">
         <h2>

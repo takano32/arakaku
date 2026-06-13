@@ -27,6 +27,18 @@ export function normalizeFighterName(name) {
   return s.toLowerCase();
 }
 
+// 名鑑の実績マーカーを表示用ラベル配列にする。belt_marker/tournament_win_marker は生値が
+// 既に絵文字 (👑 / 🏆x3) を含むので、絵文字を二重に付けず「王座/優勝」ラベルを前置するだけにする。
+// 公開選手カード (enrichFighter→profile.achievements) と管理「名鑑選手」カードで共用する。
+export function numbersAchievementLabels(achievements) {
+  const a = achievements ?? {};
+  const out = [];
+  if (a.belt_marker) out.push(`王座 ${a.belt_marker}`);
+  if (a.tournament_win_marker) out.push(`優勝 ${a.tournament_win_marker}`);
+  if (a.white_glove_count) out.push(`白グローブ ${a.white_glove_count}回`);
+  return out;
+}
+
 /** DataEnricher: 各エンティティの Supplementation (名鑑データやアーカイブとの合成) を担当 */
 export class DataEnricher {
   constructor(repo) {
@@ -210,15 +222,6 @@ export class DataEnricher {
     };
   }
 
-  // 名鑑の実績マーカーを表示用文字列の配列にする (王座 👑 / トーナメント優勝 🏆 / 白グローブ)。
-  #numbersAchievements(nf) {
-    const a = nf?.achievements ?? {};
-    const out = [];
-    if (a.belt_marker) out.push(`👑 ${a.belt_marker}`);
-    if (a.tournament_win_marker) out.push(`🏆 ${a.tournament_win_marker}`);
-    if (a.white_glove_count) out.push(`白グローブ ${a.white_glove_count}回`);
-    return out;
-  }
 
   enrichFighter(fighter) {
     const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
@@ -250,7 +253,7 @@ export class DataEnricher {
     rich.profile = { ...(rich.profile ?? {}) };
     const record = this.#mergeRecord(op, nf);
     if (record) rich.profile.record = record;
-    const achievements = this.#numbersAchievements(nf);
+    const achievements = numbersAchievementLabels(nf?.achievements);
     if (achievements.length) rich.profile.achievements = achievements;
 
     return rich;
