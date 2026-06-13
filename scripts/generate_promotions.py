@@ -2,6 +2,13 @@
 """Generate promotions.csv from static config (promotion rules are fixed knowledge)."""
 from __future__ import annotations
 
+# 役割: 団体（プロモーション）マスタ promotions.csv を静的定義から生成する。団体ルールは
+#       創作世界観の固定知識なので、外部ソースではなく下記 PROMOTIONS リテラルが唯一の真実。
+# アーキ上の位置: generate-stage2 の先頭で実行される（Makefile 参照）。出力 promotions.csv は
+#       events / titles / aliases / build_json の promotion_id 外部キーの参照先になる。
+# 不変条件: promotion_id は他テーブルから FK 参照されるので変更・削除はそれらと同期必須。
+#       FIELDS と各 dict のキーは write_csv の DictWriter で厳密一致させること。
+# 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.utils import DATA_SRC, write_csv
 
 OUTPUT = DATA_SRC / "promotions.csv"

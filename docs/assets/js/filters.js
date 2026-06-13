@@ -1,5 +1,23 @@
 import { isMinimalFighter } from "./core/reliability.js";
 
+/**
+ * 役割: タブごとの絞り込みフィルタの「単一の真実」。フィルタ定義 (TAB_FILTERS)、
+ *   ボタン列挙 (filterButtons)、レコード照合ロジック (itemPassesFilters) を提供する。
+ * アーキ上の位置:
+ *   - view-controller.js: TAB_FILTERS/filterButtons でフィルタ UI のボタン HTML を描画。
+ *   - event-controller.js: TAB_FILTERS でクリックされたボタンの group/stateKey を解決し state.patch。
+ *   - tabs/tab-renderers.js: itemPassesFilters で各タブの items を絞り込み。
+ *   - tabs/tab-registry.js: TAB_FILTERS の stateKey 群で再描画判定の fingerprint を作る。
+ *   選択状態は core/app-state.js のフィールド (group.stateKey 名と一致) に保持される。
+ * 不変条件 / 注意:
+ *   - TAB_FILTERS のキーは tab ID と一致し、group.stateKey は AppState のフィールド名と
+ *     1対1で対応していなければならない (UI・state・絞り込み・URL 同期が全てこの名前を共有)。
+ *   - option.value は URL/state トークン (英語)、option.match (省略時 value) が実データ値。
+ *     表示は option.label。この三者の役割を混同しないこと。
+ *   - OTHER_VALUE("other") は予約値。実データに "other" という値が現れない前提。
+ * 関連スキル: .agents/skills/arakaku-filters, .agents/skills/arakaku-viewer-ui
+ */
+
 /** @typedef {import("./core/app-state.js").AppState} AppState */
 
 const DIVISION_OPTIONS = [
@@ -114,8 +132,11 @@ export function itemPassesFilters(item, groups, state) {
     const selected = state[group.stateKey];
     if (!selected) return true;
 
+    // forceOther が真の項目は実値に関わらず「その他」側に倒す (例: 最小登録選手は
+    // main_division を持っていても階級フィルタでは「その他」扱い)。
     const forcedOther = group.forceOther ? group.forceOther(item) : false;
     const raw = item[group.field];
+    // field は単一値・配列・空のいずれもありうる。配列に正規化していずれか一致で通過扱い。
     const values = Array.isArray(raw) ? raw : raw == null || raw === "" ? [] : [raw];
     const knownMatches = group.options.map(matchOf);
 

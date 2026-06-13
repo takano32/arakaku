@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+# 役割: data-src/*.csv (正規化済みリレーショナル CSV) を読み、viewer 用の docs/data/*.json を
+#   一括生成するメインのビルダ。JSON_BUILDERS に「出力ファイル名 -> ビルダ関数」を列挙し、
+#   build_json_files が順に評価して書き出す。Makefile の `build` ターゲット先頭で実行される。
+# アーキ上の位置: 入力 = data-src/*.csv、出力 = docs/data/*.json (viewer = docs/assets/js が読む)。
+#   関係テーブル (article_links / video_links / bout_participants / title_reigns / aliases) を
+#   起動時に一度だけ index 化し、各エンティティ JSON へ派生情報を join する設計。
+# 不変条件:
+#   - 出力 JSON のキー構造は viewer (docs/assets/js) と validate_json の契約。勝手に変えない。
+#   - AGENTS.md の方針: 行を黙って落とさない/捨てない・事実を捏造しない。不明値は "unknown"/None で残す。
+#   - 区別: ここは「正規 CSV」。official_*/numbers_* は別ビルダ (build_official_json.py 等) が担当。
+# 関連スキル: .agents/skills/arakaku-maintainer。
 from typing import Any
 
 from arakaku.utils import (
@@ -34,6 +45,8 @@ def group_by(items: list[CsvRow], key: str) -> dict[str, list[CsvRow]]:
     return groups
 
 
+# 関係テーブル類はモジュール読み込み時に一度だけ読む (各ビルダから何度も join するため)。
+# import 副作用なので、これらの CSV が存在する前提で動く (無ければ read_csv が空リストを返す)。
 ARTICLE_LINKS = rows("article_links.csv")
 BOUT_PARTICIPANTS = rows("bout_participants.csv")
 TITLE_REIGNS = rows("title_reigns.csv")
@@ -62,6 +75,8 @@ for _alias in ALIASES:
         FIGHTER_ALIASES.setdefault(_alias.get("canonical_id"), []).append(_alias["alias"])
 
 PARTICIPANTS_BY_BOUT: dict[str, list[CsvRow]] = {}
+# red を先, blue を次, それ以外 (未知の side) は末尾(99) に固定。matchup の "A vs B" 表示順が
+# これに依存するので並び順は意味を持つ。
 _SIDE_ORDER = {"red": 0, "blue": 1}
 for _participant in BOUT_PARTICIPANTS:
     PARTICIPANTS_BY_BOUT.setdefault(_participant.get("bout_id"), []).append(_participant)
@@ -108,6 +123,9 @@ def bout_fighters(row: CsvRow) -> list[dict[str, Any]]:
     ]
 
 
+# 勝者は bouts.csv に直接持たず、bout_participants の result=="win" から逆引きする
+# (単一の事実源 = participants 行を保つため。敗者側は loser_from_participants が同様に "loss" を引く)。
+# 該当者が無ければ None を返し捏造しない。
 def winner_from_participants(row: CsvRow, field: str) -> str | None:
     winners = [p for p in sorted_participants_for_bout(row["bout_id"]) if p.get("result") == "win"]
     if not winners:
@@ -352,6 +370,9 @@ JSON_BUILDERS = {
     "videos.json": build_videos,
     "video_links.json": build_video_links,
     "aliases.json": build_aliases,
+    # source_documents は本文 (content_text) を別 JSON に分離する: メタデータは軽く、
+    # 重い本文は source_document_bodies.json として遅延ロードできるようにするため。両者で
+    # source_id を揃えて viewer 側が突き合わせる。
     "source_documents.json": lambda: [
         {k: v for k, v in row.items() if k != "content_text"}
         for row in SOURCE_DOCUMENTS
@@ -363,6 +384,7 @@ JSON_BUILDERS = {
     "source_mentions.json": lambda: rows("source_mentions.csv"),
     "youtube_archives.json": lambda: rows("archives/youtube.csv"),
     "note_archives.json": lambda: rows("archives/note.csv"),
+    # 以下は data-src ではなく review/ 配下の候補 CSV をそのまま JSON 化する (人手レビュー用の参照情報)。
     "source_event_references.json": lambda: read_csv(REVIEW / "source_event_reference_candidates.csv"),
     "source_bout_references.json": lambda: read_csv(REVIEW / "source_bout_reference_candidates.csv"),
     "source_video_references.json": lambda: read_csv(REVIEW / "source_video_reference_candidates.csv"),

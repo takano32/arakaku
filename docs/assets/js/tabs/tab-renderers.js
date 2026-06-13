@@ -11,6 +11,25 @@ import {
 import { TAB_FILTERS, itemPassesFilters } from "../filters.js";
 import { mdToHtml } from "../ui/markdown.js";
 
+/**
+ * 役割: 各タブ用の「descriptor 生成メソッド」(official/bouts/fighters…) と、その中で使う
+ *   カード HTML 文字列ビルダーをまとめたクラス。タブ表示の見た目はほぼここで決まる。
+ * アーキ上の位置: main.js が ctx (ViewContext) を渡して生成し、TabRendererRegistry が
+ *   メソッド名 (= タブ ID) で呼び出す。データは ctx.repo (DataRepository) から、絞り込みは
+ *   ctx.state + TAB_FILTERS から、副パーツは ctx.components/navigation/sources/related/labels
+ *   経由で取得する。
+ * 不変条件 / 注意:
+ *   - 公開メソッド名は tab-registry.js の #strategies のキーと完全一致させること
+ *     (例: official/tsushin/bouts/fighters/events/promotions/titles/videos/sources/mentions/
+ *      numbersFighters/numbersNameMatches/numbersFightRecords/officialPlayers/officialMisc)。
+ *   - 各メソッドは { items, renderItem, estimateSize?, itemsSource? } 形の descriptor を返す。
+ *     itemsSource を返すと registry が配列の同一性で再描画要否を判定する (official() 参照)。
+ *   - HTML は文字列連結で組むため、外部・任意文字列は必ず escapeHtml で囲むこと
+ *     (body_html/body_md など信頼済み生成 HTML のみ非エスケープで挿入)。
+ *   - 絞り込みタブは itemPassesFilters(item, TAB_FILTERS.<tab>, state) を通すこと。フィルタ
+ *     仕様の単一の真実は filters.js。
+ * 関連 skill: .agents/skills/arakaku-viewer-ui (描画), arakaku-filters (絞り込み)。
+ */
 /** Template Method の具象: 各タブの HTML 生成 */
 export class TabRenderers {
   /** @param {import("../core/view-context.js").ViewContext} ctx */
@@ -18,6 +37,7 @@ export class TabRenderers {
     this.ctx = ctx;
   }
 
+  // focus (特定 ID へのジャンプ) 中はその 1 件だけを返し、未設定時のみ通常の絞り込み一覧を返す。
   focusedOrFiltered(focusedId, findRecord, records, predicate) {
     return focusedId ? [findRecord(focusedId)].filter(Boolean) : records.filter(predicate);
   }
@@ -179,6 +199,7 @@ export class TabRenderers {
   renderOfficialBio(od, summary) {
     const bio = od?.bio;
     if (!bio) return "";
+    // 区切り・空白を全部除去した正規化文字列同士で包含判定し、表記揺れに依らず重複を弾く。
     const ref = (summary ?? "").replace(/[\s／/、,]/g, "");
     const items = bio
       .split(/[／/]/)
@@ -421,6 +442,7 @@ export class TabRenderers {
 
   official() {
     const { repo } = this.ctx;
+    // pages と news を 1 リストに混ぜるため _kind で種別を付け、renderItem 側で分岐する。
     const pages = repo.officialPages.map(p => ({ _kind: "page", ...p }));
     const news = [...repo.officialNews]
       .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
@@ -491,6 +513,8 @@ export class TabRenderers {
         .map((l) => repo.findBout(l.entity_id)?.division)
         .filter(Boolean)
     )];
+    // promotion_id / divisions は TAB_FILTERS.tsushin の field と一致させる合成フィールド。
+    // これを付けないと団体・階級フィルタが note 記事に効かない。
     return { ...doc, promotion_id: article?.promotion_id, divisions };
   }
 
@@ -567,6 +591,8 @@ export class TabRenderers {
       );
 
     // Flatten: interleave group headers as synthetic items
+    // 見出しは _header フラグ付きの合成アイテムとして items に混ぜる。renderItem と
+    // estimateSize はこのフラグで本物の王座カードと見出しを区別するので両者を同期させること。
     const flat = [];
     let prev = "";
     for (const t of list) {
@@ -733,6 +759,8 @@ export class TabRenderers {
   officialPlayers() {
     const { state, repo } = this.ctx;
     const items = repo.officialPlayers
+      // organization (団体名) を promotion_id に解決して合成。TAB_FILTERS.officialPlayers の
+      // 団体フィルタが ID で照合するため、フィルタ前に付与しておく必要がある。
       .map((p) => ({ ...p, promotion_id: repo.promotionIdByName(p.organization) }))
       .filter((p) => itemPassesFilters(p, TAB_FILTERS.officialPlayers, state));
     return {

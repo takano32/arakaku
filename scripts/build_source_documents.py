@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: ローカルキャッシュ (note HTML / YouTube info.json) を読み、本文を抽出・正規化して
+#   data-src/source_documents.csv と source_mentions.csv を再生成する取り込みスクリプト。
+#   行ごとに対戦/結果/イベント/URL を分類して mentions を起こす (あくまでレビュー用の手掛かり)。
+# アーキ上の位置: 入力 = data-src/articles.csv・videos.csv と tmp/note-html/*・tmp/youtube-info/*.info.json、
+#   出力 = data-src/source_*.csv。これらは後段で build_json.py が source_*.json として viewer へ流す。
+#   articles.csv の生成 (generate_articles.py) はこのスクリプトより前に走らせる必要がある。
+# 不変条件:
+#   - キャッシュ (tmp/) はコミットしない。本文ハッシュ (content_hash) で内容同一性を表す。
+#   - note キャッシュのファイル名は utils.note_cache_name() に一元化 (writer=cache_note_html.py と契約)。
+#   - mention はキーワード一致の機械抽出であり、勝敗・出場者・タイトル系譜を「確定」させない (AGENTS.md)。
+#   - 出力は決定的にするため main() で documents/mentions をソートしてから書き出す。
+# 関連スキル: .agents/skills/arakaku-source-pipeline。
+
 import hashlib
 import html
 import json
@@ -92,6 +105,8 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+# 1 行を mention 種別へ分類する。判定は上から優先で、最初に当たった分類を返す。
+# 「vs かつ結果あり」を最も具体的(high)とし、以降ゆるい条件へ落ちていく順序が意味を持つ。
 def classify_mention(line: str) -> tuple[str, str, str]:
     if VS_RE.search(line) and RESULT_RE.search(line):
         return "match_result", "bout", "high"
@@ -134,6 +149,7 @@ def extract_mentions(document: dict[str, str]) -> list[dict[str, str]]:
         if event_match:
             entity_hint = event_match.group(0)
 
+        # URL があれば event_hint より URL を優先 (後勝ちで上書き): URL の方が同定に強いヒント。
         urls = NOTE_URL_RE.findall(line) + YOUTUBE_URL_RE.findall(line)
         if urls:
             entity_hint = ",".join(urls)
@@ -225,6 +241,8 @@ def build_youtube_documents() -> list[dict[str, str]]:
         platform_video_id = str(data.get("id") or info_path.stem.replace(".info", ""))
         video = videos_by_platform_id.get(platform_video_id, {})
 
+        # videos.csv に登録済みなら正規の値を優先し、未登録分は info.json から補う
+        # (video_id が無ければ platform id から合成。CSV を事実源として尊重しつつ取りこぼさない)。
         video_id = video.get("video_id") or f"youtube_{platform_video_id}"
         title = video.get("title") or str(data.get("title") or "")
         url = video.get("url") or str(data.get("webpage_url") or data.get("original_url") or "")
@@ -266,6 +284,7 @@ def main() -> int:
     for document in documents:
         mentions.extend(extract_mentions(document))
 
+    # 出力 CSV の diff を安定させるため決定的にソートしてから書き出す。
     documents.sort(key=lambda row: (row["source_type"], row["source_ref_id"]))
     mentions.sort(key=lambda row: (row["source_id"], int(row["line_number"] or 0), row["mention_type"]))
 

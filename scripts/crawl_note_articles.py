@@ -17,6 +17,14 @@ from typing import Any
 
 from arakaku.utils import ROOT, write_csv
 
+# 役割: 公式 note クリエイターの記事を RSS / HTML リンク / 非公式 API から発見し、
+#   data-src/articles.csv に「未登録 URL の行だけ」追記するクローラ。
+# アーキ上の位置: 取得パイプラインの入口。ここで articles.csv に増えた行を起点に
+#   cache_note_html.py -> build_source_documents.py が本文を取りに行く。
+# 不変条件: 既存行は URL 正規化キーで重複判定し、絶対に上書き/削除しない (事実保護)。
+#   発見した行は status="unparsed" で追記し、本文確定は下流に任せる。article_type /
+#   promotion_id はタイトルからの推測なので後段レビュー対象。
+# 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 ARTICLES_CSV = ROOT / "data-src" / "articles.csv"
 
 DEFAULT_CREATOR = "xyz1090"
@@ -49,6 +57,8 @@ def fetch_text(url: str, *, sleep: float = 0.5) -> str:
 
 
 def normalize_url(url: str) -> str:
+    # クエリ/フラグメント/末尾スラッシュを落とした正規形。merge_articles の重複判定キー
+    # でもあるので、ここの正規化ルールが緩むと重複行や取りこぼしの原因になる。
     url = html.unescape(url.strip())
     url = url.split("?")[0].split("#")[0]
     return url.rstrip("/")
@@ -181,6 +191,8 @@ def parse_html_links(html_text: str) -> list[dict[str, str]]:
     return rows
 
 
+# API レスポンス JSON の入れ子構造を全 dict まで再帰的に平坦化して列挙する。
+# note の API スキーマに依存せず「note っぽいオブジェクト」を拾う best-effort 戦略。
 def iter_json_objects(value: Any):
     if isinstance(value, dict):
         yield value
@@ -298,6 +310,8 @@ def merge_articles(
     known_urls = {normalize_url(row.get("url", "")) for row in existing if row.get("url")}
     known_ids = {row.get("article_id", "") for row in existing if row.get("article_id")}
 
+    # existing をその場で破壊的に append し、追記分だけを added にも積んで返す。
+    # URL 既知ならスキップ、article_id 衝突時は -2, -3... を付けて一意化する。
     added: list[dict[str, str]] = []
 
     for row in discovered:

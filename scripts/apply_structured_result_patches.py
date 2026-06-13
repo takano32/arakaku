@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: review/structured_result_patch_candidates.csv のうち apply 列が真の行
+#   だけを bouts.csv / bout_participants.csv へ書き戻す適用ステップ。
+# アーキ上の位置: パイプラインの後半。入力 CSV は
+#   make_structured_result_patch_candidates.py が生成し、人間が apply=true を
+#   付けた行のみが対象。winner/loser/fighter_a/fighter_b 列は上流が解決済みの
+#   値であることを前提とする。
+# 不変条件 / 注意: 元データ (bouts.csv / bout_participants.csv) を破壊的に上書き
+#   するため、レビュー済みの apply 行のみ処理すること。csv は arakaku/utils の
+#   ラッパを使わず標準 csv を直接使い、書き戻し時に extrasaction="ignore" と
+#   既存 fieldnames を保つことで列構成を変えない (この契約を維持すること)。
+# 関連 skill: .agents/skills/arakaku-review-workflow。
+
 import csv
 
 from arakaku.utils import ROOT
@@ -53,6 +65,7 @@ def main() -> int:
         loser = patch.get("loser", "")
 
         # Update bout result fields
+        # winner と loser の両方が揃って初めて結果確定 (known) とみなす。
         if winner and loser:
             bout["result_status"] = "known"
 
@@ -83,7 +96,8 @@ def main() -> int:
             for p in bout_participants:
                 name = p.get("fighter_name", "")
                 side = p.get("side", "")
-                # Match by exact name or by side when names are resolved from participants
+                # 名前完全一致を優先しつつ、上流が red=fighter_a / blue=fighter_b と
+                # して解決している前提で side 経由のフォールバックも許容する。
                 if name == winner or (side == "red" and fighter_a == winner) or (side == "blue" and fighter_b == winner):
                     p["result"] = "win"
                 elif name == loser or (side == "red" and fighter_a == loser) or (side == "blue" and fighter_b == loser):

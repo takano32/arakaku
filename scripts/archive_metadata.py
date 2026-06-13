@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+# 役割: tmp/ の取得キャッシュ (youtube-info/*.json, note-html/*.html) から安定メタデータを
+#   抽出し、コミット対象の data-src/archives/{youtube,note}.csv へ吸い上げるアーカイバ。
+# アーキ上の位置: cache_youtube_info.py / cache_note_html.py が作るキャッシュが入力。
+#   出力アーカイブは表示・検索・レビュー専用で、勝敗/出場者/選手同定/王座系譜は確認しない。
+# 不変条件: archived_at は既存行の値を existing_archive_times() で引き継ぎ、新規行のみ
+#   現在時刻を入れる -> 再実行しても差分が最小 (決定論的)。出力は display_id / filename で
+#   ソート固定。YOUTUBE_FIELDS / NOTE_FIELDS は出力スキーマで、flat_data の作りと一致必須。
+# 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import json
 from datetime import datetime
 import html
@@ -40,6 +48,8 @@ def current_archive_time() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+# note 記事 HTML から <title> / canonical URL / meta[name=description] だけを拾う最小パーサ。
+# 本文は取らない (アーカイブは表示・検索用メタデータに限る、という不変条件のため)。
 class NoteMetadataParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -95,6 +105,7 @@ def archive_youtube():
                 print(f"[warn] Invalid YouTube cache JSON skipped: {cache_file}")
                 continue
 
+        # display_id が無い古いキャッシュ用フォールバック: ファイル名から拡張子を剥がす。
         display_id = data.get("display_id") or cache_file.name.removesuffix(".info.json").removesuffix(".json")
         flat_data = {
             "display_id": display_id,

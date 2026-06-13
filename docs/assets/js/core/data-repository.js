@@ -8,6 +8,25 @@ import {
   videoReliability,
 } from "./reliability.js";
 
+/**
+ * DataRepository — ビューワのデータアクセス中枢。BaseRepository の素アクセサの上に
+ * 「Rich 変換 (enrich) + 信頼性ソート + 関係解決 + 重複選手統合」を載せた読み取り専用ファサード。
+ *
+ * アーキ上の位置 / 関係:
+ *   data-loader.js が state.data を共有しつつ 1 インスタンスを生成し、ロードのたびに invalidate() を呼ぶ。
+ *   DataEnricher (合成) と reliability.js (ティア/ソート) に依存。rich* ゲッターや関連メソッドが返す
+ *   「表示用の確定データ」を view-controller / tab-renderers / query-matcher 等が消費する。
+ *
+ * 不変条件 / 注意:
+ *   - rich* ゲッターは全て遅延構築 + #フィールドにキャッシュ。data 差し替え後は必ず invalidate()
+ *     を通すこと (キャッシュ・indexes・enricher を一括破棄し revision を進める)。
+ *   - 一覧系ゲッターは CSV 昇順 (古い順) を .reverse() で降順 (新しい順) にして返す約束
+ *     (arakaku-sorting-strategy)。さらに lowReliabilityLast で低信頼を末尾へ寄せる。
+ *   - findRichFighter / 関連解決は #mergeDuplicateFighters が作る merged_fighter_ids と
+ *     #fighterAliasIndex に依存。統合後の survivor 1 件に元 fighter_id 群を解決させる契約。
+ *   関連スキル: .agents/skills/arakaku-reliability-layering, arakaku-sorting-strategy, arakaku-viewer-ui
+ */
+
 // invalidate() のたびに進む世代番号。インスタンスを作り直しても重複しないよう
 // モジュールレベルで単調増加させる。外部キャッシュ (tab-registry, query-matcher)
 // は repo の同一性ではなく revision の変化でデータ更新を検知する。
@@ -67,6 +86,8 @@ export class DataRepository extends BaseRepository {
   }
 
   // Collection Accessors (Overriding with Rich and Sorted logic)
+  // CSV は昇順 (古い順)。ビューワは降順表示なので .reverse() で新しい順にする
+  // (rich 系も同じ約束。arakaku-sorting-strategy)。
   get events() { return [...super.events].reverse(); }
   get richEvents() {
     if (this.#richEvents) return this.#richEvents;

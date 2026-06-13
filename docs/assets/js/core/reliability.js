@@ -1,4 +1,15 @@
 /**
+ * 役割: 各エンティティの「データ信頼性ティア」を算出し、一覧の並びで低信頼を末尾へ寄せる。
+ *   出典 (名鑑 / 公式 / 通信ノート / YouTube 推定 / 未登録) からティアを決める純粋関数群。
+ * アーキ上の位置: DataRepository が rich 配列構築の最後に xxxReliability + lowReliabilityLast
+ *   を呼んで安定パーティションする。isMinimalFighter は filters.js の forceOther 判定にも使う。
+ * 不変条件 / 注意:
+ *   - ティアの優先順位 (numbers > official > note > youtube > none) を変えると一覧並びと
+ *     provenance 表示の前提が崩れる。AGENTS.md「Human-verified Apple Numbers data takes
+ *     absolute precedence」に従い numbers を最上位に保つこと。
+ *   - 各 xxxReliability の判定フィールド (numbers_data / official_data / source_article_id(s) /
+ *     inferred_from_video_id(s) など) は生成 JSON のスキーマに依存する。skill: arakaku-reliability-layering。
+ *
  * データ信頼性ティア。
  * 名鑑 > 公式 > 通信ノート > YouTube > 未登録 の順で信頼できる。
  * 一覧では各タブの既存ソートを保ったまま、低信頼 (YouTube のみ / 未登録) を末尾へ寄せる。

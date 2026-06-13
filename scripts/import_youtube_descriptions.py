@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: tmp/youtube-info/*.info.json の概要欄を行単位で分類し、イベント/対戦/URL/結果
+#   らしい行だけを review/youtube_description_candidates.csv に抽出するレビュー補助。
+# アーキ上の位置: cache_youtube_info.py が作る info JSON が入力。出力は review/ 配下の
+#   候補で、人手レビュー用途。正規 data-src を直接書かない。
+# 不変条件: 出力は確定事実ではなく分類候補。URL/対戦の判定パターンは複数スクリプトと
+#   挙動を揃えるため arakaku.textparse を共有 (ここで再定義しない)。一方 EVENT_RE /
+#   RESULT_RE はこのスクリプト固有語彙なので textparse へ移さない。
+# 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import argparse
 import json
 import re
@@ -29,6 +37,8 @@ EVENT_RE = re.compile(
 RESULT_RE = re.compile(r"(KO|TKO|一本|判定|ドロー|ノーコンテスト|失格|勝利|敗北|防衛|王座|タイトル)", re.IGNORECASE)
 
 
+# 判定順が優先順位。URL 種別 -> 対戦カード -> イベント -> 結果/タイトル の順で先勝ち。
+# "other" は extract_candidates で捨てられるため、ここで拾わない行は出力されない。
 def classify_line(line: str) -> str:
     if NOTE_URL_RE.search(line):
         return "note_url"

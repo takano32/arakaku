@@ -1,5 +1,13 @@
 import { boutResultText, escapeHtml } from "../ui/html-utils.js";
 
+// 役割: bout を「関連試合カード」として描画する。fighter プロフィールでは対戦相手の試合一覧、
+//   event ページでは大会内の試合一覧を、対戦カード・結果・紐づく動画つきで出す。
+// アーキ上の位置: main.js で new され ctx.related として tab-renderers から呼ばれる。データは
+//   ctx.repo (relatedBoutsForFighter / boutsForEvent) から取得し、整形は ctx.navigation
+//   (対戦カード/結果サマリ)、ctx.sources (動画リンク)、ctx.components (grid/card) に委譲する。
+// 不変条件: showEvent (相手側=どの大会か表示) と showOrder (大会内=第N試合表示) は呼び出し文脈で
+//   排他的に使う。numbers_records の有無で「名鑑」バッジを出すのは Apple Numbers 由来データの目印。
+// 関連スキル: .agents/skills/arakaku-viewer-ui
 /** 関連試合カードの描画サービス */
 export class RelatedRenderers {
   /** @param {import("../core/view-context.js").ViewContext} ctx */

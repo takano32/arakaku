@@ -4,8 +4,19 @@ from __future__ import annotations
 
 import json
 
+# 役割: 公式サイト（別リポジトリ takano32/arakaku-site）の JSON エクスポートを
+#       official_players / official_tournaments / official_matches / official_history の
+#       4 CSV に転記する。camelCase の公式キーを snake_case 列へマッピングするだけの薄い層。
+# アーキ上の位置: generate-stage1 で実行。入力 tmp/arakaku-site/data/*.json は git 管理外で、
+#       事前に公式リポジトリから取得しておく必要がある（無ければ load() で例外）。出力 CSV は
+#       build_official_json.py が読み、ビューアが「公式データ」レイヤとして参照する。
+# 不変条件: official_* は公式由来の比較データであり、本リポジトリの canonical CSV とは別系統。
+#       人手検証済みの値が優先される（AGENTS.md のパイプライン方針）。各 generate_* の fields と
+#       dict キーは write_csv の DictWriter で厳密一致させること。
+# 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.utils import DATA_SRC, ROOT, write_csv
 
+# 公式サイトの JSON エクスポート置き場（git 管理外、要事前取得）。
 SRC = ROOT / "tmp" / "arakaku-site" / "data"
 
 

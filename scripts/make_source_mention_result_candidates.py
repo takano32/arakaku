@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: source_mentions.csv の "result" 種別の言及からテキストを解析し、
+#   試合結果の手掛かり (method/round/time/event/matchup) を抽出した
+#   review/source_mention_result_candidates.csv を生成する。
+# アーキ上の位置: `make source-mention-result-candidates` から起動。出力は
+#   review/ 以下の「人間レビュー専用」候補で、bouts.csv 等の確定データではない
+#   (notes 列にもその旨を明記)。共有テキスト解析ヘルパは arakaku/textparse.py、
+#   入出力 path 定数と CSV/行番号ユーティリティは arakaku/utils.py に依存。
+# 不変条件 / 注意: METHOD_PATTERNS / ROUND_RE / RESULT_WORD_RE はこのスクリプト
+#   固有の語彙なので textparse.py へ移さないこと (skill の指示)。出力はあくまで
+#   候補であり winner/loser は推定しない (winner_hint/loser_hint は常に空)。
+# 関連 skill: .agents/skills/arakaku-source-pipeline (Review candidate pipeline)。
+
 import re
 from collections import defaultdict
 
@@ -38,6 +50,9 @@ def nearest_hint(
     mention_type: str,
     max_distance: int = 8,
 ) -> str:
+    # 同一 source 内で current に最も近い (行番号距離が max_distance 以内の)
+    # 指定 mention_type の言及を探し、その手掛かり文字列を返す。result 言及の
+    # 近くにある event/matchup を関連付けるための近接ヒューリスティック。
     current_line = line_number(current)
     candidates = [
         row
@@ -72,6 +87,7 @@ def build_rows(source_mentions: list[dict[str, str]]) -> list[dict[str, str]]:
         by_source[mention.get("source_id", "")].append(mention)
 
     rows: list[dict[str, str]] = []
+    # result 種別の言及のみが候補行になる (1 言及 = 1 候補行)。
     result_mentions = [
         mention for mention in source_mentions
         if mention.get("mention_type") == "result"

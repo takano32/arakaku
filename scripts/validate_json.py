@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
+# 役割: ビルド済み docs/data/*.json の構造・主キー一意性・参照整合性を検証する
+#   Python 側バリデータ。`make validate` の最初のステップ。
+# アーキ上の位置: build_json.py 等が出力した JSON を入力にする。許容値の集合
+#   (VALID_METHODS など) は arakaku/validation.py から、JSON ロードと DOCS_DATA は
+#   arakaku/utils.py から取得。viewer 側の整合は validate_json.js が別途検証する。
+# 不変条件 / 注意: 致命的不整合は add_error (return 1)、許容範囲外だが致命的でない
+#   ものは add_warning。REQUIRED_JSON_FILES は欠けると error、その他の生成 JSON は
+#   存在チェックのみ warning。main() の検証順序は依存順 (article→promotion→event→
+#   fighter→bout…) で、先に集めた *_ids 集合を後段の参照チェックに渡す前提なので
+#   並べ替え時は ID 集合の生成タイミングを崩さないこと。
+# 関連 skill: .agents/skills/arakaku-maintainer (make validate)。
+
 import sys
 from typing import Any
 from arakaku.utils import DOCS_DATA, load_json
@@ -132,6 +145,8 @@ def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str
                     add_error(f"bouts.json[{i}].fighters[{j}]: missing name")
             if len(names) != 2:
                 add_error(f"bouts.json[{i}]: fighter names must be distinct")
+            # result_status 未指定時は winner(_id) の有無から known/unknown を推定する
+            # (この推定規則は下の bout レベル検証でも同じ式で再計算され一致させる)。
             result_status = x.get('result_status') or ('known' if x.get('winner_id') or x.get('winner') else 'unknown')
             if result_status == 'known' and sorted(results) != ['loss', 'win']:
                 add_error(f"bouts.json[{i}]: known-result fighters must have exactly one win and one loss")
@@ -547,6 +562,9 @@ def main() -> int:
     official_news = load_json('official_news.json', [])
     official_pages = load_json('official_pages.json', [])
 
+    # 以降は依存順に検証する。各バリデータが返す *_ids 集合を後続の参照整合性
+    # チェックへ渡すため、この呼び出し順 (article→promotion→event→fighter→bout…)
+    # を入れ替えると未定義 ID 集合を参照して壊れる。
     article_ids = validate_articles(articles)
     promotion_ids = validate_promotions(promotions, article_ids)
     event_ids = validate_events(events, promotion_ids, article_ids)

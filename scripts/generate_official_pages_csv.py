@@ -4,8 +4,21 @@ from __future__ import annotations
 
 import re
 
+# 役割: 公式サイトのニュース Markdown と Astro ページを official_news.csv /
+#       official_pages.csv に変換する。news は YAML frontmatter を抜き、pages は Astro/JSX を
+#       素の HTML へ正規表現で還元する（軽量な“脱 Astro”処理）。
+# アーキ上の位置: generate-stage2 の最後に実行（generate_official_csvs と同じく公式比較データ
+#       系統）。入力 tmp/arakaku-site/ は git 管理外。NEWS_DIR が無ければ generate_news は
+#       早期 return して official_news.csv を温存するが、generate_pages は全 slug を skip
+#       しても末尾で write_csv を呼ぶため official_pages.csv は空で上書きされる点に注意。
+#       出力は build_official_pages_json.py が消費する。
+# 不変条件: ASTRO_PAGES は変換対象スラッグ・表示タイトル・説明文の固定リスト。
+#       extract_astro_body の正規表現は順序依存（frontmatter→レイアウトタグ→コメント→
+#       map 展開→base パス→残り式属性→class/style の順で剥がす）。
+# 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.utils import DATA_SRC, ROOT, write_csv
 
+# 公式サイトのソースツリー置き場（git 管理外、要事前取得）。
 SRC = ROOT / "tmp" / "arakaku-site"
 NEWS_DIR = SRC / "content" / "news"
 PAGES_DIR = SRC / "pages"
@@ -43,6 +56,7 @@ def extract_astro_body(text: str) -> str:
 
     # Expand JSX array.map() expressions:
     # {['a', 'b'].map(varname => (<tag ...>{varname}</tag>))}
+    # 後段の「残り式属性除去」で消える前に、ここで静的配列を実 HTML へ展開しておく必要がある。
     def expand_map(m: re.Match) -> str:
         items_raw = m.group(1)
         var = m.group(2)

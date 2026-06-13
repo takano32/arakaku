@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# 役割: Apple Numbers (アラカク選手名鑑.numbers) 由来の numbers_*.csv を docs/data/numbers_*.json
+#   に変換する。viewer は実行時にこの比較データで正規 CSV を補完する (人手検証済み Numbers が優先)。
+# アーキ上の位置: 入力 = data-src/numbers_*.csv (extract_numbers.py が Numbers から生成)、
+#   出力 = docs/data/numbers_*.json。build_json.py とは別系統で、正規 CSV を上書きしない比較レイヤ。
+# 不変条件: Numbers の事実を捏造・改変しない。正規データへの「直接置換」ではなく比較データとして扱う。
+# 関連スキル: .agents/skills/arakaku-numbers-pipeline。
 """Build numbers_*.json from numbers_*.csv (sourced from アラカク選手名鑑.numbers)."""
 from __future__ import annotations
 

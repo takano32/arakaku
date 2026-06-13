@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: Apple Numbers の選手名鑑 (data-raw/*.numbers) を読み、比較用データとして
+#   data-src/numbers_*.csv 3 本 (fighters / name_matches / fight_records) に書き出す。
+# アーキ上の位置: 取り込みパイプラインの入口。下流は build_numbers_json.py が
+#   この CSV を JSON 化し、ビューワが DataRepository 経由で正規 CSV と突き合わせる。
+# 不変条件: Numbers 由来データは「確定事実」ではなく比較データ。ここで生成した CSV を
+#   そのまま bouts.csv / fighters.csv 等の正規データへ昇格させてはならない。
+#   ヘッダ/カラム名は extract_fighters / extract_fight_records の require_columns と
+#   main() の write_csv fieldnames で必ず一致させること (ズレると JSON 化・突合が壊れる)。
+# 関連スキル: .agents/skills/arakaku-numbers-pipeline/SKILL.md を必ず参照。
 from numbers_parser import Document
 
 from arakaku.utils import DATA_SRC, ROOT, read_csv, safe_slug, write_csv
 
 
 NUMBERS_PATH = ROOT / "data-raw" / "アラカク選手名鑑.numbers"
+
+# Numbers 上の日本語団体表記 -> 正規 promotion_id。未知の表記は promotion_id() で
+# lower() フォールバックされるため、ここは既知エイリアスの明示マップに留める。
 
 PROMOTION_MAP = {
     "MH": "mh",
@@ -75,6 +87,8 @@ def row_dict(header: list[str], row) -> dict[str, str]:
     return {name: values[index] for index, name in enumerate(header) if name}
 
 
+# Numbers 由来の合成 ID。正規 fighters.csv の ID とは別名前空間。突合は
+# numbers_name_matches.csv 側 (matched_fighter_id) で行うので衝突を気にしなくてよい。
 def numbers_fighter_id(index: int) -> str:
     return f"numbers_fighter_{index:03d}"
 
@@ -98,6 +112,8 @@ def extract_fighters(doc: Document, name_to_id: dict[str, str]) -> tuple[list[di
     if len(table_rows) < 2:
         raise SystemExit("[error] No fighter data found in the Numbers file.")
 
+    # シート「全体」はヘッダが 2 行目 (index 1) にある前提。1 行目はタイトル行のため捨て、
+    # データは 3 行目以降。シート「個人成績」とはヘッダ位置が異なる点に注意。
     header = [cell_text(cell) for cell in table_rows[1]]
     required = [
         "白グローブ出場回数",

@@ -1,4 +1,21 @@
 /**
+ * DataEnricher — 各エンティティ (fighter/bout/event/video/article) に、別ソース由来の
+ * データ (選手名鑑 numbers / 団体公式 official / YouTube・note アーカイブ) を「重ねる」合成層。
+ *
+ * アーキ上の位置 / 関係:
+ *   DataRepository が所有 (this.enricher) し、rich* ゲッターから enrich*() を呼ぶ。
+ *   入力は repo の素データ (BaseRepository ゲッター経由)。出力は元オブジェクトのコピー (非破壊)。
+ *
+ * 不変条件 / 注意:
+ *   - 信頼性の重ね順は固定: base(通信/YouTube) → official → numbers(名鑑が最優先)。
+ *     この順序は reliability.js のティアと一致させること (arakaku-reliability-layering)。
+ *   - 引数オブジェクトを直接変更せず必ずスプレッドでコピーする (rich キャッシュと素データを分離するため)。
+ *   - 内部インデックス (#nameMatches 等) は遅延構築キャッシュ。repo データ差し替え後は
+ *     DataRepository.invalidate() が reset() を呼んで破棄する前提。ここに永続状態を持たせない。
+ *   関連スキル: .agents/skills/arakaku-reliability-layering, arakaku-numbers-pipeline
+ */
+
+/**
  * 公式選手名と fighter の display_name を緩く突き合わせるための正規化キー。
  * 中黒・空白・ピリオドの有無や全半角差のみ異なる表記ゆれを吸収する
  * (例: 「ローリングJr」=「ローリングJr.」)。完全一致が取れなかった場合の
@@ -220,6 +237,8 @@ export class DataEnricher {
     const participants = (bout.fighters ?? []).map(f => ({ ...f }));
     const fighterIds = new Set(participants.map(f => f.fighter_id).filter(Boolean));
 
+    // #fightRecords のキーは `promotion_id:event_number_normalized`。event 側の event_number と
+    // 文字列化して揃える必要がある (突き合わせの軸は event ではなく「団体+興行番号」)。
     const key = `${bout.promotion_id}:${String(event.event_number)}`;
     const candidates = this.#fightRecords.get(key) ?? [];
     const records = candidates.filter(r =>
@@ -240,6 +259,8 @@ export class DataEnricher {
         continue;
       }
 
+      // 名鑑レコードは「対戦相手側」の行としても当該選手を含みうる。その場合 result は
+      // 相手視点なので win/loss を反転して当該選手の結果に直す。
       r = records.find(rec => rec.opponent_matched_fighter_id === p.fighter_id || rec.opponent_candidate_fighter_id === p.fighter_id);
       if (r && r.result) {
         if (r.result === "win") p.result = "loss";

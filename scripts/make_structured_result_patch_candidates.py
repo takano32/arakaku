@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: review/note_structured_results.csv (note 記事から抽出した構造化結果) を
+#   既存 bouts.csv の各 bout にファジー名前マッチングで対応付け、結果パッチ候補
+#   review/structured_result_patch_candidates.csv を生成する。
+# アーキ上の位置: パイプラインの前半。出力 CSV の各行は apply=false で出力され、
+#   人間が apply=true にした行だけを apply_structured_result_patches.py が
+#   bouts.csv / bout_participants.csv へ反映する。red/blue 名は
+#   build_bout_fighter_names (bout_participants.csv) から取得。
+# 不変条件 / 注意: winner/loser は structured 側の名前を reversed_pair に応じて
+#   実際の participant 名 (red_name/blue_name) へ解決して書き出す — 下流の
+#   apply スクリプトはこの winner/loser/fighter_a/fighter_b 列を信頼するため、
+#   出力列名・解決ロジックは apply 側と整合させること。閾値・confidence は
+#   レビュー用の目安にすぎず確定ではない。
+# 関連 skill: .agents/skills/arakaku-review-workflow。
+
 import re
 from difflib import SequenceMatcher
 
@@ -54,6 +68,9 @@ def pair_score(
     result_a: str,
     result_b: str,
 ) -> tuple[float, bool]:
+    # 順方向 (bout_a~result_a, bout_b~result_b) と逆方向のペア平均スコアを比較し、
+    # 高い方を採用。第 2 戻り値 reversed=True は bout_a が structured 側の
+    # fighter_b に対応することを示し、winner/loser 解決の向きを決める。
     direct = (
         name_score(bout_a, result_a) + name_score(bout_b, result_b)
     ) / 2
@@ -117,6 +134,8 @@ def main() -> int:
             match_reason = "name_pair"
 
             # Fallback: same event + same bout_order.
+            # 名前一致が弱くても同一 event 内で bout_order が一致すれば最低 0.70 を
+            # 与えて候補に残す (レビューで判断させるため)。
             if score < 0.75 and result.get("bout_order") and bout.get("bout_order"):
                 if result["bout_order"] == bout["bout_order"]:
                     score = max(score, 0.70)

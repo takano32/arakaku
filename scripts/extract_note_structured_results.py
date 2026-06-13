@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: note 記事本文 (source_documents.csv の content_text) を行単位で解析し、
+#   試合ごとの構造化結果候補を review/note_structured_results.csv に書き出す。
+# アーキ上の位置: build_source_documents.py が作る content_text を入力に取り、出力は
+#   make_structured_result_patch_candidates.py -> apply_structured_result_patches.py の
+#   人手レビュー経由でのみ正規 bouts 系へ反映される。直接 data-src を書かない。
+# 不変条件: 出力は review/ 配下の「候補」であり確定事実ではない。winner/method 等は
+#   推論であり confidence 列で信頼度を必ず付ける。共有解析ロジック (URL 判定や時刻/技の
+#   抽出) は arakaku.textparse に置く一方、ここの METHOD_PATTERNS/EVENT_PATTERNS/ROUND_RE は
+#   このスクリプト固有の語彙なので textparse へ移さないこと (textparse の docstring 参照)。
+# 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import re
 
 from arakaku.textparse import find_method, infer_time, normalize_digits
@@ -29,6 +39,7 @@ METHOD_PATTERNS = [
 
 ROUND_RE = re.compile(r"([1-5１-５])\s*(?:R|Ｒ|ラウンド)(?:終了)?")
 
+# note 本文では勝者に ○/◯ (全角丸2種)、敗者に ● を付ける慣習。勝敗判定はこの記号に依存する。
 WIN_MARKS = {"○", "◯"}
 LOSS_MARKS = {"●"}
 FIGHTER_MARKS = WIN_MARKS | LOSS_MARKS
@@ -163,6 +174,8 @@ def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, 
     lines = [l.strip() for l in content_text.split("\n")]
 
     # Trim footer boilerplate
+    # note の共通フッタ (FOOTER_MARKERS) に当たったら以降を打ち切る。記事本文だけを
+    # 解析対象にするため、空行も除いて filtered に詰め直す。
     filtered: list[str] = []
     for line in lines:
         if any(m in line for m in FOOTER_MARKERS):
@@ -179,6 +192,9 @@ def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, 
     i = 0
     n = len(filtered)
 
+    # 行を順に走査する小さな状態機械。級/試合形式は直近の見出し行から引き継ぎ
+    # (current_division / current_bout_type)、対戦行を見つけたら 1 bout を確定する。
+    # 対戦を消費したブロックは i = end_idx + 1 に飛ばして continue し二重計上を防ぐ。
     while i < n:
         line = filtered[i]
 

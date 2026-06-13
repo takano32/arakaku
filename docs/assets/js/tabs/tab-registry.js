@@ -2,6 +2,21 @@ import { DEFAULT_TAB } from "../config.js";
 import { TAB_FILTERS } from "../filters.js";
 import { VirtualList } from "../ui/virtual-list.js";
 
+/**
+ * 役割: 現在のタブを VirtualList に描画する単一の窓口。タブ ID → 描画 Strategy
+ *   (TabRenderers のメソッド) を解決し、不要な再描画を抑止する差分判定ロジックを持つ。
+ * アーキ上の位置: main.js が生成し ViewController.renderTo() (= 唯一の renderTo 呼び出し元)
+ *   と KeyboardNav (moveCursor 等のカーソル操作) が利用。tabRenderers (TabRenderers) /
+ *   ctx (ViewContext) に依存。タブごとに 1 つの VirtualList を #lists にキャッシュして保持する。
+ * 不変条件 / 注意:
+ *   - #strategies のキーは TabRenderers のメソッド名・config.js のタブ ID と完全一致させること。
+ *   - 差分判定 (#prev* 群) は renderTo 末尾でまとめて更新する。途中 return 時も整合が崩れない
+ *     よう、各 early return が記録すべき #prev* を都度更新している点に注意。
+ *   - repo はシングルトンで invalidate() のたびに revision が進む。同一性ではなく revision で
+ *     データ更新を検知する (data-repository.js の revision 設計と対応)。
+ * 関連 skill: .agents/skills/arakaku-viewer-ui (描画・ロード), arakaku-filters (フィルタ),
+ *   arakaku-sorting-strategy (選手タブのソート完了待ち)。
+ */
 /** Strategy: タブ ID から描画 Strategy を解決 */
 export class TabRendererRegistry {
   /** @param {import("./tab-renderers.js").TabRenderers} tabRenderers */
@@ -38,7 +53,8 @@ export class TabRendererRegistry {
   #prevSortLoaded = new Map(); // tabId → 前回のソート完了状態
   #prevItemsSources = new Map(); // tabId → 前回の descriptor.itemsSource
 
-  // 選手タブのソート順確定に必要なキー
+  // 選手タブのソート順確定に必要なデータキー (data-loader が loadedDataKeys に追加する key 名と一致)。
+  // 両方ロードされるまで選手タブは「読み込み中」を出し、完了時に1回だけ本描画する。
   static #SORT_KEYS = ["numbersFighters", "numbersNameMatches"];
 
   // 検索クエリ・フォーカス・フィルタ等、アイテム一覧に影響する state を文字列化
@@ -78,6 +94,8 @@ export class TabRendererRegistry {
     }
     const list = this.#lists.get(tabId);
 
+    // VirtualList の DOM がこの container に未挿入 / 別 container 配下のときだけ挿し替える。
+    // 既に正しく載っているなら触らない (差分描画で開いた <details> 等を保つため)。
     if (!list.el.parentNode || list.el.parentNode !== container) {
       container.replaceChildren(list.el);
     }
@@ -110,8 +128,10 @@ export class TabRendererRegistry {
       return;
     }
 
+    // 何も変化していなければ strategy() (= items 再計算) すら走らせずに抜ける。
     if (!tabChanged && !repoChanged && !filterChanged && !sortJustCompleted) return;
 
+    // 未知のタブ ID は DEFAULT_TAB にフォールバック。
     const strategy = this.#strategies.get(tabId) ?? this.#strategies.get(DEFAULT_TAB);
     let descriptor;
     try {
@@ -136,6 +156,8 @@ export class TabRendererRegistry {
 
     const prevCount = this.#prevCounts.get(tabId) ?? -1;
 
+    // 初回 / タブ切替 / ソート完了直後はフルセット (renderItem・estimateSize ごと差し替え、
+    // カーソルもリセット)。それ以外はデータだけ in-place 更新して描画状態を温存する。
     if (tabChanged || prevCount === -1 || sortJustCompleted) {
       container.replaceChildren(list.el);
       list.setItems(items, renderItem, estimateSize);
@@ -143,6 +165,7 @@ export class TabRendererRegistry {
       this.#currentTabId = tabId;
     } else {
       list.refreshItems(items);
+      // フォーカス (選手/大会へのジャンプ) で一覧内容が切り替わったら先頭へスクロール。
       if (focusChanged) window.scrollTo({ top: 0, behavior: "instant" });
     }
 

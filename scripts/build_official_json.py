@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# 役割: 公式サイト由来の official_*.csv (players/tournaments/matches/history) を
+#   docs/data/official_*.json に変換する。viewer はこれを正規/Numbers データと突き合わせて表示する。
+# アーキ上の位置: 入力 = data-src/official_*.csv (generate_official_csvs.py が生成)、
+#   出力 = docs/data/official_*.json。本文 HTML/ニュースは別ビルダ build_official_pages_json.py が担当。
+# 不変条件: 公式データを事実として保持し改変しない。出力キーは viewer の契約。
+# 関連スキル: .agents/skills/arakaku-maintainer。
 """Build official_*.json from official_*.csv (data sourced from official site)."""
 from __future__ import annotations
 

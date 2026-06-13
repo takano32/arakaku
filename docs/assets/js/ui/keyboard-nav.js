@@ -1,5 +1,15 @@
 import { PUBLIC_TABS } from "../config.js";
 
+/**
+ * 役割: グローバルな keydown ハンドラ。j/k 行カーソル移動、h/l・数字キーでのタブ切替、
+ *   ?/Escape のヘルプダイアログ、/ で検索フォーカス等の Vim 風ショートカットを提供する。
+ * アーキ上の位置: main.js で new され bind() で document に登録される。行カーソル操作は
+ *   tabRegistry (TabRendererRegistry → 現在タブの VirtualList) に委譲し、タブ切替は state.patch +
+ *   dataLoader.loadForTab で行う。タブ一覧は config.js の PUBLIC_TABS が単一の真実。
+ * 不変条件: PUBLIC_TABS の順序が h/l と数字キーの割り当てを決めるため config.js と同期必須。
+ *   input/textarea/select にフォーカス中は / 以外のキーを無効化し、ページ操作を奪わないこと。
+ * 関連スキル: .agents/skills/arakaku-viewer-ui
+ */
 /** j/k キーボードナビゲーション */
 export class KeyboardNav {
   /**
@@ -43,6 +53,7 @@ export class KeyboardNav {
   #switchTabBy(delta) {
     const tabs = PUBLIC_TABS.map(([id]) => id);
     const current = tabs.indexOf(this.#state.tab);
+    // 末尾→先頭へ巻き戻すためタブ数を足してから剰余を取る (delta が負でも非負に保つ)。
     const next = (current + delta + tabs.length) % tabs.length;
     this.#switchToTab(tabs[next]);
   }

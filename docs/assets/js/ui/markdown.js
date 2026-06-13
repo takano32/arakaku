@@ -1,3 +1,10 @@
+// 役割: 公式記事本文 (body_md) を表示するための最小限の自前 Markdown→HTML 変換。外部依存を
+//   持たず正規表現置換のみ。対応: 見出し / 太字 / リンク / 箇条書き / テーブル / 改行 / 段落。
+// アーキ上の位置: tab-renderers のみが mdToHtml を呼び、official-doc-body に埋め込む。
+// 不変条件: 入力先頭で & < > をエスケープしてから置換するのが XSS 防御の前提。リンクは生成側で
+//   target/rel を付与する。md→html は同一入力で安定するため Map でメモ化 (VirtualList の再描画で
+//   同じ本文が何度も変換されるのを避ける)。対応構文を増やす場合はエスケープ順序を壊さないこと。
+// 関連スキル: .agents/skills/arakaku-viewer-ui
 const mdToHtmlCache = new Map();
 
 export function mdToHtml(md) {

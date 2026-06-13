@@ -1,5 +1,15 @@
 import { escapeHtml } from "./html-utils.js";
 
+// 役割: viewer 全体で再利用する HTML 文字列断片 (section / card / badge / dl / details など)
+//   を生成する純粋なファクトリ。状態も DOM も持たず、文字列のみを返す。
+// アーキ上の位置: main.js で単独 new され ViewContext.bindServices 経由で ctx.components として
+//   サービス層 (source-renderers / related-renderers) と tab-renderers から呼ばれる。
+//   出力 HTML は VirtualList が innerHTML として描画する。
+// 不変条件: ラベルやクラス名など外部由来の文字列は必ず escapeHtml を通す。逆に「既に組み立て済みの
+//   HTML 断片」(innerHtml / titleHtml / bodyHtml / value) は二重エスケープを避けるため通さない —
+//   呼び出し側が安全な HTML を渡す契約。スタイルは docs/assets/style.css のクラス名に依存。
+// 関連スキル: .agents/skills/arakaku-viewer-ui
+
 /** Builder: definition list を段階的に組み立てる */
 export class DefinitionListBuilder {
   #rows = [];
@@ -9,6 +19,7 @@ export class DefinitionListBuilder {
   }
   build() {
     if (this.#rows.length === 0) return "";
+    // label (l) はエスケープするが value (v) はエスケープしない: 呼び出し側がリンク等の HTML を渡すため。
     return `<dl class="record-details">${this.#rows.map(([l, v]) => `<dt>${escapeHtml(l)}</dt><dd>${v}</dd>`).join("")}</dl>`;
   }
 }

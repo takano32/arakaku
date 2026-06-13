@@ -2,6 +2,25 @@ import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
 import { ADMIN_TABS, DATA_FILES, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 import { TAB_FILTERS, filterButtons } from "./filters.js";
 
+/**
+ * 役割: ビュー全体の DOM 描画を統括する Facade。サマリ・タブ・ビュー切替・各種フィルタ
+ *   UI を組み立て、本文 (#content) の描画は TabRendererRegistry に委譲する。
+ * アーキ上の位置:
+ *   - main.js で `new ViewController(ctx, tabRegistry)` として生成。
+ *   - EventController が state 変化を購読し、その度に render() を呼ぶ唯一の入口。
+ *   - 状態は ctx.state (AppState)、データ正規化は ctx.repo (DataRepository) から読む。
+ *   - フィルタ定義は filters.js (TAB_FILTERS/filterButtons) と共有 — クリック処理は
+ *     EventController 側で同じ TAB_FILTERS を引いて対応する。
+ * 不変条件 / 注意:
+ *   - 描画は冪等であること。ストリーミング中 render() が何度も呼ばれるため、構成が
+ *     変わらない箇所 (renderTabs/renderViewModeSwitch) は innerHTML 再構築を避けて
+ *     タブ/ボタンのフォーカスを保つ。本文側で開いた <details> 等を保つ差分描画は
+ *     委譲先の tabs/tab-registry.js (renderTo) が担当する。
+ *   - render() のメソッド順 (サマリ→ビュー切替→タブ→フィルタ→renderContent) を保つ。
+ *     renderContent (= TabRegistry への委譲) は最後に呼ぶ。
+ * 関連スキル: .agents/skills/arakaku-viewer-ui
+ */
+
 // 公開「通信」タブは本文 (sourceDocumentBodies, ~557KB) の完了を待たない。
 // source_documents (Phase 2 eager) の content_preview で即描画し、本文は
 // loadForTab で届き次第インラインに追補する (renderNoteArticleCard が
@@ -221,6 +240,8 @@ export class ViewController {
 
   renderContent() {
     const content = document.querySelector("#content");
+    // タブ本体を描く前に、そのタブ必須のデータキー (REQUIRED_TAB_DATA_KEYS) が
+    // 読み込み中/未着なら先にプレースホルダを出して TabRegistry 呼び出しを抑止する。
     const requiredKeys = REQUIRED_TAB_DATA_KEYS[this.ctx.state.tab] ?? [];
     const loadingKeys = requiredKeys.filter((key) => this.ctx.state.loadingDataKeys?.has(key));
     if (loadingKeys.length > 0) {

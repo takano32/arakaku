@@ -1,3 +1,15 @@
+/**
+ * 役割: window スクロールを基準にした仮想リスト。可視範囲の行だけを innerHTML で描画/破棄し、
+ *   高さは @tanstack/virtual-core の measureElement で実測してレイアウトする。j/k 用の行カーソル
+ *   (setCursor/activateCursor/getCursorEl) も保持する。
+ * アーキ上の位置: tab-registry が各タブごとに 1 インスタンス生成し、setItems(items, renderItem) で
+ *   描画関数 (tab-renderers の出力) を渡す。keyboard-nav → tab-registry → ここの順でカーソルが委譲される。
+ * 不変条件: virtual-core は動的 import (下記参照) なので、描画は virtualCore 解決後に行う。
+ *   #virtualizerGen は描画リクエストの世代カウンタで、非同期ロード解決後に gen が一致するときだけ
+ *   構築する (古い setItems の上書きを防ぐ)。#paint は再入禁止 (#painting) で測定 onChange ループを断つ。
+ *   renderItem は外部由来 HTML を返すので例外は握りつぶさずカード表示する。
+ * 関連スキル: .agents/skills/arakaku-viewer-ui
+ */
 // @tanstack/virtual-core を静的 import すると起動モジュールグラフ全体
 // (main.js のトップレベル → dataLoader.load() = Phase 0 開始まで) が esm.sh の
 // cold ラウンドトリップでブロックされる。動的 import でグラフから外し、モジュール
@@ -147,6 +159,8 @@ export class VirtualList {
     this.#pendingMeasure.clear();
     this.#el.innerHTML = "";
 
+    // scrollMargin = リスト先頭のドキュメント絶対 Y。window スクロールを基準に仮想化するため、
+    // リスト上のヘッダ等の分だけ仮想アイテムの start をずらすオフセットとして必須。
     const scrollMargin = this.#el.getBoundingClientRect().top + window.scrollY;
     this.#createVirtualizer(items.length, scrollMargin);
   }

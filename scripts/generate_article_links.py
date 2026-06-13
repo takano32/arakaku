@@ -20,6 +20,22 @@ from collections import defaultdict
 
 from arakaku.utils import DATA_SRC, read_csv, write_csv
 
+# 役割: 記事→各エンティティ（promotion / title_reign / fighter_snapshot / event / bout /
+#       fighter）の関係表 article_links.csv を生成する。一部は構造化データから決定的に、
+#       一部はキャッシュ記事本文の絵文字マーカー（🆚 や 🟥🟦●○）解析というヒューリスティック
+#       で導出する。
+# アーキ上の位置: generate-stage2 の終盤、aliases / video_links 等の後に実行（Makefile）。
+#       入力は articles / events / fighters / aliases / bouts / bout_participants /
+#       title_reigns / fighter_snapshots / source_documents（本文）。出力はビューアの
+#       出典リンク表示が消費する。
+# 不変条件:
+#   - title_to_event_id が組み立てる event_id 文字列は events.csv の実 ID と完全一致が前提
+#     （known_events に無ければ採用しない）。命名規則はそちらと必ず同期。
+#   - article_type の値（event_card/event_result/promotion_profile）は generate_articles の
+#     分類と同期していること。
+#   - 動画リンクはここで作らない（note HTML に YouTube ID が無いため）。それは
+#     generate_video_links.py の担当。
+# 関連スキル: .agents/skills/arakaku-source-pipeline
 OUTPUT = DATA_SRC / "article_links.csv"
 FIELDS = ["link_id", "article_id", "entity_type", "entity_id", "relation_type", "notes"]
 
@@ -113,6 +129,8 @@ def extract_promotion_profile_fighters(content_text: str) -> set[str]:
 
 def title_to_event_id(title: str, known_events: set[str]) -> str | None:
     """Derive event_id from article title string."""
+    # ここで組む ID 文字列は events.csv の event_id 命名規則そのもの。両者が一致して
+    # いないとイベントリンクが一切張られなくなるので、命名を変えるなら両方同期すること。
     t = norm(title)
     # target
     m = re.search(r"ターゲットNo\.?\s*(\d+)", t)
@@ -174,6 +192,7 @@ def main() -> None:
         source_docs[r["source_ref_id"]] = r
 
     rows: list[dict[str, str]] = []
+    # 同一 (記事, エンティティ種別, エンティティID) の重複リンクを 1 本に畳むための集合。
     seen: set[tuple[str, str, str]] = set()  # (article_id, entity_type, entity_id)
 
     def add_link(article_id: str, entity_type: str, entity_id: str, relation_type: str = "source") -> None:
@@ -233,6 +252,9 @@ def main() -> None:
         add_link(article_id, "event", event_id)
 
         # 4b. Parse matchup pairs → bout links + fighter links
+        # 両選手が解決でき、かつその2人が同一イベント内のある bout 参加者集合に含まれる
+        # （pair <= 参加者）ときだけ bout を結ぶ。名前→fighter_id 解決は display_name と
+        # aliases 由来の name_to_fid に依存する。
         matchups = extract_matchups(content)
         for name1, name2 in matchups:
             fid1 = name_to_fid.get(name1)

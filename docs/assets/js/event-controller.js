@@ -2,6 +2,23 @@ import { DEFAULT_ADMIN_TAB, DEFAULT_TAB } from "./config.js";
 import { escapeHtml } from "./ui/html-utils.js";
 import { TAB_FILTERS } from "./filters.js";
 
+/**
+ * 役割: DOM の UI イベント (検索入力・フィルタボタン・タブ・ビュー切替・リンク) を
+ *   AppState の更新へマッピングする Command 層。自身は描画せず、state.patch と
+ *   viewController.renderContent / dataLoader.loadForTab を呼び分ける。
+ * アーキ上の位置:
+ *   - main.js で `new EventController(state, navigation, viewController, dataLoader)` 生成後 bind()。
+ *   - bind() 内で state.subscribe(() => viewController.render()) を 1 回だけ登録する。
+ *     これが state 変化 → 全体再描画をつなぐ唯一の購読 (ここを消すと UI が更新されなくなる)。
+ *   - フィルタボタンの解決は filters.js の TAB_FILTERS を view-controller.js と共有。
+ * 不変条件 / 注意:
+ *   - patch しても自動描画されるのは render() 経由のフィルタ/タブ UI のみ。本文を即更新したい
+ *     ハンドラ (検索・フィルタ・言及種別) は patch 後に明示的に renderContent() を呼ぶ必要がある。
+ *   - タブ/ビュー切替は renderContent ではなく dataLoader.loadForTab を呼ぶ。loadForTab が
+ *     必要データを読み終えて state を更新し、その更新で subscribe→render が走る。
+ * 関連スキル: .agents/skills/arakaku-viewer-ui
+ */
+
 /** Command: UI イベントを状態更新へマッピング */
 export class EventController {
   /**
@@ -18,6 +35,7 @@ export class EventController {
   }
 
   #searchTimer = null;
+  // ビュー切替で離れる際の各モードの最後のタブを記憶し、戻ったとき復元する。
   #prevPublicTab = DEFAULT_TAB;
   #prevAdminTab = DEFAULT_ADMIN_TAB;
 
@@ -115,6 +133,7 @@ export class EventController {
       this.dataLoader.loadForTab(this.state.tab);
     });
 
+    // state 変化 → 全体再描画をつなぐ唯一の購読。bind() は 1 度だけ呼ばれる前提。
     this.state.subscribe(() => {
       this.viewController.render();
     });

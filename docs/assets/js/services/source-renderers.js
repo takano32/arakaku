@@ -1,5 +1,15 @@
 import { escapeHtml, externalLink } from "../ui/html-utils.js";
 
+// 役割: 出典系 (記事/動画/note 本文/source_documents) と review 候補 (source_*_reference /
+//   source_mentions) を HTML 化する描画サービス。データ取得は一切せず ctx.repo に委譲し、
+//   整形と並び替え・上限件数の方針のみを持つ。
+// アーキ上の位置: main.js で new され ctx.sources として tab-renderers / related-renderers から呼ばれる。
+//   依存: ctx.repo (DataRepository=本文・rich 情報・参照の解決)、ctx.labels (種別の日本語ラベル)、
+//   ctx.components (section/grid/card)、ctx.state (遅延ロード済みキーの判定)。出力は VirtualList が描画。
+// 不変条件: 外部由来文字列は escapeHtml / externalLink を通す。source_mentions は管理タブ用に遅延ロード
+//   されるため、未ロード時 (state.loadedDataKeys 未登録) は件数バッジを出さない — 件数 0 の誤表示を避ける契約。
+//   referenceSortValue/mentionSortValue は表示順を決定的にするための client 側ソートキー。
+// 関連スキル: .agents/skills/arakaku-viewer-ui, .agents/skills/arakaku-source-pipeline
 /** 出典・動画・言及候補の描画サービス */
 export class SourceRenderers {
   /** @param {import("../core/view-context.js").ViewContext} ctx */
@@ -22,6 +32,8 @@ export class SourceRenderers {
   }
 
   renderVideoSourceBlock(v, label = null) {
+    // 既に archive_metadata を持つ動画は enrich 済みとみなし再 enrich を避ける。未 enrich なら
+    // repo.getRichVideoInfo で archive/source 情報を補完してから描画する。
     const video = v ? (v.archive_metadata ? v : this.ctx.repo.getRichVideoInfo(v)) : v;
     const displayLabel = label || video?.title || video?.video_id || "動画";
     if (!video?.url) return `<code>${escapeHtml(video?.video_id || displayLabel)}</code>`;
@@ -63,6 +75,8 @@ export class SourceRenderers {
     return components.relatedItem(`<span class="video-badge">${escapeHtml(labels.mentionType(m.mention_type))}</span> <span>${escapeHtml(m.matched_text || m.context || m.mention_id)}</span> ${this.renderSourceMentionLink(m)}`, "source-mention-item-card");
   }
 
+  // confidence (high→medium→low→不明) を先頭キーにした文字列ソートキー。localeCompare 比較で
+  // 確度の高い候補を上に出す。renderSourceReferences でこの順に並べ slice(0,5) する。
   referenceSortValue(r) {
     const order = { high: "0", medium: "1", low: "2" };
     return `${order[r.confidence] ?? "3"}:${r.source_title ?? ""}:${r.candidate_id ?? ""}`;

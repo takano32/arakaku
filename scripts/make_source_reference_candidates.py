@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: 既存の event / bout / video エンティティと source_documents・
+#   source_mentions を突き合わせ、どの source 文書がそのエンティティに言及して
+#   いるかの参照候補を 3 本の review CSV
+#   (source_event/bout/video_reference_candidates.csv) として生成する。
+# アーキ上の位置: `make source-reference-candidates` から起動。出力は review/ の
+#   人間レビュー専用候補で確定リンクではない。validate_json.py の
+#   validate_source_references がこの出力に対応する JSON 形状を検証する。
+# 不変条件 / 注意: bout マッチングは bouts.csv の fighter 名や記事リンクを直接
+#   読まない。red/blue 名は bout_participants.csv (side+fighter_name) から
+#   build_bout_fighter_names 経由で、note 由来の source は article_links.csv の
+#   entity_type=="bout" 行から `note:<article_id>` として導出する。これにより
+#   bouts.csv のスキーマ変更後も再実行が安全になる (この契約を壊さないこと)。
+# 関連 skill: .agents/skills/arakaku-source-pipeline (Review candidate pipeline)。
+
 from collections import Counter, defaultdict
 
 from arakaku.mapping import build_bout_fighter_names
@@ -21,6 +35,9 @@ VIDEO_OUT_CSV = REVIEW / "source_video_reference_candidates.csv"
 
 
 def mention_text(mention: dict[str, str], document: dict[str, str] | None = None) -> str:
+    # mention とその source 文書のメタ/本文プレビューを 1 本の検索対象文字列に
+    # 連結する。event_name / matchup / fighter 名の部分一致判定はこの文字列に対して
+    # 行うため、ここに含めるフィールドが実質的にマッチ範囲を決める。
     return " ".join(
         value
         for value in [
@@ -169,6 +186,8 @@ def build_bout_candidates(
             joined_text = " ".join(texts)
             reason = ""
 
+            # マッチ理由を強い順に判定 (最初に成立したものを採用)。reason は後段で
+            # confidence を決める: matchup_text / linked_video_description が high。
             if matchup and matchup in joined_text:
                 reason = "matchup_text"
             elif event_name and event_name in joined_text and len(names) >= 2 and all(name in joined_text for name in names):
@@ -183,6 +202,8 @@ def build_bout_candidates(
             if reason:
                 matched_by_source[source_id] = (reason, grouped_mentions)
 
+        # video_links.csv で bout に紐付く動画の説明文 source は、テキスト一致を
+        # 経ずに linked_video_description として確定的に追加 (既存判定を上書き)。
         for source_id in video_source_ids_by_bout.get(bout_id, set()):
             matched_by_source[source_id] = (
                 "linked_video_description",

@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# 役割: videos.csv の YouTube 動画について yt-dlp を呼び、info JSON を
+#   tmp/youtube-info/<platform_video_id>.info.json にキャッシュする取得専用スクリプト。
+# アーキ上の位置: パイプライン最上流の取得段。出力ファイル名 (.info.json) と命名規約は
+#   下流の build_source_documents.py / import_youtube_descriptions.py /
+#   archive_metadata.py が glob で読む前提なので変えないこと。
+# 不変条件: tmp/ はキャッシュでありコミットしない。yt-dlp が外部依存。--force 無しなら
+#   既存ファイルはスキップ (差分再取得)。失敗が 1 件でもあれば終了コード 1 を返す。
+# 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import argparse
 import csv
 import subprocess

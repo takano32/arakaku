@@ -4,6 +4,16 @@ from __future__ import annotations
 
 import re
 
+# 役割: note 記事マスタ articles.csv を archives/note.csv（アーカイブ済みメタデータ）から
+#       生成し、各記事を article_type（promotion_profile / event_card / event_result /
+#       note_article / youtube_description_source）に分類する。
+# アーキ上の位置: generate-stage1 で archive_metadata の後・build_source_documents の前に
+#       実行する（article_id を後段が参照するため順序固定）。article_id はファイル名から
+#       拡張子 .html を除いたもので、source_documents / article_links の結合キーになる。
+# 不変条件: article_type は generate_article_links 側の分岐（event_card/event_result/
+#       promotion_profile を特別扱い）と必ず同期させること。detect_promotion の優先順位は
+#       PROMOTIONS_BY_PRIORITY の並び順依存（より具体的な団体を先に判定）。
+# 関連スキル: .agents/skills/arakaku-source-pipeline
 from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 OUTPUT = DATA_SRC / "articles.csv"
@@ -21,6 +31,7 @@ PROMOTIONS_BY_PRIORITY = [
 
 
 def detect_promotion(title: str) -> str:
+    # 並び順が優先順位。max_bout のキーワード "第" は汎用的すぎるので必ず最後に置く。
     for promo, keywords in PROMOTIONS_BY_PRIORITY:
         if any(kw in title for kw in keywords):
             return promo

@@ -1,3 +1,18 @@
+/**
+ * 役割: フリーテキスト検索 (state.query) を各エンティティ (選手・試合・大会・団体・動画・
+ *   王座・言及・出典本文) に対して判定する。エンティティごとに検索対象テキストを集約し、
+ *   小文字化した連結文字列に対する部分一致で評価する。
+ * アーキ上の位置: Strategy。ViewContext.query として生成・公開され、フィルタ層 (filters.js)
+ *   や各タブ描画が一覧の絞り込みに使う。repo (DataRepository)・sources サービス経由で
+ *   関連レコードのテキストも取り込むため ViewContext に依存する。
+ * 不変条件 / 注意:
+ *   - ctx.bindServices() の時点で再生成される (ctx.sources がそこで初めて埋まるため)。
+ *     boutSearchText 等が ctx.sources を使うので、サービス束縛前の旧インスタンスは使わない。
+ *   - 検索対象に項目を足すときは、その項目を含むメソッドの配列に追記するだけでよい
+ *     (filter(Boolean) で null/undefined は自動除外される)。
+ *   - キャッシュは repo.revision を世代キーにしており、repo.invalidate() で revision が
+ *     進むと自動破棄される。同一性ではなく revision を見ること (data-repository.js と同契約)。
+ */
 /** Strategy: 検索クエリに対するマッチ判定 */
 export class QueryMatcher {
   /** @param {import("./view-context.js").ViewContext} ctx */

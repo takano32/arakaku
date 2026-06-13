@@ -2,6 +2,16 @@
 """Generate video_links.csv from bouts.csv, bout_participants.csv, videos.csv, fighters.csv."""
 from __future__ import annotations
 
+# 役割: 動画→各エンティティ（bout / event / fighter）の関係表 video_links.csv を生成する。
+#       bouts.inferred_from_video_id を起点に、その bout・所属 event・参加 fighter へリンクを張る。
+# アーキ上の位置: generate-stage2 で実行（記事リンクは別途 generate_article_links が担当）。
+#       入力は bouts / bout_participants / videos / fighters。出力はビューアの動画-試合-選手
+#       相互ナビに使われる。
+# 不変条件: relation_type は videos.video_type から導出（full_fight/stream_archive/preview/
+#       interview はそのまま、それ以外は "reference"）。event リンクは (video_id, event_id) で
+#       重複排除（seen_event_links）するが、bout/fighter リンクは bout ごとに張る。
+#       notes 文言は移行元の出所を残す履歴情報なので安易に変えない。
+# 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 OUTPUT = DATA_SRC / "video_links.csv"

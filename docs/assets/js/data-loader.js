@@ -2,6 +2,24 @@ import { DATA_FILES, INITIAL_TAB_DATA_KEYS, PRIMARY_DATA_KEYS, ENRICHMENT_DATA_K
 import { DataRepository } from "./core/data-repository.js";
 import { fallbackForDataKey, parseDataFileEntries } from "./core/data-parser.js";
 
+/**
+ * 役割: docs/data/*.json を段階的に取得し、AppState.data へ流し込んで DataRepository を
+ *   組み立てる。フェーズ分割 (初期タブ → PRIMARY → ENRICHMENT/参照 → タブ別) と
+ *   配列 JSON の SAX ストリーミングで初期描画を最速化する。
+ * アーキ上の位置: main.js が new DataLoader(state) して load() を起動。
+ *   event-controller.js / keyboard-nav.js が loadForTab() を呼ぶ。fetch 結果は
+ *   state.data に置かれ state.patch({}) で view-controller の再描画をトリガする。
+ *   フェーズ定義は config.js、配列/オブジェクト判定とパースは data-parser.js に依存。
+ * 不変条件:
+ *   - constructor の依存注入 (dataFiles / fetchText) は scripts/validate_json.js が
+ *     Node から fs ベースの fetchText を差し込んでパイプラインを検証するため必須。
+ *     コンストラクタ引数の形を壊さないこと。
+ *   - SAX ストリーミングは配列 JSON 前提。object 形式のキー (aliases/metadata) を
+ *     ストリーム対象に含めてはならない (config.js のコメント参照、[] に誤パースされる)。
+ *   - どのキーも失敗時は「fallback 値 + dataLoadErrors 記録 + loaded 扱い」に統一し、
+ *     1 ファイルの異常でアプリ全体を落とさない。
+ * 関連スキル: .agents/skills/arakaku-viewer-ui
+ */
 export const CORE_DATA_KEYS = [...INITIAL_TAB_DATA_KEYS, ...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS];
 
 export const PUBLIC_REFERENCE_DATA_KEYS = [
@@ -10,12 +28,17 @@ export const PUBLIC_REFERENCE_DATA_KEYS = [
   "sourceVideoReferences",
 ];
 
+// タブを開いたとき初めて遅延ロードする重いデータ (sourceMentions ~1MB 等)。
+// loadForTab(tabId) がここを引いて必要キーだけストリームする。
 export const TAB_DATA_KEYS = {
   tsushin: ["sourceDocumentBodies"],
   sources: ["sourceDocuments", "sourceDocumentBodies"],
   mentions: ["sourceDocuments", "sourceMentions"],
 };
 
+// ブラウザ既定の fetchText。第2引数 fallback は受け取らない (失敗時は throw して
+// loadKeys 側で fallback に倒す)。validate_json.js は同じ位置に fs ベースの
+// readTextWithFallback(path, fallback) を注入するため、呼び出し側の引数順を維持すること。
 async function fetchJsonText(path) {
   const response = await fetch(path);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -62,6 +85,8 @@ export class DataLoader {
     });
   }
 
+  // 冪等な遅延初期化。複数のロード経路 (load / loadForTab / loadKeys) のどこから
+  // 最初に入っても state.data / repository / 進捗用 Set が揃うことを保証する。
   ensureStateData() {
     if (!this.state.data) {
       this.state.data = Object.fromEntries(
@@ -94,6 +119,8 @@ export class DataLoader {
         nextKeys.map(async (key) => {
           const fallback = JSON.stringify(fallbackForDataKey(key));
           try {
+            // 第2引数 fallback はブラウザの fetchJsonText では無視される。
+            // validate_json.js の readTextWithFallback はこれを使って欠損ファイルを補う。
             return [key, await this.fetchText(this.dataFiles[key], fallback)];
           } catch (error) {
             if (required) throw error;
@@ -292,6 +319,8 @@ export class DataLoader {
     );
   }
 
+  // タブ切替時 (event-controller / keyboard-nav) に呼ばれ、そのタブ専用の重いデータを
+  // 未ロードのときだけ遅延取得する。初期 load() を軽く保つための分割。
   async loadForTab(tabId) {
     const keys = (TAB_DATA_KEYS[tabId] ?? []).filter(
       (key) => key in this.dataFiles && !this.state.loadedDataKeys?.has(key)
@@ -303,6 +332,8 @@ export class DataLoader {
     this.state.patch({});
   }
 
+  // 全ファイルを required で一括ロード (フェーズ分割なし)。validate_json.js が
+  // パイプライン全体を検証する用途。required:true なので欠損は throw する。
   loadAll() {
     return this.loadKeys(Object.keys(this.dataFiles), { required: true });
   }
