@@ -62,6 +62,10 @@ export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "yo
 export const DEFAULT_TAB = "official";
 export const DEFAULT_ADMIN_TAB = "sources";
 
+// 初期タブ (公式) の表示に必要なデータ。初期画面を最速で描画するため、
+// PRIMARY より先に Phase 0 で単独ロードする (合計 ~16KB)。
+export const INITIAL_TAB_DATA_KEYS = ["officialPages", "officialNews"];
+
 // ストリーミングでインクリメンタルに描画するファイル群 (表示に直結するもの)
 export const PRIMARY_DATA_KEYS = [
   "bouts", "boutParticipants", "fighters", "events", "promotions",
@@ -79,6 +83,4 @@ export const ENRICHMENT_DATA_KEYS = [
   "officialTournaments",
   "officialMatches",
   "officialHistory",
-  "officialPages",
-  "officialNews",
 ];

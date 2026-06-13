@@ -1,8 +1,8 @@
-import { DATA_FILES, PRIMARY_DATA_KEYS, ENRICHMENT_DATA_KEYS } from "./config.js";
+import { DATA_FILES, INITIAL_TAB_DATA_KEYS, PRIMARY_DATA_KEYS, ENRICHMENT_DATA_KEYS } from "./config.js";
 import { DataRepository } from "./core/data-repository.js";
 import { fallbackForDataKey, parseDataFileEntries } from "./core/data-parser.js";
 
-export const CORE_DATA_KEYS = [...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS];
+export const CORE_DATA_KEYS = [...INITIAL_TAB_DATA_KEYS, ...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS];
 
 export const PUBLIC_REFERENCE_DATA_KEYS = [
   "sourceEventReferences",
@@ -16,9 +16,9 @@ export const TAB_DATA_KEYS = {
   mentions: ["sourceDocuments", "sourceMentions"],
 };
 
-async function fetchJsonText(path, fallback) {
+async function fetchJsonText(path) {
   const response = await fetch(path);
-  if (!response.ok) return fallback;
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return response.text();
 }
 
@@ -56,17 +56,6 @@ export class DataLoader {
     this.state.repository ??= new DataRepository(this.state.data);
   }
 
-  async fetchEntries(keys) {
-    const entries = await Promise.all(
-      keys.map(async (key) => {
-        const path = this.dataFiles[key];
-        const fallback = JSON.stringify(fallbackForDataKey(key));
-        return [key, await this.fetchText(path, fallback)];
-      })
-    );
-    return parseDataFileEntries(entries);
-  }
-
   async loadKeys(keys, { required = false, notifyStart = true } = {}) {
     this.ensureStateData();
     const nextKeys = keys.filter((key) =>
@@ -80,11 +69,26 @@ export class DataLoader {
     if (notifyStart) this.state.patch({});
 
     try {
-      const parsed = await this.fetchEntries(nextKeys);
-      Object.assign(this.state.data, parsed);
+      // キーごとに失敗を捕捉し、#streamKey と同じく「fallback + dataLoadErrors 記録 +
+      // loaded 扱い」に揃える (失敗をエラーカードに表示するため)。required 時は即 throw。
+      const failed = {};
+      const entries = await Promise.all(
+        nextKeys.map(async (key) => {
+          const fallback = JSON.stringify(fallbackForDataKey(key));
+          try {
+            return [key, await this.fetchText(this.dataFiles[key], fallback)];
+          } catch (error) {
+            if (required) throw error;
+            failed[key] = error.message;
+            return [key, fallback];
+          }
+        })
+      );
+      Object.assign(this.state.data, parseDataFileEntries(entries));
       for (const key of nextKeys) {
         this.state.loadedDataKeys.add(key);
-        delete this.state.dataLoadErrors[key];
+        if (failed[key]) this.state.dataLoadErrors[key] = failed[key];
+        else delete this.state.dataLoadErrors[key];
       }
     } catch (error) {
       if (required) throw error;
@@ -105,7 +109,9 @@ export class DataLoader {
    */
   async #streamKey(key, onBatch) {
     const path = this.dataFiles[key];
-    const JSONParser = await getJSONParser();
+    // CDN import 失敗時は null → 下の parser 生成が throw して通常 fetch+parse に
+    // フォールバックする (パーサ CDN 障害でアプリ全体を落とさない)
+    const JSONParser = await getJSONParser().catch(() => null);
 
     let response;
     try {
@@ -213,6 +219,13 @@ export class DataLoader {
 
   async load() {
     this.ensureStateData();
+
+    // Phase 0: 初期タブ (公式) のデータを最優先でロード。
+    // 合計 ~16KB と小さいのでストリーミングせず、CDN パーサの import 完了も待たない。
+    // 後続フェーズが使う CDN パーサの import だけ裏で温めておく
+    // (.catch は Phase 0 中の unhandled rejection 防止。失敗の処理は #streamKey 側)。
+    getJSONParser().catch(() => {});
+    await this.loadKeys(INITIAL_TAB_DATA_KEYS);
 
     // Phase 1: PRIMARY キーを並列ストリーミング
     await Promise.all(

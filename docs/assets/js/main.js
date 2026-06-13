@@ -1,4 +1,3 @@
-import "https://esm.sh/lite-youtube-embed";
 import { AppState } from "./core/app-state.js";
 import { ViewContext } from "./core/view-context.js";
 import { readFromURL, writeToURL } from "./core/url-sync.js";
@@ -12,6 +11,11 @@ import { ViewController } from "./view-controller.js";
 import { DataLoader } from "./data-loader.js";
 import { EventController, renderLoadError } from "./event-controller.js";
 import { KeyboardNav } from "./ui/keyboard-nav.js";
+
+// lite-youtube-embed はカスタム要素の登録のみ。静的 import だと esm.sh の応答まで
+// boot 全体 (Phase 0 含む) がブロックされるため、await せず動的 import する。
+// 失敗しても <lite-youtube> が未登録のまま表示されるだけで viewer 本体は動く。
+import("https://esm.sh/lite-youtube-embed").catch(() => {});
 
 const state = AppState.getInstance();
 

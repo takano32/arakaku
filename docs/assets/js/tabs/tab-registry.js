@@ -36,6 +36,7 @@ export class TabRendererRegistry {
   #prevFilters = new Map(); // tabId → 前回のフィルタ文字列
   #prevFocusKey = ""; // フォーカス変化の検出用
   #prevSortLoaded = new Map(); // tabId → 前回のソート完了状態
+  #prevItemsSources = new Map(); // tabId → 前回の descriptor.itemsSource
 
   // 選手タブのソート順確定に必要なキー
   static #SORT_KEYS = ["numbersFighters", "numbersNameMatches"];
@@ -120,7 +121,18 @@ export class TabRendererRegistry {
       container.innerHTML = `<article class="card"><p class="meta">描画エラー (${tabId}): ${err.message}</p></article>`;
       return;
     }
-    const { items, renderItem, estimateSize } = descriptor;
+    const { items, renderItem, estimateSize, itemsSource } = descriptor;
+
+    // descriptor が itemsSource (描画元の生配列) を宣言するタブでは、その配列の
+    // 同一性が保たれている限り repo 更新だけのリフレッシュを省略する。
+    // 公式タブは Phase 0 完了後にデータが変わらないため、ストリーミング中の
+    // flush ごとの再描画 (開いた <details> が閉じる等) を防げる。
+    const sourcesUnchanged = this.#itemsSourceUnchanged(tabId, itemsSource);
+    if (sourcesUnchanged && !tabChanged && !filterChanged && !focusChanged && !sortJustCompleted
+        && this.#prevCounts.get(tabId) !== undefined) {
+      this.#prevRepoRefs.set(tabId, repoStamp);
+      return;
+    }
 
     const prevCount = this.#prevCounts.get(tabId) ?? -1;
 
@@ -138,6 +150,14 @@ export class TabRendererRegistry {
     this.#prevRepoRefs.set(tabId, repoStamp);
     this.#prevFilters.set(tabId, fingerprint);
     this.#prevFocusKey = focusKey;
+  }
+
+  // itemsSource の各配列が前回と同一参照かを判定し、今回の値を記録する
+  #itemsSourceUnchanged(tabId, src) {
+    const prev = this.#prevItemsSources.get(tabId);
+    this.#prevItemsSources.set(tabId, src);
+    if (!src || !prev || prev.length !== src.length) return false;
+    return src.every((arr, i) => arr === prev[i]);
   }
 
   #currentList() {

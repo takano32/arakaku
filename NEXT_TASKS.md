@@ -87,6 +87,8 @@ make clean-generated
 
 ### 確認項目
 
+- 公式タブ（初期画面）が PRIMARY ストリーミング完了を待たず最初に表示される（Phase 0 最優先ロード）
+- 公式タブで `<details>` を開いてもストリーミング中に閉じない（itemsSource による再描画スキップ）
 - データがインクリメンタルに表示される（一気に出るのではなく段階的に増える）
 - スクロールが滑らか（大量データでも重くない）
 - Phase 2 エンリッチメント後にスクロール位置がリセットされない
@@ -99,6 +101,23 @@ make clean-generated
 ### 完了条件
 
 - 上記項目を目視で確認済み
+
+---
+
+## P2: validate_json.js の load() カバレッジ検証を実効化する
+
+### 背景
+
+`scripts/validate_json.js` は Node 上で `DataLoader.load()` を実行し `CORE_DATA_KEYS` の全キーが `loadedDataKeys` に入ることを assert しているが、ストリーミング（`#streamKey`）キーは Node では `fetch()` がローカルファイルパスを解釈できず常にエラーパス（fallback データ + loaded 扱い）に落ちる。そのためこの assert は Phase 0 の 2 キー（`officialPages` / `officialNews`、`fetchText` 注入経路で実データを読む）以外を実質検証していない。ストリーミング経路が完全に壊れていても green になる。敵対的レビュー（2026-06-13）で発見。
+
+### 案
+
+- `#streamKey` にも `fetchText` 注入を通す、または Node 実行時にローカルパスを `file://` URL に変換する
+- もしくは `load()` 検証を「キー網羅」ではなく `loadAll()` ベースの実データ検証に寄せる
+
+### 完了条件
+
+- ストリーミング経路を意図的に壊すと `validate_json.js` が fail する
 
 ---
 

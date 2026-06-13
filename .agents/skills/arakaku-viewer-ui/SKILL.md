@@ -124,9 +124,30 @@ The `#painting` re-entry guard prevents recursive `onChange → #paint → measu
 
 ## Data loading architecture
 
-### Two-phase loading
+### Phased loading
 
-`DataLoader.load()` runs two phases:
+`DataLoader.load()` runs three phases:
+
+**Phase 0 — initial tab (INITIAL_TAB_DATA_KEYS):**
+
+The default tab is `official`, so its data loads first, alone, before anything
+else competes for bandwidth:
+
+```javascript
+export const INITIAL_TAB_DATA_KEYS = ["officialPages", "officialNews"];
+```
+
+These two files total ~16KB, so Phase 0 uses plain `loadKeys()` (fetch +
+`JSON.parse`) instead of streaming — it must not wait for the
+`@streamparser/json` CDN import. `load()` fires `getJSONParser().catch(() => {})`
+without awaiting it at the start of Phase 0 so the CDN import warms up in
+parallel (the `.catch` prevents an unhandled rejection during the Phase 0
+window). When Phase 0 resolves, the official tab renders; Phase 1 then starts.
+
+`loadKeys()` failure semantics match `#streamKey`: a per-key fetch/HTTP error
+records `dataLoadErrors[key]` (shown in the 「データ読み込み失敗」 card), assigns
+the fallback value, and still marks the key loaded. `fetchJsonText` throws on
+non-OK responses — never silently swallow an HTTP error into fallback data.
 
 **Phase 1 — streaming (PRIMARY_DATA_KEYS):**
 
@@ -159,13 +180,12 @@ export const ENRICHMENT_DATA_KEYS = [
   "youtubeArchives", "noteArchives",
   "sourceDocuments", "sourceMentions",
   "officialPlayers", "officialTournaments", "officialMatches", "officialHistory",
-  "officialPages", "officialNews",
 ];
 ```
 
 Phase 2 (`#loadEnrichment`) streams all enrichment keys in parallel via `#streamKey()`. Each batch calls `repository.invalidate()` + `state.patch({})` for incremental re-renders. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` (in `loadPublicReferences()`) after Phase 2.
 
-`CORE_DATA_KEYS = [...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
+`CORE_DATA_KEYS = [...INITIAL_TAB_DATA_KEYS, ...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
 
 ### DataRepository lifecycle (singleton + invalidate)
 
@@ -261,12 +281,12 @@ articleLinks
 metadata
 ```
 
-When adding a new JSON data file, update `DATA_FILES` in `config.js` and add the key to either `PRIMARY_DATA_KEYS` or `ENRICHMENT_DATA_KEYS`.
+When adding a new JSON data file, update `DATA_FILES` in `config.js` and add the key to `PRIMARY_DATA_KEYS`, `ENRICHMENT_DATA_KEYS`, or (only for data the initial tab needs) `INITIAL_TAB_DATA_KEYS`.
 
 When adding a new tab:
 
 1. Add it to `PUBLIC_TABS` or `ADMIN_TABS` in `docs/assets/js/config.js`.
-2. Add a method on `TabRenderers` in `docs/assets/js/tabs/tab-renderers.js` returning `{ items, renderItem, estimateSize? }`.
+2. Add a method on `TabRenderers` in `docs/assets/js/tabs/tab-renderers.js` returning `{ items, renderItem, estimateSize?, itemsSource? }`. `itemsSource` (optional) is the array of raw source arrays the items derive from; when provided and reference-identical to the previous render, `TabRendererRegistry` skips the refresh (used by the official tab to stay interaction-stable — open `<details>` would otherwise collapse on every streaming flush).
 3. Register it in `TabRendererRegistry` (`docs/assets/js/tabs/tab-registry.js`).
 4. If data is needed on-demand (not in ENRICHMENT_DATA_KEYS), add to `TAB_DATA_KEYS` in `data-loader.js`.
 5. If data should auto-load before tab click, add key to `ENRICHMENT_DATA_KEYS` in `config.js`.
@@ -282,9 +302,11 @@ The viewer loads three external libraries at runtime from `https://esm.sh/`:
 |---------|--------|---------|
 | `@tanstack/virtual-core@3` | `Virtualizer`, `windowScroll` | `ui/virtual-list.js` |
 | `@streamparser/json` | `JSONParser` | `data-loader.js` (all streaming) |
-| `lite-youtube-embed` | side-effect import | `main.js` (YouTube facade) |
+| `lite-youtube-embed` | un-awaited dynamic import | `main.js` (YouTube facade) |
 
-`@streamparser/json` is used for ALL `#streamKey()` calls (both Phase 1 and Phase 2). `getJSONParser()` guards with `typeof window !== "undefined"` for Node.js compatibility. If CDN fails, `#streamKey` falls back to `response.text() + JSON.parse()`.
+`@streamparser/json` is used for ALL `#streamKey()` calls (both Phase 1 and Phase 2). `getJSONParser()` guards with `typeof window !== "undefined"` for Node.js compatibility. If the CDN import fails or the parser throws, `#streamKey` falls back to `response.text() + JSON.parse()` (`await getJSONParser().catch(() => null)` — a CDN outage must never reject `load()`).
+
+`lite-youtube-embed` is loaded via an un-awaited dynamic `import(...).catch(() => {})` in `main.js` — a blocking static CDN import would gate the entire boot (including Phase 0) on esm.sh. Custom elements upgrade automatically when the definition arrives late.
 
 `marked` CDN was removed. Markdown rendering uses the self-contained `mdToHtml()` in `docs/assets/js/ui/markdown.js` (imported by `tab-renderers.js`).
 

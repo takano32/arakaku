@@ -428,6 +428,8 @@ export class TabRenderers {
     const items = [...pages, ...news];
     return {
       items,
+      // 描画元配列の同一性で再描画要否を判定させる (tab-registry の itemsSource 参照)
+      itemsSource: [repo.officialPages, repo.officialNews],
       renderItem: (item) =>
         item._kind === "page"
           ? this.renderOfficialPageDocCard(item)

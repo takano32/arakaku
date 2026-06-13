@@ -67,6 +67,25 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 14: 初期タブ (公式) の最優先ロード (2026-06-13)
+
+初期画面である「公式」タブを最速で描画するため、`DataLoader.load()` に Phase 0 を追加しました。
+
+- `INITIAL_TAB_DATA_KEYS = ["officialPages", "officialNews"]` を `config.js` に新設し、`ENRICHMENT_DATA_KEYS` から除去（二重ロード防止）
+- Phase 0 は PRIMARY 13 ファイル（数 MB）より**先に単独で**この 2 ファイル（合計 ~16KB）をロード。従来は全 PRIMARY 完了後の Phase 2 でようやくロードされていた
+- 16KB にストリーミングは不要なため `loadKeys()`（plain fetch + `JSON.parse`）を使用。`@streamparser/json` の CDN import 完了を待たないことが最速経路。CDN import 自体は Phase 0 開始時に `getJSONParser()` を await なしで発火して裏で温め、Phase 1 の開始遅延を相殺
+- `CORE_DATA_KEYS` に `INITIAL_TAB_DATA_KEYS` を追加（`validate_json.js` の `load()` 網羅 assert が新キーをカバー）
+- 公式タブの描画は `repo.officialPages` / `repo.officialNews`（base-repository の直接アクセサ）のみに依存するため、PRIMARY 不要で即描画できる
+
+#### 敵対的レビューで検出した退行の修正（同日）
+
+- `fetchJsonText` が HTTP エラーで黙って fallback を返し公式タブが無言で空白になる退行 → `!response.ok` で throw し、`loadKeys` がキー単位で fallback + `dataLoadErrors` 記録 + loaded 扱いに統一（`#streamKey` と同じ意味論、「データ読み込み失敗」カードに表示される）。`required=true`（`loadAll`）は従来どおり即 throw
+- await なしの `getJSONParser()` ウォームアップが Phase 0 中に unhandled rejection を起こしうる退行 → `.catch(() => {})` を付与
+- 既存問題も同時修正: `#streamKey` の `await getJSONParser()` が CDN 障害時に `load()` 全体を reject させ、描画済みの公式タブごと全画面エラーで消していた → `.catch(() => null)` で通常 fetch+parse にフォールバック
+- 既存問題: `main.js` の `lite-youtube-embed` 静的 CDN import が boot（Phase 0 含む）全体をブロック → await しない動的 import に変更（カスタム要素は後から定義されても自動アップグレードされる）
+- ストリーミング中の flush ごとに公式タブが同一内容で再描画され、開いた `<details>` が閉じる問題 → descriptor に任意フィールド `itemsSource`（描画元の生配列）を追加し、参照同一なら再描画をスキップ（`tab-registry.js`、公式タブのみ宣言）
+- `validate_json.js` に `officialPages` / `officialNews` の配列・非空 assert を追加。なお `load()` のキー網羅 assert がストリーミングキーに対して実質無効な既存問題は `NEXT_TASKS.md` P2 に記録
+
 ### Phase 13: 共有テキスト解析モジュール・ビルド最適化 (2026-06-13)
 
 #### scripts/arakaku/textparse.py 新設（重複排除）

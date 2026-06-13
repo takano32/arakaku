@@ -76,6 +76,10 @@ function validateLoadedData(data, repository) {
   assert(typeof data.aliases === "object" && !Array.isArray(data.aliases), "aliases must be an object");
   assert(Array.isArray(data.youtubeArchives), "youtubeArchives must be an array");
   assert(Array.isArray(data.noteArchives), "noteArchives must be an array");
+  assert(Array.isArray(data.officialPages), "officialPages must be an array");
+  assert(Array.isArray(data.officialNews), "officialNews must be an array");
+  assert(data.officialPages.length > 0, "officialPages must not be empty (initial tab data)");
+  assert(data.officialNews.length > 0, "officialNews must not be empty (initial tab data)");
 
   for (const bout of data.bouts) {
     const found = repository.findBout(bout.bout_id);
