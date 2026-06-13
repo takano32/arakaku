@@ -169,25 +169,30 @@ import("https://esm.sh/@streamparser/json").then((m) => m.JSONParser)
 
 Each streaming flush calls `repository.invalidate()` then `state.patch({})`, triggering incremental renders. The first flush of each key is immediate; subsequent flushes are throttled to roughly `FLUSH_MS` (200ms). When Phase 1 completes, a final `repository.invalidate()` + `state.patch({})` is issued.
 
-**Phase 2 — enrichment (ENRICHMENT_DATA_KEYS):**
-
-All enrichment files also stream via `#streamKey()` in parallel (same mechanism as Phase 1):
+**Phase 2 — enrichment + public references (one parallel pool):**
 
 ```javascript
 export const ENRICHMENT_DATA_KEYS = [
-  "metadata",
   "numbersFighters", "numbersNameMatches", "numbersFightRecords",
   "youtubeArchives", "noteArchives",
-  "sourceDocuments", "sourceMentions",
+  "sourceDocuments",
   "officialPlayers", "officialTournaments", "officialMatches", "officialHistory",
+];
+// in data-loader.js
+export const PUBLIC_REFERENCE_DATA_KEYS = [
+  "sourceEventReferences", "sourceBoutReferences", "sourceVideoReferences",
 ];
 ```
 
-Phase 2 (`#loadEnrichment`) streams all enrichment keys in parallel via `#streamKey()`. Each batch calls `repository.invalidate()` then schedules a coalesced patch. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` (in `loadPublicReferences()`) after Phase 2.
+`load()` runs both together: `await Promise.all([this.#loadEnrichment(), this.loadPublicReferences()])`. Both stream via `#streamKeySafe()`; each flush calls `repository.invalidate()` then schedules a coalesced patch. They are **not** serialized — the ~1.5MB of `source*References` (shown on public bout/event/video cards and in public search) must not wait behind enrichment, and references are independent of the enrichers.
 
 `CORE_DATA_KEYS = [...INITIAL_TAB_DATA_KEYS, ...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
 
-Only viewer-consumed tables belong in the streamed key lists, and only **array** JSON streams correctly. `#streamKey`'s SAX handler pushes array elements (`typeof k === "number"`); an **object** JSON (`aliases`, `metadata` — see `OBJECT_DATA_KEYS` in `data-parser.js`) streamed through it silently becomes `[]`. So object-typed keys must NOT be in `PRIMARY_DATA_KEYS`/`ENRICHMENT_DATA_KEYS` (they load correctly only via the `loadKeys()` plain-parse path). `aliases`/`titleReigns` were removed from PRIMARY because nothing reads them (fighter aliases are baked into `fighters.json` records; title lineage is baked into `titles.json`).
+**Eager vs lazy is decided by public-tab consumption, not by table category.** Only keys a PUBLIC tab actually reads belong in the eager Phase-2 lists; admin-only heavy data is deferred to its tab via `TAB_DATA_KEYS` + `REQUIRED_TAB_DATA_KEYS` (on-demand `loadForTab`, with the loading-gate card). Current splits, all verified by consumer-mapping:
+- Eager (public): `numbers*` + `officialPlayers`/`officialTournaments` (fighter/event badges & stats), `youtubeArchives`/`noteArchives` (video/article titles), `sourceDocuments` (tsushin tab + video/article detail panels), the three `source*References` (public cards + search). `officialMatches`/`officialHistory` are admin-only but kept eager because they're tiny.
+- Lazy (admin): `sourceMentions` (~1MB, 出典言及 tab only) loads on tab open. Its one public touch — the mention-count fallback badge in `source-renderers.js renderVideoDescriptionPreview` (only when a video has a source document but no source reference) — is gated on `state.loadedDataKeys.has("sourceMentions")`, so it shows nothing rather than misleading zeros until loaded.
+
+Only **array** JSON streams correctly. `#streamKey`'s SAX handler pushes array elements (`typeof k === "number"`); an **object** JSON (`aliases`, `metadata` — see `OBJECT_DATA_KEYS` in `data-parser.js`) streamed through it silently becomes `[]`. So object-typed keys must NOT be in `PRIMARY_DATA_KEYS`/`ENRICHMENT_DATA_KEYS`. `aliases`/`titleReigns` (PRIMARY) and `metadata` (ENRICHMENT) were removed because nothing reads them (fighter aliases are baked into `fighters.json` records; title lineage into `titles.json`; `metadata` has no reader at all).
 
 ### Streaming render-cost discipline
 

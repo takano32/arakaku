@@ -263,11 +263,12 @@ export class DataLoader {
     this.state.repository.invalidate();
     this.state.patch({});
 
-    // Phase 2: ENRICHMENT キーを通常ロード
-    await this.#loadEnrichment();
-
-    // Public references を並列ストリーミングして完了を待つ
-    await this.loadPublicReferences();
+    // Phase 2: ENRICHMENT と公開参照を 1 つの並列プールでロードする。
+    // 旧実装は enrichment 完了を待ってから参照をロードしていたため、公開タブの
+    // 試合/大会/動画カードが使う source*References (~1.5MB) の開始が遅れていた。
+    // 参照は enricher の入力ではない独立データなので並列化して到着を早める。
+    // 両ヘルパーとも #streamKeySafe でキー単位の失敗を封じ込める。
+    await Promise.all([this.#loadEnrichment(), this.loadPublicReferences()]);
 
     // 全てのデータロード完了後に確定 patch
     this.state.repository.invalidate();

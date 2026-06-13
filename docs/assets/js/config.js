@@ -77,12 +77,17 @@ export const PRIMARY_DATA_KEYS = [
   "fighterSnapshots", "articles", "articleLinks",
 ];
 
-// PRIMARY の後にロードしてエンリッチに使うファイル群
+// PRIMARY の後にロードしてエンリッチに使うファイル群。
+// 公開タブが実際に参照するキーのみ eager にする。
+// - metadata: viewer から未参照（object を配列 SAX に通すと [] に誤パースされる既存バグ）
+//   なので除外。aliases / titleReigns と同じ理由。
+// - sourceMentions: 管理用「出典言及」タブ専用（~1MB）。TAB_DATA_KEYS / REQUIRED_TAB_DATA_KEYS
+//   経由でタブを開いたときに遅延ロードする。
+// - officialMatches / officialHistory: 管理用「公式」タブ専用だが小さいため eager のまま残す。
 export const ENRICHMENT_DATA_KEYS = [
-  "metadata",
   "numbersFighters", "numbersNameMatches", "numbersFightRecords",
   "youtubeArchives", "noteArchives",
-  "sourceDocuments", "sourceMentions",
+  "sourceDocuments",
   "officialPlayers",
   "officialTournaments",
   "officialMatches",

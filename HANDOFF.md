@@ -67,6 +67,16 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 16: Phase 2 enrichment/参照ロードの最適化 (2026-06-13)
+
+公開タブの enrichment（名鑑/公式バッジ・出典候補ブロック）の到着を早めました。調査で、`load()` が `await #loadEnrichment()` してから `await loadPublicReferences()` する**二段ゲート**のため、公開タブの試合/大会/動画カードが使う ~1.5MB の `source*References` が、管理専用の `source_mentions`（~1MB）を含む enrichment 全完了まで開始すらしないと判明。
+
+- **enrichment と公開参照を 1 並列プールに統合**（`data-loader.js`）: `Promise.all([#loadEnrichment(), loadPublicReferences()])`。参照データが enrichment の完了を待たず並行ダウンロードされ、公開データの readiness が約 57% 早まる（6 接続上限の FIFO モデル）。参照は enricher の入力ではない独立データなので並列化は安全
+- **`source_mentions`（~1MB・最大ファイル）を eager から除去**（`config.js`）: 消費者を全列挙し管理「出典言及」タブ専用と確認。`TAB_DATA_KEYS`/`REQUIRED_TAB_DATA_KEYS` 経由でタブを開いた時に遅延ロード（既存のローディングカードがカバー）。唯一の公開フォールバック（出典参照の無い動画の概要欄件数バッジ）は `source-renderers.js` で `loadedDataKeys.has("sourceMentions")` ガードし、未ロード時はバッジ非表示（件数 0 の誤表示を回避）
+- **未使用 `metadata` を eager から除去**（`config.js`）: viewer 未参照かつ object を配列 SAX で `[]` に誤パースする既存バグ（aliases/titleReigns と同類）
+
+非公開タブのみを見るユーザーは ~1MB を一切ダウンロードしなくなります。`source_documents`・`source*References`・`official_tournaments` は公開タブ（通信タブ・動画/記事詳細・試合/大会の出典候補・公式バッジ）が参照するため eager 維持（調査の doNot に従う）。
+
 ### Phase 15: Phase 1 ストリーミングの描画コスト削減 (2026-06-13)
 
 PRIMARY ストリーミング（Phase 1）中の無駄な再描画を削減しました。マルチエージェント調査で、`invalidate()` 自体はほぼ無料（~0.5µs）だが、**`renderSummary()` が毎 patch で無条件に `repo.richBouts/richFighters/richVideos` を読み**、公式タブ表示中でも 3 つの rich コレクションを毎フラッシュ再構築（約 4ms × 37〜180 回）していたのが支配的コストと判明。

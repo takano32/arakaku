@@ -150,12 +150,19 @@ export class SourceRenderers {
   }
 
   renderVideoDescriptionPreview(v) {
-    const { components, repo } = this.ctx;
+    const { components, repo, state } = this.ctx;
     const { reference: r, document: d } = repo.sourceContextForVideo(v);
     if (!r && !d) return "";
-    const c = d ? repo.countSourceMentions(d.source_id, ["note_url", "matchup", "result"]) : {};
     const preview = r?.content_preview || d?.content_preview || "プレビュー未入力";
-    const badges = r ? this.referenceMentionBadges(r) : this.sourceMentionCountBadges(c);
+    // 言及件数バッジは source_mentions に依存する。出典参照(r)があればそれを優先。
+    // source_mentions は管理タブ用に遅延ロードするため、未ロード時は件数バッジを出さない
+    // (件数 0 の誤表示を避ける。管理タブを開いて読み込めば次回描画から表示される)。
+    let badges = "";
+    if (r) {
+      badges = this.referenceMentionBadges(r);
+    } else if (d && state.loadedDataKeys?.has("sourceMentions")) {
+      badges = this.sourceMentionCountBadges(repo.countSourceMentions(d.source_id, ["note_url", "matchup", "result"]));
+    }
     return components.section("YouTube概要欄", `<p>${escapeHtml(preview)}</p><div class="video-badges">${badges}</div>`, "video-description-preview");
   }
 
