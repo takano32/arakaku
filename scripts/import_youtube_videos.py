@@ -5,7 +5,7 @@ import argparse
 import re
 from pathlib import Path
 
-from arakaku_utils import DATA_SRC, ROOT, read_csv, write_csv
+from arakaku.utils import DATA_SRC, ROOT, read_csv, write_csv
 
 
 DEFAULT_INPUT = ROOT / "tmp" / "arakaku-youtube-videos.tsv"
@@ -17,6 +17,7 @@ FIELDS = [
     "platform_video_id",
     "url",
     "title",
+    "original_title",
     "channel_name",
     "published_at",
     "official_status",
@@ -25,7 +26,6 @@ FIELDS = [
     "duplicate_group_id",
     "duplicate_note",
     "notes",
-    "source_article_ids",
 ]
 
 
@@ -104,6 +104,7 @@ def parse_tsv(path: Path) -> list[dict[str, str]]:
                 "platform_video_id": platform_video_id,
                 "url": url,
                 "title": title,
+                "original_title": title,
                 "channel_name": channel_name.strip() or "アラカク通信",
                 "published_at": normalize_date(upload_date),
                 "official_status": "official",
@@ -112,7 +113,6 @@ def parse_tsv(path: Path) -> list[dict[str, str]]:
                 "duplicate_group_id": "",
                 "duplicate_note": "",
                 "notes": f"yt-dlp channel export. duration={duration.strip()}",
-                "source_article_ids": "",
             }
         )
 
@@ -131,16 +131,16 @@ def merge_rows(
         key = (row["platform"], row["platform_video_id"] or row["url"])
 
         if key in merged and preserve_existing:
+            # Existing CSV is authoritative. yt-dlp may only fill blank cells,
+            # never overwrite curated/factual values that are already present.
             old = merged[key]
-
-            # Keep curated fields from existing CSV.
-            row["link_status"] = old.get("link_status") or row["link_status"]
-            row["duplicate_group_id"] = old.get("duplicate_group_id") or row["duplicate_group_id"]
-            row["duplicate_note"] = old.get("duplicate_note") or row["duplicate_note"]
-            row["notes"] = old.get("notes") or row["notes"]
-            row["source_article_ids"] = old.get("source_article_ids") or row["source_article_ids"]
-
-        merged[key] = row
+            combined = dict(old)
+            for field in FIELDS:
+                if not (combined.get(field) or "").strip():
+                    combined[field] = row.get(field, "")
+            merged[key] = combined
+        else:
+            merged[key] = row
 
     return sorted(
         merged.values(),

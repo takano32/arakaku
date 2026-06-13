@@ -9,15 +9,12 @@ from __future__ import annotations
 import base64
 import mimetypes
 import re
-from pathlib import Path
 from typing import Any
 
-from arakaku_utils import (
-    DATA_SRC,
-    DOCS_DATA,
+from arakaku.utils import (
     ROOT,
+    build_json_files,
     map_csv,
-    write_json,
 )
 
 PUBLIC_DIR = ROOT / "tmp" / "arakaku-site" / "public"
@@ -74,10 +71,7 @@ JSON_BUILDERS = {
 
 
 def main() -> None:
-    DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    for filename, build in JSON_BUILDERS.items():
-        write_json(DOCS_DATA / filename, build())
-    print("[done] official pages JSON build completed")
+    build_json_files(JSON_BUILDERS, "[done] official pages JSON build completed")
 
 
 if __name__ == "__main__":

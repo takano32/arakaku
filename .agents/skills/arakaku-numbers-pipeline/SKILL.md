@@ -71,6 +71,7 @@ Important fields:
 
 ```text
 numbers_fighter_id
+source_sheet
 source_row
 display_name
 main_division
@@ -113,10 +114,13 @@ Important fields:
 
 ```text
 record_id
+source_sheet
 source_row
 numbers_fighter_id
 fighter_name
 matched_fighter_id
+candidate_fighter_id
+division
 promotion_raw
 promotion_id
 event_number_raw
@@ -125,6 +129,7 @@ bout_format
 opponent_name
 opponent_numbers_fighter_id
 opponent_matched_fighter_id
+opponent_candidate_fighter_id
 result_mark
 result
 detail_raw

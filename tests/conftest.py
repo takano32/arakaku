@@ -13,6 +13,8 @@ def load_module(module_name: str, script_path: Path):
 @pytest.fixture
 def build_json_module(repo_root: Path): return load_module('build_json', repo_root/'scripts'/'build_json.py')
 @pytest.fixture
+def utils_module(repo_root: Path): return load_module('arakaku_utils', repo_root/'scripts'/'arakaku'/'utils.py')
+@pytest.fixture
 def validate_json_module(repo_root: Path): return load_module('validate_json', repo_root/'scripts'/'validate_json.py')
 @pytest.fixture
 def source_result_candidates_module(repo_root: Path): return load_module('source_result_candidates', repo_root/'scripts'/'make_source_mention_result_candidates.py')

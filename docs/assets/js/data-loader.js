@@ -53,7 +53,7 @@ export class DataLoader {
     this.state.loadedDataKeys ??= new Set();
     this.state.loadingDataKeys ??= new Set();
     this.state.dataLoadErrors ??= {};
-    this.state.repository = new DataRepository(this.state.data);
+    this.state.repository ??= new DataRepository(this.state.data);
   }
 
   async fetchEntries(keys) {
@@ -91,7 +91,7 @@ export class DataLoader {
       for (const key of nextKeys) this.state.dataLoadErrors[key] = error.message;
     } finally {
       for (const key of nextKeys) this.state.loadingDataKeys.delete(key);
-      this.state.repository = new DataRepository(this.state.data);
+      this.state.repository.invalidate();
       this.state.patch({});
     }
 
@@ -125,16 +125,43 @@ export class DataLoader {
     }
 
     const accumulated = [];
-    let lastFlush = Date.now();
-    const BATCH_SIZE = 30;
-    const BATCH_MS = 50;
+    const FLUSH_MS = 200;
+    let firstFlushDone = false;
+    let pendingFlush = false;
+    let flushTimer = null;
 
     const flush = () => {
+      pendingFlush = false;
       this.state.data[key] = [...accumulated];
-      this.state.repository = new DataRepository(this.state.data);
+      this.state.repository.invalidate();
       this.state.patch({});
       onBatch(accumulated);
-      lastFlush = Date.now();
+    };
+
+    // 最初の flush は即時、以降は最大約 FLUSH_MS に 1 回へスロットル。
+    const scheduleFlush = () => {
+      if (!firstFlushDone) {
+        firstFlushDone = true;
+        flush();
+        return;
+      }
+      if (flushTimer !== null) {
+        pendingFlush = true;
+        return;
+      }
+      flush();
+      flushTimer = setTimeout(() => {
+        flushTimer = null;
+        if (pendingFlush) flush();
+      }, FLUSH_MS);
+    };
+
+    const cancelFlush = () => {
+      if (flushTimer !== null) {
+        clearTimeout(flushTimer);
+        flushTimer = null;
+      }
+      pendingFlush = false;
     };
 
     let parser;
@@ -156,9 +183,7 @@ export class DataLoader {
     parser.onValue = ({ value, key: k }) => {
       if (typeof k === "number") {
         accumulated.push(value);
-        if (accumulated.length % BATCH_SIZE === 0 || Date.now() - lastFlush >= BATCH_MS) {
-          flush();
-        }
+        scheduleFlush();
       }
     };
 
@@ -172,6 +197,7 @@ export class DataLoader {
         parser.write(decoder.decode(value, { stream: true }));
       }
     } catch (err) {
+      cancelFlush();
       this.state.data[key] = fallbackForDataKey(key);
       this.state.dataLoadErrors[key] = err.message;
       this.state.loadedDataKeys.add(key);
@@ -179,6 +205,7 @@ export class DataLoader {
     }
 
     // ストリーム完了: 確定値をセット
+    cancelFlush();
     this.state.data[key] = accumulated;
     delete this.state.dataLoadErrors[key];
     this.state.loadedDataKeys.add(key);
@@ -199,7 +226,7 @@ export class DataLoader {
     );
 
     // Phase 1 完了後に確定 patch
-    this.state.repository = new DataRepository(this.state.data);
+    this.state.repository.invalidate();
     this.state.patch({});
 
     // Phase 2: ENRICHMENT キーを通常ロード
@@ -209,7 +236,7 @@ export class DataLoader {
     await this.loadPublicReferences();
 
     // 全てのデータロード完了後に確定 patch
-    this.state.repository = new DataRepository(this.state.data);
+    this.state.repository.invalidate();
     this.state.patch({});
 
     return this.state.data;
@@ -237,7 +264,7 @@ export class DataLoader {
     if (keys.length === 0) return;
     this.ensureStateData();
     await Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
-    this.state.repository = new DataRepository(this.state.data);
+    this.state.repository.invalidate();
     this.state.patch({});
   }
 

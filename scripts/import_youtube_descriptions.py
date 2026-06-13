@@ -6,7 +6,8 @@ import json
 import re
 from pathlib import Path
 
-from arakaku_utils import ROOT, write_csv
+from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
+from arakaku.utils import ROOT, write_csv
 
 
 DEFAULT_INPUT_DIR = ROOT / "tmp" / "youtube-info"
@@ -22,9 +23,6 @@ FIELDS = [
 ]
 
 
-NOTE_URL_RE = re.compile(r"https?://note\.com/[^\s)）]+")
-YOUTUBE_URL_RE = re.compile(r"https?://(?:www\.)?(?:youtube\.com|youtu\.be)/[^\s)）]+")
-VS_RE = re.compile(r"(?i)\bvs\.?\b|ｖｓ|ＶＳ|対")
 EVENT_RE = re.compile(
     r"(ターゲット|エンペラー|マウンテン[・\- ]?ヒーローズ|マウンテンヒーローズ|MAXバウト|エリートスピリッツ|アラカクライブ)"
 )

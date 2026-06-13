@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
-
 from numbers_parser import Document
 
-from arakaku_utils import DATA_SRC, read_csv, safe_slug, write_csv
+from arakaku.utils import DATA_SRC, ROOT, read_csv, safe_slug, write_csv
 
 
-NUMBERS_PATH = Path("data-raw/アラカク選手名鑑.numbers")
+NUMBERS_PATH = ROOT / "data-raw" / "アラカク選手名鑑.numbers"
 
 PROMOTION_MAP = {
     "MH": "mh",

@@ -2,7 +2,6 @@
 
 export const DATA_FILES = {
   metadata: "./data/metadata.json",
-  database: "./data/database.json",
   articles: "./data/articles.json",
   articleLinks: "./data/article_links.json",
   promotions: "./data/promotions.json",

@@ -2,7 +2,7 @@
 """Generate aliases.csv from numbers_name_matches.csv, fighters.csv, and static config."""
 from __future__ import annotations
 
-from arakaku_utils import DATA_SRC, read_csv, write_csv
+from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 OUTPUT = DATA_SRC / "aliases.csv"
 FIELDS = ["alias_type", "alias", "canonical_id"]

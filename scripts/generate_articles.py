@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from arakaku_utils import DATA_SRC, read_csv, write_csv
+from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 OUTPUT = DATA_SRC / "articles.csv"
 FIELDS = [

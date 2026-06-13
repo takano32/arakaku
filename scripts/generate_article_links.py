@@ -18,7 +18,7 @@ import re
 import unicodedata
 from collections import defaultdict
 
-from arakaku_utils import DATA_SRC, read_csv, write_csv
+from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 OUTPUT = DATA_SRC / "article_links.csv"
 FIELDS = ["link_id", "article_id", "entity_type", "entity_id", "relation_type", "notes"]

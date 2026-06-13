@@ -178,7 +178,7 @@ Old-to-new table mapping:
 - Old source article columns and lists became `article_links.csv`.
 - Old `events.source_video_ids` and `fighters.inferred_from_video_ids` became `video_links.csv` rows.
 
-Migration was performed by `scripts/migrate_csv_schema.py`.
+Migration was performed by `scripts/migrate_csv_schema.py` (a one-shot script, since removed; see git history).
 
 Rows requiring manual review: none from the structural migration. The migration did not confirm new winners, methods, dates, fighters, events, titles, articles, or videos.
 
@@ -187,10 +187,7 @@ Known caveat: `source_documents.csv` contains embedded newlines in `content_text
 ## 8. Generated JSON Structure
 
 Generated JSON is deterministic and produced by `scripts/build_json.py`.
-
-Primary generated output:
-
-- `database.json`: normalized static database with a `schema` value and `tables` object.
+JSON is emitted per table only; the all-in-one `database.json` snapshot was retired because the viewer never fetched it.
 
 Viewer-compatible generated files:
 
@@ -219,7 +216,7 @@ Viewer-compatible generated files:
 
 The `DataRepository` in the viewer automatically merges `numbers_fighters.json` and `numbers_fight_records.json` into the objects returned by the `fighters` and `bouts` accessors at runtime. This ensures that canonical JSON files stay lean and strictly factual while the viewer provides a rich, supplemented experience.
 
-The frontend may keep using the smaller per-view JSON files while `database.json` provides the ideal normalized snapshot for future simplification.
+The frontend loads the smaller per-view JSON files; consumers who need the full dataset should read the per-table JSON files (or the CSVs in `data-src/`) directly.
 
 ## 9. Frontend Structure
 

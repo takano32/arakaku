@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from arakaku_utils import (
-    DOCS_DATA,
+from arakaku.utils import (
+    build_json_files,
     int_field,
     map_csv,
-    write_json,
 )
 
 
@@ -91,10 +90,7 @@ JSON_BUILDERS = {
 
 
 def main() -> None:
-    DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    for filename, build in JSON_BUILDERS.items():
-        write_json(DOCS_DATA / filename, build())
-    print("[done] official JSON build completed")
+    build_json_files(JSON_BUILDERS, "[done] official JSON build completed")
 
 
 if __name__ == "__main__":

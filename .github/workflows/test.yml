@@ -26,13 +26,5 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest
 
-      - name: Build JSON
-        run: make build
-
-      - name: Validate JSON
-        run: |
-          make validate
-
-      - name: Run tests
-        run: |
-          python -m pytest
+      - name: Build, validate, and test
+        run: make check

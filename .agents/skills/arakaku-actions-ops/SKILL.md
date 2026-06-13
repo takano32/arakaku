@@ -62,22 +62,32 @@ scripts/build_official_json.py
 scripts/build_official_pages_json.py
 ```
 
-Expected generated files include:
+There is no `docs/data/database.json` (the per-table-only output dropped it).
+`docs/data/metadata.json` is deterministic (no `generated_at`).
+
+Expected generated files (one JSON per table; verify with `ls docs/data/*.json`):
 
 ```text
 docs/data/metadata.json
 docs/data/articles.json
+docs/data/article_links.json
 docs/data/promotions.json
 docs/data/events.json
 docs/data/bouts.json
+docs/data/bout_participants.json
 docs/data/fighters.json
-docs/data/titles.json
 docs/data/fighter_snapshots.json
+docs/data/titles.json
+docs/data/title_reigns.json
+docs/data/aliases.json
 docs/data/videos.json
 docs/data/video_links.json
-docs/data/aliases.json
 docs/data/source_documents.json
+docs/data/source_document_bodies.json
 docs/data/source_mentions.json
+docs/data/source_event_references.json
+docs/data/source_bout_references.json
+docs/data/source_video_references.json
 docs/data/numbers_fighters.json
 docs/data/numbers_name_matches.json
 docs/data/numbers_fight_records.json

@@ -2,9 +2,7 @@
 """Generate video_links.csv from bouts.csv, bout_participants.csv, videos.csv, fighters.csv."""
 from __future__ import annotations
 
-from pathlib import Path
-
-from arakaku_utils import DATA_SRC, read_csv, write_csv
+from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 OUTPUT = DATA_SRC / "video_links.csv"
 FIELDS = ["video_id", "entity_type", "entity_id", "relation_type", "start_time", "end_time", "notes"]

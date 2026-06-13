@@ -15,8 +15,8 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 
+from arakaku.utils import ROOT, write_csv
 
-ROOT = Path(__file__).resolve().parents[1]
 ARTICLES_CSV = ROOT / "data-src" / "articles.csv"
 
 DEFAULT_CREATOR = "xyz1090"
@@ -291,13 +291,6 @@ def read_articles(path: Path) -> tuple[list[dict[str, str]], list[str]]:
         return list(reader), list(reader.fieldnames or [])
 
 
-def write_articles(path: Path, fieldnames: list[str], rows: list[dict[str, str]]) -> None:
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 def merge_articles(
     existing: list[dict[str, str]],
     discovered: list[dict[str, str]],
@@ -380,8 +373,7 @@ def main() -> int:
         print(f"{row['article_id']}\t{row['title']}\t{row['url']}")
 
     if not args.dry_run:
-        write_articles(args.articles, fieldnames, merged)
-        print(f"[info] {args.articles}")
+        write_csv(args.articles, fieldnames, merged)
 
     return 0
 

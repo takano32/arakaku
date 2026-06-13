@@ -6,18 +6,13 @@ import time
 import urllib.request
 from pathlib import Path
 
-from arakaku_utils import DATA_SRC, ROOT, read_csv, safe_slug
+from arakaku.utils import DATA_SRC, ROOT, note_cache_name, read_csv
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"
 OUT_DIR = ROOT / "tmp" / "note-html"
 
 USER_AGENT = "Mozilla/5.0 arakaku-note-cache/1.0"
-
-
-def cache_name(article_id: str, url: str) -> str:
-    raw = article_id or url
-    return f"{safe_slug(raw)}.html"
 
 
 def fetch_note_html(url: str) -> str:
@@ -58,7 +53,7 @@ def main() -> int:
             skipped += 1
             continue
 
-        out_path = args.out_dir / cache_name(article_id, url)
+        out_path = args.out_dir / note_cache_name(article_id, url)
 
         if out_path.exists() and not args.force:
             skipped += 1

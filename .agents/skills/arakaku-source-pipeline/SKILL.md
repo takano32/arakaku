@@ -104,6 +104,11 @@ tmp/note-html/
 
 404, deleted, or private note articles should not stop the whole pipeline.
 
+Cache filenames come from `note_cache_name()` in `scripts/arakaku/utils.py` —
+the same function `build_source_documents.py` uses to look the files up.
+Never reimplement this naming locally; diverging copies silently break cache
+lookups.
+
 ### cache_youtube_info.py
 
 Reads `data-src/videos.csv`.
@@ -161,9 +166,11 @@ title
 url
 published_at
 fetched_at
+content_format
 content_hash
 content_text
 content_preview
+notes
 ```
 
 ---
@@ -200,6 +207,79 @@ notes
 ```
 
 Mentions are candidates. They are not automatically confirmed data.
+
+---
+
+## Review candidate pipeline
+
+`source_mentions.csv` and `source_documents.csv` feed two review-candidate
+generators. Their outputs land in `review/` and are **review-only**: they never
+confirm bout winners, participants, methods, fighter identities, or title
+lineage.
+
+Text-parsing helpers shared verbatim across the source-pipeline scripts (URL
+regexes, `VS_RE`, `normalize_digits`, `find_method`, `infer_time`) live in
+`scripts/arakaku/textparse.py`. Patterns whose vocabulary intentionally differs
+per script (`METHOD_PATTERNS`, `ROUND_RE`, `EVENT_RE`, `RESULT_RE`) stay local
+to each script — do not merge them into the shared module.
+
+### make_source_mention_result_candidates.py
+
+Target:
+
+```bash
+make source-mention-result-candidates
+```
+
+Reads `data-src/source_mentions.csv` and writes:
+
+```text
+review/source_mention_result_candidates.csv
+```
+
+It scans mention text for result-method patterns (KO, TKO, SUB, DEC, DQ, NC,
+etc.) to surface possible result mentions for human review.
+
+### make_source_reference_candidates.py
+
+Target:
+
+```bash
+make source-reference-candidates
+```
+
+Reads `data-src/source_documents.csv`, `data-src/source_mentions.csv`,
+`data-src/events.csv`, `data-src/bouts.csv`,
+`data-src/bout_participants.csv`, `data-src/article_links.csv`,
+`data-src/videos.csv`, and `data-src/video_links.csv`, and writes:
+
+```text
+review/source_event_reference_candidates.csv
+review/source_bout_reference_candidates.csv
+review/source_video_reference_candidates.csv
+```
+
+Bout matching does not read fighter names or article links off `bouts.csv`.
+Red/blue fighter names come from `bout_participants.csv` (via `side` +
+`fighter_name`), and note source links come from `article_links.csv` rows where
+`entity_type == "bout"` (mapped to `note:<article_id>` source ids). This makes
+the script safe to re-run after schema changes to `bouts.csv`.
+
+### review/ directory
+
+The review directory holds exactly seven generated candidate CSVs:
+
+```text
+review/note_structured_results.csv
+review/structured_result_patch_candidates.csv
+review/youtube_description_candidates.csv
+review/source_mention_result_candidates.csv
+review/source_event_reference_candidates.csv
+review/source_bout_reference_candidates.csv
+review/source_video_reference_candidates.csv
+```
+
+These are human-review staging files, not canonical data.
 
 ---
 

@@ -48,52 +48,60 @@ GitHub Pages viewer でも、以下の正常動作を確認済みです。
 
 ## 現在の主なデータ規模
 
-```text
-articles.csv: 122 rows
-events.csv: 54 rows
-bouts.csv: 270 rows
-bout_participants.csv: 540 rows
-fighters.csv: 146 rows
-numbers_fighters.csv: 101 rows
-numbers_name_matches.csv: 101 rows
-numbers_fight_records.csv: 543 rows
-titles.csv: 16 rows
-title_reigns.csv: 68 rows
-videos.csv: 360 rows
-article_links.csv: 244 rows
-video_links.csv: 1076 rows
-source_documents.csv: 479 rows
-source_mentions.csv: 1794 rows
-archives/youtube.csv: 360 rows
-archives/note.csv: 120 rows
-official_players.csv: 77 rows
-official_tournaments.csv: 1 row
-official_matches.csv: 4 rows
-official_history.csv: 9 rows
-official_news.csv: 2 rows
-official_pages.csv: 2 rows
+行数は随時変化するため固定の数値表は持ちません。最新の件数はソース CSV を直接数えて確認してください。`source_documents.csv` などは本文内に改行を含むため、`wc -l` ではなく CSV パーサで行を数えます。
+
+```bash
+python - <<'PY'
+import csv, glob, os
+
+for path in sorted(glob.glob("data-src/*.csv") + glob.glob("data-src/archives/*.csv")):
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    print(os.path.relpath(path, "data-src"), len(rows), "rows")
+PY
 ```
 
-`source_documents.csv` の内訳:
-
-```text
-youtube_description: 359
-note_article: 120
-```
-
-`source_mentions.csv` の主な内訳:
-
-```text
-event: 860
-youtube_url: 384
-result: 317
-matchup: 169
-note_url: 64
-```
+`source_documents.csv` の `source_type` 分布、`source_mentions.csv` の `mention_type` 分布の確認方法は `OPERATIONS_CHECKLIST.md` の「本文DB更新時」を参照してください。
 
 ---
 
 ## 直近で追加・整備したもの
+
+### Phase 13: 共有テキスト解析モジュール・ビルド最適化 (2026-06-13)
+
+#### scripts/arakaku/textparse.py 新設（重複排除）
+
+複数スクリプトで挙動が完全に一致していたテキスト解析コードを共有モジュールに集約しました。
+
+- `normalize_digits` / `TIME_RE` / `infer_time`: `extract_note_structured_results.py` と `make_source_mention_result_candidates.py` で同一定義だったものを統合
+- `find_method(text, patterns)`: 両スクリプトの `infer_method` の同一ロジックを汎用化（`METHOD_PATTERNS` 自体は語彙が意図的に異なるため各スクリプトに残置）
+- `NOTE_URL_RE` / `YOUTUBE_URL_RE` / `VS_RE`: `build_source_documents.py` と `import_youtube_descriptions.py` で同一だった URL/対戦表記の正規表現を統合
+- **残置の方針**: `METHOD_PATTERNS`・`ROUND_RE`（`終了` 対応の有無）・`EVENT_RE`・`RESULT_RE` は語彙がスクリプトごとに意図的に異なるため共有化しない
+- 編集前ロジックを同一入力で再実行し、出力がバイト単位で一致することを確認済み（挙動保存）
+
+#### 追加の重複排除（敵対的レビューで検出）
+
+マルチエージェントの敵対的検証で見つかった残り重複も統合しました。
+
+- `note_cache_name()` を `arakaku/utils.py` に新設: `tmp/note-html/` のキャッシュファイル名契約。writer (`cache_note_html.py`) と reader (`build_source_documents.py`) が同一関数を二重定義していた（片方だけ変えるとキャッシュ参照が静かに壊れる）
+- `build_bout_fighter_names()` を `arakaku/mapping.py` へ: `make_source_reference_candidates.py` と `make_structured_result_patch_candidates.py` で同一定義だった bout_id → (red, blue) 名マッピング
+- `line_number()` を `arakaku/utils.py` へ: `make_source_mention_result_candidates.py` と `make_source_reference_candidates.py` で同一定義
+- `rows()` ラッパー（`build_json.py` / `build_numbers_json.py` の 2 行関数）は局所的な糖衣として意図的に残置
+- 共有化した各関数は実データで新旧の出力一致を assert で確認済み
+
+#### build_json.py の CSV 再読込解消
+
+- モジュールレベルで読込済みの `ARTICLE_LINKS` / `BOUT_PARTICIPANTS` / `TITLE_REIGNS` / `VIDEO_LINKS` / `ALIASES` を `JSON_BUILDERS` 内で再読込していた箇所を定数参照に変更
+- `source_documents.csv` の 2 回読込を `SOURCE_DOCUMENTS` 1 回に統合
+- 生成 JSON は md5 比較でバイト同一を確認済み
+
+#### viewer: Markdown コンパイラ分離
+
+- `tabs/tab-renderers.js` 冒頭の `mdToHtml` / `mdToHtmlCompile`（約 40 行）を `docs/assets/js/ui/markdown.js` に移動し import に置換（タブ描画と独立した純関数のため）
+
+#### review CSV の鮮度ズレ解消
+
+- `review/note_structured_results.csv` / `source_mention_result_candidates.csv` / `youtube_description_candidates.csv` を再生成。差分は (1) `write_csv` の `lineterminator="\n"` 化以降の改行コード追従、(2) 更新済み `source_documents.csv` への入力データ追従のみで、抽出ロジックの変化はなし
 
 ### Phase 12: ビルド整理・ストリーミング統一・UI改善 (2026-05-29)
 
@@ -388,9 +396,8 @@ scripts/archive_metadata.py
 ### グローバル・リファクタリング (2026-05-25)
 
 - **Frontend リファクタリング**: `DataRepository.js` を `BaseRepository.js` (生データアクセス/インデックス管理) と `DataEnricher.js` (Rich Data 構築ロジック) に分割し、責務を明確にしました。
-- **Python スクリプトのモジュール化**: `scripts/arakaku/` パッケージを新設し、`mapping.py`, `models.py`, `utils.py` にロジックを整理しました。
+- **Python スクリプトのモジュール化**: `scripts/arakaku/` パッケージを新設し、`mapping.py`, `utils.py`, `validation.py` にロジックを整理しました。
 - **ビルドプロセスの簡素化**: `build_json.py` のマッピングロジックを外部モジュール化し、メンテナンス性を向上させました。
-- **後方互換性**: 既存のスクリプトを壊さないよう、`scripts/arakaku_utils.py` をプロキシとして維持しています。
 
 - データ補完ロジック: `DataRepository` に `getRichFighterInfo` / `getRichBoutInfo` を実装し、`unknown` な選手プロフィールや試合結果を Numbers 由来データ（`numbers_fighters.json` / `numbers_fight_records.json`）で自動補完するようにしました。
 - 情報の最大活用: 通算戦績、実績マーカー（👑 🏆）、階級・試合形式の補完など、名鑑に含まれる人手管理の情報を最大限に活用して表示します。
@@ -421,10 +428,9 @@ scripts/archive_metadata.py
 data-src/bout_participants.csv
 data-src/title_reigns.csv
 data-src/article_links.csv
-docs/data/database.json
 ```
 
-`bouts.csv` は bout-level facts、`bout_participants.csv` は参加者と参加者ごとの result、`titles.csv` は王座本体、`title_reigns.csv` は王座履歴を持ちます。`database.json` は正規化 CSV の生成スナップショットです。
+`bouts.csv` は bout-level facts、`bout_participants.csv` は参加者と参加者ごとの result、`titles.csv` は王座本体、`title_reigns.csv` は王座履歴を持ちます。各テーブルは `build_json.py` がテーブルごとの JSON（`bouts.json` / `bout_participants.json` / `title_reigns.json` 等）として生成します。
 
 ### Numbers 由来の選手名鑑CSV
 
@@ -443,7 +449,7 @@ scripts/extract_numbers.py
 
 「個人成績」シートは、既存 `bouts.csv` / `bout_participants.csv` へ直接反映しません。ペア化、重複検出、既存イベント・試合との突合、勝敗矛盾の表示は JavaScript 側で行う方針です。
 
-`build_json.py` は `numbers_fighters.json`、`numbers_name_matches.json`、`numbers_fight_records.json` を生成し、`database.json` にも Numbers 由来テーブルを含めます。`docs/assets/js/data-loader.js` はこれらをロードできますが、専用の比較UIは次タスクです。
+Numbers 由来三テーブルの JSON（`numbers_fighters.json`、`numbers_name_matches.json`、`numbers_fight_records.json`）は `build_numbers_json.py` が生成します。`docs/assets/js/data-loader.js` がこれらをロードし、管理ビューの名鑑タブと `data-enricher.js` のクライアントサイド突合に使います。
 
 ### 本文キャッシュ系スクリプト
 
@@ -598,17 +604,14 @@ make clean-generated
 
 ## 現在の既知リスク
 
-### source_documents.json が重い
+### source_documents.json の本文分離（対応済み）
 
-`docs/data/source_documents.json` は約 1.1MB あります。
+本文を含めると `source_documents.json` が肥大化するため、本文は別ファイルに分離済みです。
 
-現状は Pages で動作確認済みですが、今後本文量が増えると初期読み込みが重くなる可能性があります。
+- `source_documents.json`: `content_text` を除いた軽量インデックス（メタデータ + preview）。エンリッチメントで通常ロードされる。
+- `source_document_bodies.json`: `{source_id, content_text}` のみの本文本体。`data-loader.js` の `TAB_DATA_KEYS`（`tsushin` / `sources` タブ）で必要時に遅延ロードされる（`mentions` タブは `sourceDocuments` / `sourceMentions` を遅延ロード）。
 
-将来的な対策候補:
-
-- `source_document_index.json` と本文本体を分離する
-- 出典本文 view だけ遅延読み込みする
-- preview だけ初期ロードし、本文は別ファイル化する
+これにより初期ロードに全文を載せず、出典本文・通信タブを開いたときだけ本文を取得します。今後本文量がさらに増える場合は、本文側のページング等を追加検討してください。
 
 ### source_mentions は候補である
 
@@ -635,11 +638,10 @@ make clean-generated
 
 優先度順のおすすめです。詳細は `NEXT_TASKS.md` を参照。
 
-1. 公式データの選手マッチング精度向上（現在は display_name 一致、77人中71人がマッチ）
-2. `source_documents.json` の軽量化（現在約 1.1MB、遅延ロード済みだが本文増加に備えて分離を検討）
-3. 公式ページ・ニュースが増えたら「公式ページ」「公式ニュース」タブに分割（NEXT_TASKS.md 参照）
-4. Numbers データの更なる突合（対戦カードの不一致検出など）
-5. 王座変遷の精度向上
+1. 公式データの選手マッチング精度向上（display_name 完全一致 + 表記ゆれ正規化で、official_players.csv 106人中99人がマッチ。残り7人は表記差で未一致）
+2. 公式ページ・ニュースが増えたら「公式ページ」「公式ニュース」タブに分割（NEXT_TASKS.md 参照）
+3. Numbers データの更なる突合（対戦カードの不一致検出など）
+4. 王座変遷の精度向上
 
 ---
 
@@ -656,11 +658,3 @@ git pull
 make check
 make clean-generated
 ```
-
----
-
-## 作業者への注意
-
-このプロジェクトでは「正しそうだから埋める」よりも、「不明なものを不明として残す」ことを優先してください。
-
-特に試合結果は、後で参照される重要データなので、曖昧な抽出結果をそのまま勝敗として反映しないでください。

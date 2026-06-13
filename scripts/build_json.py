@@ -2,24 +2,22 @@ from __future__ import annotations
 
 from typing import Any
 
-from arakaku_utils import (
+from arakaku.utils import (
     DATA_SRC,
     REVIEW,
-    DOCS_DATA,
     CsvRow,
+    EntityMapper,
     bool_from_text,
+    build_json_files,
     field_or_default,
     field_or_empty,
-    get_jst_now_iso,
     int_field,
-    list_field,
     map_csv,
     none_if_empty,
     parse_int,
     read_csv,
-    split_list,
-    write_json,
 )
+from arakaku.mapping import promotion_rules, fighter_profile, bout_result, bout_title
 
 
 def rows(name: str) -> list[CsvRow]:
@@ -40,14 +38,39 @@ ARTICLE_LINKS = rows("article_links.csv")
 BOUT_PARTICIPANTS = rows("bout_participants.csv")
 TITLE_REIGNS = rows("title_reigns.csv")
 VIDEO_LINKS = rows("video_links.csv")
+ALIASES = rows("aliases.csv")
+SOURCE_DOCUMENTS = rows("source_documents.csv")
+
+
+def index_link_ids(links: list[CsvRow], id_field: str) -> dict[tuple[str, str], list[str]]:
+    index: dict[tuple[str, str], list[str]] = {}
+    for row in links:
+        entity_type = row.get("entity_type")
+        entity_id = row.get("entity_id")
+        if entity_type is None or entity_id is None:
+            continue
+        index.setdefault((entity_type, entity_id), []).append(row[id_field])
+    return index
+
+
+ARTICLE_IDS_BY_ENTITY = index_link_ids(ARTICLE_LINKS, "article_id")
+VIDEO_IDS_BY_ENTITY = index_link_ids(VIDEO_LINKS, "video_id")
+
+FIGHTER_ALIASES = {}
+for _alias in ALIASES:
+    if _alias.get("alias_type") == "fighters":
+        FIGHTER_ALIASES.setdefault(_alias.get("canonical_id"), []).append(_alias["alias"])
+
+PARTICIPANTS_BY_BOUT: dict[str, list[CsvRow]] = {}
+_SIDE_ORDER = {"red": 0, "blue": 1}
+for _participant in BOUT_PARTICIPANTS:
+    PARTICIPANTS_BY_BOUT.setdefault(_participant.get("bout_id"), []).append(_participant)
+for _bout_id, _participants in PARTICIPANTS_BY_BOUT.items():
+    _participants.sort(key=lambda row: _SIDE_ORDER.get(row.get("side", ""), 99))
 
 
 def article_ids_for(entity_type: str, entity_id: str) -> list[str]:
-    return [
-        row["article_id"]
-        for row in ARTICLE_LINKS
-        if row.get("entity_type") == entity_type and row.get("entity_id") == entity_id
-    ]
+    return ARTICLE_IDS_BY_ENTITY.get((entity_type, entity_id), [])
 
 
 def first_article_id_for(entity_type: str, entity_id: str) -> str | None:
@@ -56,11 +79,7 @@ def first_article_id_for(entity_type: str, entity_id: str) -> str | None:
 
 
 def video_ids_for(entity_type: str, entity_id: str) -> list[str]:
-    return [
-        row["video_id"]
-        for row in VIDEO_LINKS
-        if row.get("entity_type") == entity_type and row.get("entity_id") == entity_id
-    ]
+    return VIDEO_IDS_BY_ENTITY.get((entity_type, entity_id), [])
 
 
 def known_or_unknown_result(row: CsvRow) -> str:
@@ -68,11 +87,7 @@ def known_or_unknown_result(row: CsvRow) -> str:
 
 
 def sorted_participants_for_bout(bout_id: str) -> list[CsvRow]:
-    side_order = {"red": 0, "blue": 1}
-    return sorted(
-        [row for row in BOUT_PARTICIPANTS if row.get("bout_id") == bout_id],
-        key=lambda row: side_order.get(row.get("side", ""), 99),
-    )
+    return PARTICIPANTS_BY_BOUT.get(bout_id, [])
 
 
 def bout_matchup(row: CsvRow) -> str:
@@ -113,15 +128,11 @@ def is_title_bout(row: CsvRow) -> bool:
     return bool_from_text(row.get("is_title_bout")) or False
 
 
-from arakaku.mapping import promotion_rules, fighter_profile, bout_result, bout_title
-
-
 def build_metadata() -> dict[str, Any]:
     return {
         "project_name": "arakaku-database",
         "display_name": "アラカク非公式データベース",
         "description": "アラカク通信のーと等をもとに、団体・大会・試合結果・選手情報を整理するデータベース。",
-        "generated_at": get_jst_now_iso(),
         "data_version": "0.2.0",
         "source_schema": "relational-csv-v1",
         "source_note": "CSV は事実データを正規化し、viewer 用 JSON は関係テーブルから派生生成しています。",
@@ -217,11 +228,7 @@ def build_fighters() -> list[dict[str, Any]]:
         {
             "fighter_id": "fighter_id",
             "display_name": "display_name",
-            "aliases": lambda row: [
-                alias["alias"]
-                for alias in rows("aliases.csv")
-                if alias.get("alias_type") == "fighters" and alias.get("canonical_id") == row["fighter_id"]
-            ],
+            "aliases": lambda row: FIGHTER_ALIASES.get(row["fighter_id"], []),
             "main_division": "main_division",
             "main_promotion_id": "main_promotion_id",
             "profile": fighter_profile,
@@ -306,8 +313,7 @@ def build_videos() -> list[dict[str, Any]]:
 
 
 def build_video_links() -> list[dict[str, Any]]:
-    return map_csv(
-        "video_links.csv",
+    return EntityMapper(VIDEO_LINKS).map(
         {
             "video_id": "video_id",
             "entity_type": "entity_type",
@@ -321,68 +327,38 @@ def build_video_links() -> list[dict[str, Any]]:
 
 
 def build_aliases() -> dict[str, dict[str, str]]:
-    aliases = rows("aliases.csv")
     return {
         alias_type: {
             row["alias"]: row["canonical_id"]
-            for row in aliases
+            for row in ALIASES
             if row["alias_type"] == alias_type
         }
         for alias_type in ["fighters", "promotions", "methods"]
     }
 
 
-def build_database() -> dict[str, Any]:
-    return {
-        "schema": "relational-csv-v1",
-        "tables": {
-            "articles": build_articles(),
-            "article_links": rows("article_links.csv"),
-            "promotions": build_promotions(),
-            "events": build_events(),
-            "bouts": rows("bouts.csv"),
-            "bout_participants": rows("bout_participants.csv"),
-            "fighters": build_fighters(),
-            "fighter_snapshots": build_fighter_snapshots(),
-            "titles": rows("titles.csv"),
-            "title_reigns": rows("title_reigns.csv"),
-            "videos": build_videos(),
-            "video_links": build_video_links(),
-            "aliases": rows("aliases.csv"),
-            "source_documents": rows("source_documents.csv"),
-            "source_mentions": rows("source_mentions.csv"),
-            "numbers_fighters": rows("numbers_fighters.csv"),
-            "numbers_name_matches": rows("numbers_name_matches.csv"),
-            "numbers_fight_records": rows("numbers_fight_records.csv"),
-            "youtube_archives": rows("archives/youtube.csv"),
-            "note_archives": rows("archives/note.csv"),
-        },
-    }
-
-
 JSON_BUILDERS = {
     "metadata.json": build_metadata,
-    "database.json": build_database,
     "articles.json": build_articles,
-    "article_links.json": lambda: rows("article_links.csv"),
+    "article_links.json": lambda: ARTICLE_LINKS,
     "promotions.json": build_promotions,
     "events.json": build_events,
     "bouts.json": build_bouts,
-    "bout_participants.json": lambda: rows("bout_participants.csv"),
+    "bout_participants.json": lambda: BOUT_PARTICIPANTS,
     "fighters.json": build_fighters,
     "titles.json": build_titles,
-    "title_reigns.json": lambda: rows("title_reigns.csv"),
+    "title_reigns.json": lambda: TITLE_REIGNS,
     "fighter_snapshots.json": build_fighter_snapshots,
     "videos.json": build_videos,
     "video_links.json": build_video_links,
     "aliases.json": build_aliases,
     "source_documents.json": lambda: [
         {k: v for k, v in row.items() if k != "content_text"}
-        for row in rows("source_documents.csv")
+        for row in SOURCE_DOCUMENTS
     ],
     "source_document_bodies.json": lambda: [
         {"source_id": row["source_id"], "content_text": row.get("content_text", "")}
-        for row in rows("source_documents.csv")
+        for row in SOURCE_DOCUMENTS
     ],
     "source_mentions.json": lambda: rows("source_mentions.csv"),
     "youtube_archives.json": lambda: rows("archives/youtube.csv"),
@@ -394,10 +370,7 @@ JSON_BUILDERS = {
 
 
 def main() -> None:
-    DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    for filename, build in JSON_BUILDERS.items():
-        write_json(DOCS_DATA / filename, build())
-    print("[done] JSON build completed")
+    build_json_files(JSON_BUILDERS, "[done] JSON build completed")
 
 
 if __name__ == "__main__":

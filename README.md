@@ -172,9 +172,10 @@ JSON は viewer 用の生成物です。
 
 `make build` は `docs/data/*.json` を生成します。
 
+JSON は viewer の配信 API です。`database.json` のような全テーブルを1つにまとめたファイルはなく、テーブルごとに 1 ファイルずつ出力します。viewer はテーブル単位の JSON を直接読み込みます。
+
 主な出力:
 
-- `database.json`: relational-style CSV をまとめた正規化スナップショット
 - per-view JSON: viewer が直接読む `bouts.json`、`fighters.json`、`events.json` など
 - relationship JSON: `article_links.json`、`bout_participants.json`、`title_reigns.json`、`video_links.json`
 
@@ -185,6 +186,41 @@ JSON は viewer 用の生成物です。
 ## data-src の主要CSV
 
 現在の CSV は、事実テーブルと関係テーブルを分ける relational-style の設計です。移行の詳細、旧CSVからの対応、主キー・外部キーは `SCHEMA_NOTES.md` にまとめています。
+
+### CSV の出自
+
+`data-src/*.csv` は、手で編集してよい canonical なものと、スクリプトで再生成される生成物に分かれます。生成物は `make rebuild` / `make regenerate-csvs` で作り直せます。典拠は Makefile の `clean-stage1-csvs` / `clean-stage2-csvs`（どの CSV を削除して作り直すか）と各生成スクリプトです。
+
+**canonical（手で編集してよい。生成スクリプトを持たず、`make rebuild` でも git の内容を使う）:**
+
+- `events.csv`
+- `bouts.csv`
+- `bout_participants.csv`
+- `fighters.csv`
+- `fighter_snapshots.csv`
+- `videos.csv`
+- `title_reigns.csv`
+
+**stage1 生成（生データ取り込み。`clean-stage1-csvs` の対象。`make generate-stage1` で再生成）:**
+
+- `numbers_fighters.csv` / `numbers_name_matches.csv` / `numbers_fight_records.csv`（`extract_numbers.py`）
+- `archives/youtube.csv` / `archives/note.csv`（`archive_metadata.py`）
+- `articles.csv`（`generate_articles.py`）
+- `source_documents.csv` / `source_mentions.csv`（`build_source_documents.py`）
+- `official_players.csv` / `official_tournaments.csv` / `official_matches.csv` / `official_history.csv`（`generate_official_csvs.py`）
+
+**stage2 生成（派生。`clean-stage2-csvs` の対象。`make generate-stage2` で再生成）:**
+
+- `promotions.csv`（`generate_promotions.py`）
+- `titles.csv`（`generate_titles.py`）
+- `aliases.csv`（`generate_aliases.py`）
+- `video_links.csv`（`generate_video_links.py`）
+- `article_links.csv`（`generate_article_links.py`）
+- `official_news.csv` / `official_pages.csv`（`generate_official_pages_csv.py`）
+
+> 注意: `official_*.csv` は generate スクリプトを持ちますが `clean-*-csvs` の削除対象には含まれていません（`tmp/arakaku-site/` から取得しないと再生成できないため）。`make rebuild` は `tmp/arakaku-site/` がある前提で再生成します。
+
+> 重要な注意（手編集が失われるCSV）: `promotions.csv` と `titles.csv` の事実データは、CSV ではなく `generate_promotions.py` / `generate_titles.py` 内の Python リテラルがソースです。これらの CSV を直接手編集しても、`make rebuild` / `make rebuild-stage2` / `make regenerate-csvs` を実行すると上書きされ、手編集は失われます。団体やタイトルの事実を直すときは、生成スクリプトのリテラルを編集してください。
 
 ### `data-src/promotions.csv`
 
@@ -443,20 +479,15 @@ viewer や抽出処理での検索・照合改善に使います。
 
 `review/` は、正規データに反映する前の候補を置く場所です。
 
-例:
+現在ある候補CSV:
 
-- `review/note_result_candidates.csv`
 - `review/note_structured_results.csv`
 - `review/structured_result_patch_candidates.csv`
 - `review/youtube_description_candidates.csv`
-- `review/inferred_bouts_from_video_titles.csv`
-- `review/inferred_events_from_video_titles.csv`
-- `review/inferred_fighters_from_video_titles.csv`
 - `review/source_mention_result_candidates.csv`
 - `review/source_event_reference_candidates.csv`
 - `review/source_bout_reference_candidates.csv`
 - `review/source_video_reference_candidates.csv`
-- `review/parse_skips.csv`
 
 `review/` のデータは、原則として人間が確認してから `data-src/` に反映します。
 
@@ -464,204 +495,137 @@ viewer や抽出処理での検索・照合改善に使います。
 
 ## scripts の役割
 
-### `scripts/build_json.py`
+共有ヘルパは `scripts/arakaku/`（`utils.py` / `mapping.py` / `validation.py` / `textparse.py`）にまとめています。`textparse.py` には複数スクリプトで挙動が完全に一致するテキスト解析パターン・関数（URL 正規表現、全角数字正規化、決まり手・タイム推定）だけを置き、語彙が意図的に異なるパターンは各スクリプト側に残しています。スクリプトは用途で分類できます。
 
-`data-src/*.csv` から `docs/data/*.json` を生成します。
+### JSON 生成（build_*）
 
-生成対象の例:
+`data-src/*.csv` から `docs/data/*.json` を生成します。`make build` がこの 4 本を順に実行します。
 
-- `database.json`
-- `articles.json`
-- `article_links.json`
-- `promotions.json`
-- `events.json`
-- `bouts.json`
-- `bout_participants.json`
-- `fighters.json`
-- `titles.json`
-- `title_reigns.json`
-- `fighter_snapshots.json`
-- `videos.json`
-- `video_links.json`
-- `aliases.json`
-- `source_documents.json`
-- `source_mentions.json`
-- `numbers_fighters.json`
-- `numbers_name_matches.json`
-- `numbers_fight_records.json`
-- `youtube_archives.json`
-- `note_archives.json`
-- `source_event_references.json`
-- `source_bout_references.json`
-- `source_video_references.json`
-- `metadata.json`
+- `scripts/build_json.py`: 中核テーブルと関係テーブルの JSON を生成（`articles.json`、`article_links.json`、`promotions.json`、`events.json`、`bouts.json`、`bout_participants.json`、`fighters.json`、`titles.json`、`title_reigns.json`、`fighter_snapshots.json`、`videos.json`、`video_links.json`、`aliases.json`、`source_documents.json`、`source_document_bodies.json`、`source_mentions.json`、`youtube_archives.json`、`note_archives.json`、`source_event_references.json`、`source_bout_references.json`、`source_video_references.json`、`metadata.json`）。
+- `scripts/build_numbers_json.py`: Numbers 由来の `numbers_fighters.json`、`numbers_name_matches.json`、`numbers_fight_records.json` を生成。
+- `scripts/build_official_json.py`: 公式サイト由来の `official_players.json`、`official_tournaments.json`、`official_matches.json`、`official_history.json` を生成。
+- `scripts/build_official_pages_json.py`: 公式サイトの記事・固定ページから `official_news.json`、`official_pages.json` を生成。
 
-### `scripts/migrate_csv_schema.py`
+JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 API です。全テーブルをまとめた `database.json` はありません。
 
-旧 CSV の多値列や埋め込み参加者列を、現在の relational-style CSV に移すための移行スクリプトです。通常作業で毎回実行するものではありません。新しいスキーマ移行を行う場合は、このスクリプトを参考に、事実データを捨てない移行手順を作ります。
+### CSV 生成（generate_*）
 
-### `scripts/validate_json.py`
+派生・静的設定から `data-src/*.csv` を再生成します。`make regenerate-csvs` が stage1 / stage2 に分けて実行します（後述の「data-src CSV の出自」を参照）。
 
-生成された JSON の構造と参照関係を検証します。
+- `scripts/generate_articles.py`: `archives/note.csv` から `articles.csv` を生成（stage1）。
+- `scripts/generate_official_csvs.py`: `tmp/arakaku-site/data/*.json` から `official_players.csv`、`official_tournaments.csv`、`official_matches.csv`、`official_history.csv` を生成（stage1）。
+- `scripts/generate_promotions.py`: 固定知識のリテラルから `promotions.csv` を生成（stage2）。
+- `scripts/generate_titles.py`: 固定知識のリテラルから `titles.csv` を生成（stage2）。
+- `scripts/generate_aliases.py`: `numbers_name_matches.csv`・`fighters.csv`・静的設定から `aliases.csv` を生成（stage2）。
+- `scripts/generate_video_links.py`: `bouts.csv` / `bout_participants.csv` / `videos.csv` / `fighters.csv` から `video_links.csv` を生成（stage2）。
+- `scripts/generate_article_links.py`: 構造化データと note 本文から `article_links.csv` を生成（stage2）。動画リンクは生成しません。
+- `scripts/generate_official_pages_csv.py`: `tmp/arakaku-site` から `official_news.csv`、`official_pages.csv` を生成（stage2）。
 
-例:
+### 行順の安定化
 
-- unknown event reference
-- unknown fighter reference
-- duplicate id
-- invalid video link
-- missing required field
-- duplicate source id
-- duplicate mention id
+- `scripts/reorder_data.py`: 生成・編集後の `data-src/*.csv` を安定した行順に並べ直し、差分を読みやすくします。
 
-### `scripts/cache_note_html.py`
+### ソースキャッシュ取得
 
-`data-src/articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。
+- `scripts/cache_note_html.py`: `articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。404・削除済みは警告扱いで止めません。
+- `scripts/cache_youtube_info.py`: `videos.csv` の YouTube URL から `yt-dlp` で `.info.json` を `tmp/youtube-info/` にキャッシュします。動画本体は取得しません。
+- `scripts/download_official_data.sh`: 団体公式サイト（`kobayashi856/arakaku-site`）のデータを `tmp/arakaku-site/` に取得します。
 
-404 や削除済み記事は、全体の処理を止めずに警告扱いにします。
+### アーカイブメタデータ
 
-### `scripts/cache_youtube_info.py`
+- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-info/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。archive CSV は再取得できなくなった場合に備えてコミット対象です。
 
-`data-src/videos.csv` の YouTube URL から、`yt-dlp` を使って `.info.json` を `tmp/youtube-info/` にキャッシュします。
+### 本文DB生成
 
-動画本体はダウンロードしません。
+- `scripts/build_source_documents.py`: `tmp/note-html/` と `tmp/youtube-info/` を読み、`source_documents.csv` と `source_mentions.csv` を生成します。本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
 
-`yt-dlp` の警告が出ても、`.info.json` が生成できている場合は本文DB生成に進めます。
+### 記事クロール
 
-### `scripts/build_source_documents.py`
+- `scripts/crawl_note_articles.py`: note の RSS / API / HTML から記事一覧を探索し、`articles.csv` 追加候補を探します。
 
-`tmp/note-html/` と `tmp/youtube-info/` を読み、以下を生成します。
+### Numbers 取り込み
 
-- `data-src/source_documents.csv`
-- `data-src/source_mentions.csv`
+- `scripts/extract_numbers.py`: `data-raw/アラカク選手名鑑.numbers` を読み、`numbers_fighters.csv`・`numbers_name_matches.csv`・`numbers_fight_records.csv` を生成します。既存 `fighters.csv` と同名照合し、`numbers_name_matches.csv` に既存 `fighter_id` を記録します。試合ペア化・突合・勝敗矛盾検出は viewer 側 JavaScript の方針です。
 
-note本文・YouTube概要欄を本文DB化し、本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
+### 結果候補の抽出・反映
 
-### `scripts/archive_metadata.py`
+- `scripts/extract_note_structured_results.py`: note 本文から構造化された試合結果候補を抽出します。
+- `scripts/make_structured_result_patch_candidates.py`: 構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
+- `scripts/make_source_mention_result_candidates.py`: `source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
+- `scripts/make_source_reference_candidates.py`: note本文と YouTube概要欄から、`review/source_event_reference_candidates.csv`・`review/source_bout_reference_candidates.csv`・`review/source_video_reference_candidates.csv` を作ります。確認支援用の候補です。
+- `scripts/apply_structured_result_patches.py`: レビュー済みの structured result patch を `bouts.csv` に反映します。反映前に必ず候補CSVを確認してください。
 
-`tmp/note-html/` と `tmp/youtube-info/` を読み、外部メタデータを以下に保存します。
+### YouTube 取り込み（補助）
 
-- `data-src/archives/youtube.csv`
-- `data-src/archives/note.csv`
+- `scripts/import_youtube_videos.py`: YouTube動画情報を `videos.csv` へ取り込みます。
+- `scripts/import_youtube_descriptions.py`: YouTube概要欄を解析します。現在の本文DB化の中心は `build_source_documents.py` です。
 
-キャッシュファイルそのものはコミットしませんが、archive CSV は再取得できなくなった場合に備えた永続メタデータとしてコミット対象です。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。
+### 検証
 
-### `scripts/extract_numbers.py`
-
-`data-raw/アラカク選手名鑑.numbers` を読み、Numbers 由来のCSVを生成します。
-
-現在は以下の3CSVを生成します。
-
-- `data-src/numbers_fighters.csv`
-- `data-src/numbers_name_matches.csv`
-- `data-src/numbers_fight_records.csv`
-
-既存 `fighters.csv` の選手名と照合し、同名選手がいる場合は `numbers_name_matches.csv` に既存 `fighter_id` を記録します。試合ペア化・既存DB突合・勝敗矛盾の検出は viewer 側の JavaScript で行う方針です。
-
-### `scripts/crawl_note_articles.py`
-
-note の RSS / API / HTML などから記事一覧を探索し、`articles.csv` に追加するためのスクリプトです。
-
-### `scripts/extract_note_result_candidates.py`
-
-note 本文から試合結果っぽい行を抽出します。
-
-### `scripts/extract_note_structured_results.py`
-
-note 本文から、より構造化された試合結果候補を抽出します。
-
-### `scripts/make_structured_result_patch_candidates.py`
-
-構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
-
-### `scripts/make_source_mention_result_candidates.py`
-
-`source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
-
-### `scripts/make_source_reference_candidates.py`
-
-note本文と YouTube概要欄から、大会・試合・動画ごとの関連出典候補CSVを作ります。
-
-生成先:
-
-- `review/source_event_reference_candidates.csv`
-- `review/source_bout_reference_candidates.csv`
-- `review/source_video_reference_candidates.csv`
-
-これらは確認支援用の候補です。勝敗や結果を確定する根拠として使う前に、本文文脈を必ず確認してください。
-
-### `scripts/apply_structured_result_patches.py`
-
-レビュー済みの structured result patch を `bouts.csv` に反映します。
-
-反映前に必ず候補CSVを確認してください。
-
-### `scripts/import_youtube_videos.py`
-
-YouTube動画情報を `videos.csv` へ取り込むためのスクリプトです。
-
-### `scripts/import_youtube_descriptions.py`
-
-YouTube概要欄を解析するためのスクリプトです。
-
-過去の抽出・検証用に残しています。現在は `build_source_documents.py` のほうが本文DB化の中心です。
+- `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
+- `scripts/validate_json.js`: Node 側から生成 JSON を検証します。`make validate` が両方を実行します。
 
 ---
 
 ## Makefile
 
-主なコマンド:
+### 中核ビルド
 
 ```bash
-make build
-make validate
-make test
-make check
-make clean-generated
+make build      # build_json + build_numbers_json + build_official_json + build_official_pages_json
+make validate   # validate_json.py + validate_json.js
+make test       # pytest -q
+make check      # build → validate → test
 ```
 
-本文キャッシュと本文DB生成:
+- `make build`: 4 本の build スクリプトで CSV から `docs/data/*.json` を生成します。
+- `make validate`: Python と Node 両方で生成 JSON を検証します。
+- `make test`: pytest を実行します。
+- `make check`: build → validate → test を順に実行します。
+
+### クリーン
 
 ```bash
-make cache-note-html
-make cache-youtube-info
-make cache-sources
-make archive-metadata
-make build-sources
-make refresh-sources
+make clean-generated       # docs/data/*.json を削除し .gitkeep を戻す
+make clean-stage1-csvs     # stage1 生成 CSV を削除
+make clean-stage2-csvs     # stage2 生成 CSV を削除
+make clean-generated-csvs  # stage1 + stage2 生成 CSV をまとめて削除
 ```
 
-### `make build`
+`clean-stage1-csvs` / `clean-stage2-csvs` が削除する CSV は、そのまま「どの CSV が生成物か」の典拠です（後述の「data-src CSV の出自」を参照）。canonical な手編集 CSV は削除しません。
 
-CSV から JSON を生成します。
+### CSV 再生成（再現性）
 
-### `make validate`
-
-生成された JSON を検証します。
-
-### `make test`
-
-pytest を実行します。
-
-### `make archive-metadata`
-
-`tmp/note-html/` と `tmp/youtube-info/` のキャッシュから `data-src/archives/*.csv` を再生成します。
-
-### `make check`
-
-以下を順に実行します。
-
-```text
-build → validate → pytest
+```bash
+make generate-stage1   # 生データ取り込み（Numbers + crawl キャッシュ → base CSV）
+make generate-stage2   # 派生（stage1 CSV → 派生 CSV）
+make regenerate-csvs   # generate-stage1 → generate-stage2
+make rebuild           # clean-generated-csvs + clean-generated → regenerate-csvs → check
+make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2 → check
 ```
 
-### `make clean-generated`
+ローカルに `tmp/note-html/`、`tmp/youtube-info/`、`data-raw/アラカク選手名鑑.numbers`、`tmp/arakaku-site/` がある前提です。canonical CSV は git の内容を使います。
 
-生成済みの `docs/data/*.json` を削除し、`docs/data/.gitkeep` を戻します。
+- `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs` → `reorder_data`。
+- `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv`。
+- `rebuild`: 生成 CSV と生成 JSON を全削除してから全再生成し、check まで通します。
+- `rebuild-stage2`: stage2 生成 CSV だけ作り直して check します（stage1 を作り直さない高速ループ）。
 
-### `make refresh-sources`
+### ソースクロール・補助
 
-出典本文のキャッシュ取得、archive CSV 生成、本文DB生成、通常 check をまとめて実行します。
+```bash
+make cache-note-html         # note 本文 HTML を tmp/note-html/ に取得
+make cache-youtube-info      # yt-dlp で .info.json を tmp/youtube-info/ に取得
+make download-official-data  # 公式サイトデータを tmp/arakaku-site/ に取得
+make cache-sources           # 上記キャッシュ取得をまとめて実行
+make archive-metadata        # キャッシュから data-src/archives/*.csv を再生成
+make build-sources           # 本文DB（source_documents/source_mentions）を生成
+make reorder-data            # data-src/*.csv を安定行順に並べ直す
+make refresh-sources         # cache-sources → archive-metadata → build-sources → reorder-data → check
+make extract-numbers         # Numbers から numbers_*.csv を生成
+make source-mention-result-candidates  # 言及から結果候補CSVを作る
+make source-reference-candidates       # 出典参照候補CSVを作る
+```
 
 ---
 
@@ -833,24 +797,13 @@ https://takano32.github.io/arakaku/
 
 ## 現在のデータ規模
 
-目安:
+行数は更新のたびに変わるため、README には固定値を書きません。現在の規模は以下で確認してください。
 
-- `articles.csv`: 122 rows
-- `events.csv`: 54 rows
-- `bouts.csv`: 270 rows
-- `bout_participants.csv`: 540 rows
-- `fighters.csv`: 146 rows
-- `titles.csv`: 16 rows
-- `title_reigns.csv`: 68 rows
-- `videos.csv`: 360 rows
-- `article_links.csv`: 244 rows
-- `video_links.csv`: 1076 rows
-- `source_documents.csv`: 479 rows
-- `source_mentions.csv`: 1794 rows
-- `archives/youtube.csv`: 360 rows
-- `archives/note.csv`: 120 rows
+```bash
+wc -l data-src/*.csv data-src/archives/*.csv
+```
 
-件数は今後増える可能性があります。
+各 CSV はヘッダ 1 行を含むため、レコード数は行数から 1 を引いた値です。
 
 ---
 

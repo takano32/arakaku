@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import csv
 import re
 from difflib import SequenceMatcher
-from pathlib import Path
 
+from arakaku.mapping import build_bout_fighter_names
+from arakaku.utils import ROOT, read_csv, write_csv
 
-ROOT = Path(__file__).resolve().parents[1]
 BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
 PARTICIPANTS_CSV = ROOT / "data-src" / "bout_participants.csv"
 STRUCTURED_CSV = ROOT / "review" / "note_structured_results.csv"
@@ -76,31 +75,10 @@ def result_quality(row: dict[str, str]) -> tuple[bool, bool, bool]:
     return has_winner, has_method, has_time
 
 
-def build_bout_fighter_names(participants: list[dict[str, str]]) -> dict[str, tuple[str, str]]:
-    """Return mapping of bout_id → (red_name, blue_name)."""
-    by_bout: dict[str, dict[str, str]] = {}
-    for p in participants:
-        bid = p.get("bout_id", "")
-        side = p.get("side", "")
-        name = p.get("fighter_name", "")
-        if bid and side in ("red", "blue") and name:
-            by_bout.setdefault(bid, {})
-            by_bout[bid][side] = name
-    return {
-        bid: (sides.get("red", ""), sides.get("blue", ""))
-        for bid, sides in by_bout.items()
-    }
-
-
 def main() -> int:
-    with BOUTS_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        bouts = list(csv.DictReader(f))
-
-    with PARTICIPANTS_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        participants = list(csv.DictReader(f))
-
-    with STRUCTURED_CSV.open("r", encoding="utf-8-sig", newline="") as f:
-        structured = list(csv.DictReader(f))
+    bouts = read_csv(BOUTS_CSV)
+    participants = read_csv(PARTICIPANTS_CSV)
+    structured = read_csv(STRUCTURED_CSV)
 
     bout_names = build_bout_fighter_names(participants)
 
@@ -212,8 +190,6 @@ def main() -> int:
                 }
             )
 
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-
     fieldnames = [
         "apply",
         "confidence",
@@ -241,12 +217,7 @@ def main() -> int:
         "source_text",
     ]
 
-    with OUT_CSV.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    print(f"[info] {OUT_CSV}")
+    write_csv(OUT_CSV, fieldnames, rows)
     print(f"[rows] {len(rows)}")
     print("[next] Review the CSV and set apply=true for trusted rows.")
 

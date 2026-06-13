@@ -27,6 +27,15 @@ export class DataEnricher {
   #officialPlayerNormIndex;
   #officialTournamentIndex;
 
+  // repo データ更新後にキャッシュ済みインデックスを破棄して再計算させる
+  reset() {
+    this.#nameMatchIndex = null;
+    this.#fightRecordIndex = null;
+    this.#officialPlayerIndex = null;
+    this.#officialPlayerNormIndex = null;
+    this.#officialTournamentIndex = null;
+  }
+
   // fighter_id → numbersNameMatch (matched or candidate)
   get #nameMatches() {
     if (this.#nameMatchIndex) return this.#nameMatchIndex;

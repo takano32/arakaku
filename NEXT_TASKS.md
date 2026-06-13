@@ -36,7 +36,7 @@ make clean-generated
 - viewer JS の分割
 - relational-style CSV schema への移行
 - `bout_participants.csv` / `title_reigns.csv` / `article_links.csv` の追加
-- `database.json` と relationship JSON の生成
+- `database.json` と relationship JSON の生成（`database.json` はその後廃止し、現在はテーブルごとの JSON のみを出力）
 - GitHub Actions と Codex/agent handoff 文書の整備
 - `アラカク選手名鑑.numbers` から Numbers 由来三分割CSVを生成
 - `data-src/archives/youtube.csv` / `data-src/archives/note.csv` を cache metadata archive として整備
@@ -66,16 +66,16 @@ make clean-generated
 
 ### 背景
 
-現在 `display_name` 一致で 77 人中 71 人がマッチ。残り 6 人は名前表記の差異でマッチしていない。
+`data-src/official_players.csv` は 106 人。`data-enricher.js` は `display_name` 完全一致を優先し、取れない場合は中黒・空白・ピリオド・全半角差を吸収する正規化キー（`normalizeFighterName`）でフォールバック突き合わせする。現状この方式で 106 人中 99 人が `fighters.csv` の `display_name` とマッチし、残り 7 人（例: きくちぴあのせん、トワックデビル、のこぎりやまだ、ブレイブ、ヤック・タイアット、ラミーロ・コート、ループデビル）は表記差でマッチしていない。
 
 ### 案
 
-- `aliases.csv` を活用して官公式名から canonical fighter_id へのマッピングを追加
-- または `data-enricher.js` の `#officialPlayerFor()` に表記揺れ正規化を追加
+- `aliases.csv` を活用して公式名から canonical fighter_id へのマッピングを追加
+- または `data-enricher.js` の正規化（`normalizeFighterName`）をさらに強化
 
 ### 完了条件
 
-- マッチ率が 77/77 または残り 6 人の不一致理由が文書化されている
+- マッチ率が 106/106、または残り 7 人の不一致理由が文書化されている
 
 ---
 
@@ -99,36 +99,6 @@ make clean-generated
 ### 完了条件
 
 - 上記項目を目視で確認済み
-
----
-
-## P1: source_documents JSON 軽量化
-
-### 背景
-
-`source_documents.json` は約 1.1MB あります。  
-今後本文が増えると viewer の初期ロードが重くなります。
-
-### 案
-
-```text
-source_document_index.json
-source_document_bodies.json
-```
-
-または:
-
-```text
-source_documents_preview.json
-source_documents_full.json
-```
-
-### 完了条件
-
-- 初期ロードに全文を載せない
-- 出典本文 view では必要時に全文を開ける
-- 既存の `▶ 詳細` / `▼ 詳細` 展開を壊さない
-- Pages で正常動作する
 
 ---
 

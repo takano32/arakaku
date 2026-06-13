@@ -2,7 +2,7 @@
 """Generate promotions.csv from static config (promotion rules are fixed knowledge)."""
 from __future__ import annotations
 
-from arakaku_utils import DATA_SRC, write_csv
+from arakaku.utils import DATA_SRC, write_csv
 
 OUTPUT = DATA_SRC / "promotions.csv"
 FIELDS = [

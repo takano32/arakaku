@@ -4,7 +4,8 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-from arakaku_utils import DATA_SRC, REVIEW, read_csv, write_csv
+from arakaku.textparse import find_method, infer_time, normalize_digits
+from arakaku.utils import DATA_SRC, REVIEW, line_number, read_csv, write_csv
 
 
 SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
@@ -21,29 +22,7 @@ METHOD_PATTERNS = [
 ]
 
 ROUND_RE = re.compile(r"([1-5１-５])\s*(?:R|Ｒ|ラウンド)")
-TIME_RE = re.compile(
-    r"([0-9０-９]+)\s*分\s*([0-9０-９]+)\s*秒|([0-9０-９]+):([0-9０-９]{2})"
-)
 RESULT_WORD_RE = re.compile(r"勝ち|勝利|防衛|王座獲得|統一|KO|ＫＯ|TKO|ＴＫＯ|一本|判定")
-
-
-def normalize_digits(value: str) -> str:
-    return value.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
-
-
-def line_number(row: dict[str, str]) -> int:
-    try:
-        return int(row.get("line_number") or 0)
-    except ValueError:
-        return 0
-
-
-def infer_method(text: str) -> tuple[str, str]:
-    for method, pattern in METHOD_PATTERNS:
-        match = pattern.search(text)
-        if match:
-            return method, match.group(0)
-    return "", ""
 
 
 def infer_round(text: str) -> str:
@@ -51,24 +30,6 @@ def infer_round(text: str) -> str:
     if not match:
         return ""
     return f"{normalize_digits(match.group(1))}R"
-
-
-def infer_time(text: str) -> str:
-    match = TIME_RE.search(text)
-    if not match:
-        return ""
-
-    if match.group(1) and match.group(2):
-        minute = normalize_digits(match.group(1))
-        second = normalize_digits(match.group(2))
-        return f"{minute}分{second}秒"
-
-    if match.group(3) and match.group(4):
-        minute = normalize_digits(match.group(3))
-        second = normalize_digits(match.group(4))
-        return f"{minute}分{second}秒"
-
-    return ""
 
 
 def nearest_hint(
@@ -119,7 +80,7 @@ def build_rows(source_mentions: list[dict[str, str]]) -> list[dict[str, str]]:
     for index, mention in enumerate(result_mentions, start=1):
         source_rows = by_source.get(mention.get("source_id", ""), [])
         text = " ".join([mention.get("matched_text", ""), mention.get("context", "")])
-        method_hint, method_raw = infer_method(text)
+        method_hint, method_raw = find_method(text, METHOD_PATTERNS)
         round_hint = infer_round(text)
         time_hint = infer_time(text)
         event_hint = nearest_hint(source_rows, mention, "event")

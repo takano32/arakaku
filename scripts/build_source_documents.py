@@ -7,7 +7,8 @@ import json
 import re
 from datetime import datetime, timezone
 
-from arakaku_utils import DATA_SRC, ROOT, read_csv, safe_slug, write_csv
+from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
+from arakaku.utils import DATA_SRC, ROOT, note_cache_name, read_csv, write_csv
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"
@@ -51,13 +52,10 @@ MENTION_FIELDS = [
 ]
 
 
-VS_RE = re.compile(r"(?i)\bvs\.?\b|ＶＳ|ｖｓ|対")
 RESULT_RE = re.compile(
     r"(KO|TKO|一本|判定|ドロー|ノーコンテスト|NC|失格|DQ|勝利|勝ち|敗北|防衛|王座|タイトル)",
     re.IGNORECASE,
 )
-NOTE_URL_RE = re.compile(r"https?://note\.com/[^\s)）]+")
-YOUTUBE_URL_RE = re.compile(r"https?://(?:www\.)?(?:youtube\.com|youtu\.be)/[^\s)）]+")
 EVENT_RE = re.compile(
     r"(ターゲット\s*No\.?\s*[0-9０-９]+|エンペラー\s*No\.?\s*[0-9０-９]+|マウンテン[・\- ]?ヒーローズ\s*No\.?\s*[0-9０-９]+|マウンテンヒーローズ\s*No\.?\s*[0-9０-９]+|MAXバウト|エリートスピリッツ|アラカクライブ)",
     re.IGNORECASE,
@@ -92,11 +90,6 @@ def normalize_text(text: str) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def cache_name_for_article(article_id: str, url: str) -> str:
-    raw = article_id or url
-    return f"{safe_slug(raw)}.html"
 
 
 def classify_mention(line: str) -> tuple[str, str, str]:
@@ -179,7 +172,7 @@ def build_note_documents() -> list[dict[str, str]]:
         if "note.com" not in url:
             continue
 
-        html_path = NOTE_HTML_DIR / cache_name_for_article(article_id, url)
+        html_path = NOTE_HTML_DIR / note_cache_name(article_id, url)
 
         if not html_path.exists():
             continue

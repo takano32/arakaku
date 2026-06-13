@@ -6,7 +6,6 @@ Python scripts in this directory handle data processing, validation, and extract
 
 ### 1. Robustness
 - Scripts should handle missing or malformed data gracefully.
-- Use `tqdm` for long-running processes to provide feedback.
 - Log errors and warnings clearly; do not fail silently.
 
 ### 2. No Side Effects on Canonical Data (mostly)
@@ -18,7 +17,7 @@ Python scripts in this directory handle data processing, validation, and extract
 - Archive CSVs preserve external metadata for review/display. Do not use archive rows to confirm bout results or fighter identities without a separate review step.
 - `download_official_data.sh` downloads the full `src/` tree from `kobayashi856/arakaku-site` into `tmp/arakaku-site/`. Run via `make download-official-data` (included in `make cache-sources`).
 - `generate_official_csvs.py` reads `tmp/arakaku-site/data/*.json` and writes `data-src/official_*.csv`. This is a stage-1 script (raw ingestion from `tmp/`). Do not derive values from other CSVs here.
-- `build_official_json.py` reads `data-src/official_*.csv` and writes `docs/data/official_players.json` and `docs/data/official_tournaments.json`. Run via `make build-official`. **IMPORTANT: never add official data enrichment to `build_json.py`** — all enrichment happens client-side in `data-enricher.js`.
+- `build_official_json.py` reads `data-src/official_*.csv` and writes `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` (`build_official_pages_json.py` writes `official_news.json` / `official_pages.json`). Run via `make build`. **IMPORTANT: never add official data enrichment to `build_json.py`** — all enrichment happens client-side in `data-enricher.js`.
 
 ### 3. Verification
 - All scripts contributing to the build should be compatible with `make check`.
@@ -26,8 +25,9 @@ Python scripts in this directory handle data processing, validation, and extract
 
 ## Key Scripts
 
+- `arakaku/`: Shared package — `utils.py` (CSV/JSON I/O, field transforms, `EntityMapper`), `textparse.py` (text-parsing patterns/functions shared verbatim across scripts; vocabulary-divergent patterns stay local to each script), `mapping.py` (entity schema builders), `validation.py` (enum constants).
 - `build_json.py`: The core build script. Rebuilds all JSON artifacts. **Do not add enrichment logic here.**
-- `build_official_json.py`: Builds `official_players.json` and `official_tournaments.json` from `data-src/official_*.csv`. Run via `make build-official`.
+- `build_official_json.py`: Builds `official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` from `data-src/official_*.csv`. Run via `make build`.
 - `validate_json.py`: Ensures structural integrity and referential correctness.
 - `extract_numbers.py`: Exports `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv` from the Numbers file.
 - `download_official_data.sh`: Downloads `src/` tree from official site repo into `tmp/arakaku-site/`.

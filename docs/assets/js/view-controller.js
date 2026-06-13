@@ -1,5 +1,5 @@
 import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
-import { ADMIN_TABS, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
+import { ADMIN_TABS, DATA_FILES, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 import { TAB_FILTERS, filterButtons } from "./filters.js";
 
 const REQUIRED_TAB_DATA_KEYS = {
@@ -50,6 +50,34 @@ export class ViewController {
     `
       )
       .join("");
+  }
+
+  renderDataLoadErrors() {
+    const container = document.querySelector("#data-load-errors");
+    if (!container) return;
+
+    const errors = this.ctx.state.dataLoadErrors ?? {};
+    const entries = Object.entries(errors);
+    container.hidden = entries.length === 0;
+    if (entries.length === 0) {
+      container.innerHTML = "";
+      return;
+    }
+
+    const items = entries
+      .map(([key, message]) => {
+        const path = DATA_FILES[key] ?? key;
+        const fileName = path.split("/").pop();
+        return `<li>${escapeHtml(fileName)} (${escapeHtml(message)})</li>`;
+      })
+      .join("");
+
+    container.innerHTML = `
+      <article class="card data-load-error-card" role="alert">
+        <h2>データ読み込み失敗</h2>
+        <ul>${items}</ul>
+      </article>
+    `;
   }
 
   renderSelectOptions(options, selectedValue, defaultLabel, labelForOption = (value) => value) {
@@ -207,6 +235,7 @@ export class ViewController {
     if (!this.ctx.hasData) return;
 
     this.renderSummary();
+    this.renderDataLoadErrors();
     this.renderViewModeSwitch();
     this.renderTabs();
     this.renderMentionFilters();

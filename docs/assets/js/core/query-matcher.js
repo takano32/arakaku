@@ -3,17 +3,18 @@ export class QueryMatcher {
   /** @param {import("./view-context.js").ViewContext} ctx */
   constructor(ctx) {
     this.ctx = ctx;
-    this.#repoRef = null;
+    this.#repoRevision = null;
     this.#cache = new Map();
   }
 
-  #repoRef;
+  #repoRevision;
   #cache;
 
-  /** repo が切り替わったらキャッシュをクリアし、テキストを1回だけ計算して返す */
+  /** repo のデータが更新されたら (revision が進んだら) キャッシュをクリアし、テキストを1回だけ計算して返す */
   #cachedText(key, buildFn) {
-    if (this.ctx.repo !== this.#repoRef) {
-      this.#repoRef = this.ctx.repo;
+    const revision = this.ctx.repo?.revision ?? null;
+    if (revision !== this.#repoRevision) {
+      this.#repoRevision = revision;
       this.#cache.clear();
     }
     if (!this.#cache.has(key)) {

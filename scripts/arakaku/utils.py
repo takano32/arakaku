@@ -36,6 +36,12 @@ def write_json(path: Path, data: Any) -> None:
         f.write("\n")
     print(f"[info] {path}")
 
+def build_json_files(builders: dict[str, Callable[[], Any]], done_message: str) -> None:
+    DOCS_DATA.mkdir(parents=True, exist_ok=True)
+    for filename, build in builders.items():
+        write_json(DOCS_DATA / filename, build())
+    print(done_message)
+
 def load_json(filename: str, default: Any = None) -> Any:
     p = DOCS_DATA / filename
     if not p.exists():
@@ -124,6 +130,18 @@ def compact_text(value: str, limit: int = 240) -> str:
 
 def safe_slug(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_")
+
+def note_cache_name(article_id: str, url: str) -> str:
+    # tmp/note-html/ のキャッシュファイル名契約。writer (cache_note_html.py) と
+    # reader (build_source_documents.py) で必ず同じ名前になるようここで一元管理する。
+    raw = article_id or url
+    return f"{safe_slug(raw)}.html"
+
+def line_number(row: CsvRow) -> int:
+    try:
+        return int(row.get("line_number") or 0)
+    except ValueError:
+        return 0
 
 def get_jst_now_iso() -> str:
     return datetime.now(JST).isoformat(timespec="seconds")

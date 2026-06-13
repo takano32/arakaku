@@ -56,7 +56,7 @@ Download:
 make download-official-data   # → tmp/arakaku-site/ (including public/)
 ```
 
-Stage 1 CSVs (from `tmp/arakaku-site/src/data/*.json`):
+Stage 1 CSVs (`scripts/generate_official_csvs.py`, from `tmp/arakaku-site/data/*.json`):
 
 ```text
 data-src/official_players.csv
@@ -143,7 +143,9 @@ source-tier enrichment, sorting, and the duplicate-fighter merge.
 
 ## GitHub Actions
 
-Both `test.yml` and `pages.yml` use `make build`. Default branch: `master`.
+`test.yml` runs a single `make check` step (build → validate → test).
+`pages.yml` runs `make build` then `make validate` before uploading `docs/`.
+Default branch: `master`. See `arakaku-actions-ops` for action versions and deployment.
 
 ---
 

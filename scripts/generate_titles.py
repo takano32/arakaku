@@ -2,7 +2,7 @@
 """Generate titles.csv from static config (championship titles per promotion)."""
 from __future__ import annotations
 
-from arakaku_utils import DATA_SRC, write_csv
+from arakaku.utils import DATA_SRC, write_csv
 
 OUTPUT = DATA_SRC / "titles.csv"
 FIELDS = ["title_id", "promotion_id", "division"]

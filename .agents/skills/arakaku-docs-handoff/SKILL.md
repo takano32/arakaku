@@ -79,20 +79,15 @@ When editing docs:
 
 ## Current stable facts to include
 
-Current expected data scale:
+Data scale:
 
-```text
-source_documents.csv: 479 rows
-source_mentions.csv: 1794 rows
-archives/youtube.csv: 360 rows
-archives/note.csv: 120 rows
-numbers_fighters.csv: 101 rows
-numbers_name_matches.csv: 101 rows
-numbers_fight_records.csv: 543 rows
-official_players.csv: 77 rows
-official_news.csv: 2 rows
-official_pages.csv: 2 rows
+行数スナップショットはドキュメントに固定値で書かないでください（更新のたびに陳腐化します）。README と同じく、現在の規模はその場で確認します。
+
+```bash
+wc -l data-src/*.csv data-src/archives/*.csv
 ```
+
+各 CSV はヘッダ 1 行を含むため、レコード数は行数から 1 を引いた値です（本文に改行を含む CSV は `wc -l` がレコード数と一致しない点に注意）。
 
 Current source document types:
 

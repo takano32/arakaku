@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
-from arakaku_utils import DATA_SRC, REVIEW, read_csv, write_csv
+from arakaku.textparse import find_method, infer_time, normalize_digits
+from arakaku.utils import DATA_SRC, REVIEW, read_csv, write_csv
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"
@@ -28,17 +28,12 @@ METHOD_PATTERNS = [
 ]
 
 ROUND_RE = re.compile(r"([1-5１-５])\s*(?:R|Ｒ|ラウンド)(?:終了)?")
-TIME_RE = re.compile(r"([0-9０-９]+)\s*分\s*([0-9０-９]+)\s*秒|([0-9０-９]+):([0-9０-９]{2})")
 
 WIN_MARKS = {"○", "◯"}
 LOSS_MARKS = {"●"}
 FIGHTER_MARKS = WIN_MARKS | LOSS_MARKS
 
 FOOTER_MARKERS = {"ダウンロード", "copy", "いいなと思ったら", "noteプレミアム", "ヘルプ", "フィードバック", "特商法"}
-
-
-def normalize_digits(value: str) -> str:
-    return value.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
 
 
 def infer_event_id(text: str, article: dict[str, str]) -> str:
@@ -94,14 +89,6 @@ def infer_bout_type(text: str) -> str:
     return ""
 
 
-def infer_method(text: str) -> tuple[str, str]:
-    for method, pattern in METHOD_PATTERNS:
-        match = pattern.search(text)
-        if match:
-            return method, match.group(0)
-    return "", ""
-
-
 def infer_round(text: str) -> str:
     match = ROUND_RE.search(text)
     if not match:
@@ -109,17 +96,6 @@ def infer_round(text: str) -> str:
     raw = normalize_digits(match.group(1))
     suffix = "R終了" if "終了" in match.group(0) else "R"
     return f"{raw}{suffix}"
-
-
-def infer_time(text: str) -> str:
-    match = TIME_RE.search(text)
-    if not match:
-        return ""
-    if match.group(1) and match.group(2):
-        return f"{normalize_digits(match.group(1))}分{normalize_digits(match.group(2))}秒"
-    if match.group(3) and match.group(4):
-        return f"{normalize_digits(match.group(3))}分{normalize_digits(match.group(4))}秒"
-    return ""
 
 
 def clean_fighter_name(raw: str) -> str:
@@ -146,7 +122,7 @@ def _make_row(
     source_text: str,
     confidence: str,
 ) -> dict[str, str]:
-    method, method_raw = infer_method(result_text)
+    method, method_raw = find_method(result_text, METHOD_PATTERNS)
     round_value = infer_round(result_text)
     time_value = infer_time(result_text)
 
@@ -271,7 +247,6 @@ def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, 
                     k += 1
 
                 if k < n and filtered[k] and filtered[k][0] in FIGHTER_MARKS:
-                    name2_mark = filtered[k][0]
                     name2 = clean_fighter_name(filtered[k][1:])
 
                     winner = name1 if name1_mark in WIN_MARKS else name2

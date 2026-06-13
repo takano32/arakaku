@@ -8,11 +8,17 @@ import {
   videoReliability,
 } from "./reliability.js";
 
+// invalidate() のたびに進む世代番号。インスタンスを作り直しても重複しないよう
+// モジュールレベルで単調増加させる。外部キャッシュ (tab-registry, query-matcher)
+// は repo の同一性ではなく revision の変化でデータ更新を検知する。
+let nextRevision = 1;
+
 /** Repository: JSON データへの参照・検索を集約。Rich Data への変換とキャッシュを管理。 */
 export class DataRepository extends BaseRepository {
   constructor(data) {
     super(data);
     this.enricher = new DataEnricher(this);
+    this.revision = nextRevision++;
     this.#richEvents = null;
     this.#richPromotions = null;
     this.#richFighters = null;
@@ -30,6 +36,7 @@ export class DataRepository extends BaseRepository {
     this.#richSourceEventReferences = null;
     this.#richSourceBoutReferences = null;
     this.#richSourceVideoReferences = null;
+    this.#sourceDocLookup = null;
   }
 
   #richEvents;
@@ -49,6 +56,36 @@ export class DataRepository extends BaseRepository {
   #richSourceEventReferences;
   #richSourceBoutReferences;
   #richSourceVideoReferences;
+  #sourceDocLookup;
+
+  /**
+   * this.data の中身が更新された後に全キャッシュを破棄する。
+   * data オブジェクトの同一性は維持されるため、Repository を作り直さずに
+   * Rich 変換・インデックス・enricher のキャッシュだけを無効化できる。
+   */
+  invalidate() {
+    this.revision = nextRevision++;
+    this.#richEvents = null;
+    this.#richPromotions = null;
+    this.#richFighters = null;
+    this.#fighterAliasIndex = null;
+    this.#richBouts = null;
+    this.#richVideos = null;
+    this.#richArticles = null;
+    this.#richTitles = null;
+    this.#sourceDocuments = null;
+    this.#richFighterSnapshots = null;
+    this.#richBoutParticipants = null;
+    this.#richVideoLinks = null;
+    this.#richArticleLinks = null;
+    this.#richSourceMentions = null;
+    this.#richSourceEventReferences = null;
+    this.#richSourceBoutReferences = null;
+    this.#richSourceVideoReferences = null;
+    this.#sourceDocLookup = null;
+    this.indexes.clear();
+    this.enricher.reset();
+  }
 
   // Collection Accessors (Overriding with Rich and Sorted logic)
   get events() { return [...super.events].reverse(); }
@@ -98,9 +135,15 @@ export class DataRepository extends BaseRepository {
     }
 
     // Build numbers order: numbers_fighter_id sequence → fighter_id rank
+    const matchByNumbersId = new Map();
+    for (const m of this.numbersNameMatches) {
+      if (m.numbers_fighter_id && !matchByNumbersId.has(m.numbers_fighter_id)) {
+        matchByNumbersId.set(m.numbers_fighter_id, m);
+      }
+    }
     const numbersOrder = new Map();
     for (const nf of this.numbersFighters) {
-      const match = this.numbersNameMatches.find(m => m.numbers_fighter_id === nf.numbers_fighter_id);
+      const match = matchByNumbersId.get(nf.numbers_fighter_id);
       const fid = match?.matched_fighter_id || match?.candidate_fighter_id;
       if (fid && !numbersOrder.has(fid)) numbersOrder.set(fid, numbersOrder.size);
     }
@@ -281,16 +324,16 @@ export class DataRepository extends BaseRepository {
   }
 
   // Rich Finders
-  findRichEvent(id) { return this.richEvents.find(e => e.event_id === id); }
-  findRichPromotion(id) { return this.richPromotions.find(p => p.promotion_id === id); }
-  findRichBout(id) { return this.richBouts.find(b => b.bout_id === id); }
+  findRichEvent(id) { return this.index("richEvents:event_id", this.richEvents, e => e.event_id).get(id); }
+  findRichPromotion(id) { return this.index("richPromotions:promotion_id", this.richPromotions, p => p.promotion_id).get(id); }
+  findRichBout(id) { return this.index("richBouts:bout_id", this.richBouts, b => b.bout_id).get(id); }
   findRichFighter(id) {
     if (!id) return undefined;
     void this.richFighters; // alias index を構築させる
     return this.#fighterAliasIndex.get(id);
   }
-  findRichArticle(id) { return this.richArticles.find(a => a.article_id === id); }
-  richVideoById(id) { return this.richVideos.find(v => v.video_id === id); }
+  findRichArticle(id) { return this.index("richArticles:article_id", this.richArticles, a => a.article_id).get(id); }
+  richVideoById(id) { return this.index("richVideos:video_id", this.richVideos, v => v.video_id).get(id); }
 
   // Legacy/Compatibility Wrapper for Enriched Info
   getRichVideoInfo(video) { return this.enricher.enrichVideo(video); }
@@ -310,16 +353,69 @@ export class DataRepository extends BaseRepository {
   fighterName(id) { return this.findRichFighter(id)?.display_name ?? id; }
 
   // Relationship Methods
+
+  /**
+   * source_type 別に ref_id / source_id / url → 文書を引くインデックスを構築する。
+   * 各 Map は配列順で最初に現れた文書を保持し、各エントリには元配列の添字 (idx) を
+   * 添えておく。これにより複数キーがヒットしても「元配列で最初の文書」を選び直せる。
+   * （線形 find が OR 条件全体で配列順最初の文書を返すのと同じ結果になるよう、
+   *   lookup 側で候補のうち idx 最小の文書を選ぶ。）
+   *
+   * キーは === と同じ照合になるよう値そのもの (undefined/"" 含む) で登録する。
+   * 線形版は `d.url === video.url` を url が falsy 同士でも真と評価するため、
+   * falsy キーを捨てずに保持する必要がある。Map のキー一致 (SameValueZero) は
+   * 文字列・undefined では === と一致する。
+   */
+  #sourceDocumentLookup() {
+    if (this.#sourceDocLookup) return this.#sourceDocLookup;
+    const lookup = new Map();
+    const tableFor = (sourceType) => {
+      let table = lookup.get(sourceType);
+      if (!table) {
+        table = { refId: new Map(), sourceId: new Map(), url: new Map() };
+        lookup.set(sourceType, table);
+      }
+      return table;
+    };
+    const remember = (map, key, doc, idx) => {
+      if (!map.has(key)) map.set(key, { doc, idx });
+    };
+    const docs = this.sourceDocuments ?? [];
+    docs.forEach((doc, idx) => {
+      const table = tableFor(doc.source_type);
+      remember(table.refId, doc.source_ref_id, doc, idx);
+      remember(table.sourceId, doc.source_id, doc, idx);
+      remember(table.url, doc.url, doc, idx);
+    });
+    this.#sourceDocLookup = lookup;
+    return lookup;
+  }
+
+  /** 候補エントリ ({doc, idx}) のうち元配列で最初に現れた文書を返す。 */
+  #firstSourceDoc(...entries) {
+    let best;
+    for (const entry of entries) {
+      if (entry && (!best || entry.idx < best.idx)) best = entry;
+    }
+    return best?.doc;
+  }
+
   sourceDocumentForArticle(articleId) {
-    return this.sourceDocuments?.find(d =>
-      d.source_type === "note_article" && (d.source_ref_id === articleId || d.source_id === `note:${articleId}`)
+    const table = this.#sourceDocumentLookup().get("note_article");
+    if (!table) return undefined;
+    return this.#firstSourceDoc(
+      table.refId.get(articleId),
+      table.sourceId.get(`note:${articleId}`),
     );
   }
 
   sourceDocumentForVideo(video) {
-    return this.sourceDocuments?.find(d =>
-      d.source_type === "youtube_description" &&
-      (d.source_ref_id === video.video_id || d.source_id === `youtube_description:${video.video_id}` || d.url === video.url)
+    const table = this.#sourceDocumentLookup().get("youtube_description");
+    if (!table) return undefined;
+    return this.#firstSourceDoc(
+      table.refId.get(video.video_id),
+      table.sourceId.get(`youtube_description:${video.video_id}`),
+      table.url.get(video.url),
     );
   }
 
@@ -370,18 +466,20 @@ export class DataRepository extends BaseRepository {
 
   // Statistics Methods
   countSourceReferences(sourceId) {
-    const count = (list) => list.filter(r => r.source_id === sourceId).length;
+    const count = (name, records) =>
+      (this.groupIndex(`${name}:source_id`, records, r => r.source_id).get(sourceId)?.length ?? 0);
     return {
-      events: count(this.sourceEventReferences),
-      bouts: count(this.sourceBoutReferences),
-      videos: count(this.sourceVideoReferences),
+      events: count("sourceEventReferences", this.sourceEventReferences),
+      bouts: count("sourceBoutReferences", this.sourceBoutReferences),
+      videos: count("sourceVideoReferences", this.sourceVideoReferences),
     };
   }
 
   countSourceMentions(sourceId, mentionTypes) {
     const counts = Object.fromEntries(mentionTypes.map(t => [t, 0]));
-    for (const m of this.sourceMentions) {
-      if (m.source_id === sourceId && m.mention_type in counts) counts[m.mention_type]++;
+    const mentions = this.groupIndex("sourceMentions:source_id", this.sourceMentions, m => m.source_id).get(sourceId) ?? [];
+    for (const m of mentions) {
+      if (m.mention_type in counts) counts[m.mention_type]++;
     }
     return counts;
   }

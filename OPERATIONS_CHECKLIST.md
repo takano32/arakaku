@@ -223,10 +223,14 @@ docs/assets/style.css
 
 新しいデータキーを追加したとき:
 
-- `DATA_FILES` に追加する
-- `PRIMARY_DATA_KEYS` または `ENRICHMENT_DATA_KEYS` に追加する（どちらかに必ず入れる）
-- `fallbackForDataKey` に追加する（配列なら `[]`、オブジェクトなら `{}`）
-- `validate_json.js` の `CORE_DATA_KEYS` チェックが通ることを確認する
+- `config.js` の `DATA_FILES` にパスを追加する
+- ロードタイミングに応じて、次の4つのいずれかにキーを分類する:
+  - `config.js` の `PRIMARY_DATA_KEYS`: 表示に直結し、初期ロードで Phase 1 ストリーミングするもの
+  - `config.js` の `ENRICHMENT_DATA_KEYS`: Phase 1 の後にバックグラウンドでエンリッチに使うもの
+  - `data-loader.js` の `PUBLIC_REFERENCE_DATA_KEYS`: 出典参照候補など、エンリッチメント後に並列ストリームする公開参照
+  - `data-loader.js` の `TAB_DATA_KEYS`: 特定タブを開いたときだけ遅延ロードするもの（例: `sourceDocumentBodies`）
+- `data-parser.js` の `fallbackForDataKey` に追加する（配列なら `[]`、オブジェクトなら `{}`）
+- `CORE_DATA_KEYS` は `PRIMARY_DATA_KEYS` + `ENRICHMENT_DATA_KEYS` の合成。`PRIMARY` / `ENRICHMENT` に入れたキーは `validate_json.js` の `CORE_DATA_KEYS` チェック対象になるので、これが通ることを確認する。`PUBLIC_REFERENCE_DATA_KEYS` / `TAB_DATA_KEYS` のみのキーは `CORE_DATA_KEYS` に含まれない点に注意する。
 
 コマンド:
 
@@ -334,9 +338,9 @@ ls tmp/youtube-info/*.info.json | head
 - `display_id` / `filename` が重複していない
 - 既存行の `archived_at` が不要に更新されていない
 
-### source_documents.json が重い
+### source_documents.json と本文の分離
 
-既知です。将来的に preview と body の分離を検討してください。
+本文（`content_text`）は分離済みです。`build_json.py` は `source_documents.json`（preview + メタデータの軽量インデックス）と `source_document_bodies.json`（`{source_id, content_text}` の本文本体）を別々に生成します。本文は `data-loader.js` の `TAB_DATA_KEYS`（`tsushin` / `sources` タブ）で必要時に遅延ロードされるため、初期ロードには全文を載せません（`mentions` タブは `sourceDocuments` / `sourceMentions` を遅延ロード）。
 
 ### make check が build_json.py で落ちる
 

@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
-from arakaku_utils import DATA_SRC, ROOT, write_csv
+from arakaku.utils import DATA_SRC, ROOT, write_csv
 
 SRC = ROOT / "tmp" / "arakaku-site" / "data"
 

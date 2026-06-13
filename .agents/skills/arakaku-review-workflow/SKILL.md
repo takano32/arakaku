@@ -30,21 +30,18 @@ Do not bulk-apply extracted candidates directly to canonical CSVs without review
 ## Common review files
 
 ```text
-review/note_result_candidates.csv
 review/note_structured_results.csv
 review/structured_result_patch_candidates.csv
 review/youtube_description_candidates.csv
-review/inferred_bouts_from_video_titles.csv
-review/inferred_events_from_video_titles.csv
-review/inferred_fighters_from_video_titles.csv
-review/parse_skips.csv
-```
-
-Future useful file:
-
-```text
 review/source_mention_result_candidates.csv
+review/source_event_reference_candidates.csv
+review/source_bout_reference_candidates.csv
+review/source_video_reference_candidates.csv
 ```
+
+Note: `source_*_reference_candidates.csv` are also direct build inputs for
+`docs/data/source_*_references.json`, so regenerate them only via
+`make source-reference-candidates` and review the diff before committing.
 
 ---
 

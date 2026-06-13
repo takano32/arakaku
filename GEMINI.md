@@ -70,8 +70,8 @@ Numbers-derived fight records are comparison data. Do not directly promote them 
 
 ### Official Data Pipeline
 1. `make download-official-data` (Fetches `src/` tree from kobayashi856/arakaku-site into `tmp/arakaku-site/`)
-2. `make generate-stage1` (runs `generate_official_csvs.py` → `data-src/official_*.csv`)
-3. `make build-official` (runs `build_official_json.py` → `docs/data/official_players.json`, `docs/data/official_tournaments.json`)
+2. `python scripts/generate_official_csvs.py` (runs `generate_official_csvs.py` → `data-src/official_*.csv`)
+3. `make build` (runs `build_official_json.py` → `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, `official_history.json`; `build_official_pages_json.py` → `official_news.json`, `official_pages.json`)
 4. Enrichment happens automatically client-side in `data-enricher.js` — do NOT add official data to `build_json.py`.
 
 ### Viewer Development

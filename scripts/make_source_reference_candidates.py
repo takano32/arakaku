@@ -3,12 +3,15 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
-from arakaku_utils import DATA_SRC, REVIEW, compact_join, compact_text, read_csv, write_csv
+from arakaku.mapping import build_bout_fighter_names
+from arakaku.utils import DATA_SRC, REVIEW, compact_join, compact_text, line_number, read_csv, write_csv
 
 SOURCE_DOCUMENTS_CSV = DATA_SRC / "source_documents.csv"
 SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
 EVENTS_CSV = DATA_SRC / "events.csv"
 BOUTS_CSV = DATA_SRC / "bouts.csv"
+BOUT_PARTICIPANTS_CSV = DATA_SRC / "bout_participants.csv"
+ARTICLE_LINKS_CSV = DATA_SRC / "article_links.csv"
 VIDEOS_CSV = DATA_SRC / "videos.csv"
 VIDEO_LINKS_CSV = DATA_SRC / "video_links.csv"
 
@@ -33,13 +36,6 @@ def mention_text(mention: dict[str, str], document: dict[str, str] | None = None
         ]
         if value
     )
-
-
-def line_number(mention: dict[str, str]) -> int:
-    try:
-        return int(mention.get("line_number") or 0)
-    except ValueError:
-        return 0
 
 
 def source_doc_map(documents: list[dict[str, str]]) -> dict[str, dict[str, str]]:
@@ -118,11 +114,21 @@ def build_event_candidates(
     return rows
 
 
-def bout_names(bout: dict[str, str]) -> list[str]:
-    return [
-        bout.get("fighter_a", ""),
-        bout.get("fighter_b", ""),
-    ]
+def build_bout_source_ids(
+    article_links: list[dict[str, str]],
+    documents: dict[str, dict[str, str]],
+) -> dict[str, set[str]]:
+    """Return mapping of bout_id -> set of note source_ids from article_links."""
+    by_bout: dict[str, set[str]] = defaultdict(set)
+    for link in article_links:
+        if link.get("entity_type") != "bout":
+            continue
+        article_id = link.get("article_id", "")
+        bout_id = link.get("entity_id", "")
+        source_id = f"note:{article_id}"
+        if article_id and bout_id and source_id in documents:
+            by_bout[bout_id].add(source_id)
+    return by_bout
 
 
 def build_bout_candidates(
@@ -131,6 +137,8 @@ def build_bout_candidates(
     mentions: list[dict[str, str]],
     documents: dict[str, dict[str, str]],
     video_links: list[dict[str, str]],
+    bout_fighter_names: dict[str, tuple[str, str]],
+    bout_source_ids: dict[str, set[str]],
 ) -> list[dict[str, str]]:
     event_names = {event["event_id"]: event["name"] for event in events}
     source_mentions = group_mentions_by_source(mentions)
@@ -147,8 +155,11 @@ def build_bout_candidates(
     rows = []
 
     for bout in bouts:
-        names = [name for name in bout_names(bout) if name]
-        matchup = bout.get("matchup", "")
+        bout_id = bout.get("bout_id", "")
+        fighter_a, fighter_b = bout_fighter_names.get(bout_id, ("", ""))
+        names = [name for name in (fighter_a, fighter_b) if name]
+        matchup = f"{fighter_a} vs {fighter_b}" if fighter_a and fighter_b else ""
+        article_source_ids = bout_source_ids.get(bout_id, set())
         event_name = event_names.get(bout.get("event_id", ""), "")
         matched_by_source: dict[str, tuple[str, list[dict[str, str]]]] = {}
 
@@ -165,15 +176,14 @@ def build_bout_candidates(
             elif (
                 event_name
                 and event_name in joined_text
-                and bout.get("source_article_id")
-                and bout.get("source_article_id") in source_id
+                and source_id in article_source_ids
             ):
                 reason = "existing_source_article"
 
             if reason:
                 matched_by_source[source_id] = (reason, grouped_mentions)
 
-        for source_id in video_source_ids_by_bout.get(bout.get("bout_id", ""), set()):
+        for source_id in video_source_ids_by_bout.get(bout_id, set()):
             matched_by_source[source_id] = (
                 "linked_video_description",
                 source_mentions.get(source_id, []),
@@ -185,12 +195,12 @@ def build_bout_candidates(
             rows.append(
                 {
                     "candidate_id": f"bout-source-{len(rows) + 1:04d}",
-                    "bout_id": bout.get("bout_id", ""),
+                    "bout_id": bout_id,
                     "event_id": bout.get("event_id", ""),
                     "event_name": event_name,
                     "matchup": matchup,
-                    "fighter_a": bout.get("fighter_a", ""),
-                    "fighter_b": bout.get("fighter_b", ""),
+                    "fighter_a": fighter_a,
+                    "fighter_b": fighter_b,
                     **meta,
                     "match_reason": reason,
                     "line_numbers": compact_join([mention.get("line_number", "") for mention in source_rows], 10),
@@ -242,11 +252,24 @@ def main() -> int:
     mentions = read_csv(SOURCE_MENTIONS_CSV)
     events = read_csv(EVENTS_CSV)
     bouts = read_csv(BOUTS_CSV)
+    participants = read_csv(BOUT_PARTICIPANTS_CSV)
+    article_links = read_csv(ARTICLE_LINKS_CSV)
     videos = read_csv(VIDEOS_CSV)
     video_links = read_csv(VIDEO_LINKS_CSV)
 
+    bout_fighter_names = build_bout_fighter_names(participants)
+    bout_source_ids = build_bout_source_ids(article_links, documents)
+
     event_rows = build_event_candidates(events, mentions, documents)
-    bout_rows = build_bout_candidates(bouts, events, mentions, documents, video_links)
+    bout_rows = build_bout_candidates(
+        bouts,
+        events,
+        mentions,
+        documents,
+        video_links,
+        bout_fighter_names,
+        bout_source_ids,
+    )
     video_rows = build_video_candidates(videos, mentions, documents)
 
     write_candidate_csv(

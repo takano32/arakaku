@@ -2,7 +2,7 @@
 from __future__ import annotations
 import sys
 from typing import Any
-from arakaku_utils import DOCS_DATA, load_json
+from arakaku.utils import DOCS_DATA, load_json
 from arakaku.validation import (
     VALID_METHODS,
     VALID_VIDEO_TYPES,
@@ -16,7 +16,9 @@ from arakaku.validation import (
 ERRORS: list[str] = []
 WARNINGS: list[str] = []
 REQUIRED_JSON_FILES = {
-    'metadata.json', 'articles.json', 'promotions.json', 'events.json', 'bouts.json', 'fighters.json'
+    'metadata.json', 'articles.json', 'promotions.json', 'events.json', 'bouts.json', 'fighters.json',
+    'official_players.json', 'official_tournaments.json', 'official_matches.json',
+    'official_history.json', 'official_news.json', 'official_pages.json',
 }
 
 def add_error(m: str) -> None:
@@ -454,13 +456,60 @@ def validate_archive_data(youtube_archives: list[Any], note_archives: list[Any])
         if url and not str(url).startswith(('http://', 'https://')):
             add_error(f"note_archives.json[{index}]: invalid webpage_url: {url}")
 
+def validate_official_players(players: list[Any]) -> None:
+    # Built unconditionally by build_official_json.py; consumed by the 公式 tab,
+    # fighter-profile enrichment (data-enricher.js matches on `name`) and the
+    # data-repository discovery of official-only fighters.
+    collect_ids(players, 'official_players.json', 'id')
+    for i, x in enumerate(players):
+        if not isinstance(x, dict):
+            continue
+        require_field(x, 'official_players.json', i, 'name')
+
+def validate_official_tournaments(tournaments: list[Any]) -> None:
+    # data-enricher.js normalizes `id` to match events and renders `name`.
+    collect_ids(tournaments, 'official_tournaments.json', 'id')
+    for i, x in enumerate(tournaments):
+        if not isinstance(x, dict):
+            continue
+        require_field(x, 'official_tournaments.json', i, 'name')
+
+def validate_official_matches(matches: list[Any]) -> None:
+    # tab-renderers.js shows `id` in the detail disclosure; other fields are guarded.
+    collect_ids(matches, 'official_matches.json', 'id')
+
+def validate_official_history(history: list[Any]) -> None:
+    # No id column (build_official_json.py); tab-renderers.js renders `title`.
+    for i, x in enumerate(history):
+        if not isinstance(x, dict):
+            add_error(f"official_history.json[{i}]: expected object")
+            continue
+        require_field(x, 'official_history.json', i, 'title')
+
+def validate_official_news(news: list[Any]) -> None:
+    # tab-renderers.js renders `title` and the slug is the primary key.
+    collect_ids(news, 'official_news.json', 'slug')
+    for i, x in enumerate(news):
+        if not isinstance(x, dict):
+            continue
+        require_field(x, 'official_news.json', i, 'title')
+
+def validate_official_pages(pages: list[Any]) -> None:
+    # tab-renderers.js renders `title` and injects `body_html` as raw HTML.
+    collect_ids(pages, 'official_pages.json', 'slug')
+    for i, x in enumerate(pages):
+        if not isinstance(x, dict):
+            continue
+        require_field(x, 'official_pages.json', i, 'title')
+        require_field(x, 'official_pages.json', i, 'body_html')
+
 def main() -> int:
     ERRORS.clear()
     WARNINGS.clear()
     
     # Check existence and load
     all_files = REQUIRED_JSON_FILES | {
-        'database.json', 'article_links.json', 'titles.json', 'title_reigns.json',
+        'article_links.json', 'titles.json', 'title_reigns.json',
         'bout_participants.json', 'fighter_snapshots.json', 'videos.json',
         'video_links.json', 'aliases.json', 'metadata.json',
         'source_documents.json', 'source_document_bodies.json', 'source_mentions.json',
@@ -491,7 +540,13 @@ def main() -> int:
     numbers_fight_records = load_json('numbers_fight_records.json', [])
     youtube_archives = load_json('youtube_archives.json', [])
     note_archives = load_json('note_archives.json', [])
-    
+    official_players = load_json('official_players.json', [])
+    official_tournaments = load_json('official_tournaments.json', [])
+    official_matches = load_json('official_matches.json', [])
+    official_history = load_json('official_history.json', [])
+    official_news = load_json('official_news.json', [])
+    official_pages = load_json('official_pages.json', [])
+
     article_ids = validate_articles(articles)
     promotion_ids = validate_promotions(promotions, article_ids)
     event_ids = validate_events(events, promotion_ids, article_ids)
@@ -516,7 +571,13 @@ def main() -> int:
     validate_aliases(aliases)
     validate_numbers_data(numbers_fighters, numbers_name_matches, numbers_fight_records, fighter_ids)
     validate_archive_data(youtube_archives, note_archives)
-    
+    validate_official_players(official_players)
+    validate_official_tournaments(official_tournaments)
+    validate_official_matches(official_matches)
+    validate_official_history(official_history)
+    validate_official_news(official_news)
+    validate_official_pages(official_pages)
+
     for w in WARNINGS:
         print(f"WARNING: {w}", file=sys.stderr)
     for e in ERRORS:

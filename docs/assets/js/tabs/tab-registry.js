@@ -61,13 +61,15 @@ export class TabRendererRegistry {
   }
 
   renderTo(container, tabId) {
-    const repoRef = this.#ctx?.repo ?? null;
+    // repo はシングルトンで invalidate() 時に revision が進むため、
+    // 同一性ではなく revision でデータ更新を検知する
+    const repoStamp = this.#ctx?.repo?.revision ?? null;
     const fingerprint = this.#filterFingerprint();
 
     const focusKey = this.#focusKey();
     const focusChanged = focusKey !== this.#prevFocusKey;
     const tabChanged = tabId !== this.#currentTabId;
-    const repoChanged = repoRef !== this.#prevRepoRefs.get(tabId);
+    const repoChanged = repoStamp !== this.#prevRepoRefs.get(tabId);
     const filterChanged = fingerprint !== this.#prevFilters.get(tabId);
 
     if (!this.#lists.has(tabId)) {
@@ -100,7 +102,7 @@ export class TabRendererRegistry {
         list.resetCursor();
         this.#currentTabId = tabId;
         this.#prevCounts.set(tabId, 0);
-        this.#prevRepoRefs.set(tabId, repoRef);
+        this.#prevRepoRefs.set(tabId, repoStamp);
         this.#prevFilters.set(tabId, fingerprint);
         this.#prevFocusKey = focusKey;
       }
@@ -133,7 +135,7 @@ export class TabRendererRegistry {
     }
 
     this.#prevCounts.set(tabId, items.length);
-    this.#prevRepoRefs.set(tabId, repoRef);
+    this.#prevRepoRefs.set(tabId, repoStamp);
     this.#prevFilters.set(tabId, fingerprint);
     this.#prevFocusKey = focusKey;
   }

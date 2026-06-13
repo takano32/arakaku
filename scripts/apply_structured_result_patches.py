@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import csv
-from pathlib import Path
 
+from arakaku.utils import ROOT
 
-ROOT = Path(__file__).resolve().parents[1]
 BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
 PARTICIPANTS_CSV = ROOT / "data-src" / "bout_participants.csv"
 PATCH_CSV = ROOT / "review" / "structured_result_patch_candidates.csv"

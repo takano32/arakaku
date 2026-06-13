@@ -4,17 +4,17 @@
 .PHONY: build validate test check
 
 build:
-	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_json.py
-	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_numbers_json.py
-	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_json.py
-	OAI_IS_JUPYTER_KERNEL=0 python scripts/build_official_pages_json.py
+	python scripts/build_json.py
+	python scripts/build_numbers_json.py
+	python scripts/build_official_json.py
+	python scripts/build_official_pages_json.py
 
 validate:
-	OAI_IS_JUPYTER_KERNEL=0 python scripts/validate_json.py
+	python scripts/validate_json.py
 	node scripts/validate_json.js
 
 test:
-	OAI_IS_JUPYTER_KERNEL=0 python -m pytest -q
+	python -m pytest -q
 
 check: build validate test
 

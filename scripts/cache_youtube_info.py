@@ -6,8 +6,8 @@ import csv
 import subprocess
 from pathlib import Path
 
+from arakaku.utils import ROOT
 
-ROOT = Path(__file__).resolve().parents[1]
 VIDEOS_CSV = ROOT / "data-src" / "videos.csv"
 OUT_DIR = ROOT / "tmp" / "youtube-info"
 

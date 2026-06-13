@@ -92,7 +92,8 @@ Expected behavior:
 - Creates and manages one `VirtualList` per tab ID.
 - Calls `list.setItems()` on tab change or first render.
 - Calls `list.refreshItems()` on repo change or filter change.
-- Detects changes via `#prevRepoRefs` (DataRepository reference equality) and `#filterFingerprint()`.
+- Detects changes via `#prevRepoRefs` (which stores the per-tab `repo.revision`
+  stamp, NOT a reference — the repository is a singleton) and `#filterFingerprint()`.
 - Short-circuits with `return` when nothing changed.
 
 Old `tabRegistry.render(tabId)` no longer exists — do not use it.
@@ -145,7 +146,7 @@ Each file streams with `@streamparser/json` from the CDN:
 import("https://esm.sh/@streamparser/json").then((m) => m.JSONParser)
 ```
 
-Intermediate batches (every 30 items or 50ms) call `state.patch({})`, triggering incremental renders. When Phase 1 completes, a final `state.patch({})` is issued.
+Each streaming flush calls `repository.invalidate()` then `state.patch({})`, triggering incremental renders. The first flush of each key is immediate; subsequent flushes are throttled to roughly `FLUSH_MS` (200ms). When Phase 1 completes, a final `repository.invalidate()` + `state.patch({})` is issued.
 
 **Phase 2 — enrichment (ENRICHMENT_DATA_KEYS):**
 
@@ -162,24 +163,40 @@ export const ENRICHMENT_DATA_KEYS = [
 ];
 ```
 
-Phase 2 streams all enrichment keys in parallel via `#streamKey()`. Each batch triggers `state.patch({})` and incremental re-renders. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` after Phase 2.
+Phase 2 (`#loadEnrichment`) streams all enrichment keys in parallel via `#streamKey()`. Each batch calls `repository.invalidate()` + `state.patch({})` for incremental re-renders. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` (in `loadPublicReferences()`) after Phase 2.
 
 `CORE_DATA_KEYS = [...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
 
-### DataRepository creation
+### DataRepository lifecycle (singleton + invalidate)
 
-A new `DataRepository(state.data)` is created:
-- After each SAX batch flush (mid-streaming)
+The repository is a **singleton**. `DataLoader.ensureStateData()` creates
+`state.repository = new DataRepository(state.data)` exactly once, then reuses it.
+`state.data` keeps the same object identity throughout; only its array values are
+replaced as data streams in.
+
+Instead of re-creating the repository, the loader calls `repository.invalidate()`:
+- After each SAX batch flush (mid-streaming, inside `#streamKey`'s `flush`)
 - After Phase 1 completes
-- After Phase 2 completes
+- After Phase 2 + public references complete
+- In `loadKeys` / `loadForTab` after on-demand fetches
 
-`TabRendererRegistry` detects the new instance via reference inequality (`repoRef !== prevRepoRef`) and calls `refreshItems`.
+`invalidate()` resets every rich cache (`#richFighters`, `#richBouts`, …), the
+`#fighterAliasIndex`, the `#sourceDocLookup`, `this.indexes`, and the
+`DataEnricher` cache, then advances a **module-level monotonic `revision`** counter
+(`this.revision = nextRevision++`). The counter is module-scoped so even a
+freshly-constructed repository never reuses a stamp.
+
+`TabRendererRegistry` detects updates by comparing `repo.revision` against the
+per-tab stamp in `#prevRepoRefs` (NOT object identity — identity never changes for
+a singleton) and calls `refreshItems`. `QueryMatcher` likewise clears its search-text
+cache whenever `repo.revision` changes. Comparing repository identity instead of
+`revision` is the exact bug this design fixed (frozen tabs / stale search cache).
 
 ### Error handling
 
-If `fetch()` throws or returns a non-OK status, `#streamKey` sets `fallbackForDataKey(key)` and marks the key in both `loadedDataKeys` and `dataLoadErrors`. A failed key is settled (not stuck in pending state).
+If `fetch()` throws or returns a non-OK status, `#streamKey` sets `fallbackForDataKey(key)` and marks the key in both `loadedDataKeys` and `dataLoadErrors`. A failed key is settled (not stuck in pending state). A mid-stream reader error falls back the same way (fallback value, key still settled). A `JSONParser` construction failure (e.g. CDN import failed) instead falls back to `response.text()` + `JSON.parse()`, only using `fallbackForDataKey(key)` if that also fails, then settles the key. Every key handles its own error, so one bad enrichment file does not abort the others.
 
-If enrichment parse fails entirely (`parseDataFileEntries` throws), `#loadEnrichment` logs the error and returns without adding enrichment keys to `loadedDataKeys`.
+`ViewController.renderDataLoadErrors()` reads `state.dataLoadErrors` and renders an `<article class="card data-load-error-card" role="alert">` warning card into the `#data-load-errors` section in `index.html` (the section stays `hidden` when there are no errors); it lists the failed file name and message per key.
 
 ---
 
@@ -213,7 +230,7 @@ state.mentionType
 state.<tab>Division / <tab>Promotion / eventType / promotionCategory / sourceType ...
                           ← one per filter group stateKey in TAB_FILTERS (filters.js)
 state.data
-state.repository          ← DataRepository instance (replaced on each load batch)
+state.repository          ← DataRepository singleton (created once; data updates call repository.invalidate())
 state.loadedDataKeys      ← Set<string> of settled keys (loaded or failed)
 state.loadingDataKeys     ← Set<string> of in-flight keys (via loadKeys only)
 state.dataLoadErrors      ← {[key]: errorMessage} for failed keys
@@ -269,7 +286,7 @@ The viewer loads three external libraries at runtime from `https://esm.sh/`:
 
 `@streamparser/json` is used for ALL `#streamKey()` calls (both Phase 1 and Phase 2). `getJSONParser()` guards with `typeof window !== "undefined"` for Node.js compatibility. If CDN fails, `#streamKey` falls back to `response.text() + JSON.parse()`.
 
-`marked` CDN was removed. Markdown rendering uses inline `mdToHtml()` in `tab-renderers.js`.
+`marked` CDN was removed. Markdown rendering uses the self-contained `mdToHtml()` in `docs/assets/js/ui/markdown.js` (imported by `tab-renderers.js`).
 
 ## VirtualList loading state
 

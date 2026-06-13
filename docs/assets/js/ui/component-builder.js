@@ -70,10 +70,4 @@ export class ComponentFactory {
     return this.section(title, `<ul class="article-ref-list">${items}</ul>`, "primary-links");
   }
 
-  primaryVideoRefs(renderVideoRefs, videoIds, title = "出典動画") {
-    const ids = (videoIds ?? []).filter(Boolean);
-    if (ids.length === 0) return "";
-    return this.section(title, `<div class="video-ref-list">${renderVideoRefs(ids)}</div>`, "primary-links");
-  }
-
 }
