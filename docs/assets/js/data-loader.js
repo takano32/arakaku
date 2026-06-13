@@ -38,10 +38,28 @@ function getJSONParser() {
 /** データ取得と Repository の組み立て */
 export class DataLoader {
   /** @param {import("./core/app-state.js").AppState} state */
+  #patchScheduled = false;
+
   constructor(state, { dataFiles = DATA_FILES, fetchText = fetchJsonText } = {}) {
     this.state = state;
     this.dataFiles = dataFiles;
     this.fetchText = fetchText;
+  }
+
+  // ストリーミング中、13 並列キーが flush ごとに patch すると render が多重に走る。
+  // patch 通知だけを 1 フレームに 1 回へまとめる (invalidate はフラッシュ毎に必要なので残す)。
+  // requestAnimationFrame が無い環境 (Node/テスト) では即時 patch して従来挙動を保つ。
+  #schedulePatch() {
+    if (typeof requestAnimationFrame === "undefined") {
+      this.state.patch({});
+      return;
+    }
+    if (this.#patchScheduled) return;
+    this.#patchScheduled = true;
+    requestAnimationFrame(() => {
+      this.#patchScheduled = false;
+      this.state.patch({});
+    });
   }
 
   ensureStateData() {
@@ -140,7 +158,7 @@ export class DataLoader {
       pendingFlush = false;
       this.state.data[key] = [...accumulated];
       this.state.repository.invalidate();
-      this.state.patch({});
+      this.#schedulePatch();
       onBatch(accumulated);
     };
 
@@ -217,6 +235,17 @@ export class DataLoader {
     this.state.loadedDataKeys.add(key);
   }
 
+  // #streamKey を per-key の失敗封じ込めでラップする。1 ファイルの異常 (body=null や
+  // CDN/parse 例外) が Promise.all 全体を reject して load() を落とすのを防ぎ、
+  // 失敗キーは fallback + dataLoadErrors + loaded 扱いに統一する。
+  #streamKeySafe(key) {
+    return this.#streamKey(key, () => {}).catch((err) => {
+      this.state.data[key] = fallbackForDataKey(key);
+      this.state.dataLoadErrors[key] = err.message;
+      this.state.loadedDataKeys.add(key);
+    });
+  }
+
   async load() {
     this.ensureStateData();
 
@@ -228,15 +257,7 @@ export class DataLoader {
     await this.loadKeys(INITIAL_TAB_DATA_KEYS);
 
     // Phase 1: PRIMARY キーを並列ストリーミング
-    await Promise.all(
-      PRIMARY_DATA_KEYS.map((key) =>
-        this.#streamKey(key, () => {}).catch((err) => {
-          this.state.data[key] = fallbackForDataKey(key);
-          this.state.dataLoadErrors[key] = err.message;
-          this.state.loadedDataKeys.add(key);
-        })
-      )
-    );
+    await Promise.all(PRIMARY_DATA_KEYS.map((key) => this.#streamKeySafe(key)));
 
     // Phase 1 完了後に確定 patch
     this.state.repository.invalidate();
@@ -258,7 +279,7 @@ export class DataLoader {
   async #loadEnrichment() {
     const keys = ENRICHMENT_DATA_KEYS.filter((key) => key in this.dataFiles);
     if (keys.length === 0) return;
-    await Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
+    await Promise.all(keys.map((key) => this.#streamKeySafe(key)));
   }
 
   loadPublicReferences() {
@@ -266,7 +287,7 @@ export class DataLoader {
     return Promise.all(
       PUBLIC_REFERENCE_DATA_KEYS
         .filter((key) => key in this.dataFiles && !this.state.loadedDataKeys.has(key))
-        .map((key) => this.#streamKey(key, () => {}))
+        .map((key) => this.#streamKeySafe(key))
     );
   }
 
@@ -276,7 +297,7 @@ export class DataLoader {
     );
     if (keys.length === 0) return;
     this.ensureStateData();
-    await Promise.all(keys.map((key) => this.#streamKey(key, () => {})));
+    await Promise.all(keys.map((key) => this.#streamKeySafe(key)));
     this.state.repository.invalidate();
     this.state.patch({});
   }

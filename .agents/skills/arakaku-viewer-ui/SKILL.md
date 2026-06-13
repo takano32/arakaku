@@ -183,9 +183,19 @@ export const ENRICHMENT_DATA_KEYS = [
 ];
 ```
 
-Phase 2 (`#loadEnrichment`) streams all enrichment keys in parallel via `#streamKey()`. Each batch calls `repository.invalidate()` + `state.patch({})` for incremental re-renders. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` (in `loadPublicReferences()`) after Phase 2.
+Phase 2 (`#loadEnrichment`) streams all enrichment keys in parallel via `#streamKey()`. Each batch calls `repository.invalidate()` then schedules a coalesced patch. `PUBLIC_REFERENCE_DATA_KEYS` (`sourceEventReferences`, `sourceBoutReferences`, `sourceVideoReferences`) also stream via `#streamKey()` (in `loadPublicReferences()`) after Phase 2.
 
 `CORE_DATA_KEYS = [...INITIAL_TAB_DATA_KEYS, ...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
+
+Only viewer-consumed tables belong in the streamed key lists, and only **array** JSON streams correctly. `#streamKey`'s SAX handler pushes array elements (`typeof k === "number"`); an **object** JSON (`aliases`, `metadata` — see `OBJECT_DATA_KEYS` in `data-parser.js`) streamed through it silently becomes `[]`. So object-typed keys must NOT be in `PRIMARY_DATA_KEYS`/`ENRICHMENT_DATA_KEYS` (they load correctly only via the `loadKeys()` plain-parse path). `aliases`/`titleReigns` were removed from PRIMARY because nothing reads them (fighter aliases are baked into `fighters.json` records; title lineage is baked into `titles.json`).
+
+### Streaming render-cost discipline
+
+Every `#streamKey` flush invalidates the repository (cheap, ~0.5µs) and schedules a render. With 13 keys streaming in parallel that is dozens of renders, so **render work must stay cheap and rare during streaming**:
+
+- **Patch coalescing** (`data-loader.js` `#schedulePatch()`): flushes schedule at most one `state.patch({})` per `requestAnimationFrame`. `invalidate()` stays per-flush (correctness); only the render notification is batched. Node/tests (no `requestAnimationFrame`) fall back to immediate patch. Per-phase confirm patches stay direct, guaranteeing a settled final render.
+- **`renderSummary()` must not build rich collections during streaming.** 試合/動画 counts use the plain `d.bouts.length`/`d.videos.length` (rich is reverse + `lowReliabilityLast` partition only, so the count is identical). 選手 reads `repo.richFighters.length` only once `fighters`+`numbersFighters`+`numbersNameMatches`+`officialPlayers` are loaded (richFighters' real deps), else the plain `fighters.length`. Mirror the existing `sourceDocuments`/`sourceReferences` `loadedDataKeys` gates.
+- Per-render DOM rebuilds get change-guards: `renderViewModeSwitch` skips its innerHTML rewrite when `viewMode` is unchanged; `renderTabs` toggles classes when tab structure is unchanged; the official tab skips content re-render via `itemsSource`.
 
 ### DataRepository lifecycle (singleton + invalidate)
 
@@ -215,6 +225,8 @@ cache whenever `repo.revision` changes. Comparing repository identity instead of
 ### Error handling
 
 If `fetch()` throws or returns a non-OK status, `#streamKey` sets `fallbackForDataKey(key)` and marks the key in both `loadedDataKeys` and `dataLoadErrors`. A failed key is settled (not stuck in pending state). A mid-stream reader error falls back the same way (fallback value, key still settled). A `JSONParser` construction failure (e.g. CDN import failed) instead falls back to `response.text()` + `JSON.parse()`, only using `fallbackForDataKey(key)` if that also fails, then settles the key. Every key handles its own error, so one bad enrichment file does not abort the others.
+
+All parallel streaming calls go through `#streamKeySafe(key)`, which wraps `#streamKey` in a per-key `.catch` (fallback + `dataLoadErrors` + `loadedDataKeys.add`). This contains even a *thrown* rejection (e.g. an OK response with a null body, where `getReader()` is outside `#streamKey`'s try) so it cannot reject the phase's `Promise.all` and abort `load()`. Use `#streamKeySafe`, not a bare `#streamKey`, for every Phase 1 / Phase 2 / public-reference / tab-data fan-out.
 
 `ViewController.renderDataLoadErrors()` reads `state.dataLoadErrors` and renders an `<article class="card data-load-error-card" role="alert">` warning card into the `#data-load-errors` section in `index.html` (the section stays `hidden` when there are no errors); it lists the failed file name and message per key.
 

@@ -67,9 +67,13 @@ export const DEFAULT_ADMIN_TAB = "sources";
 export const INITIAL_TAB_DATA_KEYS = ["officialPages", "officialNews"];
 
 // ストリーミングでインクリメンタルに描画するファイル群 (表示に直結するもの)
+// NOTE: aliases / titleReigns は viewer から参照されないため除外している。
+// aliases は object 形式で、配列 SAX ストリームに通すと [] に誤パースされる
+// (選手の別名は fighters.json の各レコードに焼き込み済み)。titleReigns の系譜は
+// titles.json の lineage に焼き込み済み。再度必要になったら DATA_FILES から読める。
 export const PRIMARY_DATA_KEYS = [
   "bouts", "boutParticipants", "fighters", "events", "promotions",
-  "videos", "titles", "titleReigns", "videoLinks", "aliases",
+  "videos", "titles", "videoLinks",
   "fighterSnapshots", "articles", "articleLinks",
 ];
 

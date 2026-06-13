@@ -121,6 +121,26 @@ make clean-generated
 
 ---
 
+## P3: viewer の未使用・誤パースデータキーと未メモ化フィルタの整理
+
+### 背景
+
+Phase 15 の調査（2026-06-13）で以下が判明。いずれも実害は小さいが整理候補。
+
+- `metadata`（`ENRICHMENT_DATA_KEYS` かつ `OBJECT_DATA_KEYS`）は object 形式を配列 SAX ストリームに通して `[]` に誤パースされる。さらに viewer に読み手がいない（`aliases` と同じ既存バグ。Phase 15 で aliases は PRIMARY から除去済み）
+- `data-repository.js` の `eventsForPromotion` / `relatedBoutsForFighter` / `fighterSnapshotsForFighter` は revision メモ化されておらず、検索キーストロークごとに再フィルタ/ソートする（現規模では各 0.001〜0.027ms と軽微）
+
+### 案
+
+- `metadata` を ENRICHMENT から除去（未使用）、または object をストリームしない経路に通す
+- 上記 3 フィルタを revision キーの Map でメモ化（`invalidate()` でクリア）
+
+### 完了条件
+
+- 誤パースキーが残らない / フィルタがメモ化され検索描画が一段軽くなる
+
+---
+
 ## P2: unknown 試合の結果補完
 
 ### 目的

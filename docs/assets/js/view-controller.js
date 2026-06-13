@@ -20,22 +20,31 @@ export class ViewController {
   renderSummary() {
     const d = this.ctx.state.data;
     const { repo } = this.ctx;
-    const sourceDocumentCount = this.ctx.state.loadedDataKeys?.has("sourceDocuments")
+    const loaded = this.ctx.state.loadedDataKeys;
+    const sourceDocumentCount = loaded?.has("sourceDocuments")
       ? d.sourceDocuments.length
       : "...";
     const sourceReferenceCount = ["sourceEventReferences", "sourceBoutReferences", "sourceVideoReferences"]
-      .every((key) => this.ctx.state.loadedDataKeys?.has(key))
+      .every((key) => loaded?.has(key))
       ? (d.sourceEventReferences?.length ?? 0) +
           (d.sourceBoutReferences?.length ?? 0) +
           (d.sourceVideoReferences?.length ?? 0)
       : "...";
+    // 試合・動画の件数は enrich で増減しないため rich を作らず生配列長を使う
+    // (richBouts/richVideos は reverse + 並べ替えのみで件数不変)。
+    // 選手は名鑑/公式由来の選手発見と重複統合で件数が変わるため rich が必要だが、
+    // 確定値になるのは名鑑・公式キーが揃う Phase 2 以降。揃うまでは生 fighters 長を表示し、
+    // ストリーミング中の richFighters 再構築を避ける。
+    const fightersFinal = ["fighters", "numbersFighters", "numbersNameMatches", "officialPlayers"]
+      .every((key) => loaded?.has(key));
+    const fightersCount = fightersFinal ? repo.richFighters.length : d.fighters.length;
     const items = [
       ["団体", d.promotions.length],
       ["大会", d.events.length],
-      ["試合", repo.richBouts.length],
-      ["選手", repo.richFighters.length],
+      ["試合", d.bouts.length],
+      ["選手", fightersCount],
       ["王座", d.titles.length],
-      ["動画", repo.richVideos.length],
+      ["動画", d.videos.length],
       ["出典", sourceDocumentCount],
       ["出典候補", sourceReferenceCount],
     ];
@@ -191,6 +200,9 @@ export class ViewController {
     if (!switcher) return;
 
     const { viewMode } = this.ctx.state;
+    // viewMode はストリーミング中変化しない。毎 patch の innerHTML 再構築を避ける。
+    if (this._lastViewMode === viewMode && switcher.childElementCount > 0) return;
+    this._lastViewMode = viewMode;
     const buttons = [
       ["public", "通常ビュー"],
       ["admin", "管理ビュー"],

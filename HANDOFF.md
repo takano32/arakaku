@@ -67,6 +67,16 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 15: Phase 1 ストリーミングの描画コスト削減 (2026-06-13)
+
+PRIMARY ストリーミング（Phase 1）中の無駄な再描画を削減しました。マルチエージェント調査で、`invalidate()` 自体はほぼ無料（~0.5µs）だが、**`renderSummary()` が毎 patch で無条件に `repo.richBouts/richFighters/richVideos` を読み**、公式タブ表示中でも 3 つの rich コレクションを毎フラッシュ再構築（約 4ms × 37〜180 回）していたのが支配的コストと判明。
+
+- **renderSummary から rich ビルドを排除**（`view-controller.js`）: 試合・動画の件数は enrich で増減しない（`richBouts.length === bouts.length`、`richVideos.length === videos.length`。rich は reverse + 並べ替えのみ）ため生配列長 `d.bouts.length` / `d.videos.length` を使用。選手だけは名鑑/公式由来の選手発見と重複統合で件数が変わるため、確定キー（`fighters` + `numbersFighters` + `numbersNameMatches` + `officialPlayers`）が揃うまで生 `fighters.length` を表示し、揃ってから `richFighters.length`。これによりストリーミング中の richFighters 再構築（名鑑/公式が未ロードで件数が誤る中間状態）を回避（最終表示値は不変）
+- **patch 通知の rAF コアレッシング**（`data-loader.js`）: 13 並列キーが flush ごとに `state.patch({})` していたのを、`#schedulePatch()` で 1 フレーム 1 回にまとめる。`invalidate()` はフラッシュ毎に必要なので残置。`requestAnimationFrame` の無い Node/テストでは即時 patch で従来挙動を保つ。各フェーズ末尾の確定 patch は直接呼び出しのまま（最終描画を保証）
+- **renderViewModeSwitch の再構築ガード**（`view-controller.js`）: viewMode 不変かつ既に描画済みなら innerHTML 再構築をスキップ
+- **未使用 PRIMARY キーの除去**（`config.js`）: `aliases` は object 形式を配列 SAX に通して `[]` に誤パースされる既存バグ（選手別名は fighters.json に焼き込み済み・top-level aliases は未参照）かつ未使用。`titleReigns` も base getter のみで呼び出し元なし（系譜は titles.json の lineage に焼き込み済み）。両者を PRIMARY から除去し、ストリーム対象を 13→11 に。データファイル自体は `DATA_FILES` に残し再利用可能
+- **`#streamKeySafe` による失敗封じ込めの統一**（`data-loader.js`）: Phase 1 だけにあった per-key `.catch`（fallback + dataLoadErrors + loaded 扱い）をヘルパー化し、Phase 2（`#loadEnrichment`）・`loadPublicReferences`・`loadForTab` にも適用。1 ファイルの異常（body=null・CDN/parse 例外など）が `Promise.all` 全体を reject して `load()` を落とし viewer 全画面エラーになる経路を解消（前回 Phase 0 レビューでも指摘されていた非対称の解消）
+
 ### Phase 14: 初期タブ (公式) の最優先ロード (2026-06-13)
 
 初期画面である「公式」タブを最速で描画するため、`DataLoader.load()` に Phase 0 を追加しました。
