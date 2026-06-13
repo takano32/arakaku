@@ -55,10 +55,6 @@ export function externalLink(url, label) {
   return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
 }
 
-export function emptyMessage() {
-  return `<article class="card"><p>該当するデータがありません。</p></article>`;
-}
-
 export function boutResultText(bout) {
   return [
     bout.result?.round ? `${bout.result.round}R` : "",

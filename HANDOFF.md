@@ -67,6 +67,16 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 18: 初回描画クリティカルパス (CDN・フォント) (2026-06-13)
+
+データロード以外の性能領域（Service Worker・初回描画・ペイロード）を調査し、初回描画クリティカルパス上の CDN/フォント依存を解消しました。
+
+- **`@tanstack/virtual-core` を動的 import 化**（`virtual-list.js`）: 旧実装は `virtual-list.js` 冒頭の **static** `import ... from "https://esm.sh/@tanstack/virtual-core@3"` で、起動モジュールグラフ（`main.js` → `tab-registry` → `virtual-list`）が esm.sh の cold ラウンドトリップで評価ブロックされ、`main.js` トップレベル（`dataLoader.load()` = Phase 0 開始）すら待たされていた（lite-youtube-embed では既に動的化済みだったが virtual-core だけ漏れていた）。`Virtualizer`/`windowScroll` はコンストラクタでは使われず描画時のみのため、動的 import＋モジュール評価時の先行起動に変更し、Phase 0 データ取得と並行化。`#virtualizerGen` 世代ガードで未ロード中に setItems が複数回来ても二重生成しない。CDN 障害時は `.catch` で unhandled rejection を防ぎリトライ可能にし、リストは「読み込み中…」で待機（旧 static import はグラフ全体を失敗させアプリ起動不能だった → 退行モードが改善）
+- **リソースヒント追加**（`index.html`）: `esm.sh` / `fonts.googleapis.com` / `fonts.gstatic.com` への `preconnect`（cold 接続で各 ~1 RTT 短縮）
+- **Google Fonts の `@import` チェーン解消**（`style.css` → `index.html`）: `style.css` 冒頭の `@import` はレンダーブロッキングな CSS の後段に連鎖した別オリジン要求で first paint を遅らせていた。`index.html` の `<link>`（preconnect 付き）に移し HTML パース時点から並行取得に。`display=swap` と system-ui フォールバックは維持
+
+調査の結論（doNot に従い変更なし）: 生成 JSON の minify は gzip がインデントをほぼ吸収（節約 4.5〜6.7%）し安定 diff を壊すため不可。SW のアプリシェル precache はデプロイ時キャッシュバスティングが無いと stale JS を恒久配信するリスクがあり見送り（HTTP キャッシュで再訪は十分高速）。PWA manifest・critical CSS インライン・header.webp preload・modulepreload はノイズフロア以下。
+
 ### Phase 17: 通信タブを本文ロード待ちから解放 (2026-06-13)
 
 ロード後の挙動（オンデマンド遅延ロード／インタラクション）を調査し、公開「通信」タブの体感を改善しました。

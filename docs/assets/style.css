@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+/* Noto Sans JP は index.html の <link>（preconnect 付き）で読み込む。
+   ここで @import するとレンダーブロッキングな style.css の後段に連鎖した
+   別オリジン要求が増え first paint が遅れるため移動した。 */
 
 :root {
   color-scheme: light;

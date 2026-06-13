@@ -1,5 +1,19 @@
-import { Virtualizer, windowScroll } from "https://esm.sh/@tanstack/virtual-core@3";
-import { emptyMessage } from "./html-utils.js";
+// @tanstack/virtual-core を静的 import すると起動モジュールグラフ全体
+// (main.js のトップレベル → dataLoader.load() = Phase 0 開始まで) が esm.sh の
+// cold ラウンドトリップでブロックされる。動的 import でグラフから外し、モジュール
+// 評価時に先行起動して Phase 0 のデータ取得と並行させる。Virtualizer/windowScroll は
+// 描画 (#createVirtualizer) 時のみ必要で VirtualList の構築には不要なため挙動保存。
+let virtualCore = null;
+let virtualCorePromise = null;
+function loadVirtualCore() {
+  return (virtualCorePromise ??= import("https://esm.sh/@tanstack/virtual-core@3")
+    .then((m) => { virtualCore = m; })
+    .catch((err) => {
+      virtualCorePromise = null; // 一時的な失敗を次回 setItems でリトライ可能にする
+      console.error("[virtual-list] failed to load @tanstack/virtual-core", err);
+    }));
+}
+loadVirtualCore();
 
 const loadingMessage = () =>
   `<article class="card"><p class="meta">読み込み中...</p></article>`;
@@ -31,6 +45,7 @@ export class VirtualList {
   #cleanupRect = null;
   #cleanupOffset = null;
   #cursorIndex = -1;
+  #virtualizerGen = 0;
 
   constructor() {
     this.#bannerEl = document.createElement("div");
@@ -92,7 +107,24 @@ export class VirtualList {
     // 古いリスナーを解除してから新しい Virtualizer を作成
     this.#cleanupRect?.();
     this.#cleanupOffset?.();
+    const gen = ++this.#virtualizerGen;
 
+    if (virtualCore) {
+      this.#instantiateVirtualizer(count, scrollMargin);
+      return;
+    }
+    // virtual-core 未ロード (初回描画が Phase 0 データより速いと稀に起こる):
+    // ロード表示し、解決後にまだ最新の要求であれば構築する。
+    this.#el.innerHTML = (this.#items.length === 0 && !this.#loading) ? "" : loadingMessage();
+    loadVirtualCore().then(() => {
+      // gen 不一致: 後続の setItems/refreshItems に置き換えられた。virtualCore null: ロード失敗。
+      if (gen !== this.#virtualizerGen || !virtualCore) return;
+      this.#instantiateVirtualizer(count, scrollMargin);
+    });
+  }
+
+  #instantiateVirtualizer(count, scrollMargin) {
+    const { Virtualizer, windowScroll } = virtualCore;
     this.#virtualizer = new Virtualizer({
       count,
       getScrollElement: () => window,

@@ -319,13 +319,19 @@ The viewer loads three external libraries at runtime from `https://esm.sh/`:
 
 | Library | Import | Used in |
 |---------|--------|---------|
-| `@tanstack/virtual-core@3` | `Virtualizer`, `windowScroll` | `ui/virtual-list.js` |
-| `@streamparser/json` | `JSONParser` | `data-loader.js` (all streaming) |
+| `@tanstack/virtual-core@3` | dynamic import (prewarmed) | `ui/virtual-list.js` |
+| `@streamparser/json` | dynamic import (lazy) | `data-loader.js` (all streaming) |
 | `lite-youtube-embed` | un-awaited dynamic import | `main.js` (YouTube facade) |
+
+**No esm.sh import may be static/top-level** — a static `import ... from "https://esm.sh/..."` puts the CDN on the boot module graph's critical path, blocking `main.js` top-level (and therefore `dataLoader.load()` / Phase 0) on a cold third-party round trip. All three deps are dynamic. Verify with `grep -rn 'from "https://esm.sh' docs/assets/js` returning nothing.
 
 `@streamparser/json` is used for ALL `#streamKey()` calls (both Phase 1 and Phase 2). `getJSONParser()` guards with `typeof window !== "undefined"` for Node.js compatibility. If the CDN import fails or the parser throws, `#streamKey` falls back to `response.text() + JSON.parse()` (`await getJSONParser().catch(() => null)` — a CDN outage must never reject `load()`).
 
-`lite-youtube-embed` is loaded via an un-awaited dynamic `import(...).catch(() => {})` in `main.js` — a blocking static CDN import would gate the entire boot (including Phase 0) on esm.sh. Custom elements upgrade automatically when the definition arrives late.
+`@tanstack/virtual-core` is dynamically imported and prewarmed at `virtual-list.js` module eval (so the fetch overlaps Phase 0's data fetch instead of blocking module eval). `Virtualizer`/`windowScroll` are used only at render time (`#instantiateVirtualizer`), not at construct time. A `#virtualizerGen` guard prevents double-instantiation when `setItems` is called before the module resolves; `loadVirtualCore()`'s `.catch` resets the cached promise (retry) and avoids an unhandled rejection. If it never loads, lists stay on "読み込み中…" rather than crashing.
+
+`lite-youtube-embed` is loaded via an un-awaited dynamic `import(...).catch(() => {})` in `main.js`. Custom elements upgrade automatically when the definition arrives late.
+
+`index.html` adds `<link rel="preconnect">` for `esm.sh`, `fonts.googleapis.com`, `fonts.gstatic.com`, and loads Google Fonts via a `<link>` in the head (NOT a `@import` in `style.css`, which would chain a render-blocking cross-origin request behind the stylesheet).
 
 `marked` CDN was removed. Markdown rendering uses the self-contained `mdToHtml()` in `docs/assets/js/ui/markdown.js` (imported by `tab-renderers.js`).
 
