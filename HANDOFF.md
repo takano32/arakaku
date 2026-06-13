@@ -67,6 +67,14 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 17: 通信タブを本文ロード待ちから解放 (2026-06-13)
+
+ロード後の挙動（オンデマンド遅延ロード／インタラクション）を調査し、公開「通信」タブの体感を改善しました。
+
+- **通信（tsushin）タブを `sourceDocumentBodies`（~557KB）の完了待ちから解放**（`view-controller.js`）: 旧実装は `REQUIRED_TAB_DATA_KEYS.tsushin = ["sourceDocuments", "sourceDocumentBodies"]` で、本文ファイル全ダウンロード完了まで「読み込み待ち」プレースホルダのみ表示し、リストを 1 件も描画しなかった。しかし `source_documents`（Phase 2 eager）に全 120 note 記事の `content_preview` があり、`renderNoteArticleCard` は `content_text` 不在時に preview へフォールバックする。`REQUIRED` から `sourceDocumentBodies` を外し（`["sourceDocuments"]` に）、リストを即座に preview で描画。本文は `TAB_DATA_KEYS.tsushin` 経由の `loadForTab` で届き次第、各カードにインライン追補される（プログレッシブ）。`TAB_DATA_KEYS` は変更せず本文ロード自体は継続
+
+調査で確認した「現状で十分」な点（doNot に従い変更なし）: 検索ホットパスは `#cachedText`（revision キャッシュ）でウォーム、検索キーストロークは invalidate を起こさず substring 照合のみ。タブ切替/フォーカスのゲートも正しく機能。`itemsSource` スキップをデータタブへ拡張するのはフィルタ/検索で items が変わるため無意味。未メモ化フィルタ 3 種は現データ規模ではノイズフロア以下。
+
 ### Phase 16: Phase 2 enrichment/参照ロードの最適化 (2026-06-13)
 
 公開タブの enrichment（名鑑/公式バッジ・出典候補ブロック）の到着を早めました。調査で、`load()` が `await #loadEnrichment()` してから `await loadPublicReferences()` する**二段ゲート**のため、公開タブの試合/大会/動画カードが使う ~1.5MB の `source*References` が、管理専用の `source_mentions`（~1MB）を含む enrichment 全完了まで開始すらしないと判明。

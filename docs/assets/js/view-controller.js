@@ -2,8 +2,12 @@ import { escapeHtml, uniqueSorted } from "./ui/html-utils.js";
 import { ADMIN_TABS, DATA_FILES, MENTION_TYPE_ORDER, PUBLIC_TABS } from "./config.js";
 import { TAB_FILTERS, filterButtons } from "./filters.js";
 
+// 公開「通信」タブは本文 (sourceDocumentBodies, ~557KB) の完了を待たない。
+// source_documents (Phase 2 eager) の content_preview で即描画し、本文は
+// loadForTab で届き次第インラインに追補する (renderNoteArticleCard が
+// content_text 不在時に content_preview へフォールバックする)。
 const REQUIRED_TAB_DATA_KEYS = {
-  tsushin: ["sourceDocuments", "sourceDocumentBodies"],
+  tsushin: ["sourceDocuments"],
   sources: ["sourceDocuments"],
   mentions: ["sourceDocuments", "sourceMentions"],
 };
