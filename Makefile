@@ -12,6 +12,7 @@ build:
 validate:
 	python scripts/validate_json.py
 	node scripts/validate_json.js
+	node scripts/test_filters.mjs
 
 test:
 	python -m pytest -q

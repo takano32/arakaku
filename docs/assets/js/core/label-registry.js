@@ -67,4 +67,16 @@ export class LabelRegistry {
     };
     return labels[mentionType] ?? mentionType ?? "言及";
   }
+
+  articleType(articleType) {
+    return (
+      {
+        event_result: "試合結果",
+        event_card: "対戦カード",
+        promotion_profile: "団体情報",
+        note_article: "ノート",
+        youtube_description_source: "YouTube概要欄",
+      }[articleType] ?? articleType ?? ""
+    );
+  }
 }

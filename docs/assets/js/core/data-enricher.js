@@ -142,10 +142,6 @@ export class DataEnricher {
     return this.#officialTournamentIndex;
   }
 
-  #officialPlayerFor(name) {
-    return this.#officialPlayerByName(name);
-  }
-
   #applyOfficialPlayer(rich, op) {
     rich.profile = { ...(rich.profile ?? {}) };
     if (op.nickname) rich.profile.nickname = op.nickname;
@@ -214,28 +210,7 @@ export class DataEnricher {
     return { ...event, official_data: ot };
   }
   enrichPromotion(promotion) { return promotion; }
-  enrichFighterSnapshot(snapshot) {
-    const fighter = this.repo.findFighter(snapshot.fighter_id);
-    const op = fighter ? this.#officialPlayerFor(fighter.display_name) : undefined;
-    if (!op) return snapshot;
-    const rich = { ...snapshot };
-    this.#applyOfficialPlayer(rich, op);
-    return rich;
-  }
-
-  enrichBoutParticipant(participant) {
-    const op = this.#officialPlayerFor(participant.fighter_name);
-    if (!op) return participant;
-    const rich = { ...participant };
-    this.#applyOfficialPlayer(rich, op);
-    return rich;
-  }
-  enrichVideoLink(link) { return link; }
-  enrichArticleLink(link) { return link; }
   enrichSourceMention(mention) { return mention; }
-  enrichSourceEventReference(ref) { return ref; }
-  enrichSourceBoutReference(ref) { return ref; }
-  enrichSourceVideoReference(ref) { return ref; }
 
   enrichBout(bout) {
     const rich = { ...bout };

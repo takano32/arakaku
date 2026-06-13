@@ -459,12 +459,6 @@ export class TabRenderers {
     return body.join("\n").trim();
   }
 
-  #articleTypeLabel(type) {
-    return { event_result: "試合結果", event_card: "対戦カード",
-             promotion_profile: "団体情報", note_article: "ノート",
-             youtube_description_source: "YouTube概要欄" }[type] ?? type ?? "";
-  }
-
   renderNoteArticleCard(doc) {
     const { repo, labels } = this.ctx;
     const archive = repo.findNoteArchive(doc.url);
@@ -477,7 +471,7 @@ export class TabRenderers {
       <article class="card record-card note-article-card">
         <h2>${externalLink(doc.url, doc.title)}</h2>
         <p class="meta">
-          ${articleType ? `<span class="video-badge">${escapeHtml(this.#articleTypeLabel(articleType))}</span>` : ""}
+          ${articleType ? `<span class="video-badge">${escapeHtml(labels.articleType(articleType))}</span>` : ""}
           <span class="video-badge">${escapeHtml(labels.sourceType(doc.source_type))}</span>
         </p>
         ${body

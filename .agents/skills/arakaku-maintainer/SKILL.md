@@ -100,6 +100,10 @@ make clean-generated # remove docs/data/*.json
 make reorder-data    # normalize CSV sort order
 ```
 
+`make validate` runs `validate_json.py` (schema/referential), `validate_json.js` (viewer
+parser/loader + render-path coverage), and `test_filters.mjs` (Node unit test for the viewer's
+`itemPassesFilters` filtering engine — built-in `node:test`, no deps).
+
 For source refresh:
 
 ```bash

@@ -67,6 +67,16 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 19: コード構造・保守性の整理 (2026-06-13)
+
+性能は出し切ったため、コード構造・品質の軸を調査。**モノリス分割は不要**（viewer は大きいが凝集している）と正直に判定し、確実な低リスク改善のみ実施。
+
+- **完全な dead code を削除**（`data-repository.js` / `data-enricher.js`）: どこからも参照されない 7 つの rich getter（`richFighterSnapshots` / `richBoutParticipants` / `richVideoLinks` / `richArticleLinks` / `richSource{Event,Bout,Video}References`）と、それぞれの private フィールド宣言＋コンストラクタ／`invalidate()` 二重リセット、孤立した 7 つの pass-through enricher、孤立した `#officialPlayerFor` を削除。**live なものは厳密に温存**（`richArticles`←`findRichArticle`、`richSourceMentions`/`enrichSourceMention`、`richPromotions`/`enrichPromotion`、`#applyOfficialPlayer`、全プレーン getter）。各シンボルの参照ゼロを grep で確認してから削除
+- **`itemPassesFilters` の Node ユニットテスト追加**（`scripts/test_filters.mjs`）: 11 タブのクライアント側フィルタの中核（単一/配列フィールド・「その他」・`forceOther`・複数グループ AND）が無テストだった。純関数なので依存ゼロの `node:test` で 8 ケース検証し、`make validate` に組込み。viewer 初の JS ユニットテストの足場で、将来のフィルタ変更を de-risk
+- **最後のインライン label マップを LabelRegistry へ**（`tab-renderers.js` → `label-registry.js`）: `#articleTypeLabel` を `LabelRegistry.articleType()` に移管（他の全ラベルは既に LabelRegistry 経由）。マッピングはバイト同一
+
+調査の結論（doNot に従い変更なし）: tab-renderers.js（817 行）の分割は dead code も循環結合も無く DOM テストも無いため挙動保存リスクのみで却下。rich getter のメモ化ヘルパー化・merge/lineage/sourceDocLookup の関数抽出・view-controller/query-matcher の分割・createElement→template の整形・Python の VALID_VIDEO_TYPES 統合はいずれも churn として却下。
+
 ### Phase 18: 初回描画クリティカルパス (CDN・フォント) (2026-06-13)
 
 データロード以外の性能領域（Service Worker・初回描画・ペイロード）を調査し、初回描画クリティカルパス上の CDN/フォント依存を解消しました。

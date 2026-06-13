@@ -28,14 +28,7 @@ export class DataRepository extends BaseRepository {
     this.#richArticles = null;
     this.#richTitles = null;
     this.#sourceDocuments = null;
-    this.#richFighterSnapshots = null;
-    this.#richBoutParticipants = null;
-    this.#richVideoLinks = null;
-    this.#richArticleLinks = null;
     this.#richSourceMentions = null;
-    this.#richSourceEventReferences = null;
-    this.#richSourceBoutReferences = null;
-    this.#richSourceVideoReferences = null;
     this.#sourceDocLookup = null;
   }
 
@@ -48,14 +41,7 @@ export class DataRepository extends BaseRepository {
   #richArticles;
   #richTitles;
   #sourceDocuments;
-  #richFighterSnapshots;
-  #richBoutParticipants;
-  #richVideoLinks;
-  #richArticleLinks;
   #richSourceMentions;
-  #richSourceEventReferences;
-  #richSourceBoutReferences;
-  #richSourceVideoReferences;
   #sourceDocLookup;
 
   /**
@@ -74,14 +60,7 @@ export class DataRepository extends BaseRepository {
     this.#richArticles = null;
     this.#richTitles = null;
     this.#sourceDocuments = null;
-    this.#richFighterSnapshots = null;
-    this.#richBoutParticipants = null;
-    this.#richVideoLinks = null;
-    this.#richArticleLinks = null;
     this.#richSourceMentions = null;
-    this.#richSourceEventReferences = null;
-    this.#richSourceBoutReferences = null;
-    this.#richSourceVideoReferences = null;
     this.#sourceDocLookup = null;
     this.indexes.clear();
     this.enricher.reset();
@@ -275,53 +254,12 @@ export class DataRepository extends BaseRepository {
   }
 
   get fighterSnapshots() { return super.fighterSnapshots; }
-  get richFighterSnapshots() {
-    if (this.#richFighterSnapshots) return this.#richFighterSnapshots;
-    this.#richFighterSnapshots = super.fighterSnapshots.map(s => this.enricher.enrichFighterSnapshot(s));
-    return this.#richFighterSnapshots;
-  }
-
   get boutParticipants() { return super.boutParticipants; }
-  get richBoutParticipants() {
-    if (this.#richBoutParticipants) return this.#richBoutParticipants;
-    this.#richBoutParticipants = super.boutParticipants.map(p => this.enricher.enrichBoutParticipant(p));
-    return this.#richBoutParticipants;
-  }
-
   get videoLinks() { return super.videoLinks; }
-  get richVideoLinks() {
-    if (this.#richVideoLinks) return this.#richVideoLinks;
-    this.#richVideoLinks = super.videoLinks.map(l => this.enricher.enrichVideoLink(l));
-    return this.#richVideoLinks;
-  }
-
   get articleLinks() { return super.articleLinks; }
-  get richArticleLinks() {
-    if (this.#richArticleLinks) return this.#richArticleLinks;
-    this.#richArticleLinks = super.articleLinks.map(l => this.enricher.enrichArticleLink(l));
-    return this.#richArticleLinks;
-  }
-
   get sourceEventReferences() { return super.sourceEventReferences; }
-  get richSourceEventReferences() {
-    if (this.#richSourceEventReferences) return this.#richSourceEventReferences;
-    this.#richSourceEventReferences = super.sourceEventReferences.map(r => this.enricher.enrichSourceEventReference(r));
-    return this.#richSourceEventReferences;
-  }
-
   get sourceBoutReferences() { return super.sourceBoutReferences; }
-  get richSourceBoutReferences() {
-    if (this.#richSourceBoutReferences) return this.#richSourceBoutReferences;
-    this.#richSourceBoutReferences = super.sourceBoutReferences.map(r => this.enricher.enrichSourceBoutReference(r));
-    return this.#richSourceBoutReferences;
-  }
-
   get sourceVideoReferences() { return super.sourceVideoReferences; }
-  get richSourceVideoReferences() {
-    if (this.#richSourceVideoReferences) return this.#richSourceVideoReferences;
-    this.#richSourceVideoReferences = super.sourceVideoReferences.map(r => this.enricher.enrichSourceVideoReference(r));
-    return this.#richSourceVideoReferences;
-  }
 
   // Rich Finders
   findRichEvent(id) { return this.index("richEvents:event_id", this.richEvents, e => e.event_id).get(id); }
