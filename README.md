@@ -563,7 +563,9 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 ### 検証
 
 - `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
-- `scripts/validate_json.js`: Node 側から生成 JSON を検証します。`make validate` が両方を実行します。
+- `scripts/validate_json.js`: Node 側から生成 JSON を検証します（viewer のパーサ/ローダと描画パス）。
+- `scripts/test_filters.mjs`: viewer のフィルタ中核 `itemPassesFilters` の Node ユニットテスト（`node:test`、依存なし）。
+- `make validate` がこの 3 つを順に実行します。
 
 ---
 
@@ -573,13 +575,13 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ```bash
 make build      # build_json + build_numbers_json + build_official_json + build_official_pages_json
-make validate   # validate_json.py + validate_json.js
+make validate   # validate_json.py + validate_json.js + test_filters.mjs
 make test       # pytest -q
 make check      # build → validate → test
 ```
 
 - `make build`: 4 本の build スクリプトで CSV から `docs/data/*.json` を生成します。
-- `make validate`: Python と Node 両方で生成 JSON を検証します。
+- `make validate`: Python・Node の JSON 検証に加え、`itemPassesFilters` の Node ユニットテストを実行します。
 - `make test`: pytest を実行します。
 - `make check`: build → validate → test を順に実行します。
 
@@ -809,7 +811,6 @@ wc -l data-src/*.csv data-src/archives/*.csv
 
 ## 次の改善候補
 
-- `source_documents.json` を軽量化する
 - 王座変遷の精度を上げる
 - 選手プロフィールを充実させる
 - unknown 試合の結果補完を進める

@@ -46,7 +46,7 @@ export class DataLoader {
     this.fetchText = fetchText;
   }
 
-  // ストリーミング中、13 並列キーが flush ごとに patch すると render が多重に走る。
+  // ストリーミング中、並列キーが flush ごとに patch すると render が多重に走る。
   // patch 通知だけを 1 フレームに 1 回へまとめる (invalidate はフラッシュ毎に必要なので残す)。
   // requestAnimationFrame が無い環境 (Node/テスト) では即時 patch して従来挙動を保つ。
   #schedulePatch() {

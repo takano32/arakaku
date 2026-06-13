@@ -17,6 +17,12 @@ AGENTS.md
 .agents/skills/arakaku-source-pipeline/SKILL.md
 .agents/skills/arakaku-viewer-ui/SKILL.md
 .agents/skills/arakaku-sorting-strategy/SKILL.md
+.agents/skills/arakaku-data-curator/SKILL.md
+.agents/skills/arakaku-review-workflow/SKILL.md
+.agents/skills/arakaku-actions-ops/SKILL.md
+.agents/skills/arakaku-docs-handoff/SKILL.md
+.agents/skills/arakaku-filters/SKILL.md
+.agents/skills/arakaku-reliability-layering/SKILL.md
 HANDOFF.md
 NEXT_TASKS.md
 OPERATIONS_CHECKLIST.md
@@ -49,6 +55,27 @@ AGENTS.md
 
 .agents/skills/arakaku-viewer-ui/SKILL.md
   Codex-specific instructions for static viewer tabs, source rendering, archive metadata display, and search behavior.
+
+.agents/skills/arakaku-sorting-strategy/SKILL.md
+  CSV-ascending / viewer-descending sort policy.
+
+.agents/skills/arakaku-data-curator/SKILL.md
+  Canonical CSV editing, data integrity, Numbers/official integration.
+
+.agents/skills/arakaku-review-workflow/SKILL.md
+  review/*.csv candidate extraction, review, and apply scripts.
+
+.agents/skills/arakaku-actions-ops/SKILL.md
+  GitHub Actions (test.yml / pages.yml) and CI config.
+
+.agents/skills/arakaku-docs-handoff/SKILL.md
+  This skill: which docs/skills to keep in sync.
+
+.agents/skills/arakaku-filters/SKILL.md
+  Config-driven per-tab filters (TAB_FILTERS / itemPassesFilters).
+
+.agents/skills/arakaku-reliability-layering/SKILL.md
+  Source-tier enrichment, sorting, and provenance.
 
 HANDOFF.md
   Current project state and recent work summary.
@@ -121,13 +148,15 @@ Current viewer ADMIN_TABS (管理ビュー):
 Current viewer rendering architecture:
 
 ```text
-TabRenderers → { items, renderItem, estimateSize? } descriptor
+TabRenderers → { items, renderItem, estimateSize?, itemsSource? } descriptor
 TabRendererRegistry.renderTo(container, tabId) → VirtualList per tab
-VirtualList → @tanstack/virtual-core@3 (CDN), #loading flag for empty-state
-DataLoader.load() → Phase 1 streaming (PRIMARY_DATA_KEYS, @streamparser/json CDN)
-               → Phase 2 streaming (ENRICHMENT_DATA_KEYS, same #streamKey mechanism)
-               → PUBLIC_REFERENCE_DATA_KEYS also streamed via #streamKey
-loadForTab(tabId) → TAB_DATA_KEYS keys streamed via #streamKey on demand
+VirtualList → @tanstack/virtual-core@3 via dynamic CDN import (off the startup graph)
+DataLoader.load() → Phase 0 loadKeys(INITIAL_TAB_DATA_KEYS = officialPages, officialNews) eager (not streamed)
+               → Phase 1 streaming (PRIMARY_DATA_KEYS, 11 keys, @streamparser/json CDN)
+               → Phase 2 = Promise.all([#loadEnrichment(), loadPublicReferences()]) — one parallel pool
+                 (ENRICHMENT_DATA_KEYS no longer includes sourceMentions/metadata)
+all streaming goes through #streamKeySafe (per-key failure isolation)
+loadForTab(tabId) → TAB_DATA_KEYS keys streamed on demand (e.g. sourceMentions on the mentions tab)
 ```
 
 Build scripts (all run by `make build`):

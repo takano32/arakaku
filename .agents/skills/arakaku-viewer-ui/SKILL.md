@@ -151,12 +151,12 @@ non-OK responses — never silently swallow an HTTP error into fallback data.
 
 **Phase 1 — streaming (PRIMARY_DATA_KEYS):**
 
-13 files stream in parallel via SAX parsing:
+11 files stream in parallel via SAX parsing:
 
 ```javascript
 export const PRIMARY_DATA_KEYS = [
   "bouts", "boutParticipants", "fighters", "events", "promotions",
-  "videos", "titles", "titleReigns", "videoLinks", "aliases",
+  "videos", "titles", "videoLinks",
   "fighterSnapshots", "articles", "articleLinks",
 ];
 ```
@@ -198,7 +198,7 @@ Only **array** JSON streams correctly. `#streamKey`'s SAX handler pushes array e
 
 ### Streaming render-cost discipline
 
-Every `#streamKey` flush invalidates the repository (cheap, ~0.5µs) and schedules a render. With 13 keys streaming in parallel that is dozens of renders, so **render work must stay cheap and rare during streaming**:
+Every `#streamKey` flush invalidates the repository (cheap, ~0.5µs) and schedules a render. With 11 keys streaming in parallel that is dozens of renders, so **render work must stay cheap and rare during streaming**:
 
 - **Patch coalescing** (`data-loader.js` `#schedulePatch()`): flushes schedule at most one `state.patch({})` per `requestAnimationFrame`. `invalidate()` stays per-flush (correctness); only the render notification is batched. Node/tests (no `requestAnimationFrame`) fall back to immediate patch. Per-phase confirm patches stay direct, guaranteeing a settled final render.
 - **`renderSummary()` must not build rich collections during streaming.** 試合/動画 counts use the plain `d.bouts.length`/`d.videos.length` (rich is reverse + `lowReliabilityLast` partition only, so the count is identical). 選手 reads `repo.richFighters.length` only once `fighters`+`numbersFighters`+`numbersNameMatches`+`officialPlayers` are loaded (richFighters' real deps), else the plain `fighters.length`. Mirror the existing `sourceDocuments`/`sourceReferences` `loadedDataKeys` gates.

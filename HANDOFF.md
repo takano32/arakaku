@@ -67,6 +67,18 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 20: ドキュメント整合性監査 (2026-06-13)
+
+Phase 14〜19 のコード変更後、ドキュメント／スキルの主張を現行コードと突き合わせて監査。ドリフトは中程度・局所的で、いずれも数行の外科的修正で解消（コード挙動の変更なし）。
+
+- **arakaku-viewer-ui SKILL**: Phase 1 説明が `PRIMARY_DATA_KEYS` を旧 13 キー（`titleReigns`/`aliases` を含む）で記載し、同スキル内の別記述（除去済み）と自己矛盾していた → 11 キーに修正。「13 keys」表記も 11 に
+- **arakaku-docs-handoff SKILL**: ローダ説明が旧 2-phase だった → Phase 0（INITIAL eager）＋ Phase 1 ＋ Phase 2（`Promise.all([#loadEnrichment, loadPublicReferences])` 単一プール）の 3-phase に修正。virtual-core を dynamic import と明記。スキル一覧が 11 個中 5 個しか挙げていなかった → 全 11 個に
+- **README**: `make validate` の説明に `test_filters.mjs` を追加。完了済みの TODO「`source_documents.json` を軽量化する」を削除
+- **SCHEMA_NOTES**: 生成 JSON 一覧から漏れていた `source_document_bodies.json`＋公式系 6 JSON を追加し、ビルドが 4 スクリプトであることを明記。section 3 の「移行時の件数」は歴史的記録なので上書きせず、再生成テーブルの現在値は変動する旨の注記を追加
+- **data-loader.js**: コメントの「13 並列キー」を実数に合わせ修正（コードの挙動変更なし）
+
+監査で確認した正確な記述（変更なし）: viewer-ui の Phase 0/2 キー・CDN 規約・itemsSource・LabelRegistry、actions-ops の生成 JSON 31 件・action バージョン、data-curator/review-workflow/source-pipeline のスクリプト・CSV 一覧、scripts/GEMINI.md 等。README の JSON リストとビルドスクリプト記載も既に正確だった。
+
 ### Phase 19: コード構造・保守性の整理 (2026-06-13)
 
 性能は出し切ったため、コード構造・品質の軸を調査。**モノリス分割は不要**（viewer は大きいが凝集している）と正直に判定し、確実な低リスク改善のみ実施。
