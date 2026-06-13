@@ -67,6 +67,15 @@ PY
 
 ## 直近で追加・整備したもの
 
+### Phase 22: 公式＋名鑑の選手プロフィール統合 (2026-06-14)
+
+選手カードが「公式データ」「名鑑データ」の 2 ブロックで**戦績を二重表示**していたのを、Enricher でマージして 1 ブロックに統合した。
+
+- 調査で、公式 `official_players` と名鑑 `numbers_fighters` は**同一 106 人・戦績も全員一致**（食い違いゼロ）と判明。各ソース固有情報は補完関係（公式: 国籍/ニックネーム/bio、名鑑: 勝率/実績バッジ/fight_count）
+- **`data-enricher.js`**: `enrichFighter` に `#mergeRecord`（名鑑 `fight_count`/`win_rate` ＋ 一致する `wins`/`losses` ＋ 公式 `draws` を 1 つの `profile.record` に集約）と `#numbersAchievements`（👑王座/🏆優勝/白グローブ）を追加。`#applyOfficialPlayer` の未使用だった `profile.wins/losses/draws` 書き込みを削除（生値は `official_data`/`numbers_data` に保持）
+- **`tab-renderers.js`**: `renderOfficialBlock`＋`renderNumbersBlock` を 1 つの `renderProfileBlock`（中立色 `.source-profile`）に置換。戦績は `通算 N戦 X勝Y敗Z分 (勝率 R%)` で一度だけ表示。win_rate（0〜1 の分数文字列）はパーセント 1 桁に整形（生値は詳細に保持）。出所はカード上部の `[名鑑][公式]` バッジで引き続き示す
+- viewer 限定変更（生成 JSON は md5 不変）。`make check` green
+
 ### Phase 21: コードエージェント向けコメントの全面付与 (2026-06-13)
 
 viewer JS（27 ファイル）と Python パイプライン（32 ファイル）の計 59 ファイルに、**単独で読んでも迷わない**よう、各ファイル先頭の**モジュール解説ヘッダ**（役割・アーキ上の位置・依存/呼び出し元・不変条件・関連スキルへのポインタ）と、**要所の「不変条件/落とし穴」インラインコメント**（順序依存・同期必須・静的 import 禁止・非破壊コピー前提など）を追加。日本語・既存スタイル準拠。

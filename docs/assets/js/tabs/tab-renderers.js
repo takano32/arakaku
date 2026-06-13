@@ -214,40 +214,41 @@ export class TabRenderers {
     `;
   }
 
-  /** 公式サイト由来のデータを「公式バッジ」と同じ背景色の丸角ボックスにまとめる。 */
-  renderOfficialBlock(od, summary) {
-    if (!od) return "";
-    const stats = od.wins != null
-      ? `<span class="official-stat">${od.wins}勝 ${od.losses}敗${od.draws ? ` ${od.draws}分` : ""}</span>`
+  // 統合済み戦績 (profile.record) を「N戦 X勝Y敗Z分 (勝率 R%)」の 1 行にする。
+  // win_rate は名鑑由来の 0〜1 の分数 (文字列)。生値は冗長なので表示はパーセント 1 桁に整形する
+  // (正確な値は raw numbers_data 経由で詳細に残る)。
+  #recordText(r) {
+    const base = joinPresent([
+      r.fight_count != null ? `${r.fight_count}戦` : "",
+      r.wins != null ? `${r.wins}勝` : "",
+      r.losses != null ? `${r.losses}敗` : "",
+      r.draws ? `${r.draws}分` : "",
+    ], " ");
+    const n = Number(r.win_rate);
+    const wr = r.win_rate != null && r.win_rate !== "" && Number.isFinite(n)
+      ? `${(n * 100).toFixed(1)}%`
       : "";
-    const bio = this.renderOfficialBio(od, summary);
-    if (!stats && !bio) return "";
-    return `
-      <section class="source-block source-official">
-        <span class="source-block-label">公式データ</span>
-        ${stats ? `<div class="official-stats-block">${stats}</div>` : ""}
-        ${bio}
-      </section>
-    `;
+    return wr ? `${base} (勝率 ${wr})` : base;
   }
 
-  /** 名鑑由来のデータを「名鑑バッジ」と同じ背景色の丸角ボックスにまとめる。 */
-  renderNumbersBlock(nd) {
-    if (!nd) return "";
-    const total = escapeHtml(joinPresent([
-      nd.stats?.fight_count ? `${nd.stats.fight_count}戦` : "",
-      nd.stats?.wins ? `${nd.stats.wins}勝` : "",
-      nd.stats?.losses ? `${nd.stats.losses}負` : "",
-    ], " "));
+  /**
+   * 公式 + 名鑑をマージした「戦績・プロフィール」ブロック。戦績は profile.record に
+   * 一度だけ集約済み (二重表示しない)。名鑑実績マーカーと、summary と重複しない公式 bio を併記する。
+   */
+  renderProfileBlock(f) {
+    const r = f.profile?.record;
+    const achievements = f.profile?.achievements ?? [];
+    const bio = this.renderOfficialBio(f.official_data, f.summary);
+    const chips = [
+      r ? `<span class="numbers-stat">通算 ${escapeHtml(this.#recordText(r))}</span>` : "",
+      ...achievements.map((a) => `<span class="numbers-stat achievement-marker">${escapeHtml(a)}</span>`),
+    ].filter(Boolean).join("");
+    if (!chips && !bio) return "";
     return `
-      <section class="source-block source-numbers">
-        <span class="source-block-label">名鑑データ</span>
-        <div class="numbers-stats-block">
-          <span class="numbers-stat">通算: ${total}</span>
-          ${nd.achievements?.white_glove_count ? `<span class="numbers-stat">白グローブ: ${nd.achievements.white_glove_count}回</span>` : ""}
-          ${nd.achievements?.belt_marker ? `<span class="numbers-stat achievement-marker">👑 ${escapeHtml(nd.achievements.belt_marker)}</span>` : ""}
-          ${nd.achievements?.tournament_win_marker ? `<span class="numbers-stat achievement-marker">🏆 ${escapeHtml(nd.achievements.tournament_win_marker)}</span>` : ""}
-        </div>
+      <section class="source-block source-profile">
+        <span class="source-block-label">戦績・プロフィール</span>
+        ${chips ? `<div class="numbers-stats-block">${chips}</div>` : ""}
+        ${bio}
       </section>
     `;
   }
@@ -273,8 +274,7 @@ export class TabRenderers {
           ["身長・年齢", joinPresent([f.profile?.height, f.profile?.age])],
           ["国籍", f.profile?.nationality],
         ])}
-        ${this.renderOfficialBlock(od, f.summary)}
-        ${this.renderNumbersBlock(nd)}
+        ${this.renderProfileBlock(f)}
         ${related.renderRelatedBouts(f.fighter_id)}
         ${this.renderFighterSnapshots(f.fighter_id)}
         ${components.primaryArticleRefList(sources.renderArticleRef.bind(sources), f.source_article_ids)}

@@ -1070,15 +1070,6 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   letter-spacing: 0.04em;
 }
 
-.source-numbers {
-  background: #eaf0fb; /* = 名鑑バッジ */
-  border-color: #c8d8f8;
-}
-
-.source-numbers .source-block-label {
-  color: var(--accent-dark);
-}
-
 .source-official {
   background: #edf7f0; /* = 公式バッジ */
   border-color: #b2ddc4;
@@ -1094,10 +1085,6 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   margin: 0;
 }
 
-.source-numbers .numbers-stat {
-  background: #fff;
-}
-
 .source-official .official-stat {
   background: #fff;
 }
@@ -1107,6 +1094,28 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   padding: 0 0 0 18px;
   background: transparent;
   border: none;
+}
+
+/* 公式 + 名鑑をマージした統合プロフィールブロック (中立色。出所はカード上部のバッジで示す) */
+.source-profile {
+  background: var(--panel);
+  border-color: var(--line);
+}
+
+.source-profile .source-block-label {
+  color: var(--muted);
+}
+
+.source-profile .numbers-stat {
+  background: #fff;
+}
+
+.source-profile .official-bio {
+  margin: 0;
+  padding: 0 0 0 18px;
+  background: transparent;
+  border: none;
+  color: var(--ink);
 }
 
 /* 管理ビューの単一出所カードは左端の色帯で出所を示す */

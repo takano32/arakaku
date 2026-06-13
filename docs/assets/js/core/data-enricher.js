@@ -164,9 +164,8 @@ export class DataEnricher {
     if (op.nickname) rich.profile.nickname = op.nickname;
     if (op.nationality) rich.profile.nationality = op.nationality;
     if (op.name_kana) rich.profile.name_kana = op.name_kana;
-    if (op.wins != null) rich.profile.wins = op.wins;
-    if (op.losses != null) rich.profile.losses = op.losses;
-    if (op.draws != null) rich.profile.draws = op.draws;
+    // 戦績 (wins/losses/draws) は enrichFighter の #mergeRecord で名鑑と統合し
+    // profile.record に集約するため、ここでは profile に展開しない。
     if (op.bio && !rich.summary) rich.summary = op.bio;
     rich.official_data = op;
   }
@@ -194,6 +193,33 @@ export class DataEnricher {
     rich.numbers_data = nf;
   }
 
+  // 公式・名鑑の戦績を 1 つに統合する。両者は通常一致するので勝敗は一度だけ持つ
+  // (名鑑優先・無ければ公式)。各ソース固有の数値 (名鑑: fight_count/win_rate, 公式: draws)
+  // は取りこぼさず合算する。どちらの戦績も無ければ null。
+  #mergeRecord(op, nf) {
+    const ns = nf?.stats ?? {};
+    const wins = ns.wins ?? op?.wins ?? null;
+    const losses = ns.losses ?? op?.losses ?? null;
+    if (wins == null && losses == null && ns.fight_count == null) return null;
+    return {
+      fight_count: ns.fight_count ?? null, // 名鑑のみ
+      wins,
+      losses,
+      draws: op?.draws ?? null,            // 公式のみ
+      win_rate: ns.win_rate ?? null,       // 名鑑のみ
+    };
+  }
+
+  // 名鑑の実績マーカーを表示用文字列の配列にする (王座 👑 / トーナメント優勝 🏆 / 白グローブ)。
+  #numbersAchievements(nf) {
+    const a = nf?.achievements ?? {};
+    const out = [];
+    if (a.belt_marker) out.push(`👑 ${a.belt_marker}`);
+    if (a.tournament_win_marker) out.push(`🏆 ${a.tournament_win_marker}`);
+    if (a.white_glove_count) out.push(`白グローブ ${a.white_glove_count}回`);
+    return out;
+  }
+
   enrichFighter(fighter) {
     const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
     const match = this.#nameMatches.get(fighter.fighter_id);
@@ -217,6 +243,15 @@ export class DataEnricher {
       ? [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n")
       : "";
     rich.summary = numbersSummary || (needsClear ? "" : (fighter.summary || ""));
+
+    // 公式(戦績/bio/国籍) と 名鑑(通算数/勝率/実績) を 1 つの戦績プロフィールに統合する。
+    // 重複する勝敗は record に一度だけ持ち、各ソース固有のフィールドは両方残す。カードは
+    // official_data/numbers_data を別ブロックにせず profile.record/achievements を 1 ブロックで表示する。
+    rich.profile = { ...(rich.profile ?? {}) };
+    const record = this.#mergeRecord(op, nf);
+    if (record) rich.profile.record = record;
+    const achievements = this.#numbersAchievements(nf);
+    if (achievements.length) rich.profile.achievements = achievements;
 
     return rich;
   }
