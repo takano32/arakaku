@@ -666,6 +666,7 @@ export class TabRenderers {
           ["出場大会", f.achievements?.tournament_entry_raw],
           ["キャッチコピー", f.catchphrase],
           ["メモ", f.notes],
+          ["出典", joinPresent([f.source_sheet, f.source_row ? `行${f.source_row}` : ""], " / ")],
         ])}
       </article>
     `;
@@ -708,11 +709,16 @@ export class TabRenderers {
         ${r.result ? `<p class="result">${escapeHtml(r.result_mark || "")} ${escapeHtml(r.result)}</p>` : ""}
         ${components.detailDisclosure([
           ["record_id", `<code>${escapeHtml(r.record_id)}</code>`],
+          ["numbers_fighter_id", `<code>${escapeHtml(r.numbers_fighter_id)}</code>`],
           ["matched_fighter_id", r.matched_fighter_id ? `<code>${escapeHtml(r.matched_fighter_id)}</code>` : "未対応"],
+          ["candidate_fighter_id", r.candidate_fighter_id ? `<code>${escapeHtml(r.candidate_fighter_id)}</code>` : ""],
           ["相手 matched_fighter_id", r.opponent_matched_fighter_id ? `<code>${escapeHtml(r.opponent_matched_fighter_id)}</code>` : ""],
+          ["相手 candidate_fighter_id", r.opponent_candidate_fighter_id ? `<code>${escapeHtml(r.opponent_candidate_fighter_id)}</code>` : ""],
+          ["相手 numbers_fighter_id", r.opponent_numbers_fighter_id ? `<code>${escapeHtml(r.opponent_numbers_fighter_id)}</code>` : ""],
           ["形式", r.bout_format],
           ["団体(原文)", r.promotion_raw],
           ["大会番号(原文)", r.event_number_raw],
+          ["出典", joinPresent([r.source_sheet, r.source_row ? `行${r.source_row}` : ""], " / ")],
           ["詳細", r.detail_raw],
         ])}
       </article>

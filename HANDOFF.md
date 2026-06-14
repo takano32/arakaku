@@ -74,7 +74,7 @@ PY
 - **発見（実バグ）**: 管理「名鑑選手」カード `renderNumbersFighterCard` が JSON の入れ子（`stats.*`/`achievements.*`/`profile.*`）を**フラットアクセス**していて、戦績・実績行が全部 undefined で描画されていなかった。照合済み 98 人は公開「選手」カードに出るため隠れていたが、**未照合 8 人**（`numbers_fighter_011/017/020/027/032/062/065/084`）は公開カードに出ず、管理カードが唯一の表示先 → 彼らの戦績・勝率・実績・身長/年齢/所属が**どこにも表示されていなかった**
 - **修正**（`tab-renderers.js`）: `renderNumbersFighterCard` を入れ子アクセスに直し、戦績（共有 `#recordText`）・実績（共有 `numbersAchievementLabels`）・所属/身長/年齢（definitionList）・出場大会・団体原文（詳細）を表示。`renderNumbersFightRecordCard` の詳細に `promotion_raw`/`event_number_raw`（原文）を追加
 - **転用（同じ整形ロジックの横展開）**: (1) `#numbersAchievements`（enricher）を、生値が既に絵文字を含むのに二重付与していたバグを解消した exported `numbersAchievementLabels`（`王座 👑`/`優勝 🏆x3`）に。公開カードと管理カードで共用。(2) `#winRatePercent` を抽出し、`#recordText`・選手カード詳細の `名鑑勝率`（生の `0.7627` → `76.3%`）・管理カードで共用。(3) `renderOfficialPlayerCard` の戦績も `#recordText` に統一（`負`/`敗` 不統一を解消）
-- 唯一どこにも出ない名鑑フィールドは純粋な来歴メタ（`source_sheet`/`source_row`/各種 id）のみ。viewer 限定変更（生成 JSON md5 不変）・`make check` green
+- 仕上げに残りの来歴メタ（`source_sheet`/`source_row`）と照合 ID（`numbers_fighter_id`・候補/相手側 `*_fighter_id`）も管理カードの詳細（折りたたみ）に追加し、**名鑑 3 テーブル全 leaf フィールドの表示カバレッジを 100%** にした（numbers_fighters 24 / numbers_name_matches 8 / numbers_fight_records 20、自動チェックで未参照フィールド 0 を確認）。viewer 限定変更（生成 JSON md5 不変）・`make check` green
 
 ### Phase 22: 公式＋名鑑の選手プロフィール統合 (2026-06-14)
 
