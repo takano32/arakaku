@@ -1004,6 +1004,14 @@ lite-youtube.lyt-activated > .lyt-playbtn {
   background: #fefdf0;
 }
 
+/* 名鑑記録カードの試合詳細 (detail_raw)。原文の改行を保持して読みやすく見せる。 */
+.record-detail {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  white-space: pre-line;
+}
+
 /* ── Official data ───────────────────────────────────────────── */
 
 .fighter-nickname {

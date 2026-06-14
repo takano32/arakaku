@@ -243,10 +243,12 @@ export class TabRenderers {
   renderProfileBlock(f) {
     const r = f.profile?.record;
     const achievements = f.profile?.achievements ?? [];
+    const entry = f.numbers_data?.achievements?.tournament_entry_raw; // 名鑑の出場大会マーカー
     const bio = this.renderOfficialBio(f.official_data, f.summary);
     const chips = [
       r ? `<span class="numbers-stat">通算 ${escapeHtml(this.#recordText(r))}</span>` : "",
       ...achievements.map((a) => `<span class="numbers-stat achievement-marker">${escapeHtml(a)}</span>`),
+      entry ? `<span class="numbers-stat">出場 ${escapeHtml(entry)}</span>` : "",
     ].filter(Boolean).join("");
     if (!chips && !bio) return "";
     return `
@@ -288,8 +290,6 @@ export class TabRenderers {
           ["別名", renderTextList(f.aliases)],
           ["主階級", f.main_division],
           ["主団体", repo.promotionName(f.main_promotion_id)],
-          ["名鑑勝率", this.#winRatePercent(nd?.stats?.win_rate)],
-          ["名鑑出場大会", nd?.achievements?.tournament_entry_raw],
           ["推定元動画", renderIdList(f.inferred_from_video_ids)],
           ["推定信頼度", f.inferred_confidence],
         ])}
@@ -647,6 +647,8 @@ export class TabRenderers {
       win_rate: f.stats?.win_rate ?? null,
     });
     const achievements = numbersAchievementLabels(f.achievements);
+    const entry = f.achievements?.tournament_entry_raw;
+    const markers = [...achievements, entry ? `出場 ${entry}` : ""].filter(Boolean);
     return `
       <article class="card record-card numbers-fighter-card">
         <h2>${escapeHtml(f.display_name)}</h2>
@@ -655,7 +657,8 @@ export class TabRenderers {
           <span class="video-badge">${f.source_confidence === "numbers" ? "名鑑" : escapeHtml(f.source_confidence ?? "")}</span>
         </p>
         ${record ? `<p class="meta">通算 ${escapeHtml(record)}</p>` : ""}
-        ${achievements.length ? `<p class="meta">${achievements.map((a) => escapeHtml(a)).join(" ／ ")}</p>` : ""}
+        ${markers.length ? `<p class="meta">${markers.map((a) => escapeHtml(a)).join(" ／ ")}</p>` : ""}
+        ${f.catchphrase ? `<p class="fighter-summary">${escapeHtml(f.catchphrase)}</p>` : ""}
         ${components.definitionList([
           ["所属", renderValue(f.profile?.gym)],
           ["身長・年齢", renderValue(joinPresent([f.profile?.height, f.profile?.age]))],
@@ -663,8 +666,6 @@ export class TabRenderers {
         ${components.detailDisclosure([
           ["numbers_fighter_id", `<code>${escapeHtml(f.numbers_fighter_id)}</code>`],
           ["団体(原文)", f.main_promotion_raw],
-          ["出場大会", f.achievements?.tournament_entry_raw],
-          ["キャッチコピー", f.catchphrase],
           ["メモ", f.notes],
           ["出典", joinPresent([f.source_sheet, f.source_row ? `行${f.source_row}` : ""], " / ")],
         ])}
@@ -705,8 +706,9 @@ export class TabRenderers {
     return `
       <article class="card record-card numbers-record-card">
         <h2>${matchup}</h2>
-        <p class="meta">${escapeHtml(eventMeta)}</p>
+        <p class="meta">${escapeHtml(joinPresent([eventMeta, r.bout_format]))}</p>
         ${r.result ? `<p class="result">${escapeHtml(r.result_mark || "")} ${escapeHtml(r.result)}</p>` : ""}
+        ${r.detail_raw ? `<p class="record-detail">${escapeHtml(r.detail_raw)}</p>` : ""}
         ${components.detailDisclosure([
           ["record_id", `<code>${escapeHtml(r.record_id)}</code>`],
           ["numbers_fighter_id", `<code>${escapeHtml(r.numbers_fighter_id)}</code>`],
@@ -715,11 +717,9 @@ export class TabRenderers {
           ["相手 matched_fighter_id", r.opponent_matched_fighter_id ? `<code>${escapeHtml(r.opponent_matched_fighter_id)}</code>` : ""],
           ["相手 candidate_fighter_id", r.opponent_candidate_fighter_id ? `<code>${escapeHtml(r.opponent_candidate_fighter_id)}</code>` : ""],
           ["相手 numbers_fighter_id", r.opponent_numbers_fighter_id ? `<code>${escapeHtml(r.opponent_numbers_fighter_id)}</code>` : ""],
-          ["形式", r.bout_format],
           ["団体(原文)", r.promotion_raw],
           ["大会番号(原文)", r.event_number_raw],
           ["出典", joinPresent([r.source_sheet, r.source_row ? `行${r.source_row}` : ""], " / ")],
-          ["詳細", r.detail_raw],
         ])}
       </article>
     `;
