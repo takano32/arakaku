@@ -74,18 +74,23 @@ main {
 .summary-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px 0;
   margin-bottom: 16px;
 }
 
+/* クリック可能な「ボタン/チップ」と誤認されないよう、枠・塗り・角丸は持たせず
+   ハイラインの区切りだけで並ぶ統計ストリップとして見せる（非インタラクティブな読み取り専用表示）。 */
 .summary-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  padding: 4px 10px;
+  padding: 1px 14px;
   display: flex;
   align-items: baseline;
   gap: 5px;
+  border-left: 1px solid var(--line);
+}
+
+.summary-card:first-child {
+  border-left: none;
+  padding-left: 0;
 }
 
 .summary-card strong {
