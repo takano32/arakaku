@@ -319,7 +319,7 @@ export class TabRenderers {
         ` : ""}
         ${sources.renderVideoLinks("event", e.event_id, repo.videoIdsLinkedToEventBouts(e.event_id))}
         ${related.renderEventBouts(e.event_id)}
-        ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e))}
+        ${sources.renderSourceReferences(repo.sourceReferencesForEvent(e), "出典候補", { collapsed: true })}
         ${components.primaryArticleRefs(sources.renderArticleRefs.bind(sources), e.source_article_id)}
         ${components.detailDisclosure([
           ["event_id", `<code>${escapeHtml(e.event_id)}</code>`],
