@@ -120,13 +120,20 @@ export class SourceRenderers {
 
   sourceReferencesForBout(b) { return this.ctx.repo.sourceReferencesForBout(b); }
 
-  renderSourceReferences(refs, title = "出典候補") {
+  // options.collapsed=true で公式タブと同じ折りたたみ UI (既定は閉) にする。試合タブが使用。
+  // 表示は確度上位 5 件まで。5 件で切り詰めたときは summary に「上位N件」と明示する。
+  renderSourceReferences(refs, title = "出典候補", options = {}) {
     const { components } = this.ctx;
-    const list = this.uniqueSourceReferences(refs)
-      .sort((a, b) => this.referenceSortValue(a).localeCompare(this.referenceSortValue(b), "ja"))
-      .slice(0, 5);
+    const unique = this.uniqueSourceReferences(refs)
+      .sort((a, b) => this.referenceSortValue(a).localeCompare(this.referenceSortValue(b), "ja"));
+    const list = unique.slice(0, 5);
     if (list.length === 0) return "";
-    return components.section(title, components.relatedGrid(list.map(r => this.sourceReferenceSummary(r)).join("")), "related-source-mentions");
+    const grid = components.relatedGrid(list.map(r => this.sourceReferenceSummary(r)).join(""));
+    if (options.collapsed) {
+      const count = unique.length > list.length ? `上位${list.length}件` : `${list.length}件`;
+      return `<details class="related-source-mentions source-references-toggle"><summary>${escapeHtml(title)} <span class="meta">${escapeHtml(count)}</span></summary>${grid}</details>`;
+    }
+    return components.section(title, grid, "related-source-mentions");
   }
 
   uniqueSourceReferences(refs) {

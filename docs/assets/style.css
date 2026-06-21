@@ -465,6 +465,37 @@ dd {
   margin-top: 0.8rem;
 }
 
+/* 試合カードの「出典候補」を公式タブと同じ折りたたみ UI で見せる。
+   候補グリッド内のネスト details (記事詳細) に波及しないよう直接の子 summary だけを対象にする。 */
+.source-references-toggle > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  background: var(--surface2, #f0f0f0);
+  user-select: none;
+  list-style: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.source-references-toggle > summary::-webkit-details-marker { display: none; }
+.source-references-toggle > summary::before {
+  content: "▶";
+  font-size: 0.75rem;
+  color: var(--accent);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.source-references-toggle[open] > summary::before {
+  transform: rotate(90deg);
+}
+.source-references-toggle > summary:hover {
+  background: var(--surface3, #e4e4e4);
+}
+
 .record-detail-toggle summary:hover,
 .source-body summary:hover {
   color: var(--accent-dark);

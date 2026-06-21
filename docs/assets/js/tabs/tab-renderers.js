@@ -171,7 +171,7 @@ export class TabRenderers {
         ${hasResult ? `<p class="result">${summary} ${escapeHtml(resultLine)}</p>` : ""}
         ${b.title?.is_title_bout ? `<p class="meta">王座戦: ${escapeHtml(b.title.note)}</p>` : ""}
         ${sources.renderVideoLinks("bout", b.bout_id)}
-        ${sources.renderSourceReferences(sources.sourceReferencesForBout(b))}
+        ${sources.renderSourceReferences(sources.sourceReferencesForBout(b), "出典候補", { collapsed: true })}
         ${components.detailDisclosure([
           ["bout_id", `<code>${escapeHtml(b.bout_id)}</code>`],
           ["大会", navigation.eventLink(b.event_id, repo.eventName(b.event_id))],
