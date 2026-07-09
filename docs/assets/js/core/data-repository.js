@@ -109,10 +109,34 @@ export class DataRepository extends BaseRepository {
     if (this.#richFighters) return this.#richFighters;
 
     const canonical = this.fighters;
+    const discovered = this.#discoverFighters(canonical);
+    const numbersOrder = this.#computeNumbersOrder();
+
+    const raw = [...canonical, ...discovered];
+    const originalIndex = new Map(raw.map((f, idx) => [f.fighter_id, idx]));
+    raw.sort((a, b) => {
+      const ai = numbersOrder.has(a.fighter_id) ? numbersOrder.get(a.fighter_id) : Infinity;
+      const bi = numbersOrder.has(b.fighter_id) ? numbersOrder.get(b.fighter_id) : Infinity;
+      if (ai === Infinity && bi === Infinity) {
+        return originalIndex.get(a.fighter_id) - originalIndex.get(b.fighter_id);
+      }
+      if (ai === Infinity) return 1;
+      if (bi === Infinity) return -1;
+      return ai - bi;
+    });
+    const enriched = raw.map(f => this.enricher.enrichFighter(f));
+    const merged = this.#mergeDuplicateFighters(enriched, new Set(canonical.map(f => f.fighter_id)));
+    this.#richFighters = lowReliabilityLast(merged, fighterReliability);
+    return this.#richFighters;
+  }
+
+  // canonical fighters.csv に存在しない選手を Numbers 突合・公式サイト選手一覧から発掘する。
+  // 発掘した合成行は fighter_id/display_name のみ持ち、enrichFighter が肉付けする。
+  #discoverFighters(canonical) {
     const fighterIds = new Set(canonical.map(f => f.fighter_id));
+    const discovered = [];
 
     // Discover fighters that only exist in Numbers matches
-    const discovered = [];
     for (const match of this.numbersNameMatches) {
       const fid = match.matched_fighter_id || match.candidate_fighter_id;
       if (fid && !fighterIds.has(fid)) {
@@ -134,7 +158,12 @@ export class DataRepository extends BaseRepository {
       knownNames.add(normalizeFighterName(op.name));
     }
 
-    // Build numbers order: numbers_fighter_id sequence → fighter_id rank
+    return discovered;
+  }
+
+  // Numbers 名鑑掲載順 (numbers_fighter_id の並び) を fighter_id → rank の Map にする。
+  // richFighters のソートキーとして使い、名鑑順を優先し未掲載は末尾 (Infinity) に回す。
+  #computeNumbersOrder() {
     const matchByNumbersId = new Map();
     for (const m of this.numbersNameMatches) {
       if (m.numbers_fighter_id && !matchByNumbersId.has(m.numbers_fighter_id)) {
@@ -147,23 +176,7 @@ export class DataRepository extends BaseRepository {
       const fid = match?.matched_fighter_id || match?.candidate_fighter_id;
       if (fid && !numbersOrder.has(fid)) numbersOrder.set(fid, numbersOrder.size);
     }
-
-    const raw = [...canonical, ...discovered];
-    const originalIndex = new Map(raw.map((f, idx) => [f.fighter_id, idx]));
-    raw.sort((a, b) => {
-      const ai = numbersOrder.has(a.fighter_id) ? numbersOrder.get(a.fighter_id) : Infinity;
-      const bi = numbersOrder.has(b.fighter_id) ? numbersOrder.get(b.fighter_id) : Infinity;
-      if (ai === Infinity && bi === Infinity) {
-        return originalIndex.get(a.fighter_id) - originalIndex.get(b.fighter_id);
-      }
-      if (ai === Infinity) return 1;
-      if (bi === Infinity) return -1;
-      return ai - bi;
-    });
-    const enriched = raw.map(f => this.enricher.enrichFighter(f));
-    const merged = this.#mergeDuplicateFighters(enriched, new Set(canonical.map(f => f.fighter_id)));
-    this.#richFighters = lowReliabilityLast(merged, fighterReliability);
-    return this.#richFighters;
+    return numbersOrder;
   }
 
   /**

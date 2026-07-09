@@ -117,6 +117,10 @@ def clean_fighter_name(raw: str) -> str:
     return name
 
 
+def winner_loser(mark: str, left_name: str, right_name: str) -> tuple[str, str]:
+    return (left_name, right_name) if mark in WIN_MARKS else (right_name, left_name)
+
+
 def _make_row(
     article_id: str,
     event_id: str,
@@ -171,7 +175,7 @@ def _make_row(
 
 def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, str]]:
     article_id = article.get("article_id", "")
-    lines = [l.strip() for l in content_text.split("\n")]
+    lines = [line.strip() for line in content_text.split("\n")]
 
     # Trim footer boilerplate
     # note の共通フッタ (FOOTER_MARKERS) に当たったら以降を打ち切る。記事本文だけを
@@ -214,8 +218,7 @@ def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, 
                 left_mark = left[0]
                 left_name = clean_fighter_name(left[1:])
                 right_name = clean_fighter_name(right[1:])
-                winner = left_name if left_mark in WIN_MARKS else right_name
-                loser = right_name if left_mark in WIN_MARKS else left_name
+                winner, loser = winner_loser(left_mark, left_name, right_name)
                 result_line = filtered[i + 1] if i + 1 < n and filtered[i + 1].startswith("（") else ""
                 end_idx = i + 1 if result_line else i
                 bout_order += 1
@@ -235,8 +238,7 @@ def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, 
                     left_mark = left[0]
                     left_name = clean_fighter_name(left[1:])
                     right_name = clean_fighter_name(right[1:])
-                    winner = left_name if left_mark in WIN_MARKS else right_name
-                    loser = right_name if left_mark in WIN_MARKS else left_name
+                    winner, loser = winner_loser(left_mark, left_name, right_name)
                     result_line = filtered[i + 1] if i + 1 < n and filtered[i + 1].startswith("（") else ""
                     end_idx = i + 1 if result_line else i
                     bout_order += 1
@@ -265,8 +267,7 @@ def parse_article(content_text: str, article: dict[str, str]) -> list[dict[str, 
                 if k < n and filtered[k] and filtered[k][0] in FIGHTER_MARKS:
                     name2 = clean_fighter_name(filtered[k][1:])
 
-                    winner = name1 if name1_mark in WIN_MARKS else name2
-                    loser = name2 if name1_mark in WIN_MARKS else name1
+                    winner, loser = winner_loser(name1_mark, name1, name2)
 
                     result_line = ""
                     end_idx = k

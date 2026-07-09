@@ -36,10 +36,8 @@ def normalize_name(value: str) -> str:
     value = value.replace("．", "")
     value = value.lower()
 
+    # ローリングjr の英字表記ゆれをカタカナ表記へ正規化する (他は無変換で自分自身に戻るため不要)。
     replacements = {
-        "ローリングjr": "ローリングjr",
-        "ローリングjr.": "ローリングjr",
-        "rollingjr": "ローリングjr",
         "rollingjr": "ローリングjr",
     }
 

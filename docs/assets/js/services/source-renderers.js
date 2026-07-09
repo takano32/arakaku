@@ -195,7 +195,11 @@ export class SourceRenderers {
     ].map((label) => `<span class="video-badge">${escapeHtml(label)}</span>`).join("");
   }
 
+  renderTextDisclosure(label, text) {
+    return `<details class="source-body"><summary>${escapeHtml(label)}</summary><pre>${escapeHtml(text)}</pre></details>`;
+  }
+
   renderSourceBody(d) {
-    return d.content_text ? `<details class="source-body"><summary>本文を表示</summary><pre>${escapeHtml(d.content_text)}</pre></details>` : `<p class="meta">本文は空です。</p>`;
+    return d.content_text ? this.renderTextDisclosure("本文を表示", d.content_text) : `<p class="meta">本文は空です。</p>`;
   }
 }

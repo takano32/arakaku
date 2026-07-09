@@ -74,8 +74,6 @@ export const ADMIN_TABS = [
   ["officialMisc", "公式"],
 ];
 
-export const TABS = [...PUBLIC_TABS, ...ADMIN_TABS];
-
 // 「出典言及」タブで言及タイプを並べる順序。view-controller.js が indexOf でソートキーに使う。
 export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
 

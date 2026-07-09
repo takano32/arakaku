@@ -404,7 +404,7 @@ export class TabRenderers {
         <h2><span class="video-badge">${escapeHtml(labels.mentionType(m.mention_type))}</span> ${escapeHtml(m.entity_hint || m.matched_text || m.mention_id)}</h2>
         ${sources.renderSourceMentionLink(m)}
         <p>${escapeHtml(m.matched_text || "本文なし")}</p>
-        <details class="source-body"><summary>文脈を表示</summary><pre>${escapeHtml(m.context || m.matched_text || "")}</pre></details>
+        ${sources.renderTextDisclosure("文脈を表示", m.context || m.matched_text || "")}
         ${components.detailDisclosure([["mention_id", `<code>${escapeHtml(m.mention_id)}</code>`], ["source_id", `<code>${escapeHtml(m.source_id)}</code>`], ["entity_type", m.entity_type], ["confidence", m.confidence], ["line_number", m.line_number], ["source_ref_id", m.source_ref_id], ["notes", m.notes]])}
       </article>
     `;
@@ -423,26 +423,21 @@ export class TabRenderers {
   }
 
   renderOfficialPageDocCard(page) {
-    const el = document.createElement("article");
-    el.className = "card record-card official-page-doc-card";
-    el.innerHTML = `
+    const { components } = this.ctx;
+    return components.recordCard("official-page-doc-card", "", `
       <details>
         <summary><span class="summary-title">${escapeHtml(page.title)}</span> <span class="meta">${escapeHtml(page.description ?? "")}</span></summary>
         <div class="official-doc-body">${page.body_html}</div>
       </details>
-    `;
-    return el.outerHTML;
+    `);
   }
 
   renderOfficialNewsDocCard(article) {
-    const el = document.createElement("article");
-    el.className = "card record-card official-news-doc-card";
-    el.innerHTML = `
-      <h2>${escapeHtml(article.title)}</h2>
+    const { components } = this.ctx;
+    return components.recordCard("official-news-doc-card", `<h2>${escapeHtml(article.title)}</h2>`, `
       <p class="meta">${escapeHtml(joinPresent([article.date, article.category]))}</p>
       <div class="official-doc-body">${mdToHtml(article.body_md ?? "")}</div>
-    `;
-    return el.outerHTML;
+    `);
   }
 
   official() {

@@ -10,9 +10,8 @@ VALID_VIDEO_TYPES = {
     'full_fight', 'highlight', 'short', 'stream_archive', 'preview', 'interview', 'commentary', 'reference'
 }
 VALID_VIDEO_LINK_STATUSES = {'linked', 'partially_linked', 'unlinked', 'needs_review'}
-VALID_VIDEO_RELATION_TYPES = {
-    'full_fight', 'highlight', 'short', 'stream_archive', 'preview', 'interview', 'commentary', 'reference'
-}
+# video_links.relation_type は videos.video_type と同じ語彙を使う (異なる値域が必要になったら分離する)。
+VALID_VIDEO_RELATION_TYPES = VALID_VIDEO_TYPES
 VALID_VIDEO_ENTITY_TYPES = {'event', 'bout', 'fighter', 'promotion', 'title'}
 VALID_ARTICLE_ENTITY_TYPES = {
     'event', 'bout', 'fighter', 'fighter_snapshot', 'promotion', 'title', 'title_reign', 'video'
