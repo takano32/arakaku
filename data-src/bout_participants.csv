@@ -77,16 +77,16 @@ target-96-jby8vkzyuys-red,target-96-jby8vkzyuys,red,daina,だいな,,unknown
 target-96-jby8vkzyuys-blue,target-96-jby8vkzyuys,blue,tsuoshi,つおし,,unknown
 target-87-foh5vctjij4-red,target-87-foh5vctjij4,red,otosawa,おとさわ,,unknown
 target-87-foh5vctjij4-blue,target-87-foh5vctjij4,blue,kabei,かべい,,unknown
-emperor-118-bvtj1lsfwz4-red,emperor-118-bvtj1lsfwz4,red,no_118,エンペラーNo.118 ミドル級ワンマッチ ルージュド・スターリー,,unknown
+emperor-118-bvtj1lsfwz4-red,emperor-118-bvtj1lsfwz4,red,rouged_starry,ルージュド・スターリー,,unknown
 emperor-118-bvtj1lsfwz4-blue,emperor-118-bvtj1lsfwz4,blue,fighter_578e54d009,アマルド・ビュエーラ,,unknown
-max-bout-6-lightweight-tournament-ifu9zhhjmzi-red,max-bout-6-lightweight-tournament-ifu9zhhjmzi,red,fighter_3b93aaef4c,試合前インタビュー マルコ・フレイザー,,unknown
-max-bout-6-lightweight-tournament-ifu9zhhjmzi-blue,max-bout-6-lightweight-tournament-ifu9zhhjmzi,blue,fighter_6579bb563a,ランダーデビル 第６回,,unknown
-max-bout-6-lightweight-tournament-a8qhaua4i1g-red,max-bout-6-lightweight-tournament-a8qhaua4i1g,red,fighter_a20697a85d,試合前インタビュー ブルーワン,,unknown
-max-bout-6-lightweight-tournament-a8qhaua4i1g-blue,max-bout-6-lightweight-tournament-a8qhaua4i1g,blue,fighter_dc0d28e973,アイス・トロン 第６回,,unknown
-max-bout-6-lightweight-tournament-s99fvrs7evw-red,max-bout-6-lightweight-tournament-s99fvrs7evw,red,fighter_289c68dda1,試合前インタビュー コルト・アプロー,,unknown
-max-bout-6-lightweight-tournament-s99fvrs7evw-blue,max-bout-6-lightweight-tournament-s99fvrs7evw,blue,fighter_3ce17be3cd,フラーム・グラン 第６回,,unknown
-max-bout-6-lightweight-tournament-pcudq7vtm_g-red,max-bout-6-lightweight-tournament-pcudq7vtm_g,red,fighter_c5a0e29e83,試合前インタビュー わく,,unknown
-max-bout-6-lightweight-tournament-pcudq7vtm_g-blue,max-bout-6-lightweight-tournament-pcudq7vtm_g,blue,fighter_01c8f1b9f0,ゆめろう 第６回,,unknown
+max-bout-6-lightweight-tournament-ifu9zhhjmzi-red,max-bout-6-lightweight-tournament-ifu9zhhjmzi,red,marco_fraser,マルコ・フレイザー,,unknown
+max-bout-6-lightweight-tournament-ifu9zhhjmzi-blue,max-bout-6-lightweight-tournament-ifu9zhhjmzi,blue,lander_devil,ランダーデビル,,unknown
+max-bout-6-lightweight-tournament-a8qhaua4i1g-red,max-bout-6-lightweight-tournament-a8qhaua4i1g,red,blue_one,ブルーワン,,unknown
+max-bout-6-lightweight-tournament-a8qhaua4i1g-blue,max-bout-6-lightweight-tournament-a8qhaua4i1g,blue,ice_tron,アイス・トロン,,unknown
+max-bout-6-lightweight-tournament-s99fvrs7evw-red,max-bout-6-lightweight-tournament-s99fvrs7evw,red,colt_apro,コルト・アプロー,,unknown
+max-bout-6-lightweight-tournament-s99fvrs7evw-blue,max-bout-6-lightweight-tournament-s99fvrs7evw,blue,frahm_gran,フラーム・グラン,,unknown
+max-bout-6-lightweight-tournament-pcudq7vtm_g-red,max-bout-6-lightweight-tournament-pcudq7vtm_g,red,waku,わく,,unknown
+max-bout-6-lightweight-tournament-pcudq7vtm_g-blue,max-bout-6-lightweight-tournament-pcudq7vtm_g,blue,fighter_4d6356d021,ゆめろう,,unknown
 max-bout-unknown-middleweight-special-bompcnznx34-red,max-bout-unknown-middleweight-special-bompcnznx34,red,misa_will_joe,ミサ・ウィル・ジョー,,unknown
 max-bout-unknown-middleweight-special-bompcnznx34-blue,max-bout-unknown-middleweight-special-bompcnznx34,blue,rouged_starry,ルージュド・スターリー,,unknown
 max-bout-unknown-middleweight-special-tuog5suk_fo-red,max-bout-unknown-middleweight-special-tuog5suk_fo,red,tail_junk,テール・ジャンク,,unknown
@@ -155,7 +155,7 @@ emperor-119-lieo6s_renc-red,emperor-119-lieo6s_renc,red,fighter_e590e4eb0f,ア�
 emperor-119-lieo6s_renc-blue,emperor-119-lieo6s_renc,blue,fighter_3c507e2d6d,エス・ガリオン,,win
 max-bout-7-lightweight-gp-l0y4gy4llq0-red,max-bout-7-lightweight-gp-l0y4gy4llq0,red,blue_one,ブルーワン,,win
 max-bout-7-lightweight-gp-l0y4gy4llq0-blue,max-bout-7-lightweight-gp-l0y4gy4llq0,blue,fighter_25fddbaacc,ダブド・ガブリシャン,,loss
-max-bout-7-lightweight-gp-h3la4h4lfck-red,max-bout-7-lightweight-gp-h3la4h4lfck,red,max_gp,第７回 MAXバウトライト級GPＡブロック ランダーデビル,,unknown
+max-bout-7-lightweight-gp-h3la4h4lfck-red,max-bout-7-lightweight-gp-h3la4h4lfck,red,lander_devil,ランダーデビル,,unknown
 max-bout-7-lightweight-gp-h3la4h4lfck-blue,max-bout-7-lightweight-gp-h3la4h4lfck,blue,fighter_82d519db98,イスカン・アステ,,unknown
 max-bout-6-lightweight-tournament-surk9nnwoxi-red,max-bout-6-lightweight-tournament-surk9nnwoxi,red,colt_apro,コルト・アプロー,,win
 max-bout-6-lightweight-tournament-surk9nnwoxi-blue,max-bout-6-lightweight-tournament-surk9nnwoxi,blue,frahm_gran,フラーム・グラン,,loss
@@ -165,9 +165,9 @@ max-bout-6-lightweight-tournament-jdzqmwx4vg4-red,max-bout-6-lightweight-tournam
 max-bout-6-lightweight-tournament-jdzqmwx4vg4-blue,max-bout-6-lightweight-tournament-jdzqmwx4vg4,blue,fighter_4d6356d021,ゆめろう,,unknown
 max-bout-6-lightweight-tournament-oynlvwudspu-red,max-bout-6-lightweight-tournament-oynlvwudspu,red,marco_fraser,マルコ・フレイザー,,loss
 max-bout-6-lightweight-tournament-oynlvwudspu-blue,max-bout-6-lightweight-tournament-oynlvwudspu,blue,lander_devil,ランダーデビル,,win
-max-bout-6-lightweight-tournament-z5lialvefc-red,max-bout-6-lightweight-tournament-z5lialvefc,red,fighter_062d57b5e3,第一試合 ランダーデビル,,unknown
+max-bout-6-lightweight-tournament-z5lialvefc-red,max-bout-6-lightweight-tournament-z5lialvefc,red,lander_devil,ランダーデビル,,unknown
 max-bout-6-lightweight-tournament-z5lialvefc-blue,max-bout-6-lightweight-tournament-z5lialvefc,blue,blue_one,ブルーワン,,unknown
-max-bout-6-lightweight-tournament-xxhhyfb8kq-red,max-bout-6-lightweight-tournament-xxhhyfb8kq,red,fighter_e9dbb51256,第ニ試合 わく,,unknown
+max-bout-6-lightweight-tournament-xxhhyfb8kq-red,max-bout-6-lightweight-tournament-xxhhyfb8kq,red,waku,わく,,unknown
 max-bout-6-lightweight-tournament-xxhhyfb8kq-blue,max-bout-6-lightweight-tournament-xxhhyfb8kq,blue,colt_apro,コルト・アプロー,,unknown
 max-bout-6-lightweight-tournament-41mou0pvo8w-red,max-bout-6-lightweight-tournament-41mou0pvo8w,red,blue_one,ブルーワン,,unknown
 max-bout-6-lightweight-tournament-41mou0pvo8w-blue,max-bout-6-lightweight-tournament-41mou0pvo8w,blue,colt_apro,コルト・アプロー,,unknown
@@ -250,7 +250,7 @@ emperor-114-ckhfjmv2gfe-blue,emperor-114-ckhfjmv2gfe,blue,fighter_e590e4eb0f,ア
 target-88-jfai2e7nwcw-red,target-88-jfai2e7nwcw,red,fighter_cdb8d47163,ワインセル,,unknown
 target-88-jfai2e7nwcw-blue,target-88-jfai2e7nwcw,blue,harris_orbick,ハリス・オルビック,,unknown
 target-95-m3upkoczyo4-red,target-95-m3upkoczyo4,red,fighter_cdb8d47163,ワインセル,,unknown
-target-95-m3upkoczyo4-blue,target-95-m3upkoczyo4,blue,no_95,センサー・ファッジ No.95,,unknown
+target-95-m3upkoczyo4-blue,target-95-m3upkoczyo4,blue,fighter_c333ddf234,センサー・ファッジ,,unknown
 target-93-14fzpah41t0-red,target-93-14fzpah41t0,red,fighter_cdb8d47163,ワインセル,,unknown
 target-93-14fzpah41t0-blue,target-93-14fzpah41t0,blue,fighter_020b361a38,イベルト・キューミ,,unknown
 target-100-cnizik34mxe-red,target-100-cnizik34mxe,red,fighter_cdb8d47163,ワインセル,,unknown
@@ -334,7 +334,7 @@ mh-34-jw_sbyayf0g-blue,mh-34-jw_sbyayf0g,blue,fighter_13ff7e99ab,クーラー・
 emperor-114-agecfmrimag-red,emperor-114-agecfmrimag,red,fighter_b9115f2d71,チャールス・ブランディン,,unknown
 emperor-114-agecfmrimag-blue,emperor-114-agecfmrimag,blue,sakaeda,さかえだ,,unknown
 emperor-113-p6jlkp0q7yg-red,emperor-113-p6jlkp0q7yg,red,fighter_b23cf227ff,ダートソン,,unknown
-emperor-113-p6jlkp0q7yg-blue,emperor-113-p6jlkp0q7yg,blue,fighter_1306a749d5,レイ・ガシーオ２,,unknown
+emperor-113-p6jlkp0q7yg-blue,emperor-113-p6jlkp0q7yg,blue,fighter_32d0d719ec,レイ・ガシーオ,,unknown
 emperor-115-5zxi7yo4qzm-red,emperor-115-5zxi7yo4qzm,red,fighter_b23cf227ff,ダートソン,,unknown
 emperor-115-5zxi7yo4qzm-blue,emperor-115-5zxi7yo4qzm,blue,fighter_e590e4eb0f,アトゥリうえはら,,unknown
 emperor-109-xdyu346kpua-red,emperor-109-xdyu346kpua,red,fighter_b23cf227ff,ダートソン,,unknown
