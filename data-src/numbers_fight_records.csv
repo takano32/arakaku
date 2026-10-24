@@ -1,9 +1,9 @@
 record_id,source_sheet,source_row,numbers_fighter_id,fighter_name,matched_fighter_id,candidate_fighter_id,division,promotion_raw,promotion_id,event_number_raw,event_number_normalized,bout_format,opponent_name,opponent_numbers_fighter_id,opponent_matched_fighter_id,opponent_candidate_fighter_id,result_mark,result,detail_raw
 numbers_record_0001,個人成績,2,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,ライト級,エンペラー,emperor,105.0,105,タイトル,コルト・アプロー,numbers_fighter_057,colt_apro,colt_apro,⚫︎,loss,"2R 判定0-3 
 エンペラーライト級王座陥落"
-numbers_record_0002,個人成績,3,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,エンペラー,emperor,107.0,107,ワンマッチ,くにさだ,,,,⚪︎,win,3R KO(スタンドパンチ連打）
+numbers_record_0002,個人成績,3,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,エンペラー,emperor,107.0,107,ワンマッチ,くにさだ,,kunisada,kunisada,⚪︎,win,3R KO(スタンドパンチ連打）
 numbers_record_0003,個人成績,4,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,エンペラー,emperor,108.0,108,ワンマッチ,さくらい,numbers_fighter_042,sakurai,sakurai,⚪︎,win,2R 2:43 KO(左ボディ→パンチ→ボディへの膝)
-numbers_record_0004,個人成績,5,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,エンペラー,emperor,109.0,109,ワンマッチ,ナパーム,,,,⚪︎,win,2R 2:50 TKO(パウンド®️)
+numbers_record_0004,個人成績,5,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,エンペラー,emperor,109.0,109,ワンマッチ,ナパーム,,napalm,napalm,⚪︎,win,2R 2:50 TKO(パウンド®️)
 numbers_record_0005,個人成績,6,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,MAXバウト,max_bout,第6回 1回戦A,第6回 1回戦A,トーナメント,パット・バミューダ,numbers_fighter_059,fighter_ce9074c06f,fighter_ce9074c06f,⚪︎,win,"2R 1:29 グラウンド肘打ち
 二回戦進出"
 numbers_record_0006,個人成績,7,numbers_fighter_055,アイス・トロン,ice_tron,ice_tron,,MAXバウト,max_bout,第6回 2回戦,第6回 2回戦,トーナメント,ブルーワン,numbers_fighter_061,blue_one,blue_one,⚫︎,loss,"1R 3:24 KO(左フック)
@@ -129,7 +129,7 @@ numbers_record_0095,個人成績,96,numbers_fighter_072,かべい,kabei,kabei,,�
 numbers_record_0096,個人成績,97,numbers_fighter_072,かべい,kabei,kabei,,ターゲット,target,103.0,103,ワンマッチ,フランク・ダクタ,numbers_fighter_082,frank_dakuta,frank_dakuta,⚪︎,win,2R 3:09 KO(パウンド)
 numbers_record_0097,個人成績,98,numbers_fighter_019,かわかみ,kawakami,kawakami,ライト級,MH,mh,28.0,28,ワンマッチ,キマイラ,numbers_fighter_021,fighter_a5b1c7ad26,fighter_a5b1c7ad26,⚫︎,loss,"1R 2:39 KO(左フック→パウンド)
 メジャーデビュー戦"
-numbers_record_0098,個人成績,99,numbers_fighter_019,かわかみ,kawakami,kawakami,,MH,mh,29.0,29,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚫︎,loss,1R 1:23 ギロチンチョーク
+numbers_record_0098,個人成績,99,numbers_fighter_019,かわかみ,kawakami,kawakami,,MH,mh,29.0,29,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚫︎,loss,1R 1:23 ギロチンチョーク
 numbers_record_0099,個人成績,100,numbers_fighter_019,かわかみ,kawakami,kawakami,,MH,mh,31.0,31,ワンマッチ,ヨルセン・バクダリア,numbers_fighter_033,fighter_4315a5de6a,fighter_4315a5de6a,⚫︎,loss,3R 判定0-3
 numbers_record_0100,個人成績,101,numbers_fighter_019,かわかみ,kawakami,kawakami,,MH,mh,35.0,35,ワンマッチ,ムラト・クツワ,numbers_fighter_031,fighter_ceabf5fde9,fighter_ceabf5fde9,⚫︎,loss,3R 判定2-1
 numbers_record_0101,個人成績,102,numbers_fighter_020,きくちぴあのせん,fighter_130ce1e900,fighter_130ce1e900,ライト級,MH,mh,37.0,37,ワンマッチ,ヤック・タイアット,numbers_fighter_032,fighter_5fa6c40d05,fighter_5fa6c40d05,⚪︎,win,"1R 0:45 リアネイキッドチョーク
@@ -175,7 +175,7 @@ numbers_record_0131,個人成績,132,numbers_fighter_092,きょうない,kyonai,
 numbers_record_0132,個人成績,133,numbers_fighter_092,きょうない,kyonai,kyonai,,ターゲット,target,98.0,98,ワンマッチ,ワインセル,numbers_fighter_104,fighter_cdb8d47163,fighter_cdb8d47163,⚫︎,loss,2R 2:08 KO(パウンド)
 numbers_record_0133,個人成績,134,numbers_fighter_092,きょうない,kyonai,kyonai,,ターゲット,target,99.0,99,ワンマッチ,レーサー・ガルシア,numbers_fighter_102,fighter_0de6ecf382,fighter_0de6ecf382,⚫︎,loss,1R 2:52 リアネイキッドチョーク
 numbers_record_0134,個人成績,135,numbers_fighter_074,きんとき,kintoki,kintoki,ミドル級,ターゲット,target,85.0,85,ワンマッチ,アンディ・ザメス,numbers_fighter_068,fighter_d3f7158d8a,fighter_d3f7158d8a,⚪︎,win,2R KO(左ハイ)
-numbers_record_0135,個人成績,136,numbers_fighter_074,きんとき,kintoki,kintoki,,ターゲット,target,87.0,87,ワンマッチ,パス・フィーリー,,,,⚪︎,win,2R 0:58 TKO(膝蹴り→パウンド®️)
+numbers_record_0135,個人成績,136,numbers_fighter_074,きんとき,kintoki,kintoki,,ターゲット,target,87.0,87,ワンマッチ,パス・フィーリー,,fighter_0d592ec5c6,fighter_0d592ec5c6,⚪︎,win,2R 0:58 TKO(膝蹴り→パウンド®️)
 numbers_record_0136,個人成績,137,numbers_fighter_074,きんとき,kintoki,kintoki,,ターゲット,target,90.0,90,ワンマッチ,おとさわ,numbers_fighter_070,otosawa,otosawa,⚫︎,loss,1R 2:54 腕ひしぎ十字固め
 numbers_record_0137,個人成績,138,numbers_fighter_074,きんとき,kintoki,kintoki,,ターゲット,target,94.0,94,ワンマッチ,サム・ラッシュ,numbers_fighter_077,fighter_a850bd04f1,fighter_a850bd04f1,⚫︎,loss,1R 1:24 KO(左フック)
 numbers_record_0138,個人成績,139,numbers_fighter_074,きんとき,kintoki,kintoki,,ターゲット,target,103.0,103,ワンマッチ,ザモン,numbers_fighter_078,zamon,zamon,⚫︎,loss,1R 3:06 KO(マウントパンチ連打)
@@ -200,7 +200,7 @@ numbers_record_0153,個人成績,154,numbers_fighter_022,くわしお,kuwashio,k
 numbers_record_0154,個人成績,155,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,23.0,23,ワンマッチ,バンドルフ・ガルブンタ,numbers_fighter_029,fighter_6cc24375aa,fighter_6cc24375aa,⚪︎,win,3R TKO(膝蹴り→パウンド ®️)
 numbers_record_0155,個人成績,156,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,24.0,24,ワンマッチ,ランダーデビル,numbers_fighter_034,lander_devil,lander_devil,⚫︎,loss,2R フロントチョーク
 numbers_record_0156,個人成績,157,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,26.0,26,ワンマッチ,ジョン・バレー,numbers_fighter_024,fighter_eddb8db316,fighter_eddb8db316,⚫︎,loss,3R 判定0-3
-numbers_record_0157,個人成績,158,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,28.0,28,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚪︎,win,2R 2:05 ギロチンチョーク
+numbers_record_0157,個人成績,158,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,28.0,28,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚪︎,win,2R 2:05 ギロチンチョーク
 numbers_record_0158,個人成績,159,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,29.0,29,ワンマッチ,さんごく,numbers_fighter_023,sangoku,sangoku,⚫︎,loss,2R 3:38 KO(左ストレート)
 numbers_record_0159,個人成績,160,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,31.0,31,ワンマッチ,ビクトル・ナッカー,numbers_fighter_030,fighter_7c5cf999ac,fighter_7c5cf999ac,⚪︎,win,1R 4:11 KO(左フック→パウンド)
 numbers_record_0160,個人成績,161,numbers_fighter_022,くわしお,kuwashio,kuwashio,,MH,mh,32.0,32,ワンマッチ,バン・ベルソーザ,numbers_fighter_028,fighter_c6b52ed0b2,fighter_c6b52ed0b2,⚪︎,win,3R 3:05 KO(左ストレート)
@@ -298,7 +298,7 @@ numbers_record_0227,個人成績,228,numbers_fighter_024,ジョン・バレー,f
 numbers_record_0228,個人成績,229,numbers_fighter_024,ジョン・バレー,fighter_eddb8db316,fighter_eddb8db316,,MH,mh,24.0,24,ワンマッチ,キマイラ,numbers_fighter_021,fighter_a5b1c7ad26,fighter_a5b1c7ad26,⚫︎,loss,3R KO(左ストレート)
 numbers_record_0229,個人成績,230,numbers_fighter_024,ジョン・バレー,fighter_eddb8db316,fighter_eddb8db316,,MH,mh,26.0,26,ワンマッチ,くわしお,numbers_fighter_022,kuwashio,kuwashio,⚪︎,win,3R 判定3-0
 numbers_record_0230,個人成績,231,numbers_fighter_024,ジョン・バレー,fighter_eddb8db316,fighter_eddb8db316,,MH,mh,29.0,29,ワンマッチ,ムラト・クツワ,numbers_fighter_031,fighter_ceabf5fde9,fighter_ceabf5fde9,⚫︎,loss,1R 2:31 TKO(左フック→パウンド®️)
-numbers_record_0231,個人成績,232,numbers_fighter_024,ジョン・バレー,fighter_eddb8db316,fighter_eddb8db316,,MH,mh,31.0,31,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚫︎,loss,1R 1:47 ギロチンチョーク
+numbers_record_0231,個人成績,232,numbers_fighter_024,ジョン・バレー,fighter_eddb8db316,fighter_eddb8db316,,MH,mh,31.0,31,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚫︎,loss,1R 1:47 ギロチンチョーク
 numbers_record_0232,個人成績,233,numbers_fighter_024,ジョン・バレー,fighter_eddb8db316,fighter_eddb8db316,,MH,mh,34.0,34,ワンマッチ,イスカン・アステ,numbers_fighter_018,fighter_82d519db98,fighter_82d519db98,⚫︎,loss,"1R 0:13 KO(左ストレート)
 RF時代から数えて5度目の対戦"
 numbers_record_0233,個人成績,234,numbers_fighter_058,ステシエン・チェット,fighter_30b7a4a468,fighter_30b7a4a468,ライト級,エンペラー,emperor,113.0,113,ワンマッチ,ゆめろう,numbers_fighter_064,fighter_4d6356d021,fighter_4d6356d021,⚪︎,win,"1R 2:34 ダースチョーク
@@ -333,7 +333,7 @@ numbers_record_0254,個人成績,255,numbers_fighter_008,ゼット,fighter_e15b5
 numbers_record_0255,個人成績,256,numbers_fighter_008,ゼット,fighter_e15b590179,fighter_e15b590179,,MH,mh,37.0,37,タイトル,らんちゃーすがや,numbers_fighter_016,rancher_sugaya,rancher_sugaya,⚪︎,win,"2R 1:53 KO(パンチ連打)
 初代MHミドル級王者テール・ジャンクが返上
 第2代MHミドル級王座戴冠"
-numbers_record_0256,個人成績,257,numbers_fighter_095,センサー・ファッジ,fighter_c333ddf234,fighter_c333ddf234,ライト級,ターゲット,target,83.0,83,ワンマッチ,むらき,,,,⚪︎,win,"1R ヒールホールド
+numbers_record_0256,個人成績,257,numbers_fighter_095,センサー・ファッジ,fighter_c333ddf234,fighter_c333ddf234,ライト級,ターゲット,target,83.0,83,ワンマッチ,むらき,,muraki,muraki,⚪︎,win,"1R ヒールホールド
 特別ルール5分1R"
 numbers_record_0257,個人成績,258,numbers_fighter_095,センサー・ファッジ,fighter_c333ddf234,fighter_c333ddf234,ライト級,ターゲット,target,85.0,85,ワンマッチ,やぶき,,,,⚪︎,win,"2R TKO(マウントパンチ®️)
 公式ルールデビュー戦"
@@ -348,7 +348,7 @@ numbers_record_0264,個人成績,265,numbers_fighter_044,ダートソン,fighter
 numbers_record_0265,個人成績,266,numbers_fighter_044,ダートソン,fighter_b23cf227ff,fighter_b23cf227ff,,エンペラー,emperor,114.0,114,ワンマッチ,ダイス・ヴォルケード,numbers_fighter_045,fighter_5d7998006d,fighter_5d7998006d,⚫︎,loss,1R 3:16 KO(左フック)
 numbers_record_0266,個人成績,267,numbers_fighter_044,ダートソン,fighter_b23cf227ff,fighter_b23cf227ff,,エンペラー,emperor,115.0,115,ワンマッチ,アトゥリうえはら,numbers_fighter_036,fighter_e590e4eb0f,fighter_e590e4eb0f,⚪︎,win,1R 3:42 KO(パンチ連打)
 numbers_record_0267,個人成績,268,numbers_fighter_044,ダートソン,fighter_b23cf227ff,fighter_b23cf227ff,,エンペラー,emperor,119.0,119,ワンマッチ,ガネルソン・シャル・ワー,numbers_fighter_040,fighter_468bc73db5,fighter_468bc73db5,⚫︎,loss,1R 2:09 KO(左フック)
-numbers_record_0268,個人成績,269,numbers_fighter_045,ダイス・ヴォルケード,fighter_5d7998006d,fighter_5d7998006d,ミドル級,エンペラー,emperor,106.0,106,ワンマッチ,ユーナ・ガナ,,,,⚫︎,loss,"1R アームバー
+numbers_record_0268,個人成績,269,numbers_fighter_045,ダイス・ヴォルケード,fighter_5d7998006d,fighter_5d7998006d,ミドル級,エンペラー,emperor,106.0,106,ワンマッチ,ユーナ・ガナ,,yuna_gana,yuna_gana,⚫︎,loss,"1R アームバー
 メジャーデビュー戦
 ユーナ・ガナ引退試合"
 numbers_record_0269,個人成績,270,numbers_fighter_045,ダイス・ヴォルケード,fighter_5d7998006d,fighter_5d7998006d,,エンペラー,emperor,109.0,109,ワンマッチ,レイ・ガシーオ,numbers_fighter_052,fighter_32d0d719ec,fighter_32d0d719ec,⚪︎,win,1R 2:10 KO(左ハイ)
@@ -387,11 +387,11 @@ numbers_record_0291,個人成績,292,numbers_fighter_026,ダブド・ガブリ�
 メジャーデビュー戦"
 numbers_record_0292,個人成績,293,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MH,mh,30.0,30,ワンマッチ,ムラト・クツワ,numbers_fighter_031,fighter_ceabf5fde9,fighter_ceabf5fde9,⚪︎,win,1R 1:53 TKO(パウンド→タオル投入)
 numbers_record_0293,個人成績,294,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MH,mh,31.0,31,ワンマッチ,イスカン・アステ,numbers_fighter_018,fighter_82d519db98,fighter_82d519db98,⚪︎,win,3R 判定3-0
-numbers_record_0294,個人成績,295,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MH,mh,33.0,33,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚫︎,loss,1R 1:31 ギロチンチョーク
+numbers_record_0294,個人成績,295,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MH,mh,33.0,33,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚫︎,loss,1R 1:31 ギロチンチョーク
 numbers_record_0295,個人成績,296,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MH,mh,34.0,34,ワンマッチ,キマイラ,numbers_fighter_021,fighter_a5b1c7ad26,fighter_a5b1c7ad26,⚪︎,win,1R 2:16 ダースチョーク
 numbers_record_0296,個人成績,297,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MAXバウト,max_bout,第7回 1回戦B,第7回 1回戦B,トーナメント,さんごく,numbers_fighter_023,sangoku,sangoku,⚪︎,win,"3R 2:09 リアネイキッドチョーク
 二回戦進出"
-numbers_record_0297,個人成績,298,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MAXバウト,max_bout,第7回 2回戦B,第7回 2回戦B,トーナメント,ローリングJr,numbers_fighter_017,,jr,⚪︎,win,"1R 3:29 KO(パウンド連打)
+numbers_record_0297,個人成績,298,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MAXバウト,max_bout,第7回 2回戦B,第7回 2回戦B,トーナメント,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚪︎,win,"1R 3:29 KO(パウンド連打)
 準決勝進出
 試合後ダブド・ガブリシャンへ注意１"
 numbers_record_0298,個人成績,299,numbers_fighter_026,ダブド・ガブリシャン,fighter_25fddbaacc,fighter_25fddbaacc,,MAXバウト,max_bout,第7回 準決勝B,第7回 準決勝B,トーナメント,ブルーワン,numbers_fighter_061,blue_one,blue_one,⚫︎,loss,"1R 2:21 KO(アームバー→パウンド)
@@ -443,7 +443,7 @@ numbers_record_0328,個人成績,329,numbers_fighter_009,テール・ジャン�
 第5回MAXバウトミドル級トーナメント優勝"
 numbers_record_0329,個人成績,330,numbers_fighter_009,テール・ジャンク,tail_junk,tail_junk,ミドル級,MH,mh,29.0,29,タイトル,ヘル・ラッサー,numbers_fighter_013,fighter_8d86ebfe6f,fighter_8d86ebfe6f,⚪︎,win,"1R 1:50 KO(左ボディ→パウンド)
 5度目の防衛"
-numbers_record_0330,個人成績,331,numbers_fighter_009,テール・ジャンク,tail_junk,tail_junk,ヘビー級,MH,mh,34.0,34,ワンマッチ,クーラー・ジョイントン,,,,⚪︎,win,"1R 3:25 KO(左アッパー→パウンド)
+numbers_record_0330,個人成績,331,numbers_fighter_009,テール・ジャンク,tail_junk,tail_junk,ヘビー級,MH,mh,34.0,34,ワンマッチ,クーラー・ジョイントン,,fighter_13ff7e99ab,fighter_13ff7e99ab,⚪︎,win,"1R 3:25 KO(左アッパー→パウンド)
 ヘビー級デビュー戦"
 numbers_record_0331,個人成績,332,numbers_fighter_009,テール・ジャンク,tail_junk,tail_junk,ヘビー級,MAXバウト,max_bout,SP,SP,ワンマッチ,タイプ・ジー,numbers_fighter_106,fighter_cc477f9dcf,fighter_cc477f9dcf,⚫︎,loss,"3R 判定0-3
 ヘビー級98kg契約(キャッチウェイト)"
@@ -462,20 +462,20 @@ numbers_record_0341,個人成績,342,numbers_fighter_010,トルー・パルド�
 numbers_record_0342,個人成績,343,numbers_fighter_011,トワックデビル,fighter_0f7f08df67,fighter_0f7f08df67,ミドル級,MH,mh,23.0,23,ワンマッチ,オーシューデーモン,numbers_fighter_002,fighter_452ac4db9c,fighter_452ac4db9c,⚫︎,loss,1R 終了ドクターストップTKO
 numbers_record_0343,個人成績,344,numbers_fighter_011,トワックデビル,fighter_0f7f08df67,fighter_0f7f08df67,,MH,mh,26.0,26,ワンマッチ,らんちゃーすがや,numbers_fighter_016,rancher_sugaya,rancher_sugaya,⚫︎,loss,3R 判定2-1
 numbers_record_0344,個人成績,345,numbers_fighter_011,トワックデビル,fighter_0f7f08df67,fighter_0f7f08df67,,MH,mh,37.0,37,ワンマッチ,ラドフ,numbers_fighter_015,fighter_169d4ecfe8,fighter_169d4ecfe8,⚫︎,loss,1R 2:22 KO(左ボディ→パウンド)
-numbers_record_0345,個人成績,346,numbers_fighter_011,トワックデビル,fighter_0f7f08df67,fighter_0f7f08df67,,MH,mh,40.0,40,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚪︎,win,2R 1:42 トライアングルチョーク
+numbers_record_0345,個人成績,346,numbers_fighter_011,トワックデビル,fighter_0f7f08df67,fighter_0f7f08df67,,MH,mh,40.0,40,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚪︎,win,2R 1:42 トライアングルチョーク
 numbers_record_0346,個人成績,347,numbers_fighter_027,のこぎりやまだ,,のこぎりやまだ,ライト級,MH,mh,25.0,25,ワンマッチ,ストライン・カーン,numbers_fighter_025,fighter_5a3a5740e6,fighter_5a3a5740e6,⚫︎,loss,3R 判定1-2
-numbers_record_0347,個人成績,348,numbers_fighter_099,バイソンデビル,fighter_c6720136f7,fighter_c6720136f7,ライト級,ターゲット,target,87.0,87,ワンマッチ,いたみ,,,,⚪︎,win,"3R 1:02 KO(跳び膝蹴り)
+numbers_record_0347,個人成績,348,numbers_fighter_099,バイソンデビル,fighter_c6720136f7,fighter_c6720136f7,ライト級,ターゲット,target,87.0,87,ワンマッチ,いたみ,,fighter_7bfff5d96b,fighter_7bfff5d96b,⚪︎,win,"3R 1:02 KO(跳び膝蹴り)
 メジャーデビュー戦"
 numbers_record_0348,個人成績,349,numbers_fighter_099,バイソンデビル,fighter_c6720136f7,fighter_c6720136f7,ライト級,ターゲット,target,88.0,88,ワンマッチ,センサー・ファッジ,numbers_fighter_095,fighter_c333ddf234,fighter_c333ddf234,⚫︎,loss,1R 1:39 フロントネックロック
 numbers_record_0349,個人成績,350,numbers_fighter_099,バイソンデビル,fighter_c6720136f7,fighter_c6720136f7,,ターゲット,target,99.0,99,ワンマッチ,わく,numbers_fighter_105,waku,waku,⚫︎,loss,1R 2:25 KO(膝蹴り連打)
-numbers_record_0350,個人成績,351,numbers_fighter_012,ぱいそんはやし,python_hayashi,python_hayashi,ミドル級,MH,mh,38.0,38,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚪︎,win,"3R 判定3-0
+numbers_record_0350,個人成績,351,numbers_fighter_012,ぱいそんはやし,python_hayashi,python_hayashi,ミドル級,MH,mh,38.0,38,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚪︎,win,"3R 判定3-0
 メジャーデビュー戦"
 numbers_record_0351,個人成績,352,numbers_fighter_012,ぱいそんはやし,python_hayashi,python_hayashi,,MH,mh,39.0,39,ワンマッチ,ジャニマード・トスパチ,numbers_fighter_007,fighter_41a3b1ba33,fighter_41a3b1ba33,⚫︎,loss,2R 1:05 KO(左フック→パウンド)
 numbers_record_0352,個人成績,353,numbers_fighter_012,ぱいそんはやし,python_hayashi,python_hayashi,,MH,mh,40.0,40,ワンマッチ,オーシューワイルド,numbers_fighter_003,fighter_5f53eea569,fighter_5f53eea569,⚫︎,loss,3R 1:10 KO(左フック→ジャンピングパウンド)
 numbers_record_0353,個人成績,354,numbers_fighter_059,パット・バミューダ,fighter_ce9074c06f,fighter_ce9074c06f,ライト級,MAXバウト,max_bout,第6回 1回戦A,第6回 1回戦A,トーナメント,アイス・トロン,numbers_fighter_055,ice_tron,ice_tron,⚫︎,loss,"2R 1:29 グラウンド肘打ち
 一回戦敗退
 メジャーデビュー戦"
-numbers_record_0354,個人成績,355,numbers_fighter_059,パット・バミューダ,fighter_ce9074c06f,fighter_ce9074c06f,,エンペラー,emperor,113.0,113,ワンマッチ,ナパーム,,,,⚪︎,win,2R 2:02 KO(左ボディ→パウンド)
+numbers_record_0354,個人成績,355,numbers_fighter_059,パット・バミューダ,fighter_ce9074c06f,fighter_ce9074c06f,,エンペラー,emperor,113.0,113,ワンマッチ,ナパーム,,napalm,napalm,⚪︎,win,2R 2:02 KO(左ボディ→パウンド)
 numbers_record_0355,個人成績,356,numbers_fighter_059,パット・バミューダ,fighter_ce9074c06f,fighter_ce9074c06f,,エンペラー,emperor,115.0,115,ワンマッチ,コルト・アプロー,numbers_fighter_057,colt_apro,colt_apro,⚫︎,loss,1R 2:40 肩固め
 numbers_record_0356,個人成績,357,numbers_fighter_059,パット・バミューダ,fighter_ce9074c06f,fighter_ce9074c06f,,エンペラー,emperor,117.0,117,ワンマッチ,マルコ・フレイザー,numbers_fighter_063,marco_fraser,marco_fraser,⚫︎,loss,2R 1:52 KO(左フック→パウンド)
 numbers_record_0357,個人成績,358,numbers_fighter_100,ハリス・オルビック,harris_orbick,harris_orbick,ライト級,ターゲット,target,83.0,83,ワンマッチ,フラーム・グラン,numbers_fighter_101,frahm_gran,frahm_gran,⚫︎,loss,判定3-0
@@ -498,7 +498,7 @@ numbers_record_0367,個人成績,368,numbers_fighter_028,バン・ベルソー�
 numbers_record_0368,個人成績,369,numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,fighter_6cc24375aa,ライト級,MH,mh,22.0,22,ワンマッチ,みずうち,,,,⚪︎,win,1R フロントチョーク
 numbers_record_0369,個人成績,370,numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,fighter_6cc24375aa,,MH,mh,23.0,23,ワンマッチ,くわしお,numbers_fighter_022,kuwashio,kuwashio,⚫︎,loss,3R TKO(膝蹴り→パウンド レフェリーストップ)
 numbers_record_0370,個人成績,371,numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,fighter_6cc24375aa,,MH,mh,26.0,26,ワンマッチ,ビクトル・ナッカー,numbers_fighter_030,fighter_7c5cf999ac,fighter_7c5cf999ac,⚫︎,loss,1R 4:11 (右フック→パンチ連打)
-numbers_record_0371,個人成績,372,numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,fighter_6cc24375aa,,MH,mh,30.0,30,ワンマッチ,ローリングJr,numbers_fighter_017,,jr,⚫︎,loss,1R 2:05 KO(膝蹴り)
+numbers_record_0371,個人成績,372,numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,fighter_6cc24375aa,,MH,mh,30.0,30,ワンマッチ,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚫︎,loss,1R 2:05 KO(膝蹴り)
 numbers_record_0372,個人成績,373,numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,fighter_6cc24375aa,,MH,mh,32.0,32,ワンマッチ,キマイラ,numbers_fighter_021,fighter_a5b1c7ad26,fighter_a5b1c7ad26,⚫︎,loss,2R 2:49 KO(左アッパー→パウンド)
 numbers_record_0373,個人成績,374,numbers_fighter_030,ビクトル・ナッカー,fighter_7c5cf999ac,fighter_7c5cf999ac,ライト級,MH,mh,26.0,26,ワンマッチ,バンドルフ・ガルブンタ,numbers_fighter_029,fighter_6cc24375aa,fighter_6cc24375aa,⚪︎,win,"1R 4:11 (右フック→パンチ連打)
 メジャーデビュー戦"
@@ -572,7 +572,7 @@ numbers_record_0414,個人成績,415,numbers_fighter_013,ヘル・ラッサー,f
 numbers_record_0415,個人成績,416,numbers_fighter_013,ヘル・ラッサー,fighter_8d86ebfe6f,fighter_8d86ebfe6f,,MH,mh,36.0,36,ワンマッチ,ゼット,numbers_fighter_008,fighter_e15b590179,fighter_e15b590179,⚫︎,loss,3R 3:13 KO(左ハイ)
 numbers_record_0416,個人成績,417,numbers_fighter_013,ヘル・ラッサー,fighter_8d86ebfe6f,fighter_8d86ebfe6f,,MH,mh,39.0,39,ワンマッチ,トルー・パルドレス,numbers_fighter_010,fighter_23a078dc11,fighter_23a078dc11,⚪︎,win,3R 4:28 KO(左フック→パウンド)
 numbers_record_0417,個人成績,418,numbers_fighter_013,ヘル・ラッサー,fighter_8d86ebfe6f,fighter_8d86ebfe6f,,MH,mh,40.0,40,ワンマッチ,タイプ・ジー,numbers_fighter_106,fighter_cc477f9dcf,fighter_cc477f9dcf,⚫︎,loss,1R 1:35 KO(パウンド連打®️)
-numbers_record_0418,個人成績,419,numbers_fighter_063,マルコ・フレイザー,marco_fraser,marco_fraser,ライト級,エンペラー,emperor,105.0,105,ワンマッチ,ナパーム,,,,⚪︎,win,1R キムラロック
+numbers_record_0418,個人成績,419,numbers_fighter_063,マルコ・フレイザー,marco_fraser,marco_fraser,ライト級,エンペラー,emperor,105.0,105,ワンマッチ,ナパーム,,napalm,napalm,⚪︎,win,1R キムラロック
 numbers_record_0419,個人成績,420,numbers_fighter_063,マルコ・フレイザー,marco_fraser,marco_fraser,,エンペラー,emperor,106.0,106,ワンマッチ,ブルーワン,numbers_fighter_061,blue_one,blue_one,⚪︎,win,2R 判定2-1
 numbers_record_0420,個人成績,421,numbers_fighter_063,マルコ・フレイザー,marco_fraser,marco_fraser,,エンペラー,emperor,107.0,107,ワンマッチ,コルト・アプロー,numbers_fighter_057,colt_apro,colt_apro,⚪︎,win,"3R 判定3-0 
 第10代エンペラーライト級王座戴冠"
@@ -622,8 +622,8 @@ numbers_record_0448,個人成績,449,numbers_fighter_064,ゆめろう,fighter_4d
 メジャーデビュー戦"
 numbers_record_0449,個人成績,450,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,エンペラー,emperor,106.0,106,ワンマッチ,いわさき,,,,⚪︎,win,1R 膝十字
 numbers_record_0450,個人成績,451,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,エンペラー,emperor,107.0,107,ワンマッチ,ブレイブ,numbers_fighter_062,,ブレイブ,⚪︎,win,1R 三角絞め→アームバー
-numbers_record_0451,個人成績,452,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,エンペラー,emperor,108.0,108,ワンマッチ,ナパーム,,,,⚪︎,win,3R 1:28 ニンジャチョーク
-numbers_record_0452,個人成績,453,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,エンペラー,emperor,109.0,109,ワンマッチ,ポン・レイゼ,,,,⚪︎,win,1R 3:40 アームバー
+numbers_record_0451,個人成績,452,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,エンペラー,emperor,108.0,108,ワンマッチ,ナパーム,,napalm,napalm,⚪︎,win,3R 1:28 ニンジャチョーク
+numbers_record_0452,個人成績,453,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,エンペラー,emperor,109.0,109,ワンマッチ,ポン・レイゼ,,fighter_b73b14350a,fighter_b73b14350a,⚪︎,win,1R 3:40 アームバー
 numbers_record_0453,個人成績,454,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,MAXバウト,max_bout,第6回 1回戦B,第6回 1回戦B,トーナメント,バン・ベルソーザ,numbers_fighter_028,fighter_c6b52ed0b2,fighter_c6b52ed0b2,⚪︎,win,"1R 0:40 ニンジャチョーク
 二回戦進出"
 numbers_record_0454,個人成績,455,numbers_fighter_064,ゆめろう,fighter_4d6356d021,fighter_4d6356d021,,MAXバウト,max_bout,第6回 2回戦,第6回 2回戦,トーナメント,わく,numbers_fighter_105,waku,waku,⚫︎,loss,"3R 2:50 TKO(膝蹴り→パウンド)
@@ -650,12 +650,12 @@ numbers_record_0470,個人成績,471,numbers_fighter_015,ラドフ,fighter_169d4
 numbers_record_0471,個人成績,472,numbers_fighter_015,ラドフ,fighter_169d4ecfe8,fighter_169d4ecfe8,,MH,mh,38.0,38,ワンマッチ,オーシューワイルド,numbers_fighter_003,fighter_5f53eea569,fighter_5f53eea569,⚪︎,win,1R 1:45 KO(左フック)
 numbers_record_0472,個人成績,473,numbers_fighter_084,ラミーロ・コート,fighter_7e5c52a901,fighter_7e5c52a901,ミドル級,ターゲット,target,101.0,101,ワンマッチ,かべい,numbers_fighter_072,kabei,kabei,⚫︎,loss,"2R 3:29 KO(飛び込みパンチ→パウンド)
 メジャーデビュー戦"
-numbers_record_0473,個人成績,474,numbers_fighter_034,ランダーデビル,lander_devil,lander_devil,ライト級,MH,mh,22.0,22,タイトル,サイク・アーマー,,,,⚪︎,win,"1R 腕ひしぎ十字固め
+numbers_record_0473,個人成績,474,numbers_fighter_034,ランダーデビル,lander_devil,lander_devil,ライト級,MH,mh,22.0,22,タイトル,サイク・アーマー,,psych_armor,psych_armor,⚪︎,win,"1R 腕ひしぎ十字固め
 第4代MHライト級王者戴冠
 サイク・アーマーはこの試合で引退表明"
 numbers_record_0474,個人成績,475,numbers_fighter_034,ランダーデビル,lander_devil,lander_devil,,MH,mh,24.0,24,タイトル,くわしお,numbers_fighter_022,kuwashio,kuwashio,⚪︎,win,"2R フロントチョーク
 初防衛"
-numbers_record_0475,個人成績,476,numbers_fighter_034,ランダーデビル,lander_devil,lander_devil,,MAXバウト,max_bout,第6回 1回戦B,第6回 1回戦B,トーナメント,ローリングJr,numbers_fighter_017,,jr,⚪︎,win,"3R 2:54 リアネイキッドチョーク
+numbers_record_0475,個人成績,476,numbers_fighter_034,ランダーデビル,lander_devil,lander_devil,,MAXバウト,max_bout,第6回 1回戦B,第6回 1回戦B,トーナメント,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚪︎,win,"3R 2:54 リアネイキッドチョーク
 二回戦進出"
 numbers_record_0476,個人成績,477,numbers_fighter_034,ランダーデビル,lander_devil,lander_devil,,MAXバウト,max_bout,第6回 2回戦,第6回 2回戦,トーナメント,マルコ・フレイザー,numbers_fighter_063,marco_fraser,marco_fraser,⚪︎,win,"1R 3:08 トライアングルチョーク
 準決勝進出"
@@ -722,22 +722,22 @@ numbers_record_0514,個人成績,515,numbers_fighter_102,レーサー・ガル�
 numbers_record_0515,個人成績,516,numbers_fighter_102,レーサー・ガルシア,fighter_0de6ecf382,fighter_0de6ecf382,,ターゲット,target,100.0,100,ワンマッチ,フラーム・グラン,numbers_fighter_101,frahm_gran,frahm_gran,⚪︎,win,1R 2:55 腕ひしぎ十字固め
 numbers_record_0516,個人成績,517,numbers_fighter_035,レオナルド・フォードバック,fighter_675633087d,fighter_675633087d,ライト級,MH,mh,32.0,32,ワンマッチ,さんごく,numbers_fighter_023,sangoku,sangoku,⚫︎,loss,"1R 0:45 KO(左フック→パウンド)
 メジャーデビュー戦"
-numbers_record_0517,個人成績,518,numbers_fighter_017,ローリングJr,,jr,ライト級,MAXバウト,max_bout,第6回 1回戦B,第6回 1回戦B,トーナメント,ランダーデビル,numbers_fighter_034,lander_devil,lander_devil,⚫︎,loss,"3R 2:54 リアネイキッドチョーク
+numbers_record_0517,個人成績,518,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MAXバウト,max_bout,第6回 1回戦B,第6回 1回戦B,トーナメント,ランダーデビル,numbers_fighter_034,lander_devil,lander_devil,⚫︎,loss,"3R 2:54 リアネイキッドチョーク
 一回戦敗退
 メジャーデビュー戦"
-numbers_record_0518,個人成績,519,numbers_fighter_017,ローリングJr,,jr,ライト級,MH,mh,28.0,28,ワンマッチ,くわしお,numbers_fighter_022,kuwashio,kuwashio,⚫︎,loss,2R 2:05 ギロチンチョーク
-numbers_record_0519,個人成績,520,numbers_fighter_017,ローリングJr,,jr,ライト級,MH,mh,29.0,29,ワンマッチ,かわかみ,numbers_fighter_019,kawakami,kawakami,⚪︎,win,1R 1:23 ギロチンチョーク
-numbers_record_0520,個人成績,521,numbers_fighter_017,ローリングJr,,jr,ライト級,MH,mh,30.0,30,ワンマッチ,バンドルフ・ガルブンタ,numbers_fighter_029,fighter_6cc24375aa,fighter_6cc24375aa,⚪︎,win,1R 2:05 KO(膝蹴り)
-numbers_record_0521,個人成績,522,numbers_fighter_017,ローリングJr,,jr,ライト級,MH,mh,31.0,31,ワンマッチ,ジョン・バレー,numbers_fighter_024,fighter_eddb8db316,fighter_eddb8db316,⚪︎,win,1R 1:47 ギロチンチョーク
-numbers_record_0522,個人成績,523,numbers_fighter_017,ローリングJr,,jr,ライト級,MH,mh,33.0,33,ワンマッチ,ダブド・ガブリシャン,numbers_fighter_026,fighter_25fddbaacc,fighter_25fddbaacc,⚪︎,win,1R 1:31 ギロチンチョーク
-numbers_record_0523,個人成績,524,numbers_fighter_017,ローリングJr,,jr,ライト級,MAXバウト,max_bout,第7回 1回戦B,第7回 1回戦B,トーナメント,わく,numbers_fighter_105,waku,waku,⚪︎,win,"1R 2:17 KO(左ハイ→パウンド)
+numbers_record_0518,個人成績,519,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MH,mh,28.0,28,ワンマッチ,くわしお,numbers_fighter_022,kuwashio,kuwashio,⚫︎,loss,2R 2:05 ギロチンチョーク
+numbers_record_0519,個人成績,520,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MH,mh,29.0,29,ワンマッチ,かわかみ,numbers_fighter_019,kawakami,kawakami,⚪︎,win,1R 1:23 ギロチンチョーク
+numbers_record_0520,個人成績,521,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MH,mh,30.0,30,ワンマッチ,バンドルフ・ガルブンタ,numbers_fighter_029,fighter_6cc24375aa,fighter_6cc24375aa,⚪︎,win,1R 2:05 KO(膝蹴り)
+numbers_record_0521,個人成績,522,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MH,mh,31.0,31,ワンマッチ,ジョン・バレー,numbers_fighter_024,fighter_eddb8db316,fighter_eddb8db316,⚪︎,win,1R 1:47 ギロチンチョーク
+numbers_record_0522,個人成績,523,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MH,mh,33.0,33,ワンマッチ,ダブド・ガブリシャン,numbers_fighter_026,fighter_25fddbaacc,fighter_25fddbaacc,⚪︎,win,1R 1:31 ギロチンチョーク
+numbers_record_0523,個人成績,524,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MAXバウト,max_bout,第7回 1回戦B,第7回 1回戦B,トーナメント,わく,numbers_fighter_105,waku,waku,⚪︎,win,"1R 2:17 KO(左ハイ→パウンド)
 二回戦進出"
-numbers_record_0524,個人成績,525,numbers_fighter_017,ローリングJr,,jr,ライト級,MAXバウト,max_bout,第7回 2回戦B,第7回 2回戦B,トーナメント,ダブド・ガブリシャン,numbers_fighter_026,fighter_25fddbaacc,fighter_25fddbaacc,⚫︎,loss,"1R 3:29 KO(パウンド連打)
+numbers_record_0524,個人成績,525,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ライト級,MAXバウト,max_bout,第7回 2回戦B,第7回 2回戦B,トーナメント,ダブド・ガブリシャン,numbers_fighter_026,fighter_25fddbaacc,fighter_25fddbaacc,⚫︎,loss,"1R 3:29 KO(パウンド連打)
 二回戦敗退
 試合後ダブド・ガブリシャンへ注意１"
-numbers_record_0525,個人成績,526,numbers_fighter_017,ローリングJr,,jr,ミドル級,MH,mh,38.0,38,ワンマッチ,ぱいそんはやし,numbers_fighter_012,python_hayashi,python_hayashi,⚫︎,loss,"3R 判定0-3
+numbers_record_0525,個人成績,526,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ミドル級,MH,mh,38.0,38,ワンマッチ,ぱいそんはやし,numbers_fighter_012,python_hayashi,python_hayashi,⚫︎,loss,"3R 判定0-3
 ミドル級転向初戦"
-numbers_record_0526,個人成績,527,numbers_fighter_017,ローリングJr,,jr,ミドル級,MH,mh,40.0,40,ワンマッチ,トワックデビル,numbers_fighter_011,fighter_0f7f08df67,fighter_0f7f08df67,⚫︎,loss,2R 1:42 トライアングルチョーク
+numbers_record_0526,個人成績,527,numbers_fighter_017,ローリングJr,rolling_jr,rolling_jr,ミドル級,MH,mh,40.0,40,ワンマッチ,トワックデビル,numbers_fighter_011,fighter_0f7f08df67,fighter_0f7f08df67,⚫︎,loss,2R 1:42 トライアングルチョーク
 numbers_record_0527,個人成績,528,numbers_fighter_053,ロコール・アラニン,fighter_2fdaa958ad,fighter_2fdaa958ad,ミドル級,エンペラー,emperor,107.0,107,ワンマッチ,ミサ・ウィル・ジョー,numbers_fighter_050,misa_will_joe,misa_will_joe,⚫︎,loss,"1R TKO(パウンド)
 メジャーデビュー戦"
 numbers_record_0528,個人成績,529,numbers_fighter_053,ロコール・アラニン,fighter_2fdaa958ad,fighter_2fdaa958ad,,エンペラー,emperor,110.0,110,ワンマッチ,シャパール・アミア,numbers_fighter_043,fighter_4b95bfe573,fighter_4b95bfe573,⚪︎,win,1R 2:10 TKO(パウンド®️)
@@ -774,7 +774,7 @@ numbers_record_0551,個人成績,552,numbers_fighter_105,わく,waku,waku,,タ�
 numbers_record_0552,個人成績,553,numbers_fighter_105,わく,waku,waku,,ターゲット,target,93.0,93,タイトル,きたむら,numbers_fighter_091,kitamura,kitamura,⚪︎,win,"1R 1:51 KO(膝蹴り→パウンド)
 王座初防衛"
 numbers_record_0553,個人成績,554,numbers_fighter_105,わく,waku,waku,,ターゲット,target,97.0,97,ワンマッチ,アミュー・エンド・ビラー,numbers_fighter_086,fighter_15a01339a6,fighter_15a01339a6,⚪︎,win,1R 3:05 KO(ミドルキック)
-numbers_record_0554,個人成績,555,numbers_fighter_105,わく,waku,waku,,MAXバウト,max_bout,第7回 1回戦B,第7回 1回戦B,トーナメント,ローリングJr,numbers_fighter_017,,jr,⚫︎,loss,"1R 2:17 KO(左ハイ→パウンド)
+numbers_record_0554,個人成績,555,numbers_fighter_105,わく,waku,waku,,MAXバウト,max_bout,第7回 1回戦B,第7回 1回戦B,トーナメント,ローリングJr,numbers_fighter_017,rolling_jr,rolling_jr,⚫︎,loss,"1R 2:17 KO(左ハイ→パウンド)
 一回戦敗退"
 numbers_record_0555,個人成績,556,numbers_fighter_105,わく,waku,waku,,ターゲット,target,99.0,99,ワンマッチ,バイソンデビル,numbers_fighter_099,fighter_c6720136f7,fighter_c6720136f7,⚪︎,win,1R 2:25 KO(膝蹴り連打)
 numbers_record_0556,個人成績,557,numbers_fighter_105,わく,waku,waku,,ターゲット,target,100.0,100,タイトル,つくりはら,numbers_fighter_098,tsukurihara,tsukurihara,⚪︎,win,"3R 判定2-1

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import unicodedata
+
 # 役割: Apple Numbers の選手名鑑 (data-raw/*.numbers) を読み、比較用データとして
 #   data-src/numbers_*.csv 3 本 (fighters / name_matches / fight_records) に書き出す。
 # アーキ上の位置: 取り込みパイプラインの入口。下流は build_numbers_json.py が
@@ -105,6 +107,21 @@ def existing_name_map() -> dict[str, str]:
     }
 
 
+# viewer の normalizeFighterName (data-enricher.js) と同じ規則: NFKC 後に中黒・空白・ピリオドを除き小文字化。
+def normalized_name(name: str) -> str:
+    text = unicodedata.normalize("NFKC", name)
+    for ch in ("・", "　", " ", ".", "．"):
+        text = text.replace(ch, "")
+    return text.lower()
+
+
+def normalized_name_map(name_to_id: dict[str, str]) -> dict[str, list[tuple[str, str]]]:
+    by_key: dict[str, list[tuple[str, str]]] = {}
+    for display_name, fighter_id in name_to_id.items():
+        by_key.setdefault(normalized_name(display_name), []).append((fighter_id, display_name))
+    return by_key
+
+
 def extract_fighters(doc: Document, name_to_id: dict[str, str]) -> tuple[list[dict[str, str]], list[dict[str, str]], dict[str, dict[str, str]]]:
     sheet = doc.sheets[0]
     table = sheet.tables[0]
@@ -138,6 +155,7 @@ def extract_fighters(doc: Document, name_to_id: dict[str, str]) -> tuple[list[di
     fighters: list[dict[str, str]] = []
     matches: list[dict[str, str]] = []
     by_name: dict[str, dict[str, str]] = {}
+    by_normalized_name = normalized_name_map(name_to_id)
 
     for source_row, row in enumerate(table_rows[2:], start=3):
         raw = row_dict(header, row)
@@ -148,6 +166,18 @@ def extract_fighters(doc: Document, name_to_id: dict[str, str]) -> tuple[list[di
         index = len(fighters) + 1
         nf_id = numbers_fighter_id(index)
         matched_id = name_to_id.get(name, "")
+        matched_display_name = name if matched_id else ""
+        match_method = "exact_display_name" if matched_id else "generated_candidate"
+        match_confidence = "high" if matched_id else "candidate"
+        notes = "" if matched_id else "No exact display_name match in fighters.csv."
+        # 完全一致が無いときだけ、表記ゆれ (中黒・空白・ピリオド・全半角) を除いた名前で照合する。
+        # 候補が 1 人に決まる場合に限り採用し、強い対応ではないので medium にする。
+        normalized_hits = by_normalized_name.get(normalized_name(name), [])
+        if not matched_id and len(normalized_hits) == 1:
+            matched_id, matched_display_name = normalized_hits[0]
+            match_method = "normalized_display_name"
+            match_confidence = "medium"
+            notes = "Matched after removing middle dots, spaces, and periods."
         candidate_id = matched_id or generated_fighter_id(name)
 
         fighter = {
@@ -181,18 +211,18 @@ def extract_fighters(doc: Document, name_to_id: dict[str, str]) -> tuple[list[di
                 "numbers_fighter_id": nf_id,
                 "numbers_name": name,
                 "matched_fighter_id": matched_id,
-                "matched_display_name": name if matched_id else "",
+                "matched_display_name": matched_display_name,
                 "candidate_fighter_id": candidate_id,
-                "match_method": "exact_display_name" if matched_id else "generated_candidate",
-                "match_confidence": "high" if matched_id else "candidate",
-                "notes": "" if matched_id else "No exact display_name match in fighters.csv.",
+                "match_method": match_method,
+                "match_confidence": match_confidence,
+                "notes": notes,
             }
         )
 
     return fighters, matches, by_name
 
 
-def extract_fight_records(doc: Document, fighters_by_name: dict[str, dict[str, str]], matches: list[dict[str, str]]) -> list[dict[str, str]]:
+def extract_fight_records(doc: Document, fighters_by_name: dict[str, dict[str, str]], matches: list[dict[str, str]], name_to_id: dict[str, str]) -> list[dict[str, str]]:
     if len(doc.sheets) < 2:
         return []
 
@@ -221,6 +251,9 @@ def extract_fight_records(doc: Document, fighters_by_name: dict[str, dict[str, s
         opponent = fighter_by_name.get(opponent_name, {})
         fighter_match = match_by_numbers_id.get(fighter.get("numbers_fighter_id", ""), {})
         opponent_match = match_by_numbers_id.get(opponent.get("numbers_fighter_id", ""), {})
+        # 名鑑に載っていない対戦相手は名鑑側に照合結果が無いので、fighters.csv の完全一致で補う。
+        if not opponent_match and opponent_name in name_to_id:
+            opponent_match = {"matched_fighter_id": name_to_id[opponent_name], "candidate_fighter_id": name_to_id[opponent_name]}
         result_mark = clean_text(raw["勝敗"])
 
         records.append(
@@ -258,7 +291,7 @@ def main() -> None:
     doc = Document(str(NUMBERS_PATH))
     name_to_id = existing_name_map()
     fighters, matches, fighters_by_name = extract_fighters(doc, name_to_id)
-    fight_records = extract_fight_records(doc, fighters_by_name, matches)
+    fight_records = extract_fight_records(doc, fighters_by_name, matches, name_to_id)
 
     write_csv(
         DATA_SRC / "numbers_fighters.csv",
