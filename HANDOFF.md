@@ -181,7 +181,7 @@ PRIMARY ストリーミング（Phase 1）中の無駄な再描画を削減し�
 - 既存問題も同時修正: `#streamKey` の `await getJSONParser()` が CDN 障害時に `load()` 全体を reject させ、描画済みの公式タブごと全画面エラーで消していた → `.catch(() => null)` で通常 fetch+parse にフォールバック
 - 既存問題: `main.js` の `lite-youtube-embed` 静的 CDN import が boot（Phase 0 含む）全体をブロック → await しない動的 import に変更（カスタム要素は後から定義されても自動アップグレードされる）
 - ストリーミング中の flush ごとに公式タブが同一内容で再描画され、開いた `<details>` が閉じる問題 → descriptor に任意フィールド `itemsSource`（描画元の生配列）を追加し、参照同一なら再描画をスキップ（`tab-registry.js`、公式タブのみ宣言）
-- `validate_json.js` に `officialPages` / `officialNews` の配列・非空 assert を追加。なお `load()` のキー網羅 assert がストリーミングキーに対して実質無効な既存問題は `NEXT_TASKS.md` P2 に記録
+- `validate_json.js` に `officialPages` / `officialNews` の配列・非空 assert を追加。なお `load()` のキー網羅 assert がストリーミングキーに対して実質無効な既存問題は `TASKS.md` の T.38 に記録
 
 ### Phase 13: 共有テキスト解析モジュール・ビルド最適化 (2026-06-13)
 
@@ -302,7 +302,7 @@ PUBLIC_TABS の先頭（左端）に `["official", "公式"]` を追加しまし
   - Node.js が `https:` 静的 import を解釈できないため、module-level dynamic import + `.catch(() => {})` パターンで lazy 初期化
   - ロード前はエスケープテキストで fallback 表示
 - キーボードショートカットのヒントを `1〜6` → `1〜7` に更新
-- タブ数が増えたため、将来「公式ページ」「公式ニュース」への分割を NEXT_TASKS.md に記録済み
+- タブ数が増えたため、将来「公式ページ」「公式ニュース」への分割を `TASKS.md` の T.42 に記録済み
 
 ---
 
@@ -752,12 +752,12 @@ make clean-generated
 
 ## 次にやるとよい作業
 
-優先度順のおすすめです。詳細は `NEXT_TASKS.md` を参照。
+優先度順のおすすめです。詳細と番号は `TASKS.md`（作業台帳）を参照。
 
-1. 公式データの選手マッチング精度向上（display_name 完全一致 + 表記ゆれ正規化で、official_players.csv 106人中99人がマッチ。残り7人は表記差で未一致）
-2. 公式ページ・ニュースが増えたら「公式ページ」「公式ニュース」タブに分割（NEXT_TASKS.md 参照）
-3. Numbers データの更なる突合（対戦カードの不一致検出など）
-4. 王座変遷の精度向上
+1. T.36 公式データの選手マッチング精度向上（display_name 完全一致 + 表記ゆれ正規化で、official_players.csv 106人中99人がマッチ。残り7人は表記差で未一致）
+2. T.42 公式ページ・ニュースが増えたら「公式ページ」「公式ニュース」タブに分割
+3. T.44 Numbers データの更なる突合（対戦カードの不一致検出など）
+4. T.43 王座変遷の精度向上
 
 ---
 

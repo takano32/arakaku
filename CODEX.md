@@ -13,7 +13,7 @@ ARAKAKU リポジトリで Codex を使うときの参照ファイルです。
 README.md
 AGENTS.md
 HANDOFF.md
-NEXT_TASKS.md
+TASKS.md
 OPERATIONS_CHECKLIST.md
 .agents/skills/arakaku-maintainer/SKILL.md
 .agents/skills/arakaku-numbers-pipeline/SKILL.md
@@ -57,7 +57,7 @@ Phase 1 インクリメンタル表示 → Phase 2 エンリッチメント更�
 ### 最初に渡すおすすめプロンプト
 
 ```text
-README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を読んで、このリポジトリの現在状態を把握してください。
+README.md、AGENTS.md、HANDOFF.md、TASKS.md、OPERATIONS_CHECKLIST.md を読んで、このリポジトリの現在状態を把握してください。
 そのあと git status、make check、make clean-generated を実行して、作業可能な状態か確認してください。
 まだコードやCSVは変更しないでください。
 ```
@@ -76,7 +76,7 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 
 ### 次に着手しやすいタスク
 
-詳細は `NEXT_TASKS.md` を参照してください。
+詳細は `TASKS.md`（作業台帳）を参照してください。
 
 ---
 
@@ -85,7 +85,7 @@ README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を
 ### 状態確認だけさせる
 
 ```text
-README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md を読んでください。
+README.md、AGENTS.md、HANDOFF.md、TASKS.md、OPERATIONS_CHECKLIST.md を読んでください。
 その後、git status、git log --oneline -5、make check、make clean-generated を実行して、現在の状態を報告してください。
 まだファイルは変更しないでください。
 ```
@@ -150,7 +150,7 @@ grep -RIn "uses: actions/" .github/workflows を実行し、make check と make 
 ### ドキュメントを整備させる
 
 ```text
-README.md、AGENTS.md、HANDOFF.md、NEXT_TASKS.md、OPERATIONS_CHECKLIST.md、.agents/skills/*/SKILL.md を確認し、引き継ぎに不足があれば追記してください。
+README.md、AGENTS.md、HANDOFF.md、TASKS.md、OPERATIONS_CHECKLIST.md、.agents/skills/*/SKILL.md を確認し、引き継ぎに不足があれば追記してください。
 AGENTS.md と .agents/skills/arakaku-docs-handoff/SKILL.md を必ず読んでください。
 doc-only 変更でも make check と make clean-generated を実行してください。
 ```

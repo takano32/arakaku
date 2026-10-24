@@ -289,6 +289,15 @@ CSV schema migrations are acceptable.
 
 Partial patching is not required when a rewrite is cleaner.
 
+## Task ledger
+
+All work is tracked in `TASKS.md`.
+
+- Number parent tasks `T.N`, child tasks `T.N.M`, grandchild tasks `T.N.M.K`. Numbers are sequential and never reused.
+- Register a task in `TASKS.md` before starting it, and update its status and checkboxes as work progresses.
+- Record the short commit hash and date on the child or grandchild task a commit completes.
+- When `TASKS.md` grows large, move each completed parent task as a whole to `tasks/T.N.md` and keep only its row in the index table.
+
 ## Migration reporting
 
 When performing a CSV schema migration, report:
