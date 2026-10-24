@@ -5,7 +5,7 @@ false,low,0.812,name_pair,false,mh-33-e0it_vkslzc,mh-33,3,ローリングジュ�
 false,medium,0.700,event_and_bout_order,false,mh-33-ibmvbvxf1h8,mh-33,2,クロノ・マリーケン,らんちゃーすがや,ローリングjr,ダブド・ガブリシャン,クロノ・マリーケン,らんちゃーすがや,1R,1分31秒,ギロチン,SUB,,,note-n001f39a5fefb,10,13,○ローリングjr 【4勝2敗】 / 🆚 / ●ダブド・ガブリシャン【3勝1敗】 / （1R1分31秒 ギロチンチョーク）
 true,medium,1.000,name_pair,false,mh-33-v8kurvjahza,mh-33,1,キマイラ,ムラト・クツワ,キマイラ,ムラト・クツワ,キマイラ,ムラト・クツワ,1R,2分23秒,,,,,note-n001f39a5fefb,15,18,○キマイラ【6勝4敗】 / 🆚 / ●ムラト・クツワ【1勝2敗】 / （1R2分23秒KO 左フック）
 false,medium,0.700,event_and_bout_order,false,mh-33-e0it_vkslzc,mh-33,3,ローリングジュニア,ダブド・ガブリシャン,キマイラ,ムラト・クツワ,ローリングジュニア,ダブド・ガブリシャン,1R,2分23秒,,,,,note-n001f39a5fefb,15,18,○キマイラ【6勝4敗】 / 🆚 / ●ムラト・クツワ【1勝2敗】 / （1R2分23秒KO 左フック）
-false,medium,1.000,name_pair,false,target-93-xchkwjueaku,target-93,4,わく,きたむら,わく,きたむら,わく,きたむら,1R,1分51秒,,,,,note-n05a3b7b38805,5,8,◯わく【8勝1敗】＊① / 🆚 / ●きたむら【16勝5敗】 / （1R1分51秒KO 膝蹴り→パウンド）
+true,medium,1.000,name_pair,false,target-93-xchkwjueaku,target-93,4,わく,きたむら,わく,きたむら,わく,きたむら,1R,1分51秒,,,,,note-n05a3b7b38805,5,8,◯わく【8勝1敗】＊① / 🆚 / ●きたむら【16勝5敗】 / （1R1分51秒KO 膝蹴り→パウンド）
 false,medium,0.700,event_and_bout_order,true,target-93-ylxlp33n0ga,target-93,1,かぶと,つくりはら,わく,きたむら,つくりはら,かぶと,1R,1分51秒,,,,,note-n05a3b7b38805,5,8,◯わく【8勝1敗】＊① / 🆚 / ●きたむら【16勝5敗】 / （1R1分51秒KO 膝蹴り→パウンド）
 false,high,1.000,name_pair,false,target-93-ylxlp33n0ga,target-93,1,かぶと,つくりはら,かぶと,つくりはら,つくりはら,かぶと,1R,1分32秒,RNC,SUB,,,note-n05a3b7b38805,11,14,●かぶと【11勝12敗】 / 🆚 / ○つくりはら【1勝0敗】 / （1R1分３２秒 RNC）
 false,medium,0.700,event_and_bout_order,false,target-93-pdnwpfzix_s,target-93,2,かべい,かぜの,かぶと,つくりはら,かぜの,かべい,1R,1分32秒,RNC,SUB,,,note-n05a3b7b38805,11,14,●かぶと【11勝12敗】 / 🆚 / ○つくりはら【1勝0敗】 / （1R1分３２秒 RNC）
@@ -41,7 +41,7 @@ false,high,1.000,name_pair,false,emperor-115-f1d9nd7knz4,emperor-115,3,コルト
 false,medium,0.700,event_and_bout_order,true,emperor-115-cx_ge_lrruq,emperor-115,2,ゆめろう,クレイエル・アビソカ,コルト・アプロー,パット・バミューダ,クレイエル・アビソカ,ゆめろう,1R,2分40秒,肩固め,SUB,,,note-n25252920d028,11,14,○コルト・アプロー【19勝12敗】 / 🆚 / ●パット・バミューダ【1勝2敗】 / （1R2分40秒 肩固め）
 false,high,1.000,name_pair,false,emperor-115-1xiijizqf6k,emperor-115,1,さくらい,ステシエン・チェット,さくらい,ステシエン・チェット,ステシエン・チェット,さくらい,1R,2分15秒,アームバー,SUB,,,note-n25252920d028,16,19,●さくらい【9勝9敗】 / 🆚 / ○ステシエン・チェット【3勝0敗】 / （1R2分15秒 アームバー）
 false,medium,0.700,event_and_bout_order,false,emperor-115-f1d9nd7knz4,emperor-115,3,コルト・アプロー,パット・バミューダ,さくらい,ステシエン・チェット,パット・バミューダ,コルト・アプロー,1R,2分15秒,アームバー,SUB,,,note-n25252920d028,16,19,●さくらい【9勝9敗】 / 🆚 / ○ステシエン・チェット【3勝0敗】 / （1R2分15秒 アームバー）
-false,medium,1.000,name_pair,false,emperor-115-cx_ge_lrruq,emperor-115,2,ゆめろう,クレイエル・アビソカ,ゆめろう,クレイエル・アビソカ,ゆめろう,クレイエル・アビソカ,1R,1分36秒,,,,,note-n25252920d028,21,24,○ゆめろう【6勝4敗】 / 🆚 / ●クレイエル・アビソカ【1勝2敗】 / （1R1分36秒 ヒールホールド）
+true,medium,1.000,name_pair,false,emperor-115-cx_ge_lrruq,emperor-115,2,ゆめろう,クレイエル・アビソカ,ゆめろう,クレイエル・アビソカ,ゆめろう,クレイエル・アビソカ,1R,1分36秒,,,,,note-n25252920d028,21,24,○ゆめろう【6勝4敗】 / 🆚 / ●クレイエル・アビソカ【1勝2敗】 / （1R1分36秒 ヒールホールド）
 false,medium,0.700,event_and_bout_order,true,emperor-115-5zxi7yo4qzm,emperor-115,4,ダートソン,アトゥリうえはら,ゆめろう,クレイエル・アビソカ,アトゥリうえはら,ダートソン,1R,1分36秒,,,,,note-n25252920d028,21,24,○ゆめろう【6勝4敗】 / 🆚 / ●クレイエル・アビソカ【1勝2敗】 / （1R1分36秒 ヒールホールド）
 true,medium,1.000,name_pair,false,emperor-115-5zxi7yo4qzm,emperor-115,4,ダートソン,アトゥリうえはら,ダートソン,アトゥリうえはら,ダートソン,アトゥリうえはら,1R,3分42秒,,,,,note-n25252920d028,26,29,○ダートソン【2勝3敗】 / 🆚 / ●アトゥリうえはら【1勝2敗】 / （1R3分42秒KO パンチ連打）
 false,medium,0.700,event_and_bout_order,true,emperor-115-qwxsvgtscqe,emperor-115,5,マルコ・フレイザー,ブルーワン,ダートソン,アトゥリうえはら,ブルーワン,マルコ・フレイザー,1R,3分42秒,,,,,note-n25252920d028,26,29,○ダートソン【2勝3敗】 / 🆚 / ●アトゥリうえはら【1勝2敗】 / （1R3分42秒KO パンチ連打）
@@ -208,7 +208,7 @@ false,high,1.000,name_pair,false,target-95-szu3dddzt7i,target-95,2,かべい,シ
 false,medium,0.700,event_and_bout_order,false,target-95-bvdghnzn_b0,target-95,1,おとさわ,ミハエル・ボタルニカ,かべい,シガー・ユーナイム,おとさわ,ミハエル・ボタルニカ,1R,1分43秒,ＫＯ,KO,,,note-n91566d01688a,5,8,○かべい 【10勝4敗】 / 🆚 / ●シガー・ユーナイム【3勝2敗】 / （1R1分43秒ＫＯ 左フック）
 false,high,1.000,name_pair,false,target-95-bvdghnzn_b0,target-95,1,おとさわ,ミハエル・ボタルニカ,おとさわ,ミハエル・ボタルニカ,おとさわ,ミハエル・ボタルニカ,3R終了,,判定,DEC,,,note-n91566d01688a,10,13,○おとさわ【21勝14敗】 / 🆚 / ●ミハエル・ボタルニカ【4勝4敗】 / （3R終了 判定2-1）
 false,medium,0.700,event_and_bout_order,false,target-95-szu3dddzt7i,target-95,2,かべい,シガー・ユーナイム,おとさわ,ミハエル・ボタルニカ,かべい,シガー・ユーナイム,3R終了,,判定,DEC,,,note-n91566d01688a,10,13,○おとさわ【21勝14敗】 / 🆚 / ●ミハエル・ボタルニカ【4勝4敗】 / （3R終了 判定2-1）
-false,high,1.000,name_pair,false,target-95-m3upkoczyo4,target-95,5,ワインセル,センサー・ファッジ,ワインセル,センサー・ファッジ,ワインセル,センサー・ファッジ,2R,2分44秒,ＫＯ,KO,,,note-n91566d01688a,15,18,○ワインセル【9勝7敗】 / 🆚 / ●センサー・ファッジ【3勝3敗】 / （2R2分44秒ＫＯ サッカーボールキック）
+true,high,1.000,name_pair,false,target-95-m3upkoczyo4,target-95,5,ワインセル,センサー・ファッジ,ワインセル,センサー・ファッジ,ワインセル,センサー・ファッジ,2R,2分44秒,ＫＯ,KO,,,note-n91566d01688a,15,18,○ワインセル【9勝7敗】 / 🆚 / ●センサー・ファッジ【3勝3敗】 / （2R2分44秒ＫＯ サッカーボールキック）
 false,medium,0.700,event_and_bout_order,false,target-95-asrr1witayq,target-95,3,つくりはら,きょうない,ワインセル,センサー・ファッジ,つくりはら,きょうない,2R,2分44秒,ＫＯ,KO,,,note-n91566d01688a,15,18,○ワインセル【9勝7敗】 / 🆚 / ●センサー・ファッジ【3勝3敗】 / （2R2分44秒ＫＯ サッカーボールキック）
 true,medium,1.000,name_pair,false,target-95-asrr1witayq,target-95,3,つくりはら,きょうない,つくりはら,きょうない,つくりはら,きょうない,1R,1分53秒,,,,,note-n91566d01688a,20,23,○つくりはら【3勝0敗】 / 🆚 / ●きょうない【1勝2敗】 / （1R1分53秒 腕ひしぎ十字固め）
 false,medium,0.700,event_and_bout_order,false,target-95-dscftjpgwme,target-95,4,エメラルド・バンキー,ろっこう,つくりはら,きょうない,エメラルド・バンキー,ろっこう,1R,1分53秒,,,,,note-n91566d01688a,20,23,○つくりはら【3勝0敗】 / 🆚 / ●きょうない【1勝2敗】 / （1R1分53秒 腕ひしぎ十字固め）
