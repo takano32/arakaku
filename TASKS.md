@@ -424,7 +424,7 @@ T.36・T.48 の作業中に見つけた。
     - `official_*.csv`: T.32 で取り直した公式サイトが更新されていた。ニュース 3 件（第6回MAXバウトミドル級GP の出場者・1回戦の結果・ベスト8抽選会）、選手 2 人（kokudo・iisan-donsutaa）、選手の年齢・戦績、MAXバウトの大会一覧 14 件、about ページのロゴ画像
     - `review/source_*_candidates.csv`: T.45 以降作り直していなかった。行は 1 件も消えず、候補が増える（試合 617 → 672、大会 388 → 417、勝敗の言及 317 → 318）。変わる列は主に `line_numbers`（T.45 で本文の行が変わったため）と、改名した選手名・付け替えた大会名。勝敗の言及の 1 件増は T.45.2 に書いた `kobayashi856.github.io` の誤検出
     - `numbers_*.csv`・`archives/*.csv`・`articles.csv`・`promotions.csv`・`titles.csv`・`aliases.csv` は差分なし
-- [x] T.49.2 `extract_promotion_profile_fighters` を出現順のリストで返すようにし、すべて作り直してコミットする
+- [x] T.49.2 `extract_promotion_profile_fighters` を出現順のリストで返すようにし、すべて作り直してコミットする（c33418f, 2026-10-24）
   - 作り直した後、ハッシュのシードを変えた 2 回の結果が完全に一致することを確かめた
 
 ## T.50 煽り・試合前インタビュー動画から作られた重複試合をまとめる
