@@ -4,6 +4,7 @@
 #   build_source_documents.py / import_youtube_descriptions.py。API 項目名の解釈はここに一元化する。
 # 不変条件: キャッシュ 1 ファイル = API の items[] 1 要素そのまま (加工しない)。
 #   upload_date は publishedAt の UTC 日付を YYYYMMDD、duration_string は H:MM:SS / M:SS / S。
+#   thumbnail_sizes は snippet.thumbnails のキーを THUMBNAIL_SIZE_ORDER 順に空白区切り。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import json
 import re
@@ -12,6 +13,9 @@ from pathlib import Path
 from arakaku.utils import ROOT
 
 YOUTUBE_CACHE_DIR = ROOT / "tmp" / "youtube-api"
+
+# YouTube の画像サイズ名を小さい順に並べたもの。standard = sddefault、maxres = maxresdefault。
+THUMBNAIL_SIZE_ORDER = ["default", "medium", "high", "standard", "maxres"]
 
 ISO_DURATION_RE = re.compile(r"^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$")
 
@@ -29,6 +33,12 @@ def duration_string(iso_duration: str) -> str:
     return str(seconds)
 
 
+def thumbnail_sizes(thumbnails: dict) -> str:
+    known = [size for size in THUMBNAIL_SIZE_ORDER if size in thumbnails]
+    unknown = sorted(size for size in thumbnails if size not in THUMBNAIL_SIZE_ORDER)
+    return " ".join(known + unknown)
+
+
 def flatten_video(item: dict) -> dict[str, str]:
     snippet = item.get("snippet", {})
     statistics = item.get("statistics", {})
@@ -43,6 +53,7 @@ def flatten_video(item: dict) -> dict[str, str]:
         "view_count": statistics.get("viewCount", ""),
         "like_count": statistics.get("likeCount", ""),
         "description": snippet.get("description", ""),
+        "thumbnail_sizes": thumbnail_sizes(snippet.get("thumbnails", {})),
     }
 
 

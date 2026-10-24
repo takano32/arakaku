@@ -383,6 +383,8 @@ YouTube などの動画 URL、動画タイトル、公開日、動画種別、�
 
 再生成時は `display_id` で既存 `archived_at` を維持し、`display_id` 順に並べます。
 
+`thumbnail_sizes` は API の `snippet.thumbnails` が返したサイズ名（`default medium high standard maxres` の順、空白区切り）です。`build_json.py` が `videos.json` の `thumbnail_sizes` に写し、viewer は `standard`（= `sddefault`）が無い動画だけサムネイルの高画質化を止めて、Console に 404 が出ないようにします。
+
 ### `data-src/archives/note.csv`
 
 `tmp/note-html/*.html` から抽出した note メタデータのアーカイブです。

@@ -29,6 +29,7 @@ def test_iter_cached_videos_flattens_api_item(youtube_module, tmp_path):
             "channelTitle": "アラカク通信",
             "publishedAt": "2025-05-01T10:00:00Z",
             "description": "line1\nline2",
+            "thumbnails": {"high": {}, "default": {}, "medium": {}},
         },
         "contentDetails": {"duration": "PT1M6S"},
         "statistics": {"viewCount": "1234"},
@@ -48,4 +49,11 @@ def test_iter_cached_videos_flattens_api_item(youtube_module, tmp_path):
         "view_count": "1234",
         "like_count": "",
         "description": "line1\nline2",
+        "thumbnail_sizes": "default medium high",
     }
+
+
+def test_thumbnail_sizes_orders_known_sizes_and_keeps_unknown(youtube_module):
+    thumbnails = {"maxres": {}, "zzz": {}, "standard": {}, "default": {}}
+
+    assert youtube_module.thumbnail_sizes(thumbnails) == "default standard maxres zzz"
