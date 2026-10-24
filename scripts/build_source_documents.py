@@ -10,14 +10,19 @@ from __future__ import annotations
 # 不変条件:
 #   - キャッシュ (tmp/) はコミットしない。本文ハッシュ (content_hash) で内容同一性を表す。
 #   - note キャッシュのファイル名は utils.note_cache_name() に一元化 (writer=cache_note_html.py と契約)。
+#   - note 本文は記事タイトル (h1)・投稿日時 (time)・本文 (#note-body) だけを取り、ページの部品や
+#     「あなたへのおすすめ」を混ぜない。#note-body の無いページ (クリエイターのトップページ) は
+#     meta description を本文にする。
 #   - mention はキーワード一致の機械抽出であり、勝敗・出場者・タイトル系譜を「確定」させない (AGENTS.md)。
 #   - 出力は決定的にするため main() で documents/mentions をソートしてから書き出す。
+#     fetched_at は本文 (content_hash) が前回と同じ行では前回の値を引き継ぐ。
 # 関連スキル: .agents/skills/arakaku-source-pipeline。
 
 import hashlib
 import html
 import re
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 
 from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
 from arakaku.utils import DATA_SRC, ROOT, note_cache_name, read_csv, write_csv
@@ -87,6 +92,70 @@ def strip_tags(text: str) -> str:
     text = html.unescape(text)
     text = re.sub(r"\r\n?", "\n", text)
     return normalize_text(text)
+
+
+# note 記事ページから、最初の h1・最初の time・id="note-body" の中身を生 HTML のまま切り出す。
+# 生 HTML で持つのは、後段の strip_tags() で既存と同じ改行規則のテキストにするため。
+class NoteArticleParser(HTMLParser):
+    VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.parts: dict[str, list[str]] = {}
+        self.description = ""
+        self.current = ""
+        self.depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr = {name: value or "" for name, value in attrs}
+        if self.current:
+            self.parts[self.current].append(self.get_starttag_text() or "")
+            if tag not in self.VOID_TAGS:
+                self.depth += 1
+            return
+        if tag == "meta" and attr.get("name") == "description":
+            self.description = attr.get("content", "")
+        key = "body" if attr.get("id") == "note-body" else tag if tag in ("h1", "time") else ""
+        if key and key not in self.parts and tag not in self.VOID_TAGS:
+            self.parts[key] = []
+            self.current = key
+            self.depth = 1
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if self.current:
+            self.parts[self.current].append(self.get_starttag_text() or "")
+        elif tag == "meta" and dict(attrs).get("name") == "description":
+            self.description = dict(attrs).get("content") or ""
+
+    def handle_endtag(self, tag: str) -> None:
+        if not self.current or tag in self.VOID_TAGS:
+            return
+        self.depth -= 1
+        if self.depth == 0:
+            self.current = ""
+        else:
+            self.parts[self.current].append(f"</{tag}>")
+
+    def handle_data(self, data: str) -> None:
+        if self.current:
+            self.parts[self.current].append(data)
+
+    def handle_entityref(self, name: str) -> None:
+        if self.current:
+            self.parts[self.current].append(f"&{name};")
+
+    def handle_charref(self, name: str) -> None:
+        if self.current:
+            self.parts[self.current].append(f"&#{name};")
+
+
+def note_content_text(raw_html: str) -> str:
+    parser = NoteArticleParser()
+    parser.feed(raw_html)
+    if "body" not in parser.parts:
+        return normalize_text(html.unescape(parser.description))
+    fragments = ["".join(parser.parts.get(key, [])) for key in ("h1", "time", "body")]
+    return strip_tags("\n".join(fragments))
 
 
 def normalize_text(text: str) -> str:
@@ -193,7 +262,7 @@ def build_note_documents() -> list[dict[str, str]]:
             continue
 
         raw_html = html_path.read_text(encoding="utf-8", errors="replace")
-        content_text = strip_tags(raw_html)
+        content_text = note_content_text(raw_html)
 
         if not content_text:
             continue
@@ -269,10 +338,20 @@ def build_youtube_documents() -> list[dict[str, str]]:
     return rows
 
 
+# 本文が変わっていない行は前回の fetched_at を引き継ぎ、再実行だけで全行が差分にならないようにする。
+def keep_unchanged_fetched_at(documents: list[dict[str, str]]) -> None:
+    previous = {row["source_id"]: row for row in read_csv(SOURCE_DOCUMENTS_CSV)}
+    for document in documents:
+        old = previous.get(document["source_id"])
+        if old and old.get("content_hash") == document["content_hash"] and old.get("fetched_at"):
+            document["fetched_at"] = old["fetched_at"]
+
+
 def main() -> int:
     documents = []
     documents.extend(build_note_documents())
     documents.extend(build_youtube_documents())
+    keep_unchanged_fetched_at(documents)
 
     mentions = []
     for document in documents:
