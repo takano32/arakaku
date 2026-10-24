@@ -20,7 +20,9 @@ export class KeyboardNav {
     document.addEventListener("keydown", (e) => this.#onKeyDown(e));
     const dialog = document.querySelector("#help");
     document.querySelector("#help-close")?.addEventListener("click", () => dialog?.close());
-    document.querySelector("#help-open")?.addEventListener("click", () => this.#toggleHelp());
+    for (const button of document.querySelectorAll(".help-open")) {
+      button.addEventListener("click", () => this.#toggleHelp());
+    }
     dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
   }
 
