@@ -11,8 +11,9 @@ import { fallbackForDataKey, parseDataFileEntries } from "./core/data-parser.js"
  *   state.data に置かれ state.patch({}) で view-controller の再描画をトリガする。
  *   フェーズ定義は config.js、配列/オブジェクト判定とパースは data-parser.js に依存。
  * 不変条件:
- *   - constructor の依存注入 (dataFiles / fetchText) は scripts/validate_json.js が
- *     Node から fs ベースの fetchText を差し込んでパイプラインを検証するため必須。
+ *   - constructor の依存注入 (dataFiles / fetchText / fetchResponse) は scripts/validate_json.js が
+ *     Node から fs ベースの実装を差し込んでパイプラインを検証するため必須。
+ *     fetchResponse はストリーミング経路 (#streamKey) 用で、Response を返す。
  *     コンストラクタ引数の形を壊さないこと。
  *   - SAX ストリーミングは配列 JSON 前提。object 形式のキー (aliases/metadata) を
  *     ストリーム対象に含めてはならない (config.js のコメント参照、[] に誤パースされる)。
@@ -63,10 +64,11 @@ export class DataLoader {
   /** @param {import("./core/app-state.js").AppState} state */
   #patchScheduled = false;
 
-  constructor(state, { dataFiles = DATA_FILES, fetchText = fetchJsonText } = {}) {
+  constructor(state, { dataFiles = DATA_FILES, fetchText = fetchJsonText, fetchResponse = (path) => fetch(path) } = {}) {
     this.state = state;
     this.dataFiles = dataFiles;
     this.fetchText = fetchText;
+    this.fetchResponse = fetchResponse;
   }
 
   // ストリーミング中、並列キーが flush ごとに patch すると render が多重に走る。
@@ -160,7 +162,7 @@ export class DataLoader {
 
     let response;
     try {
-      response = await fetch(path);
+      response = await this.fetchResponse(path);
     } catch (err) {
       this.state.data[key] = fallbackForDataKey(key);
       this.state.dataLoadErrors[key] = err.message;
