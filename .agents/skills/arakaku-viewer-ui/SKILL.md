@@ -329,7 +329,7 @@ The viewer loads three external libraries at runtime from `https://esm.sh/`:
 
 `@tanstack/virtual-core` is dynamically imported and prewarmed at `virtual-list.js` module eval (so the fetch overlaps Phase 0's data fetch instead of blocking module eval). `Virtualizer`/`windowScroll` are used only at render time (`#instantiateVirtualizer`), not at construct time. A `#virtualizerGen` guard prevents double-instantiation when `setItems` is called before the module resolves; `loadVirtualCore()`'s `.catch` resets the cached promise (retry) and avoids an unhandled rejection. If it never loads, lists stay on "読み込み中…" rather than crashing.
 
-`lite-youtube-embed` is loaded via an un-awaited dynamic `import(...).catch(() => {})` in `main.js`. Custom elements upgrade automatically when the definition arrives late.
+`lite-youtube-embed` is loaded via an un-awaited dynamic `import(...).catch(() => {})` in `main.js`. Custom elements upgrade automatically when the definition arrives late. `renderVideoEmbed` presets the `hqdefault.jpg` background for videos whose `thumbnail_sizes` lacks `standard`, which stops the library's `sddefault.webp` upgrade (and its 404); an empty `thumbnail_sizes` leaves the library default.
 
 `index.html` adds `<link rel="preconnect">` for `esm.sh`, `fonts.googleapis.com`, `fonts.gstatic.com`, and loads Google Fonts via a `<link>` in the head (NOT a `@import` in `style.css`, which would chain a render-blocking cross-origin request behind the stylesheet).
 

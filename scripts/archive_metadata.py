@@ -30,6 +30,7 @@ YOUTUBE_FIELDS = [
     "view_count",
     "like_count",
     "description",
+    "thumbnail_sizes",
     "archived_at",
 ]
 NOTE_FIELDS = ["filename", "webpage_url", "title", "description", "archived_at"]
@@ -114,6 +115,7 @@ def archive_youtube():
             "view_count": video["view_count"],
             "like_count": video["like_count"],
             "description": video["description"],
+            "thumbnail_sizes": video["thumbnail_sizes"],
             "archived_at": existing.get(display_id, {}).get("archived_at") or new_archived_at,
         })
 

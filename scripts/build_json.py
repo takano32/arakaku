@@ -53,6 +53,9 @@ TITLE_REIGNS = rows("title_reigns.csv")
 VIDEO_LINKS = rows("video_links.csv")
 ALIASES = rows("aliases.csv")
 SOURCE_DOCUMENTS = rows("source_documents.csv")
+# videos.json は viewer の最初の描画で使うため、後から読み込まれる youtube_archives.json を
+# 待たずに済むようサムネイルの種類だけここで写す。未アーカイブの動画は空文字。
+YOUTUBE_THUMBNAIL_SIZES = {row["display_id"]: row["thumbnail_sizes"] for row in rows("archives/youtube.csv")}
 
 
 def index_link_ids(links: list[CsvRow], id_field: str) -> dict[tuple[str, str], list[str]]:
@@ -307,6 +310,12 @@ def build_fighter_snapshots() -> list[dict[str, Any]]:
     )
 
 
+def thumbnail_sizes_for(row: CsvRow) -> str:
+    if (row.get("platform") or "youtube") != "youtube":
+        return ""
+    return YOUTUBE_THUMBNAIL_SIZES.get(row["platform_video_id"], "")
+
+
 def build_videos() -> list[dict[str, Any]]:
     return map_csv(
         "videos.csv",
@@ -326,6 +335,7 @@ def build_videos() -> list[dict[str, Any]]:
             "duplicate_note": "duplicate_note",
             "notes": field_or_empty("notes"),
             "source_article_ids": lambda row: article_ids_for("video", row["video_id"]),
+            "thumbnail_sizes": thumbnail_sizes_for,
         },
     )
 

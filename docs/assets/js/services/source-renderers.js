@@ -28,7 +28,15 @@ export class SourceRenderers {
 
   renderVideoEmbed(v) {
     if (v.platform !== "youtube" || !v.platform_video_id) return "";
-    return `<div class="video-embed"><lite-youtube videoid="${escapeHtml(v.platform_video_id)}"></lite-youtube></div>`;
+    const id = escapeHtml(v.platform_video_id);
+    // lite-youtube は背景画像が未指定のときだけ sddefault.webp へ高画質化を試み、無い動画では 404 が
+    // Console に出る。API が standard (= sddefault) を返さなかった動画は hqdefault を先に指定して止める。
+    // thumbnail_sizes が空 (未アーカイブ) なら判断できないのでライブラリに任せる。
+    const sizes = (v.thumbnail_sizes || "").split(" ").filter(Boolean);
+    const poster = sizes.length > 0 && !sizes.includes("standard")
+      ? ` style="background-image: url('https://i.ytimg.com/vi/${id}/hqdefault.jpg')"`
+      : "";
+    return `<div class="video-embed"><lite-youtube videoid="${id}"${poster}></lite-youtube></div>`;
   }
 
   renderVideoSourceBlock(v, label = null) {
