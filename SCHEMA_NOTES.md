@@ -33,6 +33,7 @@ Current canonical source tables:
 - `official_history.csv`: flattened history entries from `tmp/arakaku-site/data/history.json`.
 - `article_links.csv`: article-to-entity relationships.
 - `video_links.csv`: video-to-entity relationships.
+- `video_bout_links.csv`: hand-maintained links from additional videos (hype, preview, interview, public viewing) to a bout; primary key `(video_id, bout_id)`.
 - `aliases.csv`: alias-to-canonical entity mappings.
 - `source_documents.csv`: cached/extracted source text.
 - `source_mentions.csv`: candidate mentions extracted from source text.
@@ -165,6 +166,8 @@ Important foreign keys:
 - `title_reigns.source_video_id -> videos.video_id`
 - `article_links.article_id -> articles.article_id`
 - `video_links.video_id -> videos.video_id`
+- `video_bout_links.video_id -> videos.video_id`
+- `video_bout_links.bout_id -> bouts.bout_id`
 - `source_mentions.source_id -> source_documents.source_id`
 
 `article_links.entity_type/entity_id` and `video_links.entity_type/entity_id` are polymorphic relationships validated against allowed entity tables.

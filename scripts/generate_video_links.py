@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Generate video_links.csv from bouts.csv, bout_participants.csv, videos.csv, fighters.csv."""
+"""Generate video_links.csv from bouts.csv, video_bout_links.csv, bout_participants.csv, videos.csv, fighters.csv."""
 from __future__ import annotations
 
 # 役割: 動画→各エンティティ（bout / event / fighter）の関係表 video_links.csv を生成する。
-#       bouts.inferred_from_video_id を起点に、その bout・所属 event・参加 fighter へリンクを張る。
+#       bouts.inferred_from_video_id と、手で管理する video_bout_links.csv（煽り・見どころ動画など、
+#       1 試合に 2 本目以降の動画を結ぶ表）を起点に、その bout・所属 event・参加 fighter へリンクを張る。
 # アーキ上の位置: generate-stage2 で実行（記事リンクは別途 generate_article_links が担当）。
-#       入力は bouts / bout_participants / videos / fighters。出力はビューアの動画-試合-選手
+#       入力は bouts / video_bout_links / bout_participants / videos / fighters。出力はビューアの動画-試合-選手
 #       相互ナビに使われる。
 # 不変条件: relation_type は videos.video_type から導出（full_fight/stream_archive/preview/
 #       interview はそのまま、それ以外は "reference"）。event リンクは (video_id, event_id) で
@@ -47,11 +48,14 @@ def main() -> None:
         if fid:
             bout_fighters.setdefault(bid, []).append(fid)
 
+    bouts = {row["bout_id"]: row for row in read_csv(DATA_SRC / "bouts.csv")}
+    video_bouts = [(bout.get("inferred_from_video_id", ""), bout) for bout in bouts.values()]
+    video_bouts += [(link["video_id"], bouts[link["bout_id"]]) for link in read_csv(DATA_SRC / "video_bout_links.csv")]
+
     rows: list[dict[str, str]] = []
     seen_event_links: set[tuple[str, str]] = set()
 
-    for bout in read_csv(DATA_SRC / "bouts.csv"):
-        vid = bout.get("inferred_from_video_id", "")
+    for vid, bout in video_bouts:
         if not vid:
             continue
 

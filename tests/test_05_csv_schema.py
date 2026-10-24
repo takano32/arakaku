@@ -20,6 +20,7 @@ EXPECTED_COLUMNS = {
     "title_reigns.csv": ["reign_id", "title_id", "reign_order", "fighter_name"],
     "titles.csv": ["title_id", "promotion_id", "division"],
     "video_links.csv": ["video_id", "entity_type", "entity_id", "relation_type"],
+    "video_bout_links.csv": ["video_id", "bout_id", "notes"],
     "official_players.csv": ["id", "name", "organization", "weight_class", "slug"],
     "official_tournaments.csv": ["id", "name", "date", "video_id", "champion", "runner_up"],
     "official_matches.csv": ["id", "event", "date", "fighter1", "fighter2", "result"],
@@ -82,6 +83,20 @@ def test_video_links_composite_key_is_unique(repo_root):
     _, rows = read_csv(repo_root, "video_links.csv")
     keys = [tuple(row.get(col, "") for col in VIDEO_LINKS_COMPOSITE_KEY) for row in rows]
     assert len(keys) == len(set(keys)), "video_links.csv has duplicate composite keys"
+
+
+def test_video_bout_links_reference_existing_rows(repo_root):
+    _, links = read_csv(repo_root, "video_bout_links.csv")
+    _, videos = read_csv(repo_root, "videos.csv")
+    _, bouts = read_csv(repo_root, "bouts.csv")
+    video_ids = {row["video_id"] for row in videos}
+    bouts_by_id = {row["bout_id"]: row for row in bouts}
+    keys = [(row["video_id"], row["bout_id"]) for row in links]
+    assert len(keys) == len(set(keys)), "video_bout_links.csv has duplicate (video_id, bout_id)"
+    for video_id, bout_id in keys:
+        assert video_id in video_ids, f"video_bout_links.csv: unknown video_id {video_id}"
+        assert bout_id in bouts_by_id, f"video_bout_links.csv: unknown bout_id {bout_id}"
+        assert bouts_by_id[bout_id]["inferred_from_video_id"] != video_id, f"video_bout_links.csv: {video_id} is already the inferred video of {bout_id}"
 
 
 def test_each_bout_has_two_participants(repo_root):

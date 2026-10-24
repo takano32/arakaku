@@ -199,6 +199,7 @@ JSON は viewer の配信 API です。`database.json` のような全テーブ�
 - `fighters.csv`
 - `fighter_snapshots.csv`
 - `videos.csv`
+- `video_bout_links.csv`
 - `title_reigns.csv`
 
 **stage1 生成（生データ取り込み。`clean-stage1-csvs` の対象。`make generate-stage1` で再生成）:**
@@ -349,6 +350,10 @@ Numbers 上の選手名と既存 `fighters.csv` の推定対応を管理しま�
 YouTube などの動画 URL、動画タイトル、公開日、動画種別、リンク状態、重複候補などを管理します。
 
 動画は試合や大会に直接埋め込まず、独立した動画データとして扱います。
+
+### `data-src/video_bout_links.csv`
+
+1 試合に 2 本目以降の動画（【煽り】・見どころ・試合前インタビュー・パブリックビューイング版など）を結ぶ、手で管理する関係表です。主キーは `(video_id, bout_id)`、`video_id` は `videos.csv`、`bout_id` は `bouts.csv` を指します。試合の `inferred_from_video_id` と同じ動画は入れません。`generate_video_links.py` がこの表も読み、試合・大会・選手への `video_links.csv` を作ります。
 
 ### `data-src/video_links.csv`
 
@@ -519,7 +524,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 - `scripts/generate_promotions.py`: 固定知識のリテラルから `promotions.csv` を生成（stage2）。
 - `scripts/generate_titles.py`: 固定知識のリテラルから `titles.csv` を生成（stage2）。
 - `scripts/generate_aliases.py`: `numbers_name_matches.csv`・`fighters.csv`・静的設定から `aliases.csv` を生成（stage2）。
-- `scripts/generate_video_links.py`: `bouts.csv` / `bout_participants.csv` / `videos.csv` / `fighters.csv` から `video_links.csv` を生成（stage2）。
+- `scripts/generate_video_links.py`: `bouts.csv` / `video_bout_links.csv` / `bout_participants.csv` / `videos.csv` / `fighters.csv` から `video_links.csv` を生成（stage2）。
 - `scripts/generate_article_links.py`: 構造化データと note 本文から `article_links.csv` を生成（stage2）。動画リンクは生成しません。
 - `scripts/generate_official_pages_csv.py`: `tmp/arakaku-site` から `official_news.csv`、`official_pages.csv` を生成（stage2）。
 
