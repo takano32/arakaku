@@ -17,7 +17,7 @@ EXPECTED_COLUMNS = {
     "source_mentions.csv": ["mention_id", "source_id", "source_type", "mention_type", "entity_type"],
     "archives/youtube.csv": ["display_id", "webpage_url", "fulltitle", "archived_at"],
     "archives/note.csv": ["filename", "webpage_url", "title", "archived_at"],
-    "title_reigns.csv": ["reign_id", "title_id", "reign_order", "fighter_name"],
+    "title_reigns.csv": ["reign_id", "title_id", "reign_order", "fighter_name", "end_reason"],
     "titles.csv": ["title_id", "promotion_id", "division"],
     "video_links.csv": ["video_id", "entity_type", "entity_id", "relation_type"],
     "video_bout_links.csv": ["video_id", "bout_id", "notes"],

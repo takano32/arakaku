@@ -276,6 +276,7 @@ def build_titles() -> list[dict[str, Any]]:
                     "reign_label": none_if_empty(reign.get("reign_label")),
                     "won_at_event_id": none_if_empty(reign.get("won_at_event_id")),
                     "lost_at_event_id": none_if_empty(reign.get("lost_at_event_id")),
+                    "end_reason": none_if_empty(reign.get("end_reason")),
                     "source_article_id": none_if_empty(reign.get("source_article_id")),
                     "source_video_id": none_if_empty(reign.get("source_video_id")),
                 }
