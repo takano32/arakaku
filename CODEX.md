@@ -66,7 +66,7 @@ README.md、AGENTS.md、HANDOFF.md、TASKS.md、OPERATIONS_CHECKLIST.md を読�
 
 - 正規データは `data-src/*.csv`
 - `docs/data/*.json` は生成物なので直接編集しない
-- `tmp/note-html/*.html` と `tmp/youtube-info/*.info.json` はコミットしない
+- `tmp/note-html/*.html` と `tmp/youtube-api/*.json` はコミットしない
 - `data-src/archives/youtube.csv` と `data-src/archives/note.csv` は cache から生成した永続メタデータで、コミット対象
 - archive metadata は viewer の補助表示・検索用であり、試合結果や選手同定を確定しない
 - 不明な試合結果を推測で確定しない
@@ -123,7 +123,7 @@ Numbers由来の個人成績を data-src/bouts.csv や data-src/bout_participant
 ```text
 note本文とYouTube概要欄の取り込み・archive metadata パイプラインを更新してください。
 AGENTS.md と .agents/skills/arakaku-source-pipeline/SKILL.md を必ず読んでください。
-tmp/note-html/*.html と tmp/youtube-info/*.info.json はコミットしないでください。
+tmp/note-html/*.html と tmp/youtube-api/*.json はコミットしないでください。
 data-src/archives/youtube.csv と data-src/archives/note.csv は cache から生成した永続メタデータです。
 必要なら make cache-sources、make archive-metadata、make build-sources、make check、make clean-generated を実行してください。
 archive metadata を試合結果や選手同定の確定根拠として扱わないでください。
@@ -204,7 +204,7 @@ docs/assets/style.css
 
 docs/data/*.json
 tmp/note-html/*.html
-tmp/youtube-info/*.info.json
+tmp/youtube-api/*.json
 
 必要に応じて変更してよい生成元CSV:
 data-src/archives/youtube.csv
@@ -247,7 +247,7 @@ git diff --stat
 - 目的外のファイルが変更されていない
 - `docs/data/*.json` が含まれていない
 - `tmp/note-html/*.html` が含まれていない
-- `tmp/youtube-info/*.info.json` が含まれていない
+- `tmp/youtube-api/*.json` が含まれていない
 
 ### 2. 生成物確認
 
@@ -260,7 +260,7 @@ git status --short
 ```text
 docs/data/*.json
 tmp/note-html/*.html
-tmp/youtube-info/*.info.json
+tmp/youtube-api/*.json
 __pycache__/
 .pytest_cache/
 ```

@@ -1,6 +1,6 @@
 ---
 name: arakaku-source-pipeline
-description: Use this skill when working on note HTML caching, YouTube info JSON caching, source_documents.csv, source_mentions.csv, source document extraction, or source text ingestion.
+description: Use this skill when working on note HTML caching, YouTube Data API caching, source_documents.csv, source_mentions.csv, source document extraction, or source text ingestion.
 ---
 
 # Unofficial ARAKAKU Database Source Pipeline Skill
@@ -22,7 +22,7 @@ Local caches:
 
 ```text
 tmp/note-html/*.html
-tmp/youtube-info/*.info.json
+tmp/youtube-api/*.json
 ```
 
 Archived cache metadata:
@@ -109,19 +109,23 @@ the same function `build_source_documents.py` uses to look the files up.
 Never reimplement this naming locally; diverging copies silently break cache
 lookups.
 
-### cache_youtube_info.py
+### cache_youtube_api.py
 
 Reads `data-src/videos.csv`.
 
-Uses `yt-dlp`.
+Uses the YouTube Data API v3 `videos.list` (50 IDs per request). Requires `YOUTUBE_API_KEY` in the environment; the key is sent as a header, never in the URL.
 
-Writes `.info.json` cache to:
+Writes each returned video resource unchanged as `<platform_video_id>.json` to:
 
 ```text
-tmp/youtube-info/
+tmp/youtube-api/
 ```
 
 Do not download video bodies.
+
+Videos the API does not return (deleted, private) are printed as `[missing]` and make the script exit 1.
+
+Read the cache only through `scripts/arakaku/youtube.py` (`iter_cached_videos`), which maps API fields to the flat metadata the downstream scripts use.
 
 ### build_source_documents.py
 
@@ -289,7 +293,7 @@ Do not commit:
 
 ```text
 tmp/note-html/*.html
-tmp/youtube-info/*.info.json
+tmp/youtube-api/*.json
 ```
 
 Commit only:
@@ -297,7 +301,7 @@ Commit only:
 ```text
 tmp/.gitkeep
 tmp/note-html/.gitkeep
-tmp/youtube-info/.gitkeep
+tmp/youtube-api/.gitkeep
 ```
 
 ---
@@ -310,10 +314,10 @@ note 404:
 - continue
 - do not fail the entire pipeline
 
-yt-dlp warnings:
+YouTube API `[missing]` videos:
 
 - not always fatal
-- if `.info.json` exists and description is present, continue
+- check whether the video was deleted or made private before editing `videos.csv`
 
 ---
 

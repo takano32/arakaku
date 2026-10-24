@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-# 役割: tmp/ の取得キャッシュ (youtube-info/*.json, note-html/*.html) から安定メタデータを
+# 役割: tmp/ の取得キャッシュ (youtube-api/*.json, note-html/*.html) から安定メタデータを
 #   抽出し、コミット対象の data-src/archives/{youtube,note}.csv へ吸い上げるアーカイバ。
-# アーキ上の位置: cache_youtube_info.py / cache_note_html.py が作るキャッシュが入力。
+# アーキ上の位置: cache_youtube_api.py / cache_note_html.py が作るキャッシュが入力。
 #   出力アーカイブは表示・検索・レビュー専用で、勝敗/出場者/選手同定/王座系譜は確認しない。
 # 不変条件: archived_at は既存行の値を existing_archive_times() で引き継ぎ、新規行のみ
 #   現在時刻を入れる -> 再実行しても差分が最小 (決定論的)。出力は display_id / filename で
 #   ソート固定。YOUTUBE_FIELDS / NOTE_FIELDS は出力スキーマで、flat_data の作りと一致必須。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
-import json
 from datetime import datetime
 import html
 from html.parser import HTMLParser
 from pathlib import Path
 
 from arakaku.utils import DATA_SRC, ROOT, read_csv, write_csv
+from arakaku.youtube import YOUTUBE_CACHE_DIR, iter_cached_videos
 
-YT_CACHE = ROOT / "tmp" / "youtube-info"
 NOTE_CACHE = ROOT / "tmp" / "note-html"
 YT_ARCHIVE = DATA_SRC / "archives/youtube.csv"
 NOTE_ARCHIVE = DATA_SRC / "archives/note.csv"
@@ -91,35 +90,26 @@ def parse_note_metadata(html: str) -> dict[str, str]:
 
 
 def archive_youtube():
-    if not YT_CACHE.exists():
+    if not YOUTUBE_CACHE_DIR.exists():
         return
 
     archived_at_by_display_id = existing_archive_times(YT_ARCHIVE, "display_id")
     new_archived_at = current_archive_time()
     raw_data = []
-    for cache_file in sorted(YT_CACHE.glob("*.json")):
-        with open(cache_file, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                print(f"[warn] Invalid YouTube cache JSON skipped: {cache_file}")
-                continue
-
-        # display_id が無い古いキャッシュ用フォールバック: ファイル名から拡張子を剥がす。
-        display_id = data.get("display_id") or cache_file.name.removesuffix(".info.json").removesuffix(".json")
-        flat_data = {
+    for _, video in iter_cached_videos():
+        display_id = video["platform_video_id"]
+        raw_data.append({
             "display_id": display_id,
-            "webpage_url": data.get("webpage_url") or "",
-            "fulltitle": data.get("fulltitle") or data.get("title") or "",
-            "uploader": data.get("uploader") or data.get("channel") or "",
-            "upload_date": data.get("upload_date") or "",
-            "duration_string": data.get("duration_string") or "",
-            "view_count": data.get("view_count") or "",
-            "like_count": data.get("like_count") or "",
-            "description": data.get("description") or "",
+            "webpage_url": video["url"],
+            "fulltitle": video["title"],
+            "uploader": video["channel"],
+            "upload_date": video["upload_date"],
+            "duration_string": video["duration_string"],
+            "view_count": video["view_count"],
+            "like_count": video["like_count"],
+            "description": video["description"],
             "archived_at": archived_at_by_display_id.get(display_id) or new_archived_at,
-        }
-        raw_data.append(flat_data)
+        })
 
     raw_data.sort(key=lambda row: row["display_id"])
     write_csv(YT_ARCHIVE, YOUTUBE_FIELDS, raw_data)

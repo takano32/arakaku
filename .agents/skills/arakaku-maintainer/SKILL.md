@@ -85,7 +85,7 @@ Fighter summary placeholder `"公式YouTube動画タイトルから抽出した�
 ## Critical rules
 
 - Never edit `docs/data/*.json` directly
-- Never commit `tmp/note-html/`, `tmp/youtube-info/`, `tmp/arakaku-site/`
+- Never commit `tmp/note-html/`, `tmp/youtube-api/`, `tmp/arakaku-site/`
 - Never add enrichment logic to `build_json.py`
 - Never invent confirmed facts (winner, method, round, time, identity, title lineage)
 - Keep uncertain data in `review/` before applying to `data-src/`

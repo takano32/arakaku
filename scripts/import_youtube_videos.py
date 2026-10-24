@@ -3,8 +3,8 @@ from __future__ import annotations
 
 # 役割: yt-dlp のチャンネル一覧 TSV を読み、data-src/videos.csv に動画メタデータを
 #   取り込む (既存行とマージ) インポータ。
-# アーキ上の位置: videos.csv の供給元。下流の cache_youtube_info.py が
-#   platform_video_id を使って info JSON を取りに行く。
+# アーキ上の位置: videos.csv の供給元。下流の cache_youtube_api.py が
+#   platform_video_id を使って YouTube Data API で動画情報を取りに行く。
 # 不変条件: videos.csv が権威データ。デフォルト (--replace 無し) では既存の空セルだけを
 #   yt-dlp 値で埋め、人手で整えた値は決して上書きしない (merge_rows 参照)。FIELDS の列順は
 #   出力スキーマそのものなので parse_tsv / merge_rows / write_csv と一致させること。

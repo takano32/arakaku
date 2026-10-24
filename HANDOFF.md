@@ -573,7 +573,7 @@ Numbers 由来三テーブルの JSON（`numbers_fighters.json`、`numbers_name_
 
 ```text
 scripts/cache_note_html.py
-scripts/cache_youtube_info.py
+scripts/cache_youtube_api.py
 scripts/build_source_documents.py
 ```
 
@@ -583,7 +583,7 @@ scripts/build_source_documents.py
 
 ```text
 make cache-note-html
-make cache-youtube-info
+make cache-youtube-api
 make cache-sources
 make archive-metadata
 make build-sources
@@ -687,7 +687,7 @@ data-src/*.csv
 
 ```text
 tmp/note-html/*.html
-tmp/youtube-info/*.info.json
+tmp/youtube-api/*.json
 ```
 
 `.gitkeep` のみ保持します。

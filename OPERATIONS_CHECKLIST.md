@@ -262,7 +262,7 @@ git archive --format=zip --output arakaku-master.zip master
 ```bash
 git status
 
-zip -r arakaku-working-tree.zip .   -x '.git/*'   -x 'docs/data/*.json'   -x '__pycache__/*'   -x '.pytest_cache/*'   -x 'tmp/note-html/*.html'   -x 'tmp/youtube-info/*.info.json'
+zip -r arakaku-working-tree.zip .   -x '.git/*'   -x 'docs/data/*.json'   -x '__pycache__/*'   -x '.pytest_cache/*'   -x 'tmp/note-html/*.html'   -x 'tmp/youtube-api/*.json'
 ```
 
 ---
@@ -280,7 +280,7 @@ git status
 
 - `docs/data/*.json` が入っていない
 - `tmp/note-html/*.html` が入っていない
-- `tmp/youtube-info/*.info.json` が入っていない
+- `tmp/youtube-api/*.json` が入っていない
 - 変更ファイルが意図通り
 - README / AGENTS / SKILL などのMarkdownが壊れていない
 
@@ -318,14 +318,14 @@ make clean-generated
 削除済み・非公開・URL不正の可能性があります。  
 全体が止まらない設計なら、そのまま続行できます。
 
-### yt-dlp warning が出る
+### YouTube API で `[missing]` が出る
 
-`.info.json` が生成され、description が取れているなら続行できます。
+削除・非公開になった動画の可能性があります。`videos.csv` を直す前に、動画の状態を確認してください。
 
 確認例:
 
 ```bash
-ls tmp/youtube-info/*.info.json | head
+ls tmp/youtube-api/*.json | head
 ```
 
 ### archive CSV の差分が大きい

@@ -110,7 +110,7 @@ JSON は viewer 用の生成物です。
 `docs/data/*.json` は build で生成される成果物です。  
 原則としてコミットしません。
 
-`tmp/` 配下の HTML や info JSON もローカルキャッシュなのでコミットしません。
+`tmp/` 配下の HTML や YouTube API JSON もローカルキャッシュなのでコミットしません。
 
 ---
 
@@ -132,7 +132,7 @@ JSON は viewer 用の生成物です。
 ├── tests/                  # pytest
 ├── tmp/                    # ローカルキャッシュ
 │   ├── note-html/           # note HTML cache
-│   └── youtube-info/        # yt-dlp info JSON cache
+│   └── youtube-api/         # YouTube Data API video JSON cache
 ├── Makefile
 ├── SCHEMA_NOTES.md
 └── README.md
@@ -149,7 +149,7 @@ JSON は viewer 用の生成物です。
 - `docs/data/.gitkeep`
 - `tmp/.gitkeep`
 - `tmp/note-html/.gitkeep`
-- `tmp/youtube-info/.gitkeep`
+- `tmp/youtube-api/.gitkeep`
 - `scripts/*.py`
 - `tests/*.py`
 - `docs/assets/js/*.js`
@@ -163,7 +163,7 @@ JSON は viewer 用の生成物です。
 
 - `docs/data/*.json`
 - `tmp/note-html/*.html`
-- `tmp/youtube-info/*.info.json`
+- `tmp/youtube-api/*.json`
 - `__pycache__/`
 - `.pytest_cache/`
 - ローカル実験用の一時ファイル
@@ -377,7 +377,7 @@ YouTube などの動画 URL、動画タイトル、公開日、動画種別、�
 
 ### `data-src/archives/youtube.csv`
 
-`tmp/youtube-info/*.info.json` から抽出した YouTube メタデータのアーカイブです。
+`tmp/youtube-api/*.json` から抽出した YouTube メタデータのアーカイブです。
 
 `videos.csv` は手で管理する動画台帳、`archives/youtube.csv` は取得済みキャッシュから保存した外部メタデータです。動画タイトル、投稿者、投稿日、概要欄などを viewer の補助表示や再検証に使いますが、試合結果や選手同定を確定するデータではありません。
 
@@ -528,16 +528,17 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 ### ソースキャッシュ取得
 
 - `scripts/cache_note_html.py`: `articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。404・削除済みは警告扱いで止めません。
-- `scripts/cache_youtube_info.py`: `videos.csv` の YouTube URL から `yt-dlp` で `.info.json` を `tmp/youtube-info/` にキャッシュします。動画本体は取得しません。
+- `scripts/cache_youtube_api.py`: `videos.csv` の YouTube 動画を YouTube Data API v3（`videos.list`）で取得し、API が返した動画リソースをそのまま `tmp/youtube-api/<platform_video_id>.json` にキャッシュします。環境変数 `YOUTUBE_API_KEY` が必要です。API が返さなかった動画（削除・非公開など）は `[missing]` として表示し、終了コード 1 にします。
+- `scripts/arakaku/youtube.py`: `tmp/youtube-api/*.json` を読み、`archive_metadata.py`・`build_source_documents.py`・`import_youtube_descriptions.py` 向けのメタデータに正規化します（`upload_date` は `publishedAt` の UTC 日付を `YYYYMMDD`、`duration_string` は `H:MM:SS` / `M:SS` / 秒）。
 - `scripts/download_official_data.sh`: 団体公式サイト（`kobayashi856/arakaku-site`）のデータを `tmp/arakaku-site/` に取得します。
 
 ### アーカイブメタデータ
 
-- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-info/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。archive CSV は再取得できなくなった場合に備えてコミット対象です。
+- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-api/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。archive CSV は再取得できなくなった場合に備えてコミット対象です。
 
 ### 本文DB生成
 
-- `scripts/build_source_documents.py`: `tmp/note-html/` と `tmp/youtube-info/` を読み、`source_documents.csv` と `source_mentions.csv` を生成します。本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
+- `scripts/build_source_documents.py`: `tmp/note-html/` と `tmp/youtube-api/` を読み、`source_documents.csv` と `source_mentions.csv` を生成します。本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
 
 ### 記事クロール
 
@@ -606,7 +607,7 @@ make rebuild           # clean-generated-csvs + clean-generated → regenerate-c
 make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2 → check
 ```
 
-ローカルに `tmp/note-html/`、`tmp/youtube-info/`、`data-raw/アラカク選手名鑑.numbers`、`tmp/arakaku-site/` がある前提です。canonical CSV は git の内容を使います。
+ローカルに `tmp/note-html/`、`tmp/youtube-api/`、`data-raw/アラカク選手名鑑.numbers`、`tmp/arakaku-site/` がある前提です。canonical CSV は git の内容を使います。
 
 - `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs` → `reorder_data`。
 - `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv`。
@@ -617,7 +618,7 @@ make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2
 
 ```bash
 make cache-note-html         # note 本文 HTML を tmp/note-html/ に取得
-make cache-youtube-info      # yt-dlp で .info.json を tmp/youtube-info/ に取得
+make cache-youtube-api       # YouTube Data API で動画 JSON を tmp/youtube-api/ に取得（YOUTUBE_API_KEY が必要）
 make download-official-data  # 公式サイトデータを tmp/arakaku-site/ に取得
 make cache-sources           # 上記キャッシュ取得をまとめて実行
 make archive-metadata        # キャッシュから data-src/archives/*.csv を再生成
@@ -748,7 +749,7 @@ JSON は生成物です。
 以下はコミットしません。
 
 - `tmp/note-html/*.html`
-- `tmp/youtube-info/*.info.json`
+- `tmp/youtube-api/*.json`
 
 必要なら各自で再生成します。
 
