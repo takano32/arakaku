@@ -54,7 +54,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.37 | Pages 上でストリーミングと仮想スクロールを目視確認 | 完了 | 2026-10-24 |
 | T.38 | validate_json.js の load() 網羅チェックを実効化 | 完了 | 2026-10-24 |
 | T.39 | ビューアの未使用データキーと未メモ化フィルタの整理 | 未着手 | |
-| T.40 | 結果不明の試合の結果補完 | 未着手 | |
+| T.40 | 結果不明の試合の結果補完 | 進行中 | |
 | T.41 | 選手プロフィールの補完 | 未着手 | |
 | T.42 | 公式タブを「公式ページ」と「公式ニュース」に分割 | 保留 | |
 | T.43 | 王座変遷の精度向上 | 未着手 | |
@@ -242,6 +242,22 @@ CI は通っているが、ブラウザでの動作確認が済んでいない�
 - `bout_participants.csv` の出場者ごとの結果が出典本文で確認できる
 - method / round / time が出典本文で確認できる
 - 同名選手の取り違えがない
+
+- [x] T.40.1 note の結果候補を作り直し、結果不明の試合と照合する（15d626b, 2026-10-24）
+  - `extract_note_structured_results.py` と `make_structured_result_patch_candidates.py` で `review/note_structured_results.csv`・`review/structured_result_patch_candidates.csv` を作り直した（T.45 以降古いままだった。2 回実行して同じ結果）
+  - `make_structured_result_patch_candidates.py` はあいまいな名前一致のため、1 試合に同じ記事の別の試合の候補も付く。そこで note の両選手名を `aliases.csv`・`fighters.csv` で選手 ID に解決し、出場者 2 人が完全に一致する候補だけで照合した
+  - 結果不明 152 試合の内訳
+    - note の勝者と Numbers の勝者が一致: 85 試合
+    - note の勝者と Numbers が食い違う: 4 試合
+      - ゆめろう vs クレイエル・アビソカ（エンペラーNo.115）、わく vs きたむら（ターゲットNo.93）、ワインセル vs センサー・ファッジ（ターゲットNo.95）は、Numbers が両者を勝ちにしている。note はそれぞれゆめろう・わく・ワインセルの勝ち。わく vs きたむらは Numbers のきたむら側にも「王座挑戦失敗」とある
+      - かぶと vs イベルト・キューミ（ターゲットNo.101）は、note がかぶとの勝ち、Numbers がイベルト・キューミの勝ち（かぶと側も負け）で本当に食い違う
+    - note に結果が無い: 63 試合
+  - note の候補の決着は、`method_raw` がキーワード（`ＫＯ` など）だけで技名を取っていない。既に反映済みの 87 試合も同じ形
+- [x] T.40.2 note と Numbers の勝者が一致した 85 試合を反映する（bbe52a6・e4f4b28, 2026-10-24）
+  - 2026-10-24 にユーザーが決定: 85 試合とも反映する
+  - 試合ごとに候補を 1 行だけ `apply=true` にし（結果の列が最も多いもの。同数なら記事 ID 順）、`apply_structured_result_patches.py` で反映した
+  - `result_status` は known 95 → 180、unknown 152 → 67。出場者 170 人に勝敗が付いた。反映した勝者はすべて Numbers の勝者と同じで、両者とも勝ちの試合は無い
+  - 決着（`method_normalized`）が空の known の試合は 82 件。note の原文には技名があることが多い
 
 ## T.41 選手プロフィールの補完
 
