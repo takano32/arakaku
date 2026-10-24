@@ -24,7 +24,7 @@ AGENTS.md
 .agents/skills/arakaku-filters/SKILL.md
 .agents/skills/arakaku-reliability-layering/SKILL.md
 HANDOFF.md
-NEXT_TASKS.md
+TASKS.md
 OPERATIONS_CHECKLIST.md
 CODEX.md
 CHRONICLE.md
@@ -80,8 +80,8 @@ AGENTS.md
 HANDOFF.md
   Current project state and recent work summary.
 
-NEXT_TASKS.md
-  Prioritized next tasks.
+TASKS.md
+  Work ledger. Every task is numbered T.N / T.N.M / T.N.M.K; completed parent tasks move to tasks/T.N.md.
 
 OPERATIONS_CHECKLIST.md
   Routine checks, sync steps, and troubleshooting.
