@@ -46,11 +46,15 @@ export function externalLink(url, label, className = "") {
 }
 
 // bout.result の round / time / method_raw を空欄を除いて空白連結する (例: "3R 4:21 KO")。
+// 名鑑由来の method_raw (detail_raw) は「1R 1:37 KO(大外刈り)」のようにラウンドと時間を含むので、
+// その場合は round / time を重ねて表示しない。
 export function boutResultText(bout) {
+  const method = bout.result?.method_raw ?? "";
+  if (/^\d+R\b/.test(method.trim())) return method.trim();
   return [
     bout.result?.round ? `${bout.result.round}R` : "",
     bout.result?.time,
-    bout.result?.method_raw,
+    method,
   ].filter(Boolean).join(" ");
 }
 

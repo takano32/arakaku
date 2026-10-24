@@ -48,14 +48,17 @@ export const titlesSection = {
       keyOf: (item) => (item._header ? `h:${item.label}` : item.title_id),
       isHeader: (item) => Boolean(item._header),
       defaultOpen: () => true,
-      rowClass: () => "rec-title",
-      renderHead: (item) => item._header
-        ? `<h2 class="group-title">${escapeHtml(item.label)}</h2>`
-        : `<div class="rec-text">
+      rowClass: () => "rec-championship",
+      renderHead: (item) => {
+        if (item._header) return `<h2 class="group-title">${escapeHtml(item.label)}</h2>`;
+        const isTournament = item.title_id?.includes("tournament");
+        const latest = item.lineage?.length ? item.lineage[item.lineage.length - 1] : null;
+        return `<div class="rec-text">
             <p class="rec-title">${escapeHtml(repo.titleDisplayName(item))}</p>
-            <p class="rec-sub">${escapeHtml(item.lineage?.length ?? 0)} 代の変遷</p>
+            <p class="rec-sub">${escapeHtml(item.lineage?.length ?? 0)} ${isTournament ? "回の開催" : "代の変遷"}</p>
           </div>
-          <div class="rec-aside">${item.lineage?.length ? `<span class="result-line">現王者: ${escapeHtml(item.lineage[item.lineage.length - 1].fighter_name)}</span>` : ""}</div>`,
+          <div class="rec-aside">${latest ? `<span class="result-line">${isTournament ? "最新優勝" : "現王者"}: ${escapeHtml(latest.fighter_name)}</span>` : ""}</div>`;
+      },
       renderBody: (t) => {
         const lineage = [...(t.lineage ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         return `
