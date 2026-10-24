@@ -153,7 +153,7 @@ Archive CSVs preserve external metadata for display and review. They are generat
 
 Rows whose cache file is missing (deleted, private, or not fetched) are kept unchanged and reported as `[kept]`, so an empty or partial cache never shrinks an archive.
 
-`archives/youtube.csv` `thumbnail_sizes` lists the keys of the API's `snippet.thumbnails` (ordered `default medium high standard maxres`, space-separated). `build_json.py` copies it into `videos.json` so the viewer can skip `lite-youtube`'s `sddefault.webp` upgrade for videos without `standard`, which would otherwise log a 404.
+`archives/youtube.csv` `thumbnail_sizes` lists the keys of the API's `snippet.thumbnails` (ordered `default medium high standard maxres`, space-separated). `build_json.py` copies it into `videos.json` so the viewer's YouTube facade (`docs/assets/js/ui/parts.js` `videoFacade`) can pick a thumbnail file that exists (`maxresdefault` → `sddefault` → `hqdefault`) instead of logging a 404.
 
 ---
 

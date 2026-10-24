@@ -1,6 +1,6 @@
 ---
 name: arakaku-reliability-layering
-description: How arakaku ranks data by source reliability and uses it for enrichment, sorting, and filtering. Use when touching docs/assets/js/core/reliability.js, data-enricher.js, or filters.js; when changing how fighters/bouts/events/videos are merged, sorted, or filtered; when adding a source tier; or when a record shows the wrong division/promotion, lands in the wrong sort position, or appears under the wrong filter bucket (e.g. 最小登録 / その他). Complements arakaku-sorting-strategy (temporal order) and arakaku-viewer-ui.
+description: How arakaku ranks data by source reliability and uses it for enrichment, sorting, and filtering. Use when touching docs/assets/js/data/reliability.js, data/enricher.js, or data/filters.js; when changing how fighters/bouts/events/videos are merged, sorted, or filtered; when adding a source tier; or when a record shows the wrong division/promotion, lands in the wrong sort position, or appears under the wrong filter bucket (e.g. 最小登録 / その他). Complements arakaku-sorting-strategy (temporal order) and arakaku-viewer-ui.
 ---
 
 # Data reliability layering
@@ -11,7 +11,7 @@ The single organizing principle for synthesizing arakaku data.
 
 名鑑 (Apple Numbers, human-verified) > 公式 (official site) > 通信ノート (note.com articles) > YouTube (video data) > 未登録/最小登録 (history-only stub / nothing)
 
-Encoded as `RELIABILITY` in `docs/assets/js/core/reliability.js`:
+Encoded as `RELIABILITY` in `docs/assets/js/data/reliability.js`:
 `numbers:5 > official:4 > note:3 > youtube:2 > none:1`.
 
 Two independent uses of this ranking:
@@ -21,10 +21,10 @@ Two independent uses of this ranking:
 
 ## Enricher pattern (build low → high, overwrite)
 
-`DataEnricher` (`docs/assets/js/core/data-enricher.js`) layers sources in **ascending** reliability so the most reliable value lands last:
+`DataEnricher` (`docs/assets/js/data/enricher.js`) layers sources in **ascending** reliability so the most reliable value lands last:
 
-- `enrichFighter`: base CSV (通信/YouTube) → **公式** (`#applyOfficialPlayer` + `weight_class`→`main_division`, `organization`→`main_promotion_id` via `repo.promotionIdByName`, height/age/gym) → **名鑑** (`numbers_data` overwrites). Official players are matched by `display_name` (exact, then `normalizeFighterName` fallback that ignores 中黒/空白/ピリオド差, e.g. `ローリングJr`↔`ローリングJr.`). `richFighters` also synthesizes fighters that only exist in official-site data (in addition to Numbers-only matches). Summary is 名鑑(catchphrase/notes) > base(通信/YouTube); 公式 `bio` is **not** folded into summary — the fighter card renders it in the merged profile block (`renderOfficialBio`), filtering out segments already present in summary so 名鑑 notes (which usually echo the bio) don't duplicate it.
-  - **Merged record/profile**: official and Numbers carry the SAME roster and identical win/loss records (verified: 106/106 match, 0 record conflicts), so `enrichFighter` consolidates them into one `profile.record` (`#mergeRecord`: numbers `fight_count`/`win_rate` + agreed `wins`/`losses` + official `draws`) and `profile.achievements` (`#numbersAchievements`: 👑王座/🏆優勝/白グローブ). The fighter card renders ONE `戦績・プロフィール` block (`renderProfileBlock`, neutral `.source-profile`) — NOT separate 公式/名鑑 stat blocks — so the record is shown once while both sources' unique content (公式: 国籍/ニックネーム/bio, 名鑑: 勝率/実績) is kept. `official_data`/`numbers_data` raw objects stay attached for provenance and the detail disclosure. The old `renderOfficialBlock`/`renderNumbersBlock` and `#applyOfficialPlayer`'s `profile.wins/losses/draws` writes were removed.
+- `enrichFighter`: base CSV (通信/YouTube) → **公式** (`#applyOfficialPlayer` + `weight_class`→`main_division`, `organization`→`main_promotion_id` via `repo.promotionIdByName`, height/age/gym) → **名鑑** (`numbers_data` overwrites). Official players are matched by `display_name` (exact, then `normalizeFighterName` fallback that ignores 中黒/空白/ピリオド差, e.g. `ローリングJr`↔`ローリングJr.`). `richFighters` also synthesizes fighters that only exist in official-site data (in addition to Numbers-only matches). Summary is 名鑑(catchphrase/notes) > base(通信/YouTube); 公式 `bio` is **not** folded into summary — the fighter row renders it in the merged profile block (`Parts.officialBio` in `docs/assets/js/ui/parts.js`), filtering out segments already present in summary so 名鑑 notes (which usually echo the bio) don't duplicate it.
+  - **Merged record/profile**: official and Numbers carry the SAME roster and identical win/loss records (verified: 106/106 match, 0 record conflicts), so `enrichFighter` consolidates them into one `profile.record` (`#mergeRecord`: numbers `fight_count`/`win_rate` + agreed `wins`/`losses` + official `draws`) and `profile.achievements` (`numbersAchievementLabels`: 👑王座/🏆優勝/白グローブ). The fighter row renders ONE `戦績・プロフィール` block (`Parts.profileBlock`) — NOT separate 公式/名鑑 stat blocks — so the record is shown once while both sources' unique content (公式: 国籍/ニックネーム/bio, 名鑑: 勝率/実績) is kept. `official_data`/`numbers_data` raw objects stay attached for provenance; the row head shows the record in `.rec-aside` and the achievements as gold badges.
 - `enrichBout`: base → **名鑑** (`numbers_records` overwrite result/division/winner; sets `result_status="numbers_verified"`).
 - `enrichEvent` / `enrichVideo`: attach official/archive data; no higher-tier field overwrite is available in current data.
 
@@ -66,9 +66,9 @@ Two authored summary markers exist; only `最小登録` ("王座・トーナメ�
 
 `DataRepository` rich getters (`richFighters/richBouts/richEvents/richVideos`) pass their list through `lowReliabilityLast(items, rank)` after enrichment, preserving order within the reliable and the low groups. Reliability is data-derived, so it is not part of the render fingerprint.
 
-This composes on top of the temporal order from `arakaku-sorting-strategy`: the getter reverses to newest-first (or fighters sort by 名鑑 order) **first**, then `lowReliabilityLast` partitions low-reliability to the tail. Because the result is reordered, the `extendItems` invariant from `arakaku-sorting-strategy` applies — render only via `refreshItems`, never `extendItems`.
+This composes on top of the temporal order from `arakaku-sorting-strategy`: the getter reverses to newest-first (or fighters sort by 名鑑 order) **first**, then `lowReliabilityLast` partitions low-reliability to the tail. Because the result is reordered, rows must be keyed by record ID (`RecordList` `keyOf`), never by index — see `arakaku-sorting-strategy`.
 
-## Filtering (`docs/assets/js/filters.js`)
+## Filtering (`docs/assets/js/data/filters.js`)
 
 `TAB_FILTERS` defines per-tab division/promotion filters. Options carry `value` (English URL/state token), `label` (Japanese button text), and `match` (data value, defaults to `value`). A group's optional `forceOther(item)` routes an item to **その他** regardless of its field value — fighters use `isMinimalFighter` here; bouts do not. URL tokens are always English (`fighter_div=lightweight`, `bout_promo=max_bout`).
 

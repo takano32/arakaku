@@ -148,15 +148,14 @@ Current viewer ADMIN_TABS (管理ビュー):
 Current viewer rendering architecture:
 
 ```text
-TabRenderers → { items, renderItem, estimateSize?, itemsSource? } descriptor
-TabRendererRegistry.renderTo(container, tabId) → VirtualList per tab
-VirtualList → @tanstack/virtual-core@3 via dynamic CDN import (off the startup graph)
-DataLoader.load() → Phase 0 loadKeys(INITIAL_TAB_DATA_KEYS = officialPages, officialNews) eager (not streamed)
-               → Phase 1 streaming (PRIMARY_DATA_KEYS, 11 keys, @streamparser/json CDN)
-               → Phase 2 = Promise.all([#loadEnrichment(), loadPublicReferences()]) — one parallel pool
-                 (ENRICHMENT_DATA_KEYS no longer includes sourceMentions/metadata)
-all streaming goes through #streamKeySafe (per-key failure isolation)
-loadForTab(tabId) → TAB_DATA_KEYS keys streamed on demand (e.g. sourceMentions on the mentions tab)
+ui/sections/<tab>.js build(ctx) → { items, keyOf, renderHead, renderBody, defaultOpen?, rowClass?, isHeader? }
+ui/shell.js → one ui/list.js RecordList per tab (chunked rendering, lazy row bodies, diffed refresh, cursor)
+data/loader.js load() → Phase 0 loadKeys(INITIAL_TAB_DATA_KEYS = officialPages, officialNews)
+                      → Phase 1 PRIMARY_DATA_KEYS fetched in parallel, each file applied as it arrives
+                      → Phase 2 ENRICHMENT_DATA_KEYS + PUBLIC_REFERENCE_DATA_KEYS in one parallel pool
+per-key failure isolation: fallback value + dataLoadErrors[key] + loadedDataKeys (never rejects load())
+loadForTab(tabId) → TAB_DATA_KEYS keys fetched on demand (e.g. sourceMentions on the mentions tab)
+no CDN / framework / web font; the feature map lives in docs/VIEWER_FEATURES.md
 ```
 
 Build scripts (all run by `make build`):

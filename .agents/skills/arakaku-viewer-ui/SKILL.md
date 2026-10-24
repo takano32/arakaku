@@ -1,526 +1,167 @@
 ---
 name: arakaku-viewer-ui
-description: Use this skill when editing the ARAKAKU GitHub Pages viewer, including docs/index.html, docs/assets/js/, docs/assets/style.css, tabs, search, navigation, source document display, or source mention display.
+description: Use this skill when editing the ARAKAKU GitHub Pages viewer, including docs/index.html, docs/assets/js/, docs/assets/app.css, sections (tabs), search, navigation, source document display, or source mention display.
 ---
 
 # Unofficial ARAKAKU Database Viewer UI Skill
 
-Use this skill when working on the static viewer.
+Use this skill when working on the static viewer (rebuilt in T.56).
 
 Viewer files:
 
 ```text
-docs/index.html
-docs/assets/js/main.js
-docs/assets/js/config.js
-docs/assets/js/core/
-docs/assets/js/ui/
-docs/assets/js/services/
-docs/assets/js/tabs/
-docs/assets/style.css
+docs/index.html                 app skeleton (aside nav + main, search, help dialog, theme bootstrap)
+docs/assets/app.css             stylesheet (light/dark tokens on :root, phone layout under 880px)
+docs/sw.js                      Service Worker for docs/data/*.json (stale-while-revalidate + DATA_UPDATED)
+docs/assets/js/main.js          boot sequence
+docs/assets/js/config.js        DATA_FILES, PUBLIC_TABS / ADMIN_TABS, load phases, TAB_DATA_KEYS, REQUIRED_TAB_DATA_KEYS
+docs/assets/js/app/state.js     Store (UI state) + URL sync (PARAM_MAP)
+docs/assets/js/data/            data rules (parser, loader, repository, enricher, reliability, query, filters, labels)
+docs/assets/js/ui/shell.js      renders nav / counts / toolbar / filters / alerts and drives the lists
+docs/assets/js/ui/list.js       RecordList (progressive list with open rows and a keyboard cursor)
+docs/assets/js/ui/parts.js      shared HTML partials (badges, links, dl, folds, video facade, references, related bouts, profile)
+docs/assets/js/ui/sections/     one module per tab + admin.js + index.js (SECTIONS registry)
+docs/assets/js/ui/keyboard.js   shortcuts
+docs/assets/js/ui/html.js       escapeHtml and formatting helpers
+docs/assets/js/ui/markdown.js   official news Markdown → HTML
+docs/VIEWER_FEATURES.md         feature map (old implementation → new module, verification status)
 ```
 
-Viewer data is generated JSON under:
+Viewer data is generated JSON under `docs/data/*.json`. Do not edit generated JSON directly.
 
-```text
-docs/data/*.json
-```
-
-Do not edit generated JSON directly.
+There are **no runtime dependencies**: no CDN imports, no framework, no web font. Keep it that way unless a dependency is explicitly justified.
 
 ---
 
-## Current viewer tabs
+## Tabs (sections)
 
-PUBLIC_TABS (通常ビュー, keyboard shortcuts 1–8):
+PUBLIC_TABS (keyboard shortcuts 1–8, `h`/`l` cycle):
 
 ```text
-1: 公式   (official)  ← official_pages (about/history, collapsed <details>) + official_news (Markdown)
-2: 通信   (tsushin)   ← note_article source documents (120 articles)
+1: 公式   (official)  ← official_pages (collapsed rows) + official_news (Markdown, open rows)
+2: 通信   (tsushin)   ← note_article source documents (bodies lazy-loaded)
 3: 試合   (bouts)
 4: 選手   (fighters)
 5: 大会   (events)
 6: 団体   (promotions)
-7: 王座   (titles)
+7: 王座   (titles)    ← grouped by 団体 / 階級 with header rows
 8: 動画   (videos)
 ```
 
-ADMIN_TABS (管理ビュー, toggled via 管理ビュー button):
+ADMIN_TABS (the 管理ビュー `<details>` group in the nav; `viewMode` is derived from the tab, so `?tab=sources` opens the admin view directly):
 
 ```text
 出典本文 (sources)
-出典言及 (mentions)
+出典言及 (mentions)          ← mention_type <select>
 名鑑選手 (numbersFighters)
 名前対応 (numbersNameMatches)
 名鑑記録 (numbersFightRecords)
 公式選手 (officialPlayers)
-公式     (officialMisc)  ← official_tournaments + official_matches + official_history, type-badged
+公式     (officialMisc)       ← official_tournaments + official_matches + official_history
 ```
 
-The view-mode switch remembers the last active tab in each view (`#prevPublicTab`, `#prevAdminTab` in `EventController`), and restores it when switching back.
+Opening the admin group switches to the last admin tab (default 出典本文); closing it returns to the last public tab (`Shell #prevPublicTab / #prevAdminTab`).
 
 Expected behavior:
 
-- Fighter links open the fighter view and focus that fighter.
-- Event links open the event view and focus that event.
-- Event cards show related bout cards.
-- Fighter cards show related bouts.
-- Source document view shows note bodies and YouTube descriptions.
-- Source mention view shows extracted candidates.
-- Bout, event, and video cards show related source candidates where available.
-- Note article links and video links can expose inline `▶ 詳細` / `▼ 詳細` disclosure controls for source text.
+- Fighter links (`.link-fighter`) open the fighter section with only that fighter, opened. Event links (`.link-event`) and bout links (`.link-bout`) do the same for events / bouts. The focus is shown as a chip in the toolbar (`選手: ○○ ✕`), the search box is left empty, and typing a query clears the focus.
+- Event rows show the event's bouts in bout order; fighter rows show related bouts with event links.
+- Source candidates (`source_*_references`) and mentions are candidates, not facts. Keep the 候補 labels.
+- Note bodies and YouTube descriptions open inline via 「本文を表示」 / 「概要欄を表示」 folds.
 
 ---
 
 ## Rendering architecture
 
-### Tab descriptor pattern
+### Section descriptors
 
-`TabRenderers` methods return a descriptor object, not HTML strings:
+Each module in `ui/sections/` exports `{ id, label, placeholder, empty, build(ctx) }`. `build(ctx)` receives `{ state, repo, query, parts }` and returns a RecordList descriptor:
 
 ```javascript
-// Each tab method returns:
 {
-  items: [...],               // array of items to render
-  renderItem: (item) => html, // function returning HTML string
-  estimateSize: (i) => px,   // optional: estimated height per item (default 500px)
+  items,                       // array (already filtered: query + TAB_FILTERS + focus)
+  keyOf: (item) => string,     // stable row key (ID); must be unique within the section
+  renderHead: (item) => html,  // always visible: .rec-text (title / sub / badges) + optional .rec-aside
+  renderBody: (item) => html,  // rendered lazily when the row is opened
+  defaultOpen?: (item) => bool,
+  rowClass?: (item) => string, // e.g. rec-src-numbers (blue stripe) / rec-src-official (green)
+  isHeader?: (item) => bool,   // group heading rows (titles tab); not openable, skipped by the cursor
 }
 ```
 
-`TabRendererRegistry.renderTo(container, tabId)` owns the rendering lifecycle:
+`validate_json.js` builds every section on the real data and renders every row's head and body in Node, so sections must not touch `document` / `window` and must never return `undefined` in HTML.
 
-- Creates and manages one `VirtualList` per tab ID.
-- Calls `list.setItems()` on tab change or first render.
-- Calls `list.refreshItems()` on repo change or filter change.
-- Detects changes via `#prevRepoRefs` (which stores the per-tab `repo.revision`
-  stamp, NOT a reference — the repository is a singleton) and `#filterFingerprint()`.
-- Short-circuits with `return` when nothing changed.
+### RecordList (`ui/list.js`)
 
-Old `tabRegistry.render(tabId)` no longer exists — do not use it.
+- `setItems(desc)` on tab change: renders the first 30 rows; an IntersectionObserver sentinel (or the 「さらに表示」 button) appends the next chunk.
+- `refresh(desc)` on data / filter changes: keeps the rendered count and cursor; if the rendered keys are unchanged it only replaces heads/bodies whose HTML changed (open `<details>` survive), otherwise it rebuilds.
+- Open state is per key (`#openState`), so a row stays open across refreshes and tab switches.
+- Cursor: `moveCursor`, `setCursorToEdge`, `toggleCursor`, `getCursorEl`. Clicking a row sets the cursor index without painting the outline.
 
-### VirtualList
+### Shell (`ui/shell.js`)
 
-`docs/assets/js/ui/virtual-list.js` uses `@tanstack/virtual-core@3` from the CDN:
-
-```javascript
-import { Virtualizer, windowScroll } from "https://esm.sh/@tanstack/virtual-core@3";
-```
-
-API:
-
-| Method | When to use |
-|--------|-------------|
-| `setItems(items, renderItem, estimateSize)` | Tab change or first render. Resets scroll to top, clears row cache. |
-| `refreshItems(items)` | Data or filter update. Clears row cache, re-renders visible window. Does NOT reset scroll. |
-| `extendItems(items)` | Append-only item array growth only. Preserves existing cached rows. **Only safe when items at indices 0..N-1 are identical.** |
-
-**Important:** `extendItems` is NOT safe for arrays that go through `.reverse()` (e.g., `richBouts`, `richVideos`, `events`, `richArticles`). Each streaming batch changes every index in a reversed array. `TabRendererRegistry` never calls `extendItems` — it always uses `refreshItems` for updates. Keep it that way.
-
-Window-based scroll: the Virtualizer uses `window` as the scroll element. `scrollMargin = el.getBoundingClientRect().top + window.scrollY` tells it where the list starts on the page.
-
-The `#painting` re-entry guard prevents recursive `onChange → #paint → measureElement → onChange` loops. `measureElement` is deferred to `requestAnimationFrame` after each paint.
+- `state.subscribe(() => shell.render())` is the only re-render path. `render()` is idempotent: nav updates `aria-current`, filters re-render only when their fingerprint changes, the list rebuilds only when tab / `repo.revision` / fingerprint / gate changed.
+- Render gate: `REQUIRED_TAB_DATA_KEYS[tab]` missing → 「読み込み待ち…」/「読み込み中…」 status; the fighters tab additionally waits for `numbersFighters` + `numbersNameMatches` so the 名鑑 order is final before the first paint.
+- Counts (`#counts()`): 試合/動画 use raw lengths (+ numbers-only rows once `numbersFightRecords` is loaded); 選手 uses `richFighters.length` only after fighters/numbersFighters/numbersNameMatches/officialPlayers are loaded; 出典 / 出典候補 show `…` until loaded.
+- Deep links: when `state.hasFocus` and the section yields exactly one item, the row is opened and the page scrolled to top — once per focus key, after the data has arrived.
 
 ---
 
-## Data loading architecture
+## Data loading (`data/loader.js`)
 
-### Phased loading
-
-`DataLoader.load()` runs three phases:
-
-**Phase 0 — initial tab (INITIAL_TAB_DATA_KEYS):**
-
-The default tab is `official`, so its data loads first, alone, before anything
-else competes for bandwidth:
-
-```javascript
-export const INITIAL_TAB_DATA_KEYS = ["officialPages", "officialNews"];
-```
-
-These two files total ~16KB, so Phase 0 uses plain `loadKeys()` (fetch +
-`JSON.parse`) instead of streaming — it must not wait for the
-`@streamparser/json` CDN import. `load()` fires `getJSONParser().catch(() => {})`
-without awaiting it at the start of Phase 0 so the CDN import warms up in
-parallel (the `.catch` prevents an unhandled rejection during the Phase 0
-window). When Phase 0 resolves, the official tab renders; Phase 1 then starts.
-
-`loadKeys()` failure semantics match `#streamKey`: a per-key fetch/HTTP error
-records `dataLoadErrors[key]` (shown in the 「データ読み込み失敗」 card), assigns
-the fallback value, and still marks the key loaded. `fetchJsonText` throws on
-non-OK responses — never silently swallow an HTTP error into fallback data.
-
-**Phase 1 — streaming (PRIMARY_DATA_KEYS):**
-
-11 files stream in parallel via SAX parsing:
-
-```javascript
-export const PRIMARY_DATA_KEYS = [
-  "bouts", "boutParticipants", "fighters", "events", "promotions",
-  "videos", "titles", "videoLinks",
-  "fighterSnapshots", "articles", "articleLinks",
-];
-```
-
-Each file streams with `@streamparser/json` from the CDN:
-
-```javascript
-import("https://esm.sh/@streamparser/json").then((m) => m.JSONParser)
-```
-
-Each streaming flush calls `repository.invalidate()` then `state.patch({})`, triggering incremental renders. The first flush of each key is immediate; subsequent flushes are throttled to roughly `FLUSH_MS` (200ms). When Phase 1 completes, a final `repository.invalidate()` + `state.patch({})` is issued.
-
-**Phase 2 — enrichment + public references (one parallel pool):**
-
-```javascript
-export const ENRICHMENT_DATA_KEYS = [
-  "numbersFighters", "numbersNameMatches", "numbersFightRecords",
-  "youtubeArchives", "noteArchives",
-  "sourceDocuments",
-  "officialPlayers", "officialTournaments", "officialMatches", "officialHistory",
-];
-// in data-loader.js
-export const PUBLIC_REFERENCE_DATA_KEYS = [
-  "sourceEventReferences", "sourceBoutReferences", "sourceVideoReferences",
-];
-```
-
-`load()` runs both together: `await Promise.all([this.#loadEnrichment(), this.loadPublicReferences()])`. Both stream via `#streamKeySafe()`; each flush calls `repository.invalidate()` then schedules a coalesced patch. They are **not** serialized — the ~1.5MB of `source*References` (shown on public bout/event/video cards and in public search) must not wait behind enrichment, and references are independent of the enrichers.
-
-`CORE_DATA_KEYS = [...INITIAL_TAB_DATA_KEYS, ...PRIMARY_DATA_KEYS, ...ENRICHMENT_DATA_KEYS]` — all keys that `load()` guarantees are in `loadedDataKeys` after it resolves.
-
-**Eager vs lazy is decided by public-tab consumption, not by table category.** Only keys a PUBLIC tab actually reads belong in the eager Phase-2 lists; admin-only heavy data is deferred to its tab via `TAB_DATA_KEYS` + `REQUIRED_TAB_DATA_KEYS` (on-demand `loadForTab`, with the loading-gate card). Current splits, all verified by consumer-mapping:
-- Eager (public): `numbers*` + `officialPlayers`/`officialTournaments` (fighter/event badges & stats), `youtubeArchives`/`noteArchives` (video/article titles), `sourceDocuments` (tsushin tab + video/article detail panels), the three `source*References` (public cards + search). `officialMatches`/`officialHistory` are admin-only but kept eager because they're tiny.
-- Lazy (admin): `sourceMentions` (~1MB, 出典言及 tab only) loads on tab open. Its one public touch — the mention-count fallback badge in `source-renderers.js renderVideoDescriptionPreview` (only when a video has a source document but no source reference) — is gated on `state.loadedDataKeys.has("sourceMentions")`, so it shows nothing rather than misleading zeros until loaded.
-
-**`REQUIRED_TAB_DATA_KEYS` is a RENDER gate, separate from `TAB_DATA_KEYS` (the on-demand fetch list).** A tab listed in `REQUIRED_TAB_DATA_KEYS` shows a "読み込み待ち/読み込み中" placeholder (rendering nothing) until those keys are loaded. Only gate on keys the list scaffolding genuinely needs — NOT on heavy body text that arrives progressively. Example: the public 通信 (tsushin) tab requires only `sourceDocuments` (eager, carries `content_preview`), NOT `sourceDocumentBodies` (~557KB). It still streams the bodies via `TAB_DATA_KEYS.tsushin`, but renders the list immediately from previews and upgrades each card's inline body as bodies arrive (`renderNoteArticleCard` falls back to `content_preview` when `content_text` is absent; each body flush bumps `repo.revision` → tab-registry re-render). Gating a tab on a large progressively-loaded file makes the user stare at a blank placeholder for the whole download.
-
-Only **array** JSON streams correctly. `#streamKey`'s SAX handler pushes array elements (`typeof k === "number"`); an **object** JSON (`aliases`, `metadata` — see `OBJECT_DATA_KEYS` in `data-parser.js`) streamed through it silently becomes `[]`. So object-typed keys must NOT be in `PRIMARY_DATA_KEYS`/`ENRICHMENT_DATA_KEYS`. `aliases`/`titleReigns` (PRIMARY) and `metadata` (ENRICHMENT) were removed because nothing reads them (fighter aliases are baked into `fighters.json` records; title lineage into `titles.json`; `metadata` has no reader at all).
-
-### Streaming render-cost discipline
-
-Every `#streamKey` flush invalidates the repository (cheap, ~0.5µs) and schedules a render. With 11 keys streaming in parallel that is dozens of renders, so **render work must stay cheap and rare during streaming**:
-
-- **Patch coalescing** (`data-loader.js` `#schedulePatch()`): flushes schedule at most one `state.patch({})` per `requestAnimationFrame`. `invalidate()` stays per-flush (correctness); only the render notification is batched. Node/tests (no `requestAnimationFrame`) fall back to immediate patch. Per-phase confirm patches stay direct, guaranteeing a settled final render.
-- **`renderSummary()` must not build rich collections during streaming.** 試合/動画 counts use the plain `d.bouts.length`/`d.videos.length` (rich is reverse + `lowReliabilityLast` partition only, so the count is identical). 選手 reads `repo.richFighters.length` only once `fighters`+`numbersFighters`+`numbersNameMatches`+`officialPlayers` are loaded (richFighters' real deps), else the plain `fighters.length`. Mirror the existing `sourceDocuments`/`sourceReferences` `loadedDataKeys` gates.
-- Per-render DOM rebuilds get change-guards: `renderViewModeSwitch` skips its innerHTML rewrite when `viewMode` is unchanged; `renderTabs` toggles classes when tab structure is unchanged; the official tab skips content re-render via `itemsSource`.
-
-### DataRepository lifecycle (singleton + invalidate)
-
-The repository is a **singleton**. `DataLoader.ensureStateData()` creates
-`state.repository = new DataRepository(state.data)` exactly once, then reuses it.
-`state.data` keeps the same object identity throughout; only its array values are
-replaced as data streams in.
-
-Instead of re-creating the repository, the loader calls `repository.invalidate()`:
-- After each SAX batch flush (mid-streaming, inside `#streamKey`'s `flush`)
-- After Phase 1 completes
-- After Phase 2 + public references complete
-- In `loadKeys` / `loadForTab` after on-demand fetches
-
-`invalidate()` resets every rich cache (`#richFighters`, `#richBouts`, …), the
-`#fighterAliasIndex`, the `#sourceDocLookup`, `this.indexes`, and the
-`DataEnricher` cache, then advances a **module-level monotonic `revision`** counter
-(`this.revision = nextRevision++`). The counter is module-scoped so even a
-freshly-constructed repository never reuses a stamp.
-
-`TabRendererRegistry` detects updates by comparing `repo.revision` against the
-per-tab stamp in `#prevRepoRefs` (NOT object identity — identity never changes for
-a singleton) and calls `refreshItems`. `QueryMatcher` likewise clears its search-text
-cache whenever `repo.revision` changes. Comparing repository identity instead of
-`revision` is the exact bug this design fixed (frozen tabs / stale search cache).
-
-### Error handling
-
-If `fetch()` throws or returns a non-OK status, `#streamKey` sets `fallbackForDataKey(key)` and marks the key in both `loadedDataKeys` and `dataLoadErrors`. A failed key is settled (not stuck in pending state). A mid-stream reader error falls back the same way (fallback value, key still settled). A `JSONParser` construction failure (e.g. CDN import failed) instead falls back to `response.text()` + `JSON.parse()`, only using `fallbackForDataKey(key)` if that also fails, then settles the key. Every key handles its own error, so one bad enrichment file does not abort the others.
-
-All parallel streaming calls go through `#streamKeySafe(key)`, which wraps `#streamKey` in a per-key `.catch` (fallback + `dataLoadErrors` + `loadedDataKeys.add`). This contains even a *thrown* rejection (e.g. an OK response with a null body, where `getReader()` is outside `#streamKey`'s try) so it cannot reject the phase's `Promise.all` and abort `load()`. Use `#streamKeySafe`, not a bare `#streamKey`, for every Phase 1 / Phase 2 / public-reference / tab-data fan-out.
-
-`ViewController.renderDataLoadErrors()` reads `state.dataLoadErrors` and renders an `<article class="card data-load-error-card" role="alert">` warning card into the `#data-load-errors` section in `index.html` (the section stays `hidden` when there are no errors); it lists the failed file name and message per key.
-
----
-
-## Filter fingerprint
-
-`TabRendererRegistry.#filterFingerprint()` detects filter changes via query/focus
-plus **every** filter group's `stateKey`, read generically from `TAB_FILTERS`:
-
-```javascript
-const tabFilters = Object.values(TAB_FILTERS).flat().map((g) => s[g.stateKey]);
-[s.query, s.focusFighterId, s.focusEventId, s.mentionType, ...tabFilters].join("\0")
-```
-
-Because it iterates `TAB_FILTERS` automatically, adding a tab filter needs **no**
-fingerprint edit — just add the group in `filters.js`. The per-tab 階級/団体/種別/区分
-button filters (public + admin) are a config-driven subsystem; see the
-**arakaku-filters** skill for the data model and the add-a-filter checklist.
-
----
-
-## Key viewer JS concepts
-
-Important state fields:
+Phases (see `config.js`):
 
 ```text
-state.tab
-state.query
-state.focusFighterId
-state.focusEventId
-state.mentionType
-state.<tab>Division / <tab>Promotion / eventType / promotionCategory / sourceType ...
-                          ← one per filter group stateKey in TAB_FILTERS (filters.js)
-state.data
-state.repository          ← DataRepository singleton (created once; data updates call repository.invalidate())
-state.loadedDataKeys      ← Set<string> of settled keys (loaded or failed)
-state.loadingDataKeys     ← Set<string> of in-flight keys (via loadKeys only)
-state.dataLoadErrors      ← {[key]: errorMessage} for failed keys
+Phase 0  loadKeys(INITIAL_TAB_DATA_KEYS)              officialPages, officialNews (~16KB) → first paint
+Phase 1  PRIMARY_DATA_KEYS in parallel                 each file applied + repository.invalidate() + rAF-coalesced patch
+Phase 2  ENRICHMENT_DATA_KEYS + PUBLIC_REFERENCE_DATA_KEYS in one parallel pool
+on demand loadForTab(tab) → TAB_DATA_KEYS[tab]         sourceDocumentBodies (tsushin/sources), sourceMentions (mentions)
 ```
 
-Important data keys:
+- Failure semantics are per key: fallback value (`data/parser.js` `fallbackForDataKey`) + `dataLoadErrors[key]` + `loadedDataKeys.add(key)`; `load()` never rejects because of one file. `Shell #renderAlerts` shows the failed file names (`role="alert"`).
+- `loadingDataKeys` tracks every in-flight key (toolbar shows 読み込み中 n/31).
+- `CORE_DATA_KEYS = INITIAL + PRIMARY + ENRICHMENT` is what `validate_json.js` asserts after `load()`.
+- Object-shaped JSON (`aliases`, `metadata`) is listed in `DATA_FILES` but not in any phase (nothing reads it); array keys that parse to a non-array are treated as broken files.
+- `DataLoader` constructor injection `{ dataFiles, fetchText }` is used by `scripts/validate_json.js`; keep `fetchText(path, fallback)`.
 
-```text
-sourceDocuments
-sourceMentions
-youtubeArchives
-noteArchives
-numbersFighters
-numbersNameMatches
-numbersFightRecords
-videos
-videoLinks
-bouts
-boutParticipants
-fighters
-events
-titles
-titleReigns
-fighterSnapshots
-aliases
-articles
-articleLinks
-metadata
-```
+### DataRepository lifecycle
 
-When adding a new JSON data file, update `DATA_FILES` in `config.js` and add the key to `PRIMARY_DATA_KEYS`, `ENRICHMENT_DATA_KEYS`, or (only for data the initial tab needs) `INITIAL_TAB_DATA_KEYS`.
-
-When adding a new tab:
-
-1. Add it to `PUBLIC_TABS` or `ADMIN_TABS` in `docs/assets/js/config.js`.
-2. Add a method on `TabRenderers` in `docs/assets/js/tabs/tab-renderers.js` returning `{ items, renderItem, estimateSize?, itemsSource? }`. `itemsSource` (optional) is the array of raw source arrays the items derive from; when provided and reference-identical to the previous render, `TabRendererRegistry` skips the refresh (used by the official tab to stay interaction-stable — open `<details>` would otherwise collapse on every streaming flush).
-3. Register it in `TabRendererRegistry` (`docs/assets/js/tabs/tab-registry.js`).
-4. If data is needed on-demand (not in ENRICHMENT_DATA_KEYS), add to `TAB_DATA_KEYS` in `data-loader.js`.
-5. If data should auto-load before tab click, add key to `ENRICHMENT_DATA_KEYS` in `config.js`.
-6. Confirm search behavior and keyboard shortcut numbering.
+One `DataRepository` per page (`state.repository`), created by `ensureStateData()`. Every data change calls `repository.invalidate()`, which resets the rich caches / indexes / enricher and advances the module-level `revision`. `Shell` and `QueryMatcher` detect updates by `revision`, never by object identity.
 
 ---
 
-## CDN dependencies
+## Filters, search, URL
 
-The viewer loads three external libraries at runtime from `https://esm.sh/`:
-
-| Library | Import | Used in |
-|---------|--------|---------|
-| `@tanstack/virtual-core@3` | dynamic import (prewarmed) | `ui/virtual-list.js` |
-| `@streamparser/json` | dynamic import (lazy) | `data-loader.js` (all streaming) |
-| `lite-youtube-embed` | un-awaited dynamic import | `main.js` (YouTube facade) |
-
-**No esm.sh import may be static/top-level** — a static `import ... from "https://esm.sh/..."` puts the CDN on the boot module graph's critical path, blocking `main.js` top-level (and therefore `dataLoader.load()` / Phase 0) on a cold third-party round trip. All three deps are dynamic. Verify with `grep -rn 'from "https://esm.sh' docs/assets/js` returning nothing.
-
-`@streamparser/json` is used for ALL `#streamKey()` calls (both Phase 1 and Phase 2). `getJSONParser()` guards with `typeof window !== "undefined"` for Node.js compatibility. If the CDN import fails or the parser throws, `#streamKey` falls back to `response.text() + JSON.parse()` (`await getJSONParser().catch(() => null)` — a CDN outage must never reject `load()`).
-
-`@tanstack/virtual-core` is dynamically imported and prewarmed at `virtual-list.js` module eval (so the fetch overlaps Phase 0's data fetch instead of blocking module eval). `Virtualizer`/`windowScroll` are used only at render time (`#instantiateVirtualizer`), not at construct time. A `#virtualizerGen` guard prevents double-instantiation when `setItems` is called before the module resolves; `loadVirtualCore()`'s `.catch` resets the cached promise (retry) and avoids an unhandled rejection. If it never loads, lists stay on "読み込み中…" rather than crashing.
-
-`lite-youtube-embed` is loaded via an un-awaited dynamic `import(...).catch(() => {})` in `main.js`. Custom elements upgrade automatically when the definition arrives late. `renderVideoEmbed` presets the `hqdefault.jpg` background for videos whose `thumbnail_sizes` lacks `standard`, which stops the library's `sddefault.webp` upgrade (and its 404); an empty `thumbnail_sizes` leaves the library default.
-
-`index.html` adds `<link rel="preconnect">` for `esm.sh`, `fonts.googleapis.com`, `fonts.gstatic.com`, and loads Google Fonts via a `<link>` in the head (NOT a `@import` in `style.css`, which would chain a render-blocking cross-origin request behind the stylesheet).
-
-`marked` CDN was removed. Markdown rendering uses the self-contained `mdToHtml()` in `docs/assets/js/ui/markdown.js` (imported by `tab-renderers.js`).
-
-## VirtualList loading state
-
-`VirtualList` has a `#loading` flag (set via `setLoading(bool)`). When `items.length === 0`:
-- `#loading === true` → shows "読み込み中..."
-- `#loading === false` → shows blank (no message)
-
-`TabRendererRegistry.renderTo()` calls `list.setLoading(loadingDataKeys.size > 0)` on every render.
+- Filters: `data/filters.js` `TAB_FILTERS` (see the **arakaku-filters** skill). `Shell #renderFilters` draws chips (`.chip`, `data-filter-type` / `data-filter-val`), clicks toggle `state[group.stateKey]`.
+- Search: `data/query.js` `QueryMatcher(state, () => repo)`; each section calls the matching `*Matches` method. The cache is keyed by `repo.revision`.
+- URL: `app/state.js` `PARAM_MAP` (unchanged short names plus `bout`). `writeToURL` uses `replaceState`, omits defaults, skips identical URLs.
 
 ---
 
-## Search behavior
+## Styling (`docs/assets/app.css`)
 
-Global search uses `state.query`.
-
-When the user types in search:
-
-- clear `focusFighterId`
-- clear `focusEventId`
-- re-render content
-
-Do not leave stale focus state active after manual search.
+- Color tokens on `:root`, dark values under `@media (prefers-color-scheme: dark)` guarded by `:root:not([data-theme="light"])` and again under `:root[data-theme="dark"]`. The theme button writes `html[data-theme]` and `localStorage["arakaku-theme"]`; `index.html` applies it before paint.
+- Provenance: `.badge-numbers` (blue) / `.badge-official` (green) / `.badge-note` (purple) / `.badge-gold` (achievements, 王座戦); admin rows use `.rec-src-numbers` / `.rec-src-official` / `.rec-src-note` stripes.
+- Layout: `.app` grid (264px aside + main) above 880px; below, the aside stacks on top with horizontally scrolling `.nav-list` / `.stats` (`grid-template-columns: minmax(0, 1fr)` keeps the page from overflowing).
+- Rows: `.rec` → `.rec-head` (`.rec-main` → `.rec-text` + `.rec-aside`, `.rec-toggle`) + `.rec-body`; open rows get `.rec-open` (card look). Never name a row class `rec-title` (that is the title line class).
 
 ---
 
-## Navigation behavior
+## Adding a tab
 
-Fighter links should:
-
-- set `state.tab = "fighters"`
-- set `state.focusFighterId`
-- clear `state.focusEventId`
-- update search box with fighter name
-- re-render
-
-Event links should:
-
-- set `state.tab = "events"`
-- set `state.focusEventId`
-- clear `state.focusFighterId`
-- update search box with event name
-- re-render
-
----
-
-## Source views
-
-`出典本文` uses:
-
-```text
-sourceDocuments
-```
-
-`出典言及` uses:
-
-```text
-sourceMentions
-```
-
-Remember:
-
-- `source_mentions` are candidates, not confirmed facts.
-- Labels should say candidate or mention when appropriate.
-- Do not present extracted result mentions as confirmed bout results.
-- Inline detail disclosures can show note本文 or YouTube概要欄, but they do not make a candidate result confirmed.
-
----
-
-## Archive metadata
-
-Archive metadata uses:
-
-```text
-youtubeArchives
-noteArchives
-```
-
-These JSON files are generated from:
-
-```text
-data-src/archives/youtube.csv
-data-src/archives/note.csv
-```
-
-Viewer code may use archive rows to enrich labels, dates, descriptions, and search text for videos and articles. Archive rows are external metadata only; do not present them as confirmation of bout results, fighter identity, or title lineage.
-
----
-
-## Rich integration (Numbers + official)
-
-`DataRepository` builds `richFighters` / `richBouts` / `richEvents` / `richVideos`
-at runtime via `DataEnricher.enrich*` (`core/data-enricher.js`). The reliability
-ordering and the layering/merge rules live in the **arakaku-reliability-layering**
-skill; this section is just the viewer-facing behavior.
-
-Numbers-derived data (`numbersFighters` / `numbersNameMatches` /
-`numbersFightRecords`) and official-site data (`officialPlayers` etc.) are merged
-into fighters/bouts at runtime:
-
-- Discover fighters that exist only in Numbers matches **or** only in official-site
-  data, so they still appear on the 選手 tab.
-- Fill missing fighter profile fields (height, age, gym, summary) from 公式 then 名鑑
-  (higher tier wins).
-- Resolve unknown bout results/divisions/formats from Numbers personal fight
-  records; such bouts get `result_status = "numbers_verified"`. A record is used only
-  when both its fighter and opponent match the bout (tournaments have several bouts
-  per fighter in one event).
-- Synthesize events/bouts that exist only in Numbers fight records (no `events.csv`
-  row for the promotion + numeric event number) as `numbers-<promotion>-<N>` /
-  `numbers-<promotion>-<N>-<order>` with `numbers_only: true`
-  (`DataRepository.numbersOnlyEvents` / `numbersOnlyBouts`). They join `richEvents` /
-  `richBouts`, resolve through `findEvent` / `findBout`, count in the header summary
-  once `numbersFightRecords` is loaded, and the event card shows a `名鑑のみ` badge.
-  Non-numeric event numbers (MAXバウト `SP` / `SP2`) are skipped.
-- Collapse duplicate fighters whose names differ only by 中黒/空白/ピリオド into one
-  survivor (kept-away names become `aliases`; `merged_fighter_ids` + the repo alias
-  index keep related bouts/snapshots attached). CSV rows are not modified.
-
-### Source-provenance display
-
-Cards show **where each fact came from** using the badge colors:
-
-- Top-of-card badges: `名鑑` (`.video-badge`, blue) and `公式`
-  (`.video-badge.official-badge`, green).
-- Grouped data blocks reuse those colors: `renderNumbersBlock` →
-  `.source-block.source-numbers` (blue, "名鑑データ"), `renderOfficialBlock` →
-  `.source-block.source-official` (green, "公式データ"). The official block holds the
-  公式 record (wins/losses) and `renderOfficialBio` (`.official-bio`, 「／」-split
-  title/tournament history), which **filters out segments already in the summary**
-  so 名鑑 notes (which usually echo the bio) don't duplicate it.
-- Admin single-source cards carry a colored left border (青=名鑑系, 緑=公式系).
-- Numbers stats block: total fights/wins/losses plus achievement markers
-  (👑 belts, 🏆 tournament wins).
-
-When rendering source comparison UI: show raw Numbers/official values distinctly,
-surface unmatched names and generated candidate IDs clearly, flag contradictory
-win/loss marks, and never present Numbers-/archive-derived bout records as
-confirmed canonical CSV bouts.
-
----
-
-## CSS rules
-
-Prefer small, reusable classes.
-
-Existing important classes include:
-
-```text
-card
-video-badge                 ← 名鑑 badge (blue); + .official-badge = 公式 (green)
-source-card
-source-body
-source-mention-card
-related-bout-grid
-related-bout-card
-link-button
-virtual-list                ← position: relative; required for absolute-positioned rows
-
-# 出所ボックス (= バッジ色)  ── see Source-provenance display above
-source-block / source-numbers (青) / source-official (緑) / source-block-label
-official-bio                ← 公式 bio リスト
-fighter-summary
-
-# タブ絞り込み (config-driven, see arakaku-filters skill)
-tab-filters / filter-row / filter-label / filter-button-group
-filter-button / filter-button.active
-```
-
-The `.virtual-list` container must have `position: relative` for the absolute-positioned row divs inside it to work correctly. Its `height` is set dynamically by `VirtualList` to match the Virtualizer's `getTotalSize()`.
-
-Avoid huge layout rewrites unless requested.
+1. Add `[id, label]` to `PUBLIC_TABS` or `ADMIN_TABS` in `config.js` (public order = shortcut numbers).
+2. Create `ui/sections/<id>.js` exporting a section object and register it in `ui/sections/index.js`.
+3. If it needs on-demand data, add the keys to `TAB_DATA_KEYS` (and `REQUIRED_TAB_DATA_KEYS` if the list cannot render without them).
+4. Filters: add a `TAB_FILTERS[id]` group (state keys are created automatically from `FILTER_STATE_KEYS`; add the URL param to `PARAM_MAP`).
+5. Run `make check` (validate_json.js renders every row of the new section) and update `docs/VIEWER_FEATURES.md`.
 
 ---
 
 ## Required checks
-
-After viewer changes:
 
 ```bash
 make check
 make clean-generated
 ```
 
-After push, verify Pages:
-
-```text
-https://takano32.github.io/arakaku/
-```
-
-Check browser console for viewer JS errors. Errors in `VirtualList.#paint` are caught and rendered as visible error cards, but CDN import failures may appear in the console.
+Preview locally with `python3 -m http.server 8000 --directory docs` after `make build` (ES modules and `sw.js` do not work from `file://`). Check the browser console: the viewer must produce zero errors and zero warnings, including no 404 (the favicon is an inline SVG). Verify phone width (no horizontal scroll) and the deep links `?tab=events&event=…`, `?tab=fighters&fighter=…`, `?tab=titles&title_promo=…`.

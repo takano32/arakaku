@@ -35,12 +35,12 @@ CSV で管理しているソースデータを静的 JSON に変換し、GitHub 
 
 ## 現在の viewer 機能
 
-GitHub Pages の viewer では、現在以下を表示します。
+GitHub Pages の viewer は、左（スマートフォンでは上）のナビで「セクション」を選び、検索・絞り込みで一覧を狭め、行を開いて詳細を見る、という構成です。
 
-通常ビュー（タブ）:
+通常ビューのセクション（キーボード `1`〜`8`）:
 
-- 公式（公式サイトの about/history と news）
-- 通信（アラカク通信ノートの記事本文）
+- 公式（公式サイトの about / history と news）
+- 通信（アラカク通信のーとの記事本文）
 - 試合
 - 選手
 - 大会
@@ -48,29 +48,73 @@ GitHub Pages の viewer では、現在以下を表示します。
 - 王座
 - 動画
 
-管理ビュー（タブ）:
+管理ビュー（ナビの「管理ビュー」を開く。`?tab=sources` のような URL でも開きます）:
 
 - 出典本文 / 出典言及 / 名鑑選手 / 名前対応 / 名鑑記録 / 公式選手 / 公式（トーナメント・試合・沿革）
 
-主な導線:
+一覧と行:
 
-- 試合 view の選手名をクリックすると、選手 view に移動します。
-- 試合 view の大会名をクリックすると、大会 view に移動します。
-- 大会 view には、その大会に含まれる関連試合カードを表示します。
-- 選手 view には、その選手の関連試合を表示します。
-- 出典本文 view では、note 本文と YouTube 概要欄を確認できます。
-- 出典言及 view では、本文中から抽出した大会名・対戦カード・結果・URL などの候補を確認できます。
-- 試合・大会・動画などのカードでは、関連する出典候補を確認できます。
-- note本文リンクや動画リンクの横にある `▶ 詳細` / `▼ 詳細` から、本文や YouTube概要欄をその場で展開できます。
-- 検索ボックスで各 view の内容を絞り込めます。
+- 一覧の各行は見出し（対戦カード・結果、名前・戦績、大会名・試合数など）だけを先に表示し、行をクリック（または `Enter`）すると詳細（動画・出典候補・関連試合・出典別プロフィール・詳細の定義リスト）を開きます。
+- 一覧は最初の 30 件だけを描画し、末尾に近づくと自動で続きを描画します（「さらに表示」ボタンでも可）。
+- 試合の選手名をクリックすると選手セクションへ、大会名をクリックすると大会セクションへ移動し、その 1 件だけを開いた状態で表示します（上部の「選手: ○○ ✕」チップで解除）。
+- 大会の行には大会内の試合（試合順）、選手の行には関連試合（大会リンク付き）を表示します。
+- 出典本文では note 本文と YouTube 概要欄、出典言及では本文中から抽出した大会名・対戦カード・結果・URL などの候補を確認できます。
+- 試合・大会・動画の行では、関連する出典候補（確度順上位 5 件）を折りたたみで確認できます。候補は確定情報ではありません。
+- note 記事リンクや動画の横の「本文を表示」「概要欄を表示」で、本文や YouTube 概要欄をその場で展開できます。
+- YouTube 動画はサムネイルだけを置き、クリックしたときに初めて埋め込みプレイヤーを読み込みます。
 
-絞り込み・データ補完・出所表示:
+検索・絞り込み・共有:
 
-- 各タブの上部に、設定駆動の絞り込みボタン（階級・団体・種別など。`docs/assets/js/filters.js` の `TAB_FILTERS`）を表示します。URL クエリは英語トークン（`lightweight` / `target` / `other` など）で共有できます。
-- 選手や試合の情報が不足している場合、Apple Numbers 由来の名鑑データや団体公式サイトのデータから実行時に補完されます。信頼性は **名鑑 > 公式 > 通信ノート > YouTube > 未登録** の順で、低信頼のレコードは各タブの末尾へ寄せられます。
-- 出所が分かるよう、名鑑由来のデータは**名鑑バッジと同色（青）の丸角ボックス**、公式由来のデータは**公式バッジと同色（緑）の丸角ボックス**でまとめて表示します。選手カードには名鑑の通算戦績（〇勝〇負）・実績マーカー（👑 🏆）や、公式 bio（王座履歴・トーナメント成績）を重複なく表示します。
+- 検索ボックスで現在のセクションの内容を絞り込めます（選手名・別名・大会名・決まり手・出典候補の本文など）。
+- 各セクションの上部に、設定駆動の絞り込みボタン（階級・団体・種別など。`docs/assets/js/data/filters.js` の `TAB_FILTERS`）を表示します。
+- セクション・検索語・絞り込み・開いているレコードは URL クエリに反映され（`?tab=fighters&fighter=kabei`、`?tab=titles&title_promo=target` など）、そのまま共有できます。絞り込みのトークンは英語（`lightweight` / `target` / `other` など）です。
+- `?` でキーボード操作の一覧を表示します（`j`/`k` 行移動、`Enter` 開閉、`/` 検索、`h`/`l` セクション移動、`c` URL コピーなど）。
+- 配色は OS のライト / ダーク設定に従い、ナビ右上のボタンで切り替えて保存できます。
+
+データ補完・出所表示:
+
+- 選手や試合の情報が不足している場合、Apple Numbers 由来の名鑑データや団体公式サイトのデータから実行時に補完されます。信頼性は **名鑑 > 公式 > 通信ノート > YouTube > 未登録** の順で、低信頼のレコードは各セクションの末尾へ寄せられます。
+- 出所が分かるよう、名鑑由来は青の「名鑑」バッジ、公式由来は緑の「公式」バッジを付けます。名鑑の個人成績にだけある大会・試合は「名鑑のみ」として合成表示します。選手の行には名鑑の通算戦績（N戦 X勝Y敗）・実績マーカー（👑 🏆 白グローブ）や、公式 bio（王座履歴・トーナメント成績）を重複なく表示します。
 - 表記ゆれ（中黒・空白・ピリオド差）だけが異なる重複選手は、ビューア上で 1 人に統合します（関連試合・動画・記事を取りこぼさず、消えた表記は別名として保持）。元の `data-src/fighters.csv` は変更しません。
 - データの突合・補完・統合はすべてビューア上での実行時に行われ、ソースデータは純粋な事実を保ちます。
+
+機能の一覧（旧ビューアからの対応表と検証状況）は `docs/VIEWER_FEATURES.md` にあります。
+
+### viewer の構成
+
+外部ライブラリ・CDN・Web フォントは使わず、素の ES modules だけで動きます。
+
+```text
+docs/index.html                   画面の骨格（ナビ・検索・一覧・ヘルプダイアログ）
+docs/assets/app.css               スタイル（ライト / ダーク、スマートフォン対応）
+docs/sw.js                        docs/data/*.json の Service Worker（stale-while-revalidate と更新通知）
+docs/assets/js/main.js            起動シーケンス（URL 復元 → 配線 → 段階ロード → SW 登録）
+docs/assets/js/config.js          DATA_FILES・タブ定義・読み込みフェーズ・タブ別遅延ロードと描画ゲート
+docs/assets/js/app/state.js       UI 状態 (Store) と URL クエリの双方向同期 (PARAM_MAP)
+docs/assets/js/data/parser.js     データキーごとの空フォールバックと JSON パース
+docs/assets/js/data/loader.js     段階ロード（初期タブ → 一覧データ → 補完・出典候補 → タブ別遅延）
+docs/assets/js/data/repository.js 生データのアクセサ、rich* コレクション、関係ヘルパ、名鑑のみ合成、王座の獲得/喪失導出、重複選手統合
+docs/assets/js/data/enricher.js   名鑑・公式・アーカイブの重ね合わせ (enrichFighter / enrichBout / enrichEvent / enrichVideo / enrichArticle)
+docs/assets/js/data/reliability.js 信頼性ティアと低信頼の末尾寄せ、最小登録の判定
+docs/assets/js/data/query.js      フリーテキスト検索（エンティティごとの検索対象テキスト）
+docs/assets/js/data/filters.js    タブ別絞り込みの定義と照合 (TAB_FILTERS / itemPassesFilters)
+docs/assets/js/data/labels.js     コード値 → 日本語ラベル
+docs/assets/js/ui/shell.js        ナビ・件数・検索・絞り込み・一覧の描画と UI イベントの配線
+docs/assets/js/ui/list.js         段階描画する一覧 RecordList（行の開閉・差分更新・キーボードカーソル）
+docs/assets/js/ui/parts.js        共通部品（バッジ・リンク・定義リスト・動画ファサード・出典候補・関連試合・プロフィール）
+docs/assets/js/ui/sections/*.js   タブごとの行の描画（official / tsushin / bouts / fighters / events / promotions / titles / videos / admin）
+docs/assets/js/ui/keyboard.js     キーボードショートカット
+docs/assets/js/ui/html.js         エスケープと整形ヘルパ
+docs/assets/js/ui/markdown.js     公式ニュース本文の Markdown → HTML
+```
+
+ローカルで確認するときは、`make build` のあとに静的サーバで `docs/` を配信します（`sw.js` と ES modules のため `file://` では動きません）。
+
+```bash
+make build
+python3 -m http.server 8000 --directory docs
+# http://localhost:8000/ を開く
+```
 
 ---
 
@@ -123,10 +167,12 @@ JSON は viewer 用の生成物です。
 ├── data-src/               # 正規ソースCSV
 ├── docs/                   # GitHub Pages 用 viewer
 │   ├── assets/
-│   │   ├── js/              # viewer 設定・状態・描画・検索
-│   │   └── style.css        # viewer CSS
+│   │   ├── js/              # viewer（app/ 状態, data/ データ層, ui/ 描画）
+│   │   └── app.css          # viewer CSS
 │   ├── data/                # 生成JSON出力先。JSONはコミットしない
-│   └── index.html           # viewer HTML
+│   ├── index.html           # viewer HTML
+│   ├── sw.js                # データ JSON の Service Worker
+│   └── VIEWER_FEATURES.md   # viewer の機能一覧（旧→新の対応と検証状況）
 ├── review/                 # 自動抽出・推定・反映前レビュー用CSV
 ├── scripts/                # build / validate / import / extraction scripts
 ├── tests/                  # pytest
@@ -152,9 +198,10 @@ JSON は viewer 用の生成物です。
 - `tmp/youtube-api/.gitkeep`
 - `scripts/*.py`
 - `tests/*.py`
-- `docs/assets/js/*.js`
-- `docs/assets/style.css`
+- `docs/assets/js/**/*.js`
+- `docs/assets/app.css`
 - `docs/index.html`
+- `docs/sw.js`
 - `.github/workflows/*.yml`
 - `README.md`
 - `SCHEMA_NOTES.md`
@@ -578,8 +625,8 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 ### 検証
 
 - `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
-- `scripts/validate_json.js`: Node 側から生成 JSON を検証します（viewer のパーサ/ローダと描画パス）。
-- `scripts/test_filters.mjs`: viewer のフィルタ中核 `itemPassesFilters` の Node ユニットテスト（`node:test`、依存なし）。
+- `scripts/validate_json.js`: Node 側から生成 JSON を viewer の実モジュールに通して検証します（段階ロードで CORE キーが揃うこと、失敗ファイルの fallback、`loadForTab`、Repository の ID 解決、空クエリの検索一致、全セクションの全行を実際に描画して例外や `undefined` の混入が無いこと）。
+- `scripts/test_filters.mjs`: viewer のフィルタ中核 `itemPassesFilters`（`docs/assets/js/data/filters.js`）の Node ユニットテスト（`node:test`、依存なし）。
 - `make validate` がこの 3 つを順に実行します。
 
 ---
@@ -713,6 +760,7 @@ Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v
 - 団体公式サイト (`kobayashi856/arakaku-site`) のデータを `official_*` CSV として取り込み、公式タブと選手プロフィール補完に連携
 - データ信頼性の階層（名鑑 > 公式 > 通信 > YouTube > 未登録）を `core/reliability.js` に定義し、enricher の重ね合わせ・低信頼の末尾寄せ・絞り込みの「その他/最小登録」判定へ適用
 - 全タブ共通の設定駆動フィルタ（`filters.js` の `TAB_FILTERS`、URL は英語トークン）と、名鑑=青/公式=緑の出所カラーリング、公式bio表示、表記ゆれ重複選手のビューア統合を追加
+- viewer を見た目から作り直し（T.56）: 左ナビ + 開閉する行の一覧、CDN 依存なし（自前の段階描画一覧・YouTube ファサード・ファイル単位の段階ロード）、ライト / ダーク配色、スマートフォン対応。データ層（`docs/assets/js/data/`）は旧実装と同じ規則を保つ
 
 ---
 
@@ -778,17 +826,18 @@ make clean-generated
 
 ### 6. viewer の更新対象
 
-viewer の主要ファイルは以下です。
+viewer の主要ファイルは以下です（役割は「viewer の構成」を参照）。
 
 - `docs/index.html`
-- `docs/assets/js/config.js`
+- `docs/assets/app.css`
 - `docs/assets/js/main.js`
-- `docs/assets/js/data-loader.js`
-- `docs/assets/js/core/`
-- `docs/assets/js/services/`
-- `docs/assets/js/tabs/`
+- `docs/assets/js/config.js`
+- `docs/assets/js/app/`
+- `docs/assets/js/data/`
 - `docs/assets/js/ui/`
-- `docs/assets/style.css`
+- `docs/sw.js`
+
+データ層（`docs/assets/js/data/`）の規則（名鑑優先の補完、名鑑のみの合成、王座の導出、重複選手統合、新しい順 + 低信頼末尾）は変えないでください。描画は `docs/assets/js/ui/sections/*.js` と `docs/assets/js/ui/parts.js` に閉じています。変更後は `docs/VIEWER_FEATURES.md` の該当行も更新してください。
 
 ### 7. Pages の表示確認
 

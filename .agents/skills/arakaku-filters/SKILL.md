@@ -5,7 +5,7 @@ description: The config-driven per-tab filter system of the arakaku viewer. Use 
 
 # ARAKAKU viewer filter system
 
-`docs/assets/js/filters.js` is the **single source of truth** for every tab's
+`docs/assets/js/data/filters.js` is the **single source of truth** for every tab's
 button filters: the option lists, the matching logic, and which tabs get which
 filters. The HTML, the click handling, and the re-render fingerprint are all
 derived from `TAB_FILTERS`. Do not scatter filter logic into the renderers.
@@ -71,53 +71,54 @@ admin:   sources, numbersFighters, numbersFightRecords, officialPlayers
 A tab without an entry in `TAB_FILTERS` simply shows no filter bar.
 
 Some tabs filter on **derived** fields the JSON doesn't carry directly. Compute
-them in the tab method before `itemPassesFilters`, not in `filters.js`:
+them in the section's `build()` (`docs/assets/js/ui/sections/*.js`) before `itemPassesFilters`, not in `filters.js`:
 
 - `videos` → `promotion_id`/`division` derived in `enrichVideo` from `video_links`
   → bout/event.
 - `tsushin` → `#withNoteFilterFields(doc)` adds `promotion_id` (from the article)
   and `divisions[]` (from `article_links` → bout).
-- `officialPlayers` → `tab-renderers` maps `organization` → `promotion_id` via
+- `officialPlayers` → `ui/sections/admin.js` maps `organization` → `promotion_id` via
   `repo.promotionIdByName(...)` before filtering.
 
 ## Rendering & interaction (do not duplicate)
 
-- **Render** — `ViewController.renderTabFilters()` writes `TAB_FILTERS[state.tab]`
-  into `#tab-filters` (hidden when the tab has no groups). Markup per group:
-  `.filter-row` > `.filter-label` + `.filter-button-group` > `.filter-button`
-  (`.active` on the selected one), each with `data-filter-type` and
-  `data-filter-val`. Buttons come from `filterButtons(group)` (options + その他).
-- **Click** — `EventController` delegates from `#tab-filters`: it finds the group
-  by `data-filter-type`, toggles (`selected === val ? "" : val`), patches state,
-  and re-renders. Clicking the active button clears it.
-- **Re-render trigger** — `TabRendererRegistry.#filterFingerprint()` is generic:
-  `Object.values(TAB_FILTERS).flat().map(g => state[g.stateKey])` joined with
-  query/focus/mention. **Because it iterates every group's `stateKey`
-  automatically, you do NOT edit the fingerprint when adding a filter** — just
-  make sure the new group is in `TAB_FILTERS`.
+- **Render** — `Shell #renderFilters()` (`docs/assets/js/ui/shell.js`) writes
+  `TAB_FILTERS[state.tab]` into `#filters` (hidden when the tab has no groups).
+  Markup per group: `.filter-row` > `.filter-label` + `.chips` > `.chip`
+  (`.is-active` + `aria-pressed` on the selected one), each with
+  `data-filter-type` and `data-filter-val`. Buttons come from
+  `filterButtons(group)` (options + その他). The mentions tab adds the
+  `#mention-type` `<select>` to the same container.
+- **Click** — `Shell.bind()` delegates from `#filters`: it finds the group by
+  `data-filter-type`, toggles (`selected === val ? "" : val`) and patches state.
+  Clicking the active chip clears it.
+- **Re-render trigger** — `Shell #fingerprint()` is generic:
+  `FILTER_STATE_KEYS.map(k => state[k])` joined with query/focus/mention.
+  **Because it iterates every group's `stateKey` automatically, you do NOT edit
+  the fingerprint when adding a filter** — just make sure the new group is in
+  `TAB_FILTERS`. `Store` (`app/state.js`) initializes every `FILTER_STATE_KEYS`
+  entry to `""` for the same reason.
 
 ## Adding a filter to a tab — checklist
 
-1. `filters.js`: reuse or add an option list, then add/extend the tab's
+1. `data/filters.js`: reuse or add an option list, then add/extend the tab's
    `TAB_FILTERS` group (`type`, `label`, `stateKey`, `field`, `options`,
-   optional `otherLabel`/`forceOther`/`match`).
-2. `core/app-state.js`: add the `stateKey` field (init `""`).
-3. `core/url-sync.js`: add a short **English** param ↔ `stateKey` to `PARAM_MAP`
+   optional `otherLabel`/`forceOther`/`match`). The state field is created
+   automatically from `FILTER_STATE_KEYS`.
+2. `app/state.js`: add a short **English** param ↔ `stateKey` to `PARAM_MAP`
    (e.g. `fighter_div: "fighterDivision"`).
-4. Ensure the `field` exists on each item; if not, derive it in the tab method
-   (see the derived-field examples above).
-5. Confirm the tab method calls `itemPassesFilters(item, TAB_FILTERS.<tab>, state)`.
+3. Ensure the `field` exists on each item; if not, derive it in the section's
+   `build()` (see the derived-field examples above).
+4. Confirm the section calls `itemPassesFilters(item, TAB_FILTERS.<tab>, state)`.
 
-No change to `renderTabFilters`, the click handler, or the fingerprint is needed —
+No change to `#renderFilters`, the click handler, or the fingerprint is needed —
 they are all data-driven from `TAB_FILTERS`.
 
 ## CSS
 
-`.tab-filters` (container, in `#tab-filters`), `.filter-row`, `.filter-label`,
-`.filter-button-group`, `.filter-button` / `.filter-button.active` in
-`docs/assets/style.css`. Keep the generic class names — there are no per-tab
-filter classes anymore (the old `.fighter-filters` / `.title-filters` were
-removed).
+`.filters` (container, `#filters`), `.filter-row`, `.filter-label`, `.chips`,
+`.chip` / `.chip.is-active`, `.select` in `docs/assets/app.css`. Keep the generic
+class names — there are no per-tab filter classes.
 
 ## Checks
 
