@@ -154,10 +154,12 @@ def title_to_event_id(title: str, known_events: set[str]) -> str | None:
     m = re.search(r"第(\d+)回.*?MAXバウト.*?(ライト|ミドル|ヘビー).*?トーナメント", t)
     if m:
         weight = "lightweight" if "ライト" in m.group(2) else "middleweight" if "ミドル" in m.group(2) else "heavyweight"
-        return f"max-bout-{m.group(1)}-{weight}-tournament"
-    # max_bout special one-match
+        eid = f"max-bout-{m.group(1)}-{weight}-tournament"
+        gp = f"max-bout-{m.group(1)}-{weight}-gp"
+        return gp if eid not in known_events and gp in known_events else eid
+    # max_bout special one-match (note 記事は「…大会」と「…大会No.2」の 2 大会)
     if "MAXバウト" in t and "ワンマッチ" in t:
-        return "max-bout-unknown-special-one-match"
+        return "max-bout-special-2" if re.search(r"No\.?\s*2", t) else "max-bout-special-1"
     return None
 
 
