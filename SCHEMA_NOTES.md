@@ -22,6 +22,7 @@ Current canonical source tables:
 - `numbers_fight_records.csv`: personal fight-record rows extracted from the Numbers "個人成績" sheet.
 - `fighter_snapshots.csv`: event/article-specific fighter profile facts. `source_id` is `note:<article_id>` or `official_news:<slug>`.
 - `titles.csv`: title entities.
+- `events.csv`: `numbers_event_number` holds the Numbers event number when it is not the integer `event_number` (e.g. `SP` / `SP2` for the MAXバウト special one-match events). The viewer matches Numbers records by it.
 - `title_reigns.csv`: title reign lineage rows. `end_reason` is empty or `vacated` (the champion gave up the title without losing it; `lost_at_event_id` must then be empty).
 - `articles.csv`: article/source metadata.
 - `videos.csv`: video metadata.

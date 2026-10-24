@@ -245,6 +245,8 @@ JSON は viewer の配信 API です。`database.json` のような全テーブ�
 
 `event_id` は、試合・動画リンク・出典言及との結合キーになります。
 
+Numbers の個人成績とは「団体 + 興行番号」で照合します。Numbers の興行番号が整数の `event_number` で書けない大会（MAXバウトのスペシャルワンマッチ大会の `SP` / `SP2`）は、`numbers_event_number` にその番号を書きます。
+
 ### `data-src/bouts.csv`
 
 試合データです。
