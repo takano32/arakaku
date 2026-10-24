@@ -438,7 +438,16 @@ into fighters/bouts at runtime:
 - Fill missing fighter profile fields (height, age, gym, summary) from 公式 then 名鑑
   (higher tier wins).
 - Resolve unknown bout results/divisions/formats from Numbers personal fight
-  records; such bouts get `result_status = "numbers_verified"`.
+  records; such bouts get `result_status = "numbers_verified"`. A record is used only
+  when both its fighter and opponent match the bout (tournaments have several bouts
+  per fighter in one event).
+- Synthesize events/bouts that exist only in Numbers fight records (no `events.csv`
+  row for the promotion + numeric event number) as `numbers-<promotion>-<N>` /
+  `numbers-<promotion>-<N>-<order>` with `numbers_only: true`
+  (`DataRepository.numbersOnlyEvents` / `numbersOnlyBouts`). They join `richEvents` /
+  `richBouts`, resolve through `findEvent` / `findBout`, count in the header summary
+  once `numbersFightRecords` is loaded, and the event card shows a `名鑑のみ` badge.
+  Non-numeric event numbers (MAXバウト `SP` / `SP2`) are skipped.
 - Collapse duplicate fighters whose names differ only by 中黒/空白/ピリオド into one
   survivor (kept-away names become `aliases`; `merged_fighter_ids` + the repo alias
   index keep related bouts/snapshots attached). CSV rows are not modified.

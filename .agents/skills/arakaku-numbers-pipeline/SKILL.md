@@ -216,6 +216,7 @@ These tabs load from ENRICHMENT_DATA_KEYS (streamed in Phase 2 automatically).
 The static viewer loads Numbers JSON files for **Rich Data Supplementation** at runtime:
 
 - `DataRepository.richFighters` dynamically discovers and merges Numbers-only (and official-only) entities.
+- `DataRepository.numbersOnlyEvents` / `numbersOnlyBouts` synthesize events and bouts that appear only in Numbers fight records (`numbers_only: true`); they are not written to CSV.
 - `DataEnricher.enrichFighter` fills missing canonical profiles from Numbers rows (after 公式; 名鑑 is highest tier).
 - Displays a **Numbers Stats Block** (`renderNumbersBlock`, blue `.source-block.source-numbers`) in fighter cards (fights, wins, losses) with achievement markers (👑 belts, 🏆 tournament wins).
 - `DataEnricher.enrichBout` fills unknown canonical results, divisions, and formats from Numbers records and sets `result_status = "numbers_verified"`.

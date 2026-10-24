@@ -306,6 +306,7 @@ export class TabRenderers {
         <p class="meta">
           ${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}
           ${od ? `<span class="video-badge official-badge">公式</span>` : ""}
+          ${e.numbers_only ? `<span class="video-badge">名鑑のみ</span>` : ""}
         </p>
         <p>${escapeHtml(e.summary || "概要未入力")}</p>
         ${od?.champion ? `
