@@ -10,7 +10,7 @@ target-103-04-blue,target-103-04,blue,frank_dakuta,フランク・ダクタ,,los
 target-103-05-red,target-103-05,red,aribel_aribera,アリベル・アリベラ,,loss
 target-103-05-blue,target-103-05,blue,washikaga,わしかが,,win
 mh-39-p5x_vjofkfi-red,mh-39-p5x_vjofkfi,red,python_hayashi,ぱいそんはやし,,unknown
-mh-39-p5x_vjofkfi-blue,mh-39-p5x_vjofkfi,blue,janimad_tospach_live_public_viewing_ver,Janimad Tospach Live Public Viewing ver.,,unknown
+mh-39-p5x_vjofkfi-blue,mh-39-p5x_vjofkfi,blue,fighter_41a3b1ba33,ジャニマード・トスパチ,,unknown
 max-bout-7-lightweight-gp-qh7lihmzubc-red,max-bout-7-lightweight-gp-qh7lihmzubc,red,sangoku,さんごく,,loss
 max-bout-7-lightweight-gp-qh7lihmzubc-blue,max-bout-7-lightweight-gp-qh7lihmzubc,blue,fighter_25fddbaacc,ダブド・ガブリシャン,,win
 max-bout-7-lightweight-gp-krrg8fyx6gq-red,max-bout-7-lightweight-gp-krrg8fyx6gq,red,waku,わく,,unknown
@@ -75,8 +75,8 @@ mh-29-qfiwnhcogvu-red,mh-29-qfiwnhcogvu,red,fighter_8d86ebfe6f,ヘル・ラッ�
 mh-29-qfiwnhcogvu-blue,mh-29-qfiwnhcogvu,blue,tail_junk,テール・ジャンク,,unknown
 target-96-jby8vkzyuys-red,target-96-jby8vkzyuys,red,daina,だいな,,unknown
 target-96-jby8vkzyuys-blue,target-96-jby8vkzyuys,blue,tsuoshi,つおし,,unknown
-target-87-foh5vctjij4-red,target-87-foh5vctjij4,red,otosawa,おとさわ,,unknown
-target-87-foh5vctjij4-blue,target-87-foh5vctjij4,blue,kabei,かべい,,unknown
+target-96-foh5vctjij4-red,target-96-foh5vctjij4,red,otosawa,おとさわ,,unknown
+target-96-foh5vctjij4-blue,target-96-foh5vctjij4,blue,kabei,かべい,,unknown
 emperor-118-bvtj1lsfwz4-red,emperor-118-bvtj1lsfwz4,red,rouged_starry,ルージュド・スターリー,,unknown
 emperor-118-bvtj1lsfwz4-blue,emperor-118-bvtj1lsfwz4,blue,fighter_578e54d009,アマルド・ビュエーラ,,unknown
 max-bout-6-lightweight-tournament-ifu9zhhjmzi-red,max-bout-6-lightweight-tournament-ifu9zhhjmzi,red,marco_fraser,マルコ・フレイザー,,unknown
@@ -99,7 +99,7 @@ max-bout-unknown-middleweight-special-opylhps0jq0-red,max-bout-unknown-middlewei
 max-bout-unknown-middleweight-special-opylhps0jq0-blue,max-bout-unknown-middleweight-special-opylhps0jq0,blue,rancher_sugaya,らんちゃーすがや,,unknown
 emperor-110-lp2btuxgjiy-red,emperor-110-lp2btuxgjiy,red,fighter_b23cf227ff,ダートソン,,loss
 emperor-110-lp2btuxgjiy-blue,emperor-110-lp2btuxgjiy,blue,fighter_32d0d719ec,レイ・ガシーオ,,win
-mh-38-nm0ig9mdpi-red,mh-38-nm0ig9mdpi,red,zett,Zett,,unknown
+mh-38-nm0ig9mdpi-red,mh-38-nm0ig9mdpi,red,fighter_e15b590179,ゼット,,unknown
 mh-38-nm0ig9mdpi-blue,mh-38-nm0ig9mdpi,blue,rancher_sugaya,らんちゃーすがや,,unknown
 target-101-vplbxarc3pc-red,target-101-vplbxarc3pc,red,gitamin_aaron,ギタミン・アーロン,,unknown
 target-101-vplbxarc3pc-blue,target-101-vplbxarc3pc,blue,otosawa,おとさわ,,unknown
@@ -179,7 +179,7 @@ max-bout-6-lightweight-tournament-eis5offdwks-red,max-bout-6-lightweight-tournam
 max-bout-6-lightweight-tournament-eis5offdwks-blue,max-bout-6-lightweight-tournament-eis5offdwks,blue,fighter_cdb8d47163,ワインセル,,unknown
 max-bout-6-lightweight-tournament-zp7rkliamr4-red,max-bout-6-lightweight-tournament-zp7rkliamr4,red,fighter_c6b52ed0b2,バン・ベルソーザ,,unknown
 max-bout-6-lightweight-tournament-zp7rkliamr4-blue,max-bout-6-lightweight-tournament-zp7rkliamr4,blue,fighter_4d6356d021,ゆめろう,,unknown
-max-bout-6-lightweight-tournament-3k_jsttv5wi-red,max-bout-6-lightweight-tournament-3k_jsttv5wi,red,fighter_764b98c3bb,パットバミューダ,,unknown
+max-bout-6-lightweight-tournament-3k_jsttv5wi-red,max-bout-6-lightweight-tournament-3k_jsttv5wi,red,fighter_ce9074c06f,パット・バミューダ,,unknown
 max-bout-6-lightweight-tournament-3k_jsttv5wi-blue,max-bout-6-lightweight-tournament-3k_jsttv5wi,blue,ice_tron,アイス・トロン,,unknown
 max-bout-6-lightweight-tournament-gerbahnq_po-red,max-bout-6-lightweight-tournament-gerbahnq_po,red,fighter_eddb8db316,ジョン・バレー,,unknown
 max-bout-6-lightweight-tournament-gerbahnq_po-blue,max-bout-6-lightweight-tournament-gerbahnq_po,blue,waku,わく,,unknown
@@ -281,8 +281,8 @@ mh-29-drke4kjgmuu-red,mh-29-drke4kjgmuu,red,fighter_ceabf5fde9,ムラト・ク�
 mh-29-drke4kjgmuu-blue,mh-29-drke4kjgmuu,blue,fighter_eddb8db316,ジョン・バレー,,unknown
 mh-35-wtgb_0m60sk-red,mh-35-wtgb_0m60sk,red,fighter_ceabf5fde9,ムラト・クツワ,,win
 mh-35-wtgb_0m60sk-blue,mh-35-wtgb_0m60sk,blue,kawakami,かわかみ,,loss
-target-87-aczznfws9eg-red,target-87-aczznfws9eg,red,fighter_e9d2feca82,ミハエル・ボタルニカ,,unknown
-target-87-aczznfws9eg-blue,target-87-aczznfws9eg,blue,fighter_d85580c276,ビル・ジャガー,,unknown
+target-89-aczznfws9eg-red,target-89-aczznfws9eg,red,fighter_e9d2feca82,ミハエル・ボタルニカ,,unknown
+target-89-aczznfws9eg-blue,target-89-aczznfws9eg,blue,fighter_d85580c276,ビル・ジャガー,,unknown
 emperor-115-qwxsvgtscqe-red,emperor-115-qwxsvgtscqe,red,marco_fraser,マルコ・フレイザー,,unknown
 emperor-115-qwxsvgtscqe-blue,emperor-115-qwxsvgtscqe,blue,blue_one,ブルーワン,,unknown
 emperor-116-v3usbpsmp_g-red,emperor-116-v3usbpsmp_g,red,marco_fraser,マルコ・フレイザー,,unknown
@@ -372,7 +372,7 @@ emperor-110-1tjfo_ln_zy-blue,emperor-110-1tjfo_ln_zy,blue,fighter_2fdaa958ad,ロ
 target-90-gmfpy9x6hec-red,target-90-gmfpy9x6hec,red,fighter_31e0efe5d2,シガー・ユーナイム,,unknown
 target-90-gmfpy9x6hec-blue,target-90-gmfpy9x6hec,blue,fighter_977f2fdd1d,ファン・ミール・セイバー,,unknown
 target-92-c9dw76himya-red,target-92-c9dw76himya,red,fighter_31e0efe5d2,シガー・ユーナイム,,unknown
-target-92-c9dw76himya-blue,target-92-c9dw76himya,blue,fighter_02f4705d18,ビルジャガー,,unknown
+target-92-c9dw76himya-blue,target-92-c9dw76himya,blue,fighter_d85580c276,ビル・ジャガー,,unknown
 target-89-wuxl5lwpr_s-red,target-89-wuxl5lwpr_s,red,fighter_31e0efe5d2,シガー・ユーナイム,,unknown
 target-89-wuxl5lwpr_s-blue,target-89-wuxl5lwpr_s,blue,otosawa,おとさわ,,unknown
 mh-36-tau8z1fn26s-red,mh-36-tau8z1fn26s,red,fighter_24e2dfb4f3,シェーン・ロブソン,,loss
@@ -429,8 +429,8 @@ mh-32-voviksvmlrk-red,mh-32-voviksvmlrk,red,ice_tron,アイス・トロン,,loss
 mh-32-voviksvmlrk-blue,mh-32-voviksvmlrk,blue,lander_devil,ランダーデビル,,win
 mh-28-ylkt9wt9zwk-red,mh-28-ylkt9wt9zwk,red,ice_tron,アイス・トロン,,unknown
 mh-28-ylkt9wt9zwk-blue,mh-28-ylkt9wt9zwk,blue,fighter_5a3a5740e6,ストライン・カーン,,unknown
-target-87-umme48uzwwk-red,target-87-umme48uzwwk,red,waku,わく,,unknown
-target-87-umme48uzwwk-blue,target-87-umme48uzwwk,blue,frahm_gran,フラーム・グラン,,unknown
+target-89-umme48uzwwk-red,target-89-umme48uzwwk,red,waku,わく,,unknown
+target-89-umme48uzwwk-blue,target-89-umme48uzwwk,blue,frahm_gran,フラーム・グラン,,unknown
 target-99-fojc5uhptkc-red,target-99-fojc5uhptkc,red,waku,わく,,win
 target-99-fojc5uhptkc-blue,target-99-fojc5uhptkc,blue,fighter_c6720136f7,バイソンデビル,,loss
 target-97-hkiilcnumae-red,target-97-hkiilcnumae,red,waku,わく,,unknown
@@ -515,8 +515,8 @@ target-95-bvdghnzn_b0-red,target-95-bvdghnzn_b0,red,otosawa,おとさわ,,win
 target-95-bvdghnzn_b0-blue,target-95-bvdghnzn_b0,blue,fighter_e9d2feca82,ミハエル・ボタルニカ,,loss
 target-98-eecspfndgri-red,target-98-eecspfndgri,red,otosawa,おとさわ,,unknown
 target-98-eecspfndgri-blue,target-98-eecspfndgri,blue,zamon,ザモン,,unknown
-target-87-5zbvriy_62w-red,target-87-5zbvriy_62w,red,otosawa,おとさわ,,unknown
-target-87-5zbvriy_62w-blue,target-87-5zbvriy_62w,blue,kabei,かべい,,unknown
+target-96-5zbvriy_62w-red,target-96-5zbvriy_62w,red,otosawa,おとさわ,,unknown
+target-96-5zbvriy_62w-blue,target-96-5zbvriy_62w,blue,kabei,かべい,,unknown
 elite-spirits-middleweight-gp-1gjvqnjwjo4-red,elite-spirits-middleweight-gp-1gjvqnjwjo4,red,fighter_3c507e2d6d,エス・ガリオン,,unknown
 elite-spirits-middleweight-gp-1gjvqnjwjo4-blue,elite-spirits-middleweight-gp-1gjvqnjwjo4,blue,fighter_41a3b1ba33,ジャニマード・トスパチ,,unknown
 elite-spirits-middleweight-gp-mtwfjz88t8q-red,elite-spirits-middleweight-gp-mtwfjz88t8q,red,aurora_devil,オーロラデビル,,unknown
