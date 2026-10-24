@@ -260,7 +260,8 @@ export class DataEnricher {
   }
 
   enrichEvent(event) {
-    const ot = this.#officialTournaments.get(event.event_id);
+    // event_id は max-bout-6-middleweight-gp / -tournament のように形式の接尾辞が付く
+    const ot = this.#officialTournaments.get(event.event_id.replace(/-(?:gp|tournament)$/, ""));
     if (!ot) return event;
     return { ...event, official_data: ot };
   }
