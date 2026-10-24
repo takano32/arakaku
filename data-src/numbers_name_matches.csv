@@ -15,7 +15,7 @@ numbers_fighter_013,ヘル・ラッサー,fighter_8d86ebfe6f,ヘル・ラッサ�
 numbers_fighter_014,ライン・デュオ,fighter_392d495da8,ライン・デュオ,fighter_392d495da8,exact_display_name,high,
 numbers_fighter_015,ラドフ,fighter_169d4ecfe8,ラドフ,fighter_169d4ecfe8,exact_display_name,high,
 numbers_fighter_016,らんちゃーすがや,rancher_sugaya,らんちゃーすがや,rancher_sugaya,exact_display_name,high,
-numbers_fighter_017,ローリングJr,,,jr,generated_candidate,candidate,No exact display_name match in fighters.csv.
+numbers_fighter_017,ローリングJr,rolling_jr,ローリングJr.,rolling_jr,normalized_display_name,medium,"Matched after removing middle dots, spaces, and periods."
 numbers_fighter_018,イスカン・アステ,fighter_82d519db98,イスカン・アステ,fighter_82d519db98,exact_display_name,high,
 numbers_fighter_019,かわかみ,kawakami,かわかみ,kawakami,exact_display_name,high,
 numbers_fighter_020,きくちぴあのせん,fighter_130ce1e900,きくちぴあのせん,fighter_130ce1e900,exact_display_name,high,
