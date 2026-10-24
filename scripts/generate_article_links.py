@@ -226,12 +226,11 @@ def main() -> None:
             add_link(article_id, "title_reign", reign["reign_id"])
 
     # ── 3. Fighter snapshot links ────────────────────────────────────────────
+    # 出典が note 記事の時点情報だけ結ぶ（公式ニュースは articles.csv に無い）
     for snapshot in read_csv(DATA_SRC / "fighter_snapshots.csv"):
-        event_id = snapshot.get("event_id", "")
-        if not event_id:
-            continue
-        article_id = f"note-{event_id}-card"
-        add_link(article_id, "fighter_snapshot", snapshot["snapshot_id"])
+        source_type, _, source_ref = snapshot.get("source_id", "").partition(":")
+        if source_type == "note" and source_ref:
+            add_link(source_ref, "fighter_snapshot", snapshot["snapshot_id"])
 
     # ── 4. Event + bout + fighter links (from event article content) ─────────
     for art in articles.values():

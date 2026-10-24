@@ -299,6 +299,7 @@ def build_fighter_snapshots() -> list[dict[str, Any]]:
             "snapshot_id": "snapshot_id",
             "fighter_id": "fighter_id",
             "event_id": "event_id",
+            "source_id": "source_id",
             "source_article_id": lambda row: first_article_id_for("fighter_snapshot", row["snapshot_id"]),
             "age": "age",
             "height": "height",

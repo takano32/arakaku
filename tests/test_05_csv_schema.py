@@ -8,7 +8,7 @@ EXPECTED_COLUMNS = {
     "articles.csv": ["article_id", "title", "url", "source_type", "article_type", "status"],
     "bout_participants.csv": ["participant_id", "bout_id", "side", "fighter_id", "fighter_name", "result"],
     "bouts.csv": ["bout_id", "event_id", "promotion_id", "result_status"],
-    "fighter_snapshots.csv": ["snapshot_id", "fighter_id", "event_id", "main_promotion_id"],
+    "fighter_snapshots.csv": ["snapshot_id", "fighter_id", "event_id", "main_promotion_id", "source_id"],
     "numbers_fighters.csv": ["numbers_fighter_id", "display_name", "main_promotion_id"],
     "numbers_name_matches.csv": ["numbers_fighter_id", "numbers_name", "candidate_fighter_id", "match_method"],
     "numbers_fight_records.csv": ["record_id", "numbers_fighter_id", "fighter_name", "opponent_name", "result"],

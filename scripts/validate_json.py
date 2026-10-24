@@ -251,7 +251,7 @@ def validate_title_reigns(reigns: list[Any], title_ids: set[str], fighter_ids: s
             add_error(f"title_reigns.json[{i}]: unknown video reference: {vid}")
     return ids
 
-def validate_fighter_snapshots(snapshots: list[Any], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], promotion_ids: set[str]) -> None:
+def validate_fighter_snapshots(snapshots: list[Any], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], promotion_ids: set[str], official_news_slugs: set[str] | None = None) -> None:
     collect_ids(snapshots, 'fighter_snapshots.json', 'snapshot_id')
     for i, x in enumerate(snapshots):
         if not isinstance(x, dict):
@@ -260,6 +260,13 @@ def validate_fighter_snapshots(snapshots: list[Any], fighter_ids: set[str], even
             v = x.get(key)
             if v and v not in ids:
                 add_error(f"fighter_snapshots.json[{i}]: unknown {name} reference: {v}")
+        source_type, _, source_ref = (x.get('source_id') or '').partition(':')
+        if source_type not in ('note', 'official_news') or not source_ref:
+            add_error(f"fighter_snapshots.json[{i}]: source_id must be note:<article_id> or official_news:<slug>: {x.get('source_id')}")
+        elif source_type == 'note' and source_ref not in article_ids:
+            add_error(f"fighter_snapshots.json[{i}]: unknown article reference in source_id: {source_ref}")
+        elif source_type == 'official_news' and official_news_slugs is not None and source_ref not in official_news_slugs:
+            add_error(f"fighter_snapshots.json[{i}]: unknown official news reference in source_id: {source_ref}")
 
 def validate_videos(videos: list[Any], article_ids: set[str]) -> set[str]:
     ids = collect_ids(videos, 'videos.json', 'video_id')
@@ -582,7 +589,7 @@ def main() -> int:
     
     validate_titles(titles, promotion_ids, fighter_ids, article_ids, video_ids)
     validate_bout_participants(bout_participants, bout_ids, fighter_ids)
-    validate_fighter_snapshots(snapshots, fighter_ids, event_ids, article_ids, promotion_ids)
+    validate_fighter_snapshots(snapshots, fighter_ids, event_ids, article_ids, promotion_ids, {x.get('slug') for x in official_news if isinstance(x, dict)})
     validate_video_links(video_links, video_ids, event_ids, bout_ids, fighter_ids, promotion_ids, title_ids)
     validate_article_links(article_links, article_ids, event_ids, bout_ids, fighter_ids, snapshot_ids, promotion_ids, title_ids, reign_ids, video_ids)
     validate_source_documents(load_json('source_documents.json', []))
