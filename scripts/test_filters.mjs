@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { itemPassesFilters, OTHER_VALUE } from "../docs/assets/js/filters.js";
+import { itemPassesFilters, OTHER_VALUE } from "../docs/assets/js/data/filters.js";
 
 const divisionGroup = {
   type: "division",
