@@ -696,7 +696,8 @@ export class TabRenderers {
     const eventMeta = joinPresent([
       r.division,
       r.promotion_id,
-      r.event_number_normalized ? `第${r.event_number_normalized}回` : "",
+      // MAXバウトは原文が「第5回 1回戦A」で、正規化値は回数だけなので原文を出す
+      r.event_number_raw?.startsWith("第") ? r.event_number_raw : r.event_number_normalized ? `第${r.event_number_normalized}回` : "",
     ]);
     return `
       <article class="card record-card numbers-record-card">

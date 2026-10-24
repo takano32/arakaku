@@ -169,7 +169,7 @@ notes
 
 Only `match_method=exact_display_name` with a known `matched_fighter_id` should be treated as a strong existing-fighter link. Generated candidates are review aids, not confirmed identities.
 
-When there is no exact match, `extract_numbers.py` retries with the viewer's `normalizeFighterName` rule (NFKC, then drop `・`, spaces, and periods, lowercase). A unique hit is recorded as `match_method=normalized_display_name`, `match_confidence=medium`; it is used for bout lookup but is not a strong link (aliases skip it). Fight-record opponents who are not in the Numbers fighter sheet are matched against `fighters.csv` by exact `display_name`.
+When there is no exact match, `extract_numbers.py` retries with the viewer's `normalizeFighterName` rule (NFKC, then drop `・`, spaces, and periods, lowercase). A unique hit is recorded as `match_method=normalized_display_name`, `match_confidence=medium`; it is used for bout lookup but is not a strong link (aliases skip it). Fight-record opponents who are not in the Numbers fighter sheet are matched against `fighters.csv` by exact `display_name`. `event_number_normalized` keeps only the edition number for MAXバウト rows written as `第5回 1回戦A`, so they key to the tournament event (`max_bout:5`); the round stays in `event_number_raw`.
 
 ---
 

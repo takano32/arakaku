@@ -279,12 +279,13 @@ export class DataEnricher {
     // 文字列化して揃える必要がある (突き合わせの軸は event ではなく「団体+興行番号」)。
     const key = `${bout.promotion_id}:${String(event.event_number)}`;
     const candidates = this.#fightRecords.get(key) ?? [];
-    const records = candidates.filter(r =>
-      fighterIds.has(r.matched_fighter_id) ||
-      fighterIds.has(r.candidate_fighter_id) ||
-      fighterIds.has(r.opponent_matched_fighter_id) ||
-      fighterIds.has(r.opponent_candidate_fighter_id)
-    );
+    // 選手と対戦相手の両方が一致する記録だけを使う。トーナメント (MAXバウト) は 1 大会に
+    // 同じ選手の試合が複数あるため、片方の一致だけでは別の回戦の結果を拾ってしまう。
+    const records = candidates.filter(r => {
+      const fighter = r.matched_fighter_id || r.candidate_fighter_id;
+      const opponent = r.opponent_matched_fighter_id || r.opponent_candidate_fighter_id;
+      return fighterIds.size === 2 && fighterIds.has(fighter) && fighterIds.has(opponent);
+    });
 
     if (records.length === 0) return rich;
 

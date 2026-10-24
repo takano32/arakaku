@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import re
 import unicodedata
 
 # 役割: Apple Numbers の選手名鑑 (data-raw/*.numbers) を読み、比較用データとして
@@ -51,6 +52,15 @@ def clean_number(value: str) -> str:
     if value.endswith(".0"):
         return value[:-2]
     return value
+
+
+# MAXバウトは「第5回 1回戦A」のように回戦まで書かれている。events.csv はトーナメント全体を
+# 1 大会 (event_number=5) にしているので、照合キーには回数だけを使う (回戦は event_number_raw に残る)。
+def clean_event_number(value: str) -> str:
+    match = re.match(r"第(\d+)回", clean_text(value))
+    if match:
+        return match.group(1)
+    return clean_number(value)
 
 
 def clean_division(value: str) -> str:
@@ -269,7 +279,7 @@ def extract_fight_records(doc: Document, fighters_by_name: dict[str, dict[str, s
                 "promotion_raw": clean_text(raw["団体"]),
                 "promotion_id": promotion_id(raw["団体"]),
                 "event_number_raw": clean_text(raw["No"]),
-                "event_number_normalized": clean_number(raw["No"]),
+                "event_number_normalized": clean_event_number(raw["No"]),
                 "bout_format": clean_text(raw["形式"]),
                 "opponent_name": opponent_name,
                 "opponent_numbers_fighter_id": opponent.get("numbers_fighter_id", ""),
