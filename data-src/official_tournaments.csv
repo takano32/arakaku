@@ -1,2 +1,16 @@
 id,name,date,video_id,champion,runner_up
+maxbout-1-light,第1回 MAXバウト ライト級GP,,,アイス・トロン,むらき
+maxbout-2-light,第2回 MAXバウト ライト級GP,,,むらき,アイス・トロン
+maxbout-2-middle,第2回 MAXバウト ミドル級GP,,,テール・ジャンク,
+maxbout-3-light,第3回 MAXバウト ライト級GP,,,アイス・トロン,ホウショウ
+maxbout-3-middle,第3回 MAXバウト ミドル級GP,,,テール・ジャンク,おとさわ
+maxbout-4-light,第4回 MAXバウト ライト級GP,,,むらき,アイス・トロン
+maxbout-5-light,第5回 MAXバウト ライト級GP,,,ランダーデビル,コルト・アプロー
 maxbout-7-light,第7回 MAXバウト ライト級GP,2024,LK45sJahdK0,ブルーワン,ランダーデビル
+maxbout-5-middle,第5回 MAXバウト ミドル級GP,2023,dHBctG1OlFU,テール・ジャンク,ミサ・ウィル・ジョー
+maxbout-6-light,第6回 MAXバウト ライト級GP,2022,41MoU0PvO8w,コルト・アプロー,ブルーワン
+maxbout-6-middle,第6回 MAXバウト ミドル級GP,,,,
+maxbout-1-middle,第1回 MAXバウト ミドル級GP,,,ユーナ・ガナ,
+maxbout-4-middle,第4回 MAXバウト ミドル級GP,,,ミサ・ウィル・ジョー,
+maxbout-1-heavy,第1回 MAXバウト ヘビー級GP,,,ユーナ・ガナ,
+maxbout-2-heavy,第2回 MAXバウト ヘビー級GP,,,ギタミン・アーロン,
