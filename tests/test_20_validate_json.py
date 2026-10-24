@@ -46,3 +46,12 @@ def test_validate_title_reigns_rejects_vacated_reign_with_lost_at(validate_json_
     errors='\n'.join(validate_json_module.ERRORS)
     assert 'title_reigns.json[0]: vacated reign must not have lost_at_event_id' in errors
     assert 'title_reigns.json[1]: unknown end_reason: retired' in errors
+
+def test_validate_fighter_snapshots_checks_source_id(validate_json_module):
+    snapshots=[{'snapshot_id':'a','fighter_id':'zamon','source_id':'note:note-target-103-card'},{'snapshot_id':'b','fighter_id':'zamon','source_id':'official_news:2026-07-maxbout-16players'},{'snapshot_id':'c','fighter_id':'zamon','source_id':'official_news:missing'},{'snapshot_id':'d','fighter_id':'zamon','source_id':''}]
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_fighter_snapshots(snapshots, {'zamon'}, set(), {'note-target-103-card'}, set(), {'2026-07-maxbout-16players'})
+    errors='\n'.join(validate_json_module.ERRORS)
+    assert 'fighter_snapshots.json[0]' not in errors and 'fighter_snapshots.json[1]' not in errors
+    assert 'fighter_snapshots.json[2]: unknown official news reference in source_id: missing' in errors
+    assert 'fighter_snapshots.json[3]: source_id must be note:<article_id> or official_news:<slug>' in errors
