@@ -38,3 +38,11 @@ def test_validate_bouts_warns_on_unusual_method(validate_json_module):
     validate_json_module.validate_bouts(bouts=bouts,event_ids={'target-103'},promotion_ids={'target'},fighter_ids={'waku','tsukurihara'},article_ids={'note-target-103-result'})
     assert validate_json_module.ERRORS == []
     assert 'unusual method_normalized: SPECIAL' in '\n'.join(validate_json_module.WARNINGS)
+
+def test_validate_title_reigns_rejects_vacated_reign_with_lost_at(validate_json_module):
+    reigns=[{'reign_id':'mh-middleweight-1','title_id':'mh-middleweight','reign_order':'1','fighter_id':'tail_junk','end_reason':'vacated','lost_at_event_id':'mh-38'},{'reign_id':'mh-middleweight-2','title_id':'mh-middleweight','reign_order':'2','fighter_id':'tail_junk','end_reason':'retired'}]
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_title_reigns(reigns, {'mh-middleweight'}, {'tail_junk'}, {'mh-38'}, set(), set())
+    errors='\n'.join(validate_json_module.ERRORS)
+    assert 'title_reigns.json[0]: vacated reign must not have lost_at_event_id' in errors
+    assert 'title_reigns.json[1]: unknown end_reason: retired' in errors

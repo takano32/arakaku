@@ -238,6 +238,11 @@ def validate_title_reigns(reigns: list[Any], title_ids: set[str], fighter_ids: s
             eid = x.get(key)
             if eid and eid not in event_ids:
                 add_error(f"title_reigns.json[{i}]: unknown event reference in {key}: {eid}")
+        end_reason = x.get('end_reason')
+        if end_reason not in (None, '', 'vacated'):
+            add_error(f"title_reigns.json[{i}]: unknown end_reason: {end_reason}")
+        if end_reason == 'vacated' and x.get('lost_at_event_id'):
+            add_error(f"title_reigns.json[{i}]: vacated reign must not have lost_at_event_id")
         aid = x.get('source_article_id')
         if aid and aid not in article_ids:
             add_error(f"title_reigns.json[{i}]: unknown article reference: {aid}")
