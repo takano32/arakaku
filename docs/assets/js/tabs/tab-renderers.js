@@ -261,13 +261,13 @@ export class TabRenderers {
   }
 
   renderFighterCard(f) {
-    const { components, sources, related, repo } = this.ctx;
+    const { navigation, components, sources, related, repo } = this.ctx;
     const nd = f.numbers_data;
     const od = f.official_data;
     return `
       <article class="card record-card fighter-card">
         <h2>
-          ${escapeHtml(f.display_name)}
+          ${navigation.fighterLink(f.fighter_id, f.display_name)}
           ${od?.nickname ? `<span class="fighter-nickname">「${escapeHtml(od.nickname)}」</span>` : ""}
         </h2>
         <p class="meta">
@@ -302,7 +302,7 @@ export class TabRenderers {
     const od = e.official_data;
     return `
       <article class="card record-card event-card">
-        <h2>${escapeHtml(e.name)}</h2>
+        <h2>${navigation.eventLink(e.event_id, e.name)}</h2>
         <p class="meta">
           ${repo.promotionName(e.promotion_id)} / ${escapeHtml(e.published_at ?? "")}
           ${od ? `<span class="video-badge official-badge">公式</span>` : ""}
