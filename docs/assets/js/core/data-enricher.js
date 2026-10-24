@@ -278,7 +278,8 @@ export class DataEnricher {
 
     // #fightRecords のキーは `promotion_id:event_number_normalized`。event 側の event_number と
     // 文字列化して揃える必要がある (突き合わせの軸は event ではなく「団体+興行番号」)。
-    const key = `${bout.promotion_id}:${String(event.event_number)}`;
+    // Numbers の興行番号が整数でない大会 (MAXバウトの SP / SP2) は numbers_event_number を使う。
+    const key = `${bout.promotion_id}:${String(event.numbers_event_number || event.event_number)}`;
     const candidates = this.#fightRecords.get(key) ?? [];
     // 選手と対戦相手の両方が一致する記録だけを使う。トーナメント (MAXバウト) は 1 大会に
     // 同じ選手の試合が複数あるため、片方の一致だけでは別の回戦の結果を拾ってしまう。
