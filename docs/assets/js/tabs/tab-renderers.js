@@ -72,14 +72,25 @@ export class TabRenderers {
     `).join("");
   }
 
+  // source_id は note:<article_id> または official_news:<slug>
+  renderSnapshotSource(snapshot) {
+    const { sources, repo } = this.ctx;
+    const [type, ref] = (snapshot.source_id ?? "").split(/:(.*)/s);
+    if (type === "official_news") {
+      const news = repo.officialNews.find((n) => n.slug === ref);
+      return `公式ニュース「${escapeHtml(news?.title ?? ref)}」${news?.date ? `（${escapeHtml(news.date)}）` : ""}`;
+    }
+    return sources.renderArticleRefs(snapshot.source_article_id);
+  }
+
   renderFighterSnapshots(fighterId) {
-    const { components, navigation, sources, repo } = this.ctx;
+    const { components, navigation, repo } = this.ctx;
     const s = repo.fighterSnapshotsForFighter(fighterId);
     if (s.length === 0) return "";
     return components.relatedSection("出典別プロフィール", s, (x) => components.relatedItem(`
       <span class="meta">
         ${x.event_id ? navigation.eventLink(x.event_id, repo.eventName(x.event_id)) : "大会未設定"}
-        / ${sources.renderArticleRefs(x.source_article_id)}
+        / ${this.renderSnapshotSource(x)}
       </span>
       ${components.definitionList([
         ["snapshot_id", `<code>${escapeHtml(x.snapshot_id)}</code>`],
