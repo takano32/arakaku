@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-# 役割: tmp/youtube-info/*.info.json の概要欄を行単位で分類し、イベント/対戦/URL/結果
+# 役割: tmp/youtube-api/*.json の概要欄を行単位で分類し、イベント/対戦/URL/結果
 #   らしい行だけを review/youtube_description_candidates.csv に抽出するレビュー補助。
-# アーキ上の位置: cache_youtube_info.py が作る info JSON が入力。出力は review/ 配下の
+# アーキ上の位置: cache_youtube_api.py が作る API キャッシュが入力。出力は review/ 配下の
 #   候補で、人手レビュー用途。正規 data-src を直接書かない。
 # 不変条件: 出力は確定事実ではなく分類候補。URL/対戦の判定パターンは複数スクリプトと
 #   挙動を揃えるため arakaku.textparse を共有 (ここで再定義しない)。一方 EVENT_RE /
 #   RESULT_RE はこのスクリプト固有語彙なので textparse へ移さない。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import argparse
-import json
 import re
 from pathlib import Path
 
 from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
 from arakaku.utils import ROOT, write_csv
+from arakaku.youtube import YOUTUBE_CACHE_DIR, iter_cached_videos
 
 
-DEFAULT_INPUT_DIR = ROOT / "tmp" / "youtube-info"
+DEFAULT_INPUT_DIR = YOUTUBE_CACHE_DIR
 DEFAULT_OUTPUT = ROOT / "review" / "youtube_description_candidates.csv"
 
 FIELDS = [
@@ -58,22 +58,11 @@ def classify_line(line: str) -> str:
     return "other"
 
 
-def iter_info_json(input_dir: Path):
-    for path in sorted(input_dir.glob("*.info.json")):
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            print(f"[warn] invalid json: {path}: {exc}")
-            continue
-
-        yield path, data
-
-
-def extract_candidates(data: dict) -> list[dict[str, str]]:
-    video_id = str(data.get("id") or "")
-    url = str(data.get("webpage_url") or data.get("original_url") or "")
-    title = str(data.get("title") or "")
-    description = str(data.get("description") or "")
+def extract_candidates(video: dict[str, str]) -> list[dict[str, str]]:
+    video_id = video["platform_video_id"]
+    url = video["url"]
+    title = video["title"]
+    description = video["description"]
 
     rows: list[dict[str, str]] = []
 
@@ -104,13 +93,13 @@ def extract_candidates(data: dict) -> list[dict[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Extract candidate event/match/source lines from yt-dlp info.json descriptions.",
+        description="Extract candidate event/match/source lines from cached YouTube Data API descriptions.",
     )
     parser.add_argument(
         "--input-dir",
         type=Path,
         default=DEFAULT_INPUT_DIR,
-        help=f"Input directory containing *.info.json. default: {DEFAULT_INPUT_DIR}",
+        help=f"Input directory containing YouTube Data API cache *.json. default: {DEFAULT_INPUT_DIR}",
     )
     parser.add_argument(
         "--output",
@@ -127,13 +116,13 @@ def main() -> int:
     rows: list[dict[str, str]] = []
     file_count = 0
 
-    for _path, data in iter_info_json(args.input_dir):
+    for _path, video in iter_cached_videos(args.input_dir):
         file_count += 1
-        rows.extend(extract_candidates(data))
+        rows.extend(extract_candidates(video))
 
     write_csv(args.output, FIELDS, rows)
 
-    print(f"[read] {file_count} info json file(s)")
+    print(f"[read] {file_count} YouTube cache file(s)")
     print(f"[rows] {len(rows)}")
 
     return 0

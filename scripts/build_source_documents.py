@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-# 役割: ローカルキャッシュ (note HTML / YouTube info.json) を読み、本文を抽出・正規化して
+# 役割: ローカルキャッシュ (note HTML / YouTube Data API JSON) を読み、本文を抽出・正規化して
 #   data-src/source_documents.csv と source_mentions.csv を再生成する取り込みスクリプト。
 #   行ごとに対戦/結果/イベント/URL を分類して mentions を起こす (あくまでレビュー用の手掛かり)。
-# アーキ上の位置: 入力 = data-src/articles.csv・videos.csv と tmp/note-html/*・tmp/youtube-info/*.info.json、
+# アーキ上の位置: 入力 = data-src/articles.csv・videos.csv と tmp/note-html/*・tmp/youtube-api/*.json、
 #   出力 = data-src/source_*.csv。これらは後段で build_json.py が source_*.json として viewer へ流す。
 #   articles.csv の生成 (generate_articles.py) はこのスクリプトより前に走らせる必要がある。
 # 不変条件:
@@ -16,19 +16,18 @@ from __future__ import annotations
 
 import hashlib
 import html
-import json
 import re
 from datetime import datetime, timezone
 
 from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
 from arakaku.utils import DATA_SRC, ROOT, note_cache_name, read_csv, write_csv
+from arakaku.youtube import iter_cached_videos
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"
 VIDEOS_CSV = DATA_SRC / "videos.csv"
 
 NOTE_HTML_DIR = ROOT / "tmp" / "note-html"
-YOUTUBE_INFO_DIR = ROOT / "tmp" / "youtube-info"
 
 SOURCE_DOCUMENTS_CSV = DATA_SRC / "source_documents.csv"
 SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
@@ -232,23 +231,18 @@ def build_youtube_documents() -> list[dict[str, str]]:
     fetched_at = now_iso()
     rows = []
 
-    for info_path in sorted(YOUTUBE_INFO_DIR.glob("*.info.json")):
-        try:
-            data = json.loads(info_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            continue
-
-        platform_video_id = str(data.get("id") or info_path.stem.replace(".info", ""))
+    for cache_path, cached in iter_cached_videos():
+        platform_video_id = cached["platform_video_id"]
         video = videos_by_platform_id.get(platform_video_id, {})
 
-        # videos.csv に登録済みなら正規の値を優先し、未登録分は info.json から補う
+        # videos.csv に登録済みなら正規の値を優先し、未登録分は API キャッシュから補う
         # (video_id が無ければ platform id から合成。CSV を事実源として尊重しつつ取りこぼさない)。
         video_id = video.get("video_id") or f"youtube_{platform_video_id}"
-        title = video.get("title") or str(data.get("title") or "")
-        url = video.get("url") or str(data.get("webpage_url") or data.get("original_url") or "")
-        published_at = video.get("published_at") or str(data.get("upload_date") or "")
+        title = video.get("title") or cached["title"]
+        url = video.get("url") or cached["url"]
+        published_at = video.get("published_at") or cached["upload_date"]
 
-        description = normalize_text(str(data.get("description") or ""))
+        description = normalize_text(cached["description"])
 
         if not description:
             continue
@@ -268,7 +262,7 @@ def build_youtube_documents() -> list[dict[str, str]]:
                 "content_hash": sha256_text(description),
                 "content_text": description,
                 "content_preview": description[:300],
-                "notes": f"Imported from yt-dlp info.json: {info_path.name}",
+                "notes": f"Imported from YouTube Data API cache: {cache_path.name}",
             }
         )
 

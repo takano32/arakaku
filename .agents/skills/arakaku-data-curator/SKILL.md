@@ -295,6 +295,6 @@ Do not:
 - edit `docs/data/*.json` directly
 - commit `docs/data/*.json`
 - commit `tmp/note-html/*.html`
-- commit `tmp/youtube-info/*.info.json`
+- commit `tmp/youtube-api/*.json`
 - infer winner/loser from title, order, or vague context
 - bulk-apply extracted rows without review

@@ -164,5 +164,5 @@ Do not commit generated JSON or local caches:
 ```text
 docs/data/*.json
 tmp/note-html/*.html
-tmp/youtube-info/*.info.json
+tmp/youtube-api/*.json
 ```

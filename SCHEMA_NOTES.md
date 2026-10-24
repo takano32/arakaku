@@ -25,7 +25,7 @@ Current canonical source tables:
 - `title_reigns.csv`: title reign lineage rows.
 - `articles.csv`: article/source metadata.
 - `videos.csv`: video metadata.
-- `archives/youtube.csv`: archived metadata extracted from cached YouTube info JSON.
+- `archives/youtube.csv`: archived metadata extracted from cached YouTube Data API video JSON.
 - `archives/note.csv`: archived metadata extracted from cached note HTML.
 - `official_players.csv`: player profiles extracted from `tmp/arakaku-site/data/players.json` (official site).
 - `official_tournaments.csv`: tournament results extracted from `tmp/arakaku-site/data/tournaments.json`.
@@ -56,7 +56,7 @@ Key policies for Rich Data:
 
 Archive helper tables:
 
-- `archives/youtube.csv` is generated from `tmp/youtube-info/*.info.json`.
+- `archives/youtube.csv` is generated from `tmp/youtube-api/*.json`.
 - `archives/note.csv` is generated from `tmp/note-html/*.html`.
 
 Archive rows preserve external metadata that may be useful after cache files are deleted or remote pages change. They are source CSVs for generated JSON, but they are not confirmed fight facts and should not directly set winners, participants, methods, or title lineage.

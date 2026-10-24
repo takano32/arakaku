@@ -13,5 +13,5 @@ docs/data/*.json
 tmp/*
 !tmp/.gitkeep
 !tmp/note-html/.gitkeep
-!tmp/youtube-info/.gitkeep
+!tmp/youtube-api/.gitkeep
 !tmp/arakaku-site/.gitkeep

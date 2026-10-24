@@ -27,7 +27,7 @@
 - [ ] `make clean-generated` を実行した
 - [ ] `docs/data/*.json` をコミットしていない
 - [ ] `tmp/note-html/*.html` をコミットしていない
-- [ ] `tmp/youtube-info/*.info.json` をコミットしていない
+- [ ] `tmp/youtube-api/*.json` をコミットしていない
 - [ ] 不明な試合結果を推測で確定していない
 - [ ] 自動抽出結果をレビューなしで大量反映していない
 

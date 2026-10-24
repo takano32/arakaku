@@ -57,7 +57,7 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 # ──────────────────────────────────────────────────────────────────
 # Source crawl pipeline (requires network / local cache in tmp/)
 # ──────────────────────────────────────────────────────────────────
-.PHONY: cache-note-html cache-youtube-info cache-sources \
+.PHONY: cache-note-html cache-youtube-api cache-sources \
         download-official-data \
         archive-metadata build-sources refresh-sources \
         source-mention-result-candidates source-reference-candidates \
@@ -66,13 +66,13 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 cache-note-html:
 	python3 scripts/cache_note_html.py
 
-cache-youtube-info:
-	python3 scripts/cache_youtube_info.py
+cache-youtube-api:
+	python3 scripts/cache_youtube_api.py
 
 download-official-data:
 	bash scripts/download_official_data.sh
 
-cache-sources: cache-note-html cache-youtube-info download-official-data
+cache-sources: cache-note-html cache-youtube-api download-official-data
 
 archive-metadata:
 	python3 scripts/archive_metadata.py
@@ -105,7 +105,7 @@ extract-numbers:
 #
 # Prerequisites (must exist locally, not in git):
 #   tmp/note-html/       — cached note article HTML files
-#   tmp/youtube-info/    — yt-dlp *.info.json files
+#   tmp/youtube-api/     — YouTube Data API video JSON files (needs YOUTUBE_API_KEY)
 #   data-raw/アラカク選手名鑑.numbers
 #
 # Canonical CSVs (fighters, events, bouts, …) are restored from git.

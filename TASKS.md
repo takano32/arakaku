@@ -46,9 +46,9 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.29](tasks/T.29.md) | 選手プロフィールの統合と Numbers 全項目の表示 | 完了 | 2026-06-14 〜 2026-06-15 |
 | [T.30](tasks/T.30.md) | サマリーと出典候補の折りたたみ | 完了 | 2026-06-21 |
 | [T.31](tasks/T.31.md) | scripts とビューア JS の重複・デッドコード整理 | 完了 | 2026-07-09 |
-| T.32 | 新しい開発マシンへの移行 | 進行中 | 2026-10-24 〜 |
-| T.33 | YouTube の取得を YouTube Data API に移行 | 進行中 | 2026-10-24 〜 |
-| T.34 | 作業台帳 TASKS.md の導入 | 進行中 | 2026-10-24 〜 |
+| T.32 | 新しい開発マシンへの移行 | 完了 | 2026-10-24 |
+| T.33 | YouTube の取得を YouTube Data API に移行 | 完了 | 2026-10-24 |
+| T.34 | 作業台帳 TASKS.md の導入 | 完了 | 2026-10-24 |
 | T.35 | アーカイブ CSV の行が消える問題の検討 | 未着手 | |
 | T.36 | 公式データの選手マッチング精度向上 | 未着手 | |
 | T.37 | Pages 上でストリーミングと仮想スクロールを目視確認 | 未着手 | |
@@ -59,51 +59,56 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.42 | 公式タブを「公式ページ」と「公式ニュース」に分割 | 保留 | |
 | T.43 | 王座変遷の精度向上 | 未着手 | |
 | T.44 | Numbers データのさらなる突き合わせ | 未着手 | |
+| T.45 | note.com のページ構成変更による本文抽出のノイズ | 未着手 | |
 
 ---
 
 ## T.32 新しい開発マシンへの移行
 
-- 状態: 進行中
-- 期間: 2026-10-24 〜
+- 状態: 完了
+- 期間: 2026-10-24
 
 開発マシンを移したため、`tmp/` のキャッシュがすべて消え、ツールの前提も変わった。新しいマシンで `make` 一式と取得処理が動くようにする。
 
 - [x] T.32.1 Makefile の `python` を `python3` に変更（ad73c0c, 2026-10-24）
-- [ ] T.32.2 `tmp/` のキャッシュを取り直す
+- [x] T.32.2 `tmp/` のキャッシュを取り直す
   - [x] T.32.2.1 note 本文 HTML を取得（`tmp/note-html/`、120 件）
   - [x] T.32.2.2 公式サイトのデータを取得（`tmp/arakaku-site/`、29 ファイル）
-  - [ ] T.32.2.3 YouTube の動画情報を取得 → yt-dlp はクラウド IP のためボット判定で 360 件すべて失敗。T.33 で対応する
+  - [x] T.32.2.3 YouTube の動画情報を取得（yt-dlp はクラウド IP のためボット判定で 360 件すべて失敗。T.33 で YouTube Data API に切り替えて 360 件取得）
 
 ## T.33 YouTube の取得を YouTube Data API に移行
 
-- 状態: 進行中
-- 期間: 2026-10-24 〜
+- 状態: 完了
+- 期間: 2026-10-24
 
 yt-dlp はこのマシンの IP では YouTube に拒否される（接続方法 8 種、最新版、Chrome の cookie をすべて試して失敗）。YouTube Data API v3 の `videos.list` で取得するように切り替える。
 
-- [x] T.33.1 取得と読み取りを実装（未コミット）
+- [x] T.33.1 取得と読み取りを実装
   - [x] T.33.1.1 `scripts/cache_youtube_api.py` を追加（50 件ずつ取得し `tmp/youtube-api/<id>.json` に保存）
   - [x] T.33.1.2 `scripts/arakaku/youtube.py` に読み取りと正規化を共通化
   - [x] T.33.1.3 `archive_metadata.py` / `build_source_documents.py` / `import_youtube_descriptions.py` を API キャッシュに切り替え
   - [x] T.33.1.4 `scripts/cache_youtube_info.py` を削除し、Makefile ターゲットを `cache-youtube-api` に変更
   - [x] T.33.1.5 `tests/test_60_youtube_cache.py` を追加
   - [x] T.33.1.6 README・SKILL.md などの記述を更新
-- [ ] T.33.2 Google Cloud で API キーを発行し、このマシンの `~/.bashrc` に `YOUTUBE_API_KEY` を設定する（ユーザー作業）
-- [ ] T.33.3 `make cache-youtube-api` で 360 件を取得する
-- [ ] T.33.4 `make archive-metadata` 後に `data-src/archives/youtube.csv` の差分を確認し、既存の値と一致することを確かめる（特に `upload_date`）
-- [ ] T.33.5 `make build-sources` と `make check` を通してコミットする
+- [x] T.33.2 Google Cloud で API キーを発行し、このマシンの `~/.bashrc` に `YOUTUBE_API_KEY` を設定する（ユーザー作業）
+- [x] T.33.3 `make cache-youtube-api` で 360 件を取得する（取得 360、欠落 0）
+- [x] T.33.4 `make archive-metadata` 後に `data-src/archives/youtube.csv` の差分を確認し、既存の値と一致することを確かめる
+  - 360 行すべて残り、`fulltitle` / `uploader` / `upload_date` / `description` は全件一致
+  - `view_count` 277 件と `like_count` 23 件は増加、2 件は減少（取得時点の違い）
+  - `like_count` 50 件が空欄から `0` に（旧処理は 0 を空欄にしていた）
+  - `duration_string` 160 件が 1 秒長い（API の再生時間は yt-dlp より 1 秒長く出ることがある）
+- [x] T.33.5 `make build-sources` と `make check` を通してコミットする（YouTube 由来の本文は変化なし。note 由来の差分は T.45 に分けてコミットしない）
 
 ## T.34 作業台帳 TASKS.md の導入
 
-- 状態: 進行中
-- 期間: 2026-10-24 〜
+- 状態: 完了
+- 期間: 2026-10-24
 
 作業を `T.N` で採番する台帳を作り、過去の全コミットを書き起こす。
 
-- [x] T.34.1 過去の全 233 コミットを T.1〜T.32 に振り分けて書き起こす（完了分は `tasks/T.N.md`）
-- [x] T.34.2 NEXT_TASKS.md と HANDOFF.md の未着手項目を T.35〜T.44 に移し、NEXT_TASKS.md を廃止する
-- [ ] T.34.3 コミットする
+- [x] T.34.1 過去の全 233 コミットを T.1〜T.32 に振り分けて書き起こす（完了分は `tasks/T.N.md`）（f18f524, 2026-10-24）
+- [x] T.34.2 NEXT_TASKS.md と HANDOFF.md の未着手項目を T.35〜T.44 に移し、NEXT_TASKS.md を廃止する（f18f524, 2026-10-24）
+- [x] T.34.3 コミットする（f18f524, 2026-10-24）
 
 ## T.35 アーカイブ CSV の行が消える問題の検討
 
@@ -209,3 +214,19 @@ CI は通っているが、ブラウザでの動作確認が済んでいない�
 - 状態: 未着手
 
 HANDOFF.md の「次にやるとよい作業」にあった項目。対戦カードの不一致検出など、Numbers データと CSV をさらに突き合わせる。
+
+## T.45 note.com のページ構成変更による本文抽出のノイズ
+
+- 状態: 未着手
+
+2026-10-24 に note HTML を取り直して `make archive-metadata` と `make build-sources` を実行したところ、note.com のページ構成が変わっていて、本文にページの部品が混ざるようになった。記事本文の行は 1 行も失われていないが、次のノイズが増える。そのため `data-src/archives/note.csv`・`source_documents.csv`・`source_mentions.csv` の更新はコミットしていない（T.33 では YouTube 分だけをコミット）。
+
+- 全 120 記事の本文が変わる。消えるのは「ログイン」「フォロー」「チップで応援する」などの部品とスキ数で、増えるのは「メインコンテンツへスキップ」「あなたへのおすすめ」とプロフィール欄（アラカクホームページのリンク）
+- `source_mentions.csv` が 1794 → 1949 行に増える。増えるのはすべて誤検出で、内訳は次のとおり
+  - プロフィール欄の `kobayashi856.github.io/arakaku-site/` が全記事で `result` として拾われる（121 件）
+  - 一部の記事で「あなたへのおすすめ」に並ぶ他の記事のタイトルが `event` / `matchup` として拾われる（34 件）
+- `note.csv` の 1 行（note のプロフィール説明）は note 側で実際に書き換わったもの
+
+- [ ] T.45.1 `build_source_documents.py` の note 本文抽出を新しいページ構成に合わせ、本文以外を除く
+- [ ] T.45.2 取り直した note データを反映し、`source_mentions.csv` に誤検出が増えないことを確かめてコミットする
+- [ ] T.45.3 `build_source_documents.py` が実行のたびに全行の `fetched_at` を書き換えるため、差分が毎回大きくなる。決定的な出力にするか検討する
