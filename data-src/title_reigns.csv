@@ -10,8 +10,8 @@ emperor-lightweight-6,emperor-lightweight,6,esty_griffon,エスティ・グリ�
 emperor-lightweight-7,emperor-lightweight,7,blue_one,ブルーワン,7代目,,,note-emperor,
 emperor-lightweight-8,emperor-lightweight,8,ice_tron,アイス・トロン,8代目,,,note-emperor,
 emperor-lightweight-9,emperor-lightweight,9,colt_apro,コルト・アプロー,9代目,,,note-emperor,
-emperor-lightweight-10,emperor-lightweight,10,marco_fraser,マルコ・フレイザー,10代目,,,,youtube_xogycqouw_e
-emperor-lightweight-11,emperor-lightweight,11,blue_one,ブルーワン,11代目,,,,youtube_qwxsvgtscqe
+emperor-lightweight-10,emperor-lightweight,10,marco_fraser,マルコ・フレイザー,10代目,,emperor-115,,youtube_xogycqouw_e
+emperor-lightweight-11,emperor-lightweight,11,blue_one,ブルーワン,11代目,emperor-115,,,youtube_qwxsvgtscqe
 emperor-middleweight-1,emperor-middleweight,1,antares,アンタレス,初代,,,note-emperor,
 emperor-middleweight-2,emperor-middleweight,2,yuna_gana,ユーナ・ガナ,2代目,,,note-emperor,
 emperor-middleweight-3,emperor-middleweight,3,misa_will_joe,ミサ・ウィル・ジョー,3代目,,,note-emperor,
@@ -49,8 +49,8 @@ target-lightweight-4,target-lightweight,4,harris_orbick,ハリス・オルビッ
 target-lightweight-5,target-lightweight,5,kunisada,くにさだ,5代目,,,note-target,
 target-lightweight-6,target-lightweight,6,muraki,むらき,6代目,,,note-target,
 target-lightweight-7,target-lightweight,7,semioka,せみおか,7代目,,,note-target,
-target-lightweight-8,target-lightweight,8,frahm_gran,フラーム・グラン,8代目,,,note-target,
-target-lightweight-9,target-lightweight,9,waku,わく,9代目,,,,youtube_umme48uzwwk
+target-lightweight-8,target-lightweight,8,frahm_gran,フラーム・グラン,8代目,,target-89,note-target,
+target-lightweight-9,target-lightweight,9,waku,わく,9代目,target-89,,,youtube_umme48uzwwk
 target-lightweight-tournament-1,target-lightweight-tournament,1,boomer,ビューマー,第1回,,,note-target,
 target-lightweight-tournament-2,target-lightweight-tournament,2,muraki,むらき,第2回,,,note-target,
 target-lightweight-tournament-3,target-lightweight-tournament,3,frahm_gran,フラーム・グラン,第3回,,,note-target,
@@ -62,7 +62,7 @@ target-middleweight-5,target-middleweight,5,royal,ロイヤル,5代目,,,note-ta
 target-middleweight-6,target-middleweight,6,turbo,ターボ,6代目,,,note-target,
 target-middleweight-7,target-middleweight,7,boomer,ビューマー,7代目,,,note-target,
 target-middleweight-8,target-middleweight,8,rouged_starry,ルージュド・スターリー,8代目,,,,youtube_dmjc2rydolm
-target-middleweight-9,target-middleweight,9,kabei,かべい,9代目,,target-100,,youtube_5zbvriy_62w
+target-middleweight-9,target-middleweight,9,kabei,かべい,9代目,target-96,target-100,,youtube_5zbvriy_62w
 target-middleweight-10,target-middleweight,10,gitamin_aaron,ギタミン・アーロン,10代目,target-100,,,youtube_cfrmhlwri38
 target-middleweight-tournament-1,target-middleweight-tournament,1,turbo,ターボ,第1回,,,note-target,
 target-middleweight-tournament-2,target-middleweight-tournament,2,royal,ロイヤル,第2回,,,note-target,
