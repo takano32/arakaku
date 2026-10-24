@@ -15,8 +15,8 @@ emperor-120,エンペラーNo.120,emperor,120,numbered_event,,,エンペラーNo
 max-bout-5-middleweight-tournament,第5回MAXバウトミドル級トーナメント,max_bout,5,tournament,,,第5回MAXバウトミドル級トーナメント。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 max-bout-6-lightweight-tournament,第6回MAXバウトライト級トーナメント,max_bout,6,tournament,,,第6回MAXバウトライト級トーナメント。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 max-bout-7-lightweight-gp,第7回MAXバウトライト級GP,max_bout,7,tournament,,,第7回MAXバウトライト級GP。公式YouTube動画タイトルから抽出。,official_youtube_title,high
-max-bout-special-2,MAXバウトスペシャルワンマッチ大会No.2,max_bout,,special_event,,,MAXバウトスペシャルワンマッチ大会No.2。大会名は note「MAXバウトスペシャルワンマッチ大会No.2」による（Numbers の興行番号は SP2）。T.50 で max-bout-unknown-lightweight-tournament から改名した。,official_youtube_title,medium
-max-bout-special-1,MAXバウトスペシャルワンマッチ大会,max_bout,,special_event,,,MAXバウトスペシャルワンマッチ大会。大会名は note「MAXバウトスペシャルワンマッチ大会」による（Numbers の興行番号は SP）。T.50 で max-bout-unknown-middleweight-special と max-bout-unknown-special-one-match をまとめた。,official_youtube_title,medium
+max-bout-special-2,MAXバウトスペシャルワンマッチ大会No.2,max_bout,,special_event,,,MAXバウトスペシャルワンマッチ大会No.2。大会名は note「MAXバウトスペシャルワンマッチ大会No.2」による（Numbers の興行番号は SP2）。,official_youtube_title,medium
+max-bout-special-1,MAXバウトスペシャルワンマッチ大会,max_bout,,special_event,,,MAXバウトスペシャルワンマッチ大会。大会名は note「MAXバウトスペシャルワンマッチ大会」による（Numbers の興行番号は SP）。,official_youtube_title,medium
 mh-27,マウンテン・ヒーローズNo.27,mh,27,numbered_event,,,マウンテン・ヒーローズNo.27。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 mh-28,マウンテン・ヒーローズNo.28,mh,28,numbered_event,,,マウンテン・ヒーローズNo.28。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 mh-29,マウンテン・ヒーローズNo.29,mh,29,numbered_event,,,マウンテン・ヒーローズNo.29。公式YouTube動画タイトルから抽出。,official_youtube_title,high
