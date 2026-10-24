@@ -100,9 +100,9 @@ def extract_matchups(content_text: str) -> list[tuple[str, str]]:
     return matchups
 
 
-def extract_promotion_profile_fighters(content_text: str) -> set[str]:
-    """Extract fighter names from promotion profile champion list content."""
-    names: set[str] = set()
+def extract_promotion_profile_fighters(content_text: str) -> list[str]:
+    """Extract fighter names from promotion profile champion list content, in order of appearance."""
+    names: list[str] = []
     lines = [ln.strip() for ln in content_text.split("\n") if ln.strip()]
     for line in lines:
         t = norm(line)
@@ -111,20 +111,20 @@ def extract_promotion_profile_fighters(content_text: str) -> set[str]:
         if m:
             name = re.sub(r"（[^）]*）", "", m.group(1)).strip()
             if name:
-                names.add(name)
+                names.append(name)
         # "【Fighter】" tournament winners (skip section headers like 【MAXバウトの歴代王者】)
         m = re.match(r"【([^】の]+)】$", t)
         if m:
             name = m.group(1).strip()
             if name and "王者" not in name and "優勝" not in name:
-                names.add(name)
+                names.append(name)
         # "第X回Fighter（promotion）" (MAXバウト champion format)
         m = re.match(r"第[0-9]+回(.+?)（", t)
         if m:
             name = m.group(1).strip()
             if name:
-                names.add(name)
-    return names
+                names.append(name)
+    return list(dict.fromkeys(names))
 
 
 def title_to_event_id(title: str, known_events: set[str]) -> str | None:

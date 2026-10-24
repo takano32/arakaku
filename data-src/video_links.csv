@@ -327,18 +327,6 @@ youtube_surk9nnwoxi,bout,max-bout-6-lightweight-tournament-surk9nnwoxi,full_figh
 youtube_surk9nnwoxi,event,max-bout-6-lightweight-tournament,reference,,,Migrated from events.source_video_ids.
 youtube_surk9nnwoxi,fighter,colt_apro,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_surk9nnwoxi,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_lk45sjahdk0,bout,max-bout-7-lightweight-gp-lk45sjahdk0,full_fight,,,公式YouTube動画タイトルから推定。
-youtube_lk45sjahdk0,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
-youtube_lk45sjahdk0,fighter,lander_devil,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_lk45sjahdk0,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_h3la4h4lfck,bout,max-bout-7-lightweight-gp-h3la4h4lfck,full_fight,,,公式YouTube動画タイトルから推定。
-youtube_h3la4h4lfck,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
-youtube_h3la4h4lfck,fighter,lander_devil,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_h3la4h4lfck,fighter,fighter_82d519db98,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_l0y4gy4llq0,bout,max-bout-7-lightweight-gp-l0y4gy4llq0,full_fight,,,公式YouTube動画タイトルから推定。
-youtube_l0y4gy4llq0,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
-youtube_l0y4gy4llq0,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_l0y4gy4llq0,fighter,fighter_25fddbaacc,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_23ui9dcnmle,bout,max-bout-7-lightweight-gp-23ui9dcnmle,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_23ui9dcnmle,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
 youtube_23ui9dcnmle,fighter,kuwashio,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
@@ -387,26 +375,18 @@ youtube_irt8ikcjj4i,bout,max-bout-7-lightweight-gp-irt8ikcjj4i,full_fight,,,公�
 youtube_irt8ikcjj4i,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
 youtube_irt8ikcjj4i,fighter,fighter_25fddbaacc,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_irt8ikcjj4i,fighter,rolling_jr,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_qtswvquloji,bout,max-bout-special-2-qtswvquloji,reference,,,公式YouTube動画タイトルから推定。
-youtube_qtswvquloji,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
-youtube_qtswvquloji,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_qtswvquloji,fighter,fighter_82d519db98,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_bacmlios1i8,bout,max-bout-special-2-bacmlios1i8,reference,,,公式YouTube動画タイトルから推定。
-youtube_bacmlios1i8,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
-youtube_bacmlios1i8,fighter,colt_apro,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_bacmlios1i8,fighter,tsukurihara,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_ooihz_c01e0,bout,max-bout-special-2-ooihz_c01e0,reference,,,公式YouTube動画タイトルから推定。
-youtube_ooihz_c01e0,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
-youtube_ooihz_c01e0,fighter,kitamura,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_ooihz_c01e0,fighter,sangoku,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_f1u0bfqhu9o,bout,max-bout-special-2-f1u0bfqhu9o,reference,,,公式YouTube動画タイトルから推定。
-youtube_f1u0bfqhu9o,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
-youtube_f1u0bfqhu9o,fighter,lander_devil,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_f1u0bfqhu9o,fighter,waku,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_574ikyazfj4,bout,max-bout-special-2-574ikyazfj4,reference,,,公式YouTube動画タイトルから推定。
-youtube_574ikyazfj4,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
-youtube_574ikyazfj4,fighter,marco_fraser,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_574ikyazfj4,fighter,fighter_25fddbaacc,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_h3la4h4lfck,bout,max-bout-7-lightweight-gp-h3la4h4lfck,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_h3la4h4lfck,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
+youtube_h3la4h4lfck,fighter,lander_devil,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_h3la4h4lfck,fighter,fighter_82d519db98,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_l0y4gy4llq0,bout,max-bout-7-lightweight-gp-l0y4gy4llq0,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_l0y4gy4llq0,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
+youtube_l0y4gy4llq0,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_l0y4gy4llq0,fighter,fighter_25fddbaacc,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_lk45sjahdk0,bout,max-bout-7-lightweight-gp-lk45sjahdk0,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_lk45sjahdk0,event,max-bout-7-lightweight-gp,reference,,,Migrated from events.source_video_ids.
+youtube_lk45sjahdk0,fighter,lander_devil,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_lk45sjahdk0,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_opylhps0jq0,bout,max-bout-special-1-opylhps0jq0,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_opylhps0jq0,event,max-bout-special-1,reference,,,Migrated from events.source_video_ids.
 youtube_opylhps0jq0,fighter,otosawa,reference,,,Migrated from fighters.inferred_from_video_ids.
@@ -427,6 +407,26 @@ youtube_bompcnznx34,bout,max-bout-special-1-bompcnznx34,full_fight,,,公式YouTu
 youtube_bompcnznx34,event,max-bout-special-1,reference,,,Migrated from events.source_video_ids.
 youtube_bompcnznx34,fighter,misa_will_joe,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_bompcnznx34,fighter,rouged_starry,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_qtswvquloji,bout,max-bout-special-2-qtswvquloji,reference,,,公式YouTube動画タイトルから推定。
+youtube_qtswvquloji,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
+youtube_qtswvquloji,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_qtswvquloji,fighter,fighter_82d519db98,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_bacmlios1i8,bout,max-bout-special-2-bacmlios1i8,reference,,,公式YouTube動画タイトルから推定。
+youtube_bacmlios1i8,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
+youtube_bacmlios1i8,fighter,colt_apro,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_bacmlios1i8,fighter,tsukurihara,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_ooihz_c01e0,bout,max-bout-special-2-ooihz_c01e0,reference,,,公式YouTube動画タイトルから推定。
+youtube_ooihz_c01e0,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
+youtube_ooihz_c01e0,fighter,kitamura,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_ooihz_c01e0,fighter,sangoku,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_f1u0bfqhu9o,bout,max-bout-special-2-f1u0bfqhu9o,reference,,,公式YouTube動画タイトルから推定。
+youtube_f1u0bfqhu9o,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
+youtube_f1u0bfqhu9o,fighter,lander_devil,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_f1u0bfqhu9o,fighter,waku,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_574ikyazfj4,bout,max-bout-special-2-574ikyazfj4,reference,,,公式YouTube動画タイトルから推定。
+youtube_574ikyazfj4,event,max-bout-special-2,reference,,,Migrated from events.source_video_ids.
+youtube_574ikyazfj4,fighter,marco_fraser,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_574ikyazfj4,fighter,fighter_25fddbaacc,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_o5bpc2m2id8,bout,mh-27-o5bpc2m2id8,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_o5bpc2m2id8,event,mh-27,reference,,,Migrated from events.source_video_ids.
 youtube_o5bpc2m2id8,fighter,fighter_452ac4db9c,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
@@ -719,18 +719,10 @@ youtube_d6tuqnfvmhy,bout,target-14-d6tuqnfvmhy,reference,,,公式YouTube動画�
 youtube_d6tuqnfvmhy,event,target-14,reference,,,Migrated from events.source_video_ids.
 youtube_d6tuqnfvmhy,fighter,rancher_sugaya,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_d6tuqnfvmhy,fighter,fighter_ffbd00f5ab,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_5zbvriy_62w,bout,target-96-5zbvriy_62w,full_fight,,,公式YouTube動画タイトルから推定。
-youtube_5zbvriy_62w,event,target-96,reference,,,Migrated from events.source_video_ids.
-youtube_5zbvriy_62w,fighter,otosawa,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_5zbvriy_62w,fighter,kabei,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_mnuuhlkn1lm,bout,target-87-mnuuhlkn1lm,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_mnuuhlkn1lm,event,target-87,reference,,,Migrated from events.source_video_ids.
 youtube_mnuuhlkn1lm,fighter,kitamura,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_mnuuhlkn1lm,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_umme48uzwwk,bout,target-89-umme48uzwwk,full_fight,,,公式YouTube動画タイトルから推定。
-youtube_umme48uzwwk,event,target-89,reference,,,Migrated from events.source_video_ids.
-youtube_umme48uzwwk,fighter,waku,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_umme48uzwwk,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_usushxozov0,bout,target-87-usushxozov0,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_usushxozov0,event,target-87,reference,,,Migrated from events.source_video_ids.
 youtube_usushxozov0,fighter,aribel_aribera,reference,,,Migrated from fighters.inferred_from_video_ids.
@@ -751,10 +743,6 @@ youtube_dmjc2rydolm,bout,target-87-dmjc2rydolm,full_fight,,,公式YouTube動画�
 youtube_dmjc2rydolm,event,target-87,reference,,,Migrated from events.source_video_ids.
 youtube_dmjc2rydolm,fighter,fighter_977f2fdd1d,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_dmjc2rydolm,fighter,rouged_starry,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_aczznfws9eg,bout,target-89-aczznfws9eg,full_fight,,,公式YouTube動画タイトルから推定。
-youtube_aczznfws9eg,event,target-89,reference,,,Migrated from events.source_video_ids.
-youtube_aczznfws9eg,fighter,fighter_e9d2feca82,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_aczznfws9eg,fighter,fighter_d85580c276,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_rbzqpxsucyo,bout,target-88-rbzqpxsucyo,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_rbzqpxsucyo,event,target-88,reference,,,Migrated from events.source_video_ids.
 youtube_rbzqpxsucyo,fighter,daina,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
@@ -779,6 +767,14 @@ youtube_wuxl5lwpr_s,bout,target-89-wuxl5lwpr_s,full_fight,,,公式YouTube動画�
 youtube_wuxl5lwpr_s,event,target-89,reference,,,Migrated from events.source_video_ids.
 youtube_wuxl5lwpr_s,fighter,fighter_31e0efe5d2,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_wuxl5lwpr_s,fighter,otosawa,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_umme48uzwwk,bout,target-89-umme48uzwwk,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_umme48uzwwk,event,target-89,reference,,,Migrated from events.source_video_ids.
+youtube_umme48uzwwk,fighter,waku,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_umme48uzwwk,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_aczznfws9eg,bout,target-89-aczznfws9eg,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_aczznfws9eg,event,target-89,reference,,,Migrated from events.source_video_ids.
+youtube_aczznfws9eg,fighter,fighter_e9d2feca82,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_aczznfws9eg,fighter,fighter_d85580c276,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_axwmuo68z5s,bout,target-90-axwmuo68z5s,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_axwmuo68z5s,event,target-90,reference,,,Migrated from events.source_video_ids.
 youtube_axwmuo68z5s,fighter,kintoki,reference,,,Migrated from fighters.inferred_from_video_ids.
@@ -883,6 +879,10 @@ youtube_jwumd4nyaew,bout,target-96-jwumd4nyaew,full_fight,,,公式YouTube動画�
 youtube_jwumd4nyaew,event,target-96,reference,,,Migrated from events.source_video_ids.
 youtube_jwumd4nyaew,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_jwumd4nyaew,fighter,kitamura,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_5zbvriy_62w,bout,target-96-5zbvriy_62w,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_5zbvriy_62w,event,target-96,reference,,,Migrated from events.source_video_ids.
+youtube_5zbvriy_62w,fighter,otosawa,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_5zbvriy_62w,fighter,kabei,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_dcfiqm3hguy,bout,target-97-dcfiqm3hguy,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_dcfiqm3hguy,event,target-97,reference,,,Migrated from events.source_video_ids.
 youtube_dcfiqm3hguy,fighter,kyonai,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.

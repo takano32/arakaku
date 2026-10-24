@@ -95,20 +95,24 @@ about,アラカクとは,アラカクの世界観・ルール・三大団体に�
     
     <a href=""/players?org=ターゲット"">
       <div>ターゲット</div>
+      <img src=""/logos/logo_target.jpeg"" alt=""ターゲット ロゴ"" />
     </a>
 
     
     <a href=""/players?org=エンペラー"">
       <div>エンペラー</div>
+      <img src=""/logos/logo_emperor.jpeg"" alt=""エンペラー ロゴ"" />
     </a>
 
     
     <a href=""/players?org=マウンテンヒーローズ"">
       <div>マウンテンヒーローズ</div>
+      <img src=""/logos/logo_mh.jpeg"" alt=""マウンテンヒーローズ ロゴ"" />
     </a>
   </div>
 
   <h2>MAXバウトとは</h2>
+  <img src=""/logos/logo_maxbout.jpeg"" alt=""MAXバウト ロゴ"" />
   <p>
     アラカク最大の祭典が<strong>MAXバウト</strong>です。各階級のトップ選手が参加するトーナメント形式の大会で、
     優勝者には「アラカク最強」の称号が与えられます。
