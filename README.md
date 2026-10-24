@@ -534,7 +534,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### アーカイブメタデータ
 
-- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-api/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。archive CSV は再取得できなくなった場合に備えてコミット対象です。
+- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-api/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。キャッシュに無い既存行（削除・非公開・未取得）は消さずに残し、`[kept]` と表示します。archive CSV は再取得できなくなった場合に備えてコミット対象です。
 
 ### 本文DB生成
 
