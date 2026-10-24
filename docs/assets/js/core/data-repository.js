@@ -578,7 +578,9 @@ export class DataRepository extends BaseRepository {
       }
 
       // Forward pass: derive lost_at from next reign's won_at
+      // (返上して空位になった王者は、次の王者が王座決定戦で獲得しても負けていない)
       for (let i = 0; i < lineage.length - 1; i++) {
+        if (lineage[i].end_reason === "vacated") continue;
         if (!lineage[i].lost_at_event_id && lineage[i + 1].won_at_event_id) {
           lineage[i].lost_at_event_id = lineage[i + 1].won_at_event_id;
         }

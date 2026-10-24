@@ -143,6 +143,7 @@ export class TabRenderers {
     const eventParts = [
       reign.won_at_event_id ? `獲得: ${navigation.eventLink(reign.won_at_event_id, repo.eventName(reign.won_at_event_id))}` : "",
       reign.lost_at_event_id ? `喪失: ${navigation.eventLink(reign.lost_at_event_id, repo.eventName(reign.lost_at_event_id))}` : "",
+      reign.end_reason === "vacated" ? "返上（空位）" : "",
     ].filter(Boolean);
     const source = reign.source_video_id
       ? `出典: ${sources.renderVideoRefs([reign.source_video_id], { inline: true })}`
