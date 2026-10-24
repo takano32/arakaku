@@ -333,6 +333,9 @@ Numbers 上の選手名と既存 `fighters.csv` の推定対応を管理しま�
 王座変遷・トーナメント履歴のデータです。
 
 各王座履歴の出典は `source_article_id` または `source_video_id` で管理します。
+`won_at_event_id` / `lost_at_event_id` には王座を獲得・喪失した大会を入れます。
+王者が負けずに王座を返上し、次の王者が王座決定戦で決まった場合は、`end_reason` を `vacated` にして `lost_at_event_id` を空にします。
+王座 view は、喪失大会が空の王者に次の王者の獲得大会を補って表示しますが、`vacated` の王者には補わず「返上（空位）」と表示します。
 該当する決定戦・タイトル戦の動画が確認できる場合は、王座 view で動画出典を優先表示します。
 
 王座変遷は viewer の王座 view に表示されます。

@@ -215,6 +215,8 @@ Title and tournament lineage data.
 
 Use this for reign order, fighter, won/lost event references, and source article/video references.
 
+Set `end_reason=vacated` (and leave `lost_at_event_id` empty) when the champion gave up the title without losing it, e.g. the next champion was decided in a 王座決定戦. Otherwise the viewer copies the next champion's won_at event into lost_at.
+
 ### source_documents.csv
 
 Full-text source database for:

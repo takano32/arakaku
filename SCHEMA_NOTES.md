@@ -22,7 +22,7 @@ Current canonical source tables:
 - `numbers_fight_records.csv`: personal fight-record rows extracted from the Numbers "個人成績" sheet.
 - `fighter_snapshots.csv`: event/article-specific fighter profile facts.
 - `titles.csv`: title entities.
-- `title_reigns.csv`: title reign lineage rows.
+- `title_reigns.csv`: title reign lineage rows. `end_reason` is empty or `vacated` (the champion gave up the title without losing it; `lost_at_event_id` must then be empty).
 - `articles.csv`: article/source metadata.
 - `videos.csv`: video metadata.
 - `archives/youtube.csv`: archived metadata extracted from cached YouTube Data API video JSON.
