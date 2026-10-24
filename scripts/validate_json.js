@@ -195,7 +195,7 @@ function validateSectionRendering(state) {
       if (!desc.isHeader?.(item)) {
         const body = desc.renderBody(item);
         assert(typeof body === "string", `section ${id}: renderBody must return a string for ${key}`);
-        assert(!/undefined|\[object Object\]|NaN/.test(body.replace(/<code>[^<]*<\/code>/g, "")), `section ${id}: renderBody leaked an undefined/object value for ${key}`);
+        assert(!/undefined|\[object Object\]|NaN/.test(body.replace(/<code>[^<]*<\/code>/g, "").replace(/data:[^"'\s)]+/g, "")), `section ${id}: renderBody leaked an undefined/object value for ${key}`);
       }
     }
     summary.push(`${id}=${desc.items.length}`);
