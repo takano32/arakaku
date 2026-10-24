@@ -61,10 +61,14 @@ export class ViewController {
     const fightersFinal = ["fighters", "numbersFighters", "numbersNameMatches", "officialPlayers"]
       .every((key) => loaded?.has(key));
     const fightersCount = fightersFinal ? repo.richFighters.length : d.fighters.length;
+    // 名鑑のみの大会・試合 (repo が Numbers の個人成績から合成) は、個人成績が揃ってから数える
+    const numbersOnlyLoaded = loaded?.has("numbersFightRecords");
+    const eventsCount = d.events.length + (numbersOnlyLoaded ? repo.numbersOnlyEvents.length : 0);
+    const boutsCount = d.bouts.length + (numbersOnlyLoaded ? repo.numbersOnlyBouts.length : 0);
     const items = [
       ["団体", d.promotions.length],
-      ["大会", d.events.length],
-      ["試合", d.bouts.length],
+      ["大会", eventsCount],
+      ["試合", boutsCount],
       ["選手", fightersCount],
       ["王座", d.titles.length],
       ["動画", d.videos.length],

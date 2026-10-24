@@ -49,6 +49,7 @@ export class DataRepository extends BaseRepository {
     this.#sourceDocuments = null;
     this.#richSourceMentions = null;
     this.#sourceDocLookup = null;
+    this.#numbersOnly = null;
   }
 
   #richEvents;
@@ -62,6 +63,7 @@ export class DataRepository extends BaseRepository {
   #sourceDocuments;
   #richSourceMentions;
   #sourceDocLookup;
+  #numbersOnly;
 
   /**
    * this.data の中身が更新された後に全キャッシュを破棄する。
@@ -81,6 +83,7 @@ export class DataRepository extends BaseRepository {
     this.#sourceDocuments = null;
     this.#richSourceMentions = null;
     this.#sourceDocLookup = null;
+    this.#numbersOnly = null;
     this.indexes.clear();
     this.enricher.reset();
   }
@@ -91,7 +94,8 @@ export class DataRepository extends BaseRepository {
   get events() { return [...super.events].reverse(); }
   get richEvents() {
     if (this.#richEvents) return this.#richEvents;
-    const enriched = super.events.map(e => this.enricher.enrichEvent(e)).reverse();
+    // 名鑑のみの大会は開催日が分からないので、昇順リストの先頭に置いて reverse で同じ信頼度の末尾に回す
+    const enriched = [...this.numbersOnlyEvents, ...super.events].map(e => this.enricher.enrichEvent(e)).reverse();
     this.#richEvents = lowReliabilityLast(enriched, eventReliability);
     return this.#richEvents;
   }
@@ -244,7 +248,7 @@ export class DataRepository extends BaseRepository {
   get bouts() { return super.bouts; }
   get richBouts() {
     if (this.#richBouts) return this.#richBouts;
-    const enriched = super.bouts.map(b => this.enricher.enrichBout(b)).reverse();
+    const enriched = [...this.numbersOnlyBouts, ...super.bouts].map(b => this.enricher.enrichBout(b)).reverse();
     this.#richBouts = lowReliabilityLast(enriched, boutReliability);
     return this.#richBouts;
   }
@@ -294,6 +298,89 @@ export class DataRepository extends BaseRepository {
   get sourceEventReferences() { return super.sourceEventReferences; }
   get sourceBoutReferences() { return super.sourceBoutReferences; }
   get sourceVideoReferences() { return super.sourceVideoReferences; }
+
+  get numbersOnlyEvents() { return this.#numbersOnlyData().events; }
+  get numbersOnlyBouts() { return this.#numbersOnlyData().bouts; }
+
+  // 名鑑のみの大会・試合も ID で引けるようにする (enrichBout の大会解決やリンクが使う)
+  findEvent(id) { return super.findEvent(id) ?? this.#numbersOnlyData().eventById.get(id); }
+  findBout(id) { return super.findBout(id) ?? this.#numbersOnlyData().boutById.get(id); }
+
+  /**
+   * Numbers の個人成績にだけある大会と試合 (events.csv に「団体 + 興行番号」が無いもの) を合成する。
+   * 選手の #discoverFighters と同じく CSV には足さず、表示用に重ねるだけ。合成行は numbers_only を持つ。
+   * 興行番号が数字でない記録 (MAXバウトの SP / SP2) は events.csv との対応が未整理なので除く。
+   * 個人成績は 1 試合を両選手の側から 2 行持つので、選手の組で 1 試合にまとめる。
+   */
+  #numbersOnlyData() {
+    if (this.#numbersOnly) return this.#numbersOnly;
+    const known = new Set(super.events.map(e => `${e.promotion_id}:${e.event_number}`));
+    // 大会名は同じ団体の既存の「…No.N」大会名の番号を差し替えて作る
+    const sampleNames = new Map();
+    for (const e of super.events) {
+      if (/No\.\d+$/.test(e.name ?? "") && !sampleNames.has(e.promotion_id)) sampleNames.set(e.promotion_id, e.name);
+    }
+    const events = new Map();
+    const bouts = new Map();
+    const flip = { win: "loss", loss: "win" };
+    for (const r of this.numbersFightRecords) {
+      const num = r.event_number_normalized;
+      if (!/^\d+$/.test(num ?? "") || known.has(`${r.promotion_id}:${num}`)) continue;
+      const eventId = `numbers-${r.promotion_id}-${num}`;
+      if (!events.has(eventId)) {
+        const sample = sampleNames.get(r.promotion_id);
+        events.set(eventId, {
+          event_id: eventId,
+          name: sample ? sample.replace(/No\.\d+$/, `No.${num}`) : `${this.promotionName(r.promotion_id)}No.${num}`,
+          promotion_id: r.promotion_id,
+          event_number: Number(num),
+          event_type: "numbered_event",
+          summary: "名鑑（Numbers）の個人成績にだけ記録がある大会。動画・note は未確認。",
+          numbers_only: true,
+        });
+      }
+      const fighterId = r.matched_fighter_id || r.candidate_fighter_id || null;
+      const opponentId = r.opponent_matched_fighter_id || r.opponent_candidate_fighter_id || null;
+      const pairKey = `${eventId}:${[fighterId || r.fighter_name, opponentId || r.opponent_name].sort().join("|")}`;
+      if (bouts.has(pairKey)) continue;
+      const order = [...bouts.values()].filter(b => b.event_id === eventId).length + 1;
+      const fighters = [
+        { fighter_id: fighterId, name: r.fighter_name, side: null, corner: null, result: r.result || "unknown" },
+        { fighter_id: opponentId, name: r.opponent_name, side: null, corner: null, result: flip[r.result] ?? "unknown" },
+      ];
+      const winner = fighters.find(f => f.result === "win");
+      const loser = fighters.find(f => f.result === "loss");
+      bouts.set(pairKey, {
+        bout_id: `${eventId}-${order}`,
+        event_id: eventId,
+        promotion_id: r.promotion_id,
+        bout_order: order,
+        matchup: `${r.fighter_name} vs ${r.opponent_name}`,
+        division: r.division || null,
+        bout_type: null,
+        fighters,
+        winner_id: winner?.fighter_id ?? null,
+        winner: winner?.name ?? null,
+        loser_id: loser?.fighter_id ?? null,
+        loser: loser?.name ?? null,
+        result_status: winner ? "numbers_verified" : "unknown",
+        result: { method_raw: r.detail_raw || "" },
+        numbers_records: [r],
+        notes: "名鑑（Numbers）の個人成績にだけある試合。",
+        numbers_only: true,
+      });
+    }
+    const byNumber = (a, b) => a.promotion_id.localeCompare(b.promotion_id) || a.event_number - b.event_number;
+    const eventList = [...events.values()].sort(byNumber);
+    const boutList = [...bouts.values()];
+    this.#numbersOnly = {
+      events: eventList,
+      bouts: boutList,
+      eventById: new Map(eventList.map(e => [e.event_id, e])),
+      boutById: new Map(boutList.map(b => [b.bout_id, b])),
+    };
+    return this.#numbersOnly;
+  }
 
   // Rich Finders
   findRichEvent(id) { return this.index("richEvents:event_id", this.richEvents, e => e.event_id).get(id); }
@@ -429,7 +516,7 @@ export class DataRepository extends BaseRepository {
   }
 
   eventsForPromotion(promotionId) {
-    return [...this.findManyByField("events", "promotion_id", promotionId)]
+    return [...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]
       .sort((a, b) => String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja"));
   }
 

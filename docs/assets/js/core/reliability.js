@@ -60,6 +60,7 @@ export function boutReliability(b) {
 }
 
 export function eventReliability(e) {
+  if (e.numbers_only) return RELIABILITY.numbers;
   if (e.official_data) return RELIABILITY.official;
   if (has(e.source_article_id)) return RELIABILITY.note;
   if (e.inferred_from === "official_youtube_title" || has(e.source_video_ids)) return RELIABILITY.youtube;
