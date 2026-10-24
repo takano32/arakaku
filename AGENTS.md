@@ -297,7 +297,11 @@ All work is tracked in `TASKS.md`.
 - Register a task in `TASKS.md` before starting it, and update its status and checkboxes as work progresses.
 - Record the short commit hash and date on the child or grandchild task a commit completes.
 - When `TASKS.md` grows large, move each completed parent task as a whole to `tasks/T.N.md` and keep only its row in the index table.
-- **Mandatory:** when a task is completed, start the next task automatically, without waiting for confirmation, unless there is a specific problem with it. Pick the next task in order of cost-effectiveness. A specific problem means a decision only the user can make, an ambiguous or inconsistent record that must be reported first, or failing checks. In that case, stop and report it.
+- **Mandatory:** keep moving forward automatically. When a task is completed, start the next task right away, without waiting for confirmation, unless there is a specific problem with it.
+  - Pick the next task in order of cost-effectiveness.
+  - Do not stop to ask whether to continue.
+  - Commit as you go, and push once `make check` passes.
+  - A specific problem means a decision only the user can make, an ambiguous or inconsistent record that must be reported first, or failing checks. Only in that case, stop and report it. For a decision only the user can make, record the inconsistency in `TASKS.md` and continue with other work where possible.
 - **Mandatory:** split commits as finely as possible. Each commit holds one logical change. Keep these in separate commits:
   - source data changes
   - script changes
