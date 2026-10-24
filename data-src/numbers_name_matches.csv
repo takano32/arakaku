@@ -9,7 +9,7 @@ numbers_fighter_007,ジャニマード・トスパチ,fighter_41a3b1ba33,ジャ�
 numbers_fighter_008,ゼット,fighter_e15b590179,ゼット,fighter_e15b590179,exact_display_name,high,
 numbers_fighter_009,テール・ジャンク,tail_junk,テール・ジャンク,tail_junk,exact_display_name,high,
 numbers_fighter_010,トルー・パルドレス,fighter_23a078dc11,トルー・パルドレス,fighter_23a078dc11,exact_display_name,high,
-numbers_fighter_011,トワックデビル,,,トワックデビル,generated_candidate,candidate,No exact display_name match in fighters.csv.
+numbers_fighter_011,トワックデビル,fighter_0f7f08df67,トワックデビル,fighter_0f7f08df67,exact_display_name,high,
 numbers_fighter_012,ぱいそんはやし,python_hayashi,ぱいそんはやし,python_hayashi,exact_display_name,high,
 numbers_fighter_013,ヘル・ラッサー,fighter_8d86ebfe6f,ヘル・ラッサー,fighter_8d86ebfe6f,exact_display_name,high,
 numbers_fighter_014,ライン・デュオ,fighter_392d495da8,ライン・デュオ,fighter_392d495da8,exact_display_name,high,
@@ -18,7 +18,7 @@ numbers_fighter_016,らんちゃーすがや,rancher_sugaya,らんちゃーす�
 numbers_fighter_017,ローリングJr,,,jr,generated_candidate,candidate,No exact display_name match in fighters.csv.
 numbers_fighter_018,イスカン・アステ,fighter_82d519db98,イスカン・アステ,fighter_82d519db98,exact_display_name,high,
 numbers_fighter_019,かわかみ,kawakami,かわかみ,kawakami,exact_display_name,high,
-numbers_fighter_020,きくちぴあのせん,,,きくちぴあのせん,generated_candidate,candidate,No exact display_name match in fighters.csv.
+numbers_fighter_020,きくちぴあのせん,fighter_130ce1e900,きくちぴあのせん,fighter_130ce1e900,exact_display_name,high,
 numbers_fighter_021,キマイラ,fighter_a5b1c7ad26,キマイラ,fighter_a5b1c7ad26,exact_display_name,high,
 numbers_fighter_022,くわしお,kuwashio,くわしお,kuwashio,exact_display_name,high,
 numbers_fighter_023,さんごく,sangoku,さんごく,sangoku,exact_display_name,high,
@@ -30,7 +30,7 @@ numbers_fighter_028,バン・ベルソーザ,fighter_c6b52ed0b2,バン・ベル�
 numbers_fighter_029,バンドルフ・ガルブンタ,fighter_6cc24375aa,バンドルフ・ガルブンタ,fighter_6cc24375aa,exact_display_name,high,
 numbers_fighter_030,ビクトル・ナッカー,fighter_7c5cf999ac,ビクトル・ナッカー,fighter_7c5cf999ac,exact_display_name,high,
 numbers_fighter_031,ムラト・クツワ,fighter_ceabf5fde9,ムラト・クツワ,fighter_ceabf5fde9,exact_display_name,high,
-numbers_fighter_032,ヤック・タイアット,,,ヤック・タイアット,generated_candidate,candidate,No exact display_name match in fighters.csv.
+numbers_fighter_032,ヤック・タイアット,fighter_5fa6c40d05,ヤック・タイアット,fighter_5fa6c40d05,exact_display_name,high,
 numbers_fighter_033,ヨルセン・バクダリア,fighter_4315a5de6a,ヨルセン・バクダリア,fighter_4315a5de6a,exact_display_name,high,
 numbers_fighter_034,ランダーデビル,lander_devil,ランダーデビル,lander_devil,exact_display_name,high,
 numbers_fighter_035,レオナルド・フォードバック,fighter_675633087d,レオナルド・フォードバック,fighter_675633087d,exact_display_name,high,
@@ -63,7 +63,7 @@ numbers_fighter_061,ブルーワン,blue_one,ブルーワン,blue_one,exact_disp
 numbers_fighter_062,ブレイブ,,,ブレイブ,generated_candidate,candidate,No exact display_name match in fighters.csv.
 numbers_fighter_063,マルコ・フレイザー,marco_fraser,マルコ・フレイザー,marco_fraser,exact_display_name,high,
 numbers_fighter_064,ゆめろう,fighter_4d6356d021,ゆめろう,fighter_4d6356d021,exact_display_name,high,
-numbers_fighter_065,ループデビル,,,ループデビル,generated_candidate,candidate,No exact display_name match in fighters.csv.
+numbers_fighter_065,ループデビル,fighter_8e8b526dc1,ループデビル,fighter_8e8b526dc1,exact_display_name,high,
 numbers_fighter_066,ワンシー・オーフェル,fighter_4282deeb57,ワンシー・オーフェル,fighter_4282deeb57,exact_display_name,high,
 numbers_fighter_067,アリベル・アリベラ,aribel_aribera,アリベル・アリベラ,aribel_aribera,exact_display_name,high,
 numbers_fighter_068,アンディ・ザメス,fighter_d3f7158d8a,アンディ・ザメス,fighter_d3f7158d8a,exact_display_name,high,
@@ -82,7 +82,7 @@ numbers_fighter_080,ビル・ジャガー,fighter_d85580c276,ビル・ジャガ�
 numbers_fighter_081,ファン・ミール・セイバー,fighter_977f2fdd1d,ファン・ミール・セイバー,fighter_977f2fdd1d,exact_display_name,high,
 numbers_fighter_082,フランク・ダクタ,frank_dakuta,フランク・ダクタ,frank_dakuta,exact_display_name,high,
 numbers_fighter_083,ミハエル・ボタルニカ,fighter_e9d2feca82,ミハエル・ボタルニカ,fighter_e9d2feca82,exact_display_name,high,
-numbers_fighter_084,ラミーロ・コート,,,ラミーロ・コート,generated_candidate,candidate,No exact display_name match in fighters.csv.
+numbers_fighter_084,ラミーロ・コート,fighter_7e5c52a901,ラミーロ・コート,fighter_7e5c52a901,exact_display_name,high,
 numbers_fighter_085,わしかが,washikaga,わしかが,washikaga,exact_display_name,high,
 numbers_fighter_086,アミュー・エンド・ビラー,fighter_15a01339a6,アミュー・エンド・ビラー,fighter_15a01339a6,exact_display_name,high,
 numbers_fighter_087,イベルト・キューミ,fighter_020b361a38,イベルト・キューミ,fighter_020b361a38,exact_display_name,high,
