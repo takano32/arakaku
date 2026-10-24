@@ -68,6 +68,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.51 | 第6回MAXバウトミドル級GP 1回戦を公式ニュースから取り込む | 完了 | 2026-10-24 |
 | T.52 | 作業ルールを AGENTS.md に足す（次タスクへの自動着手、細かいコミット） | 完了 | 2026-10-24 |
 | T.53 | 公式ニュースの出場者紹介を時点情報（`fighter_snapshots.csv`）として取り込む | 完了 | 2026-10-24 |
+| T.54 | MAXバウトのスペシャルワンマッチ大会を Numbers の SP / SP2 と照合する | 進行中 | |
 
 ---
 
@@ -590,3 +591,14 @@ T.41 の作業中に見つけた。公式ニュース「第6回MAXバウトミ�
   - `article_links.csv` は作り直しても変わらない
 - [x] T.53.4 ビューアの「出典別プロフィール」に公式ニュースの題名と日付を出す（ea98ec1, 2026-10-24）
 - [x] T.53.5 README・SCHEMA_NOTES に `source_id` を書く（38d898d, 2026-10-24）
+
+## T.54 MAXバウトのスペシャルワンマッチ大会を Numbers の SP / SP2 と照合する
+
+- 状態: 進行中
+- 期間: 2026-10-24
+
+T.50 の残り。Numbers の個人成績はスペシャルワンマッチ大会の興行番号を `SP` / `SP2` と書くが、`events.csv` の `event_number` は整数列なので、`max-bout-special-1/2` と照合できない。ビューアの表示を数えると勝者が出ていない試合は 22 件で、そのうち 10 件がこの 2 大会（Numbers には 10 試合 20 行の記録がある）。
+
+- [ ] T.54.1 `events.csv` に Numbers の興行番号を書く列 `numbers_event_number` を足し、`max-bout-special-1` を `SP`、`max-bout-special-2` を `SP2` にする（空なら `event_number` で照合）
+- [ ] T.54.2 `build_json.py` で `events.json` に出す
+- [ ] T.54.3 ビューアの照合（`enrichBout`）と名鑑のみの大会の合成で、この列を使う
