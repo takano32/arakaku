@@ -20,7 +20,7 @@ Current canonical source tables:
 - `numbers_fighters.csv`: fighter profile rows extracted from `data-raw/アラカク選手名鑑.numbers`.
 - `numbers_name_matches.csv`: inferred links between Numbers fighter rows and canonical fighter IDs.
 - `numbers_fight_records.csv`: personal fight-record rows extracted from the Numbers "個人成績" sheet.
-- `fighter_snapshots.csv`: event/article-specific fighter profile facts.
+- `fighter_snapshots.csv`: event/article-specific fighter profile facts. `source_id` is `note:<article_id>` or `official_news:<slug>`.
 - `titles.csv`: title entities.
 - `title_reigns.csv`: title reign lineage rows. `end_reason` is empty or `vacated` (the champion gave up the title without losing it; `lost_at_event_id` must then be empty).
 - `articles.csv`: article/source metadata.
@@ -159,6 +159,7 @@ Important foreign keys:
 - `fighters.main_promotion_id -> promotions.promotion_id`
 - `fighter_snapshots.fighter_id -> fighters.fighter_id`
 - `fighter_snapshots.event_id -> events.event_id`
+- `fighter_snapshots.source_id -> articles.article_id (note:) / official_news.slug (official_news:)`
 - `title_reigns.title_id -> titles.title_id`
 - `title_reigns.fighter_id -> fighters.fighter_id`
 - `title_reigns.won_at_event_id/lost_at_event_id -> events.event_id`
