@@ -4,18 +4,18 @@
 .PHONY: build validate test check
 
 build:
-	python scripts/build_json.py
-	python scripts/build_numbers_json.py
-	python scripts/build_official_json.py
-	python scripts/build_official_pages_json.py
+	python3 scripts/build_json.py
+	python3 scripts/build_numbers_json.py
+	python3 scripts/build_official_json.py
+	python3 scripts/build_official_pages_json.py
 
 validate:
-	python scripts/validate_json.py
+	python3 scripts/validate_json.py
 	node scripts/validate_json.js
 	node scripts/test_filters.mjs
 
 test:
-	python -m pytest -q
+	python3 -m pytest -q
 
 check: build validate test
 
@@ -64,10 +64,10 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
         reorder-data
 
 cache-note-html:
-	python scripts/cache_note_html.py
+	python3 scripts/cache_note_html.py
 
 cache-youtube-info:
-	python scripts/cache_youtube_info.py
+	python3 scripts/cache_youtube_info.py
 
 download-official-data:
 	bash scripts/download_official_data.sh
@@ -75,21 +75,21 @@ download-official-data:
 cache-sources: cache-note-html cache-youtube-info download-official-data
 
 archive-metadata:
-	python scripts/archive_metadata.py
+	python3 scripts/archive_metadata.py
 
 build-sources:
-	python scripts/build_source_documents.py
+	python3 scripts/build_source_documents.py
 
 reorder-data:
-	python scripts/reorder_data.py
+	python3 scripts/reorder_data.py
 
 refresh-sources: cache-sources archive-metadata build-sources reorder-data check
 
 source-mention-result-candidates:
-	python scripts/make_source_mention_result_candidates.py
+	python3 scripts/make_source_mention_result_candidates.py
 
 source-reference-candidates:
-	python scripts/make_source_reference_candidates.py
+	python3 scripts/make_source_reference_candidates.py
 
 # ──────────────────────────────────────────────────────────────────
 # Numbers pipeline (requires data-raw/アラカク選手名鑑.numbers)
@@ -97,7 +97,7 @@ source-reference-candidates:
 .PHONY: extract-numbers
 
 extract-numbers:
-	python scripts/extract_numbers.py
+	python3 scripts/extract_numbers.py
 
 # ──────────────────────────────────────────────────────────────────
 # Reproducibility: regenerate all generated CSVs from local sources,
@@ -127,20 +127,20 @@ extract-numbers:
 .PHONY: generate-stage1 generate-stage2 regenerate-csvs rebuild rebuild-stage2
 
 generate-stage1:
-	python scripts/extract_numbers.py
-	python scripts/archive_metadata.py
-	python scripts/generate_articles.py
-	python scripts/build_source_documents.py
-	python scripts/generate_official_csvs.py
-	python scripts/reorder_data.py
+	python3 scripts/extract_numbers.py
+	python3 scripts/archive_metadata.py
+	python3 scripts/generate_articles.py
+	python3 scripts/build_source_documents.py
+	python3 scripts/generate_official_csvs.py
+	python3 scripts/reorder_data.py
 
 generate-stage2:
-	python scripts/generate_promotions.py
-	python scripts/generate_titles.py
-	python scripts/generate_aliases.py
-	python scripts/generate_video_links.py
-	python scripts/generate_article_links.py
-	python scripts/generate_official_pages_csv.py
+	python3 scripts/generate_promotions.py
+	python3 scripts/generate_titles.py
+	python3 scripts/generate_aliases.py
+	python3 scripts/generate_video_links.py
+	python3 scripts/generate_article_links.py
+	python3 scripts/generate_official_pages_csv.py
 
 regenerate-csvs: generate-stage1 generate-stage2
 
