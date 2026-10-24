@@ -86,7 +86,9 @@ def main() -> int:
             f"Structured result from {patch.get('source_article_id', '')} "
             f"lines {patch.get('source_line_start', '')}-{patch.get('source_line_end', '')}."
         )
-        bout["notes"] = f"{note} {source_note}".strip()
+        # 再実行しても同じ出典を二重に書かない
+        if source_note not in note:
+            bout["notes"] = f"{note} {source_note}".strip()
 
         # Update participant results using resolved participant names
         if winner and loser:
