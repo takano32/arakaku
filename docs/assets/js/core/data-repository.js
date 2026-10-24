@@ -312,12 +312,13 @@ export class DataRepository extends BaseRepository {
   /**
    * Numbers の個人成績にだけある大会と試合 (events.csv に「団体 + 興行番号」が無いもの) を合成する。
    * 選手の #discoverFighters と同じく CSV には足さず、表示用に重ねるだけ。合成行は numbers_only を持つ。
-   * 興行番号が数字でない記録 (MAXバウトの SP / SP2) は events.csv との対応が未整理なので除く。
+   * events.csv の大会とは「団体 + 興行番号」(numbers_event_number があればそれ) で照合する。
+   * 興行番号が数字でない記録で、どの大会とも対応しないものは除く。
    * 個人成績は 1 試合を両選手の側から 2 行持つので、選手の組で 1 試合にまとめる。
    */
   #numbersOnlyData() {
     if (this.#numbersOnly) return this.#numbersOnly;
-    const known = new Set(super.events.map(e => `${e.promotion_id}:${e.event_number}`));
+    const known = new Set(super.events.map(e => `${e.promotion_id}:${e.numbers_event_number || e.event_number}`));
     // 大会名は同じ団体の既存の「…No.N」大会名の番号を差し替えて作る
     const sampleNames = new Map();
     for (const e of super.events) {
