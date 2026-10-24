@@ -1,11 +1,27 @@
-snapshot_id,fighter_id,event_id,age,height,gym,record_text,main_promotion_id,titles_text,catchphrase
-waku-target-103-card,waku,target-103,28,177cm,日本MMAチーム,11勝3敗,target,現ターゲットライト級王者,
-tsukurihara-target-103-card,tsukurihara,target-103,26,174cm,バトン柔術,7勝2敗,target,挑戦者,
-otosawa-target-103-card,otosawa,target-103,35,183cm,ゴッサブジャパン,23勝16敗,target,,
-aurora-devil-target-103-card,aurora_devil,target-103,24,188cm,デビル軍,2勝0敗,target,,
-kintoki-target-103-card,kintoki,target-103,36,190cm,ターゲットプロジェクト,8勝10敗,target,,
-zamon-target-103-card,zamon,target-103,28,181cm,エキサイトクラス,2勝2敗,target,,
-kabei-target-103-card,kabei,target-103,30,188cm,チームジャパン,13勝5敗,target,,
-frank-dakuta-target-103-card,frank_dakuta,target-103,31,191cm,ビートダウン,メジャーデビュー戦,target,,
-aribel-aribera-target-103-card,aribel_aribera,target-103,29,178cm,チームハンマー,1勝2敗,target,,
-washikaga-target-103-card,washikaga,target-103,21,190cm,はっとり道場,1勝0敗,target,,
+snapshot_id,fighter_id,event_id,age,height,gym,record_text,main_promotion_id,titles_text,catchphrase,source_id
+waku-target-103-card,waku,target-103,28,177cm,日本MMAチーム,11勝3敗,target,現ターゲットライト級王者,,note:note-target-103-card
+tsukurihara-target-103-card,tsukurihara,target-103,26,174cm,バトン柔術,7勝2敗,target,挑戦者,,note:note-target-103-card
+otosawa-target-103-card,otosawa,target-103,35,183cm,ゴッサブジャパン,23勝16敗,target,,,note:note-target-103-card
+aurora-devil-target-103-card,aurora_devil,target-103,24,188cm,デビル軍,2勝0敗,target,,,note:note-target-103-card
+kintoki-target-103-card,kintoki,target-103,36,190cm,ターゲットプロジェクト,8勝10敗,target,,,note:note-target-103-card
+zamon-target-103-card,zamon,target-103,28,181cm,エキサイトクラス,2勝2敗,target,,,note:note-target-103-card
+kabei-target-103-card,kabei,target-103,30,188cm,チームジャパン,13勝5敗,target,,,note:note-target-103-card
+frank-dakuta-target-103-card,frank_dakuta,target-103,31,191cm,ビートダウン,メジャーデビュー戦,target,,,note:note-target-103-card
+aribel-aribera-target-103-card,aribel_aribera,target-103,29,178cm,チームハンマー,1勝2敗,target,,,note:note-target-103-card
+washikaga-target-103-card,washikaga,target-103,21,190cm,はっとり道場,1勝0敗,target,,,note:note-target-103-card
+misa_will_joe-max-bout-6-middleweight-gp-entry,misa_will_joe,max-bout-6-middleweight-gp,40,185cm,ミサイル・ジョー,14勝2敗,emperor,元キングプロレスヘビー級王者 / 現エンペラーミドル級王者 / 第4回MAXバウトミドル級GP優勝,ミスターキングプロレス,official_news:2026-07-maxbout-16players
+fighter_e15b590179-max-bout-6-middleweight-gp-entry,fighter_e15b590179,max-bout-6-middleweight-gp,36,188cm,RFチームクリスタル,13勝6敗,mh,元リアルファイトミドル級王者 / 現マウンテン・ヒーローズミドル級王者 / 第4回MAXバウトミドル級GP準優勝,ブリザード,official_news:2026-07-maxbout-16players
+tail_junk-max-bout-6-middleweight-gp-entry,tail_junk,max-bout-6-middleweight-gp,35,186cm,Sジム,28勝3敗,mh,元マウンテン・ヒーローズミドル級王者 / 第２回３回５回MAXバウトミドル級GP優勝,Unknown,official_news:2026-07-maxbout-16players
+rouged_starry-max-bout-6-middleweight-gp-entry,rouged_starry,max-bout-6-middleweight-gp,37,190cm,ゴッサブトップチーム,13勝3敗,emperor,元ターゲットミドル級王者,柔術ミステリー,official_news:2026-07-maxbout-16players
+kabei-max-bout-6-middleweight-gp-entry,kabei,max-bout-6-middleweight-gp,31,188cm,チームジャパン,14勝5敗,target,元ターゲットミドル級王者,覇王,official_news:2026-07-maxbout-16players
+fighter_cc477f9dcf-max-bout-6-middleweight-gp-entry,fighter_cc477f9dcf,max-bout-6-middleweight-gp,31,185cm,パーフェクトジム,4勝0敗,,元タイラントFCヘビー級王者,ブラックリスト,official_news:2026-07-maxbout-16players
+fighter_5d7998006d-max-bout-6-middleweight-gp-entry,fighter_5d7998006d,max-bout-6-middleweight-gp,36,190cm,ＫＢＭトップチーム,8勝3敗,emperor,元ワールドキックミドル級王者,ザ・ストライキングマシーン,official_news:2026-07-maxbout-16players
+rancher_sugaya-max-bout-6-middleweight-gp-entry,rancher_sugaya,max-bout-6-middleweight-gp,31,185cm,コミックファイト倶楽部,8勝3敗,mh,元コミックファイトミドル級王者 / 元ジャパンファイトミドル級王者,永遠のコミックファイター,official_news:2026-07-maxbout-16players
+fighter_169d4ecfe8-max-bout-6-middleweight-gp-entry,fighter_169d4ecfe8,max-bout-6-middleweight-gp,32,183cm,チームカーリン,3勝0敗,mh,元コールズヘビー級王者,破壊神,official_news:2026-07-maxbout-16players
+aurora_devil-max-bout-6-middleweight-gp-entry,aurora_devil,max-bout-6-middleweight-gp,25,188cm,デビル軍,3勝0敗,target,第一回エリートスピリッツミドル級GP優勝,NEXTデビル,official_news:2026-07-maxbout-16players
+fighter_392d495da8-max-bout-6-middleweight-gp-entry,fighter_392d495da8,max-bout-6-middleweight-gp,32,188cm,クードースポーツ,3勝3敗,mh,元アルバトロスミドル級王者,一撃十段,official_news:2026-07-maxbout-16players
+fighter_468bc73db5-max-bout-6-middleweight-gp-entry,fighter_468bc73db5,max-bout-6-middleweight-gp,28,186cm,ソニックスポーツ,3勝0敗,emperor,,ソニックブーム,official_news:2026-07-maxbout-16players
+fighter_3c507e2d6d-max-bout-6-middleweight-gp-entry,fighter_3c507e2d6d,max-bout-6-middleweight-gp,23,191cm,チームセイバー,3勝1敗,emperor,第一回エリートスピリッツミドル級GP準優勝,マジシャンズの化身,official_news:2026-07-maxbout-16players
+fighter_5f53eea569-max-bout-6-middleweight-gp-entry,fighter_5f53eea569,max-bout-6-middleweight-gp,28,184cm,チームオーシュー,3勝1敗,mh,,オーシューの猛獣,official_news:2026-07-maxbout-16players
+zamon-max-bout-6-middleweight-gp-entry,zamon,max-bout-6-middleweight-gp,29,181cm,エキサイトクラス,3勝2敗,target,,アルレッキーノ,official_news:2026-07-maxbout-16players
+otosawa-max-bout-6-middleweight-gp-entry,otosawa,max-bout-6-middleweight-gp,36,183cm,ゴッサブジャパン,24勝17敗,target,第３回MAXバウトミドル級GP準優勝,逆境柔術家,official_news:2026-07-maxbout-16players
