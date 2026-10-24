@@ -485,8 +485,8 @@ def validate_archive_data(youtube_archives: list[Any], note_archives: list[Any])
 
 def validate_official_players(players: list[Any]) -> None:
     # Built unconditionally by build_official_json.py; consumed by the 公式 tab,
-    # fighter-profile enrichment (data-enricher.js matches on `name`) and the
-    # data-repository discovery of official-only fighters.
+    # fighter-profile enrichment (docs/assets/js/data/enricher.js matches on `name`)
+    # and the data/repository.js discovery of official-only fighters.
     collect_ids(players, 'official_players.json', 'id')
     for i, x in enumerate(players):
         if not isinstance(x, dict):
@@ -494,7 +494,7 @@ def validate_official_players(players: list[Any]) -> None:
         require_field(x, 'official_players.json', i, 'name')
 
 def validate_official_tournaments(tournaments: list[Any]) -> None:
-    # data-enricher.js normalizes `id` to match events and renders `name`.
+    # data/enricher.js normalizes `id` to match events; ui/sections render `name`.
     collect_ids(tournaments, 'official_tournaments.json', 'id')
     for i, x in enumerate(tournaments):
         if not isinstance(x, dict):
@@ -502,11 +502,11 @@ def validate_official_tournaments(tournaments: list[Any]) -> None:
         require_field(x, 'official_tournaments.json', i, 'name')
 
 def validate_official_matches(matches: list[Any]) -> None:
-    # tab-renderers.js shows `id` in the detail disclosure; other fields are guarded.
+    # ui/sections/admin.js shows `id` in the detail disclosure; other fields are guarded.
     collect_ids(matches, 'official_matches.json', 'id')
 
 def validate_official_history(history: list[Any]) -> None:
-    # No id column (build_official_json.py); tab-renderers.js renders `title`.
+    # No id column (build_official_json.py); ui/sections/admin.js renders `title`.
     for i, x in enumerate(history):
         if not isinstance(x, dict):
             add_error(f"official_history.json[{i}]: expected object")
@@ -514,7 +514,7 @@ def validate_official_history(history: list[Any]) -> None:
         require_field(x, 'official_history.json', i, 'title')
 
 def validate_official_news(news: list[Any]) -> None:
-    # tab-renderers.js renders `title` and the slug is the primary key.
+    # ui/sections/official.js renders `title` and the slug is the primary key.
     collect_ids(news, 'official_news.json', 'slug')
     for i, x in enumerate(news):
         if not isinstance(x, dict):
@@ -522,7 +522,7 @@ def validate_official_news(news: list[Any]) -> None:
         require_field(x, 'official_news.json', i, 'title')
 
 def validate_official_pages(pages: list[Any]) -> None:
-    # tab-renderers.js renders `title` and injects `body_html` as raw HTML.
+    # ui/sections/official.js renders `title` and injects `body_html` as raw HTML.
     collect_ids(pages, 'official_pages.json', 'slug')
     for i, x in enumerate(pages):
         if not isinstance(x, dict):

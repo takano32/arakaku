@@ -14,8 +14,8 @@ Use this skill whenever the task touches:
 - `scripts/*.py`
 - `tests/*.py`
 - `docs/index.html`
-- `docs/assets/js/*.js`
-- `docs/assets/style.css`
+- `docs/assets/js/**/*.js`
+- `docs/assets/app.css`
 - `.github/workflows/*.yml`
 - `Makefile`
 
@@ -25,7 +25,7 @@ Use this skill whenever the task touches:
 
 1. Source CSVs — canonical data in `data-src/*.csv`
 2. Generated JSON — build scripts convert CSVs into `docs/data/*.json`
-3. GitHub Pages viewer — `docs/index.html`, `docs/assets/js/`, `docs/assets/style.css`
+3. GitHub Pages viewer — `docs/index.html`, `docs/assets/js/`, `docs/assets/app.css` (feature map: `docs/VIEWER_FEATURES.md`)
 
 Do not edit generated JSON directly.
 
@@ -76,7 +76,7 @@ Astro syntax stripped: Tailwind classes, frontmatter, JSX `.map()`, `{base}` int
 
 `scripts/build_official_pages_json.py` embeds images from `tmp/arakaku-site/public/` as Base64 data URIs.
 
-**Client-side enrichment only.** Never add official data to `scripts/build_json.py`. All enrichment lives in `docs/assets/js/core/data-enricher.js`.
+**Client-side enrichment only.** Never add official data to `scripts/build_json.py`. All enrichment lives in `docs/assets/js/data/enricher.js` (and the synthesis in `docs/assets/js/data/repository.js`).
 
 Fighter summary placeholder `"公式YouTube動画タイトルから抽出した選手。詳細未入力。"` is cleared in `enrichFighter` and replaced with Numbers catchphrase/notes when available.
 

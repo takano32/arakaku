@@ -209,7 +209,7 @@ The viewer's admin view (管理ビュー) includes three Numbers-specific tabs:
 名鑑記録 (numbersFightRecords) ← fight records + bout correspondence
 ```
 
-These tabs load from ENRICHMENT_DATA_KEYS (streamed in Phase 2 automatically).
+These tabs load from ENRICHMENT_DATA_KEYS (fetched in Phase 2 of `docs/assets/js/data/loader.js` automatically) and are rendered by `docs/assets/js/ui/sections/admin.js`.
 
 ## Viewer expectations
 

@@ -34,7 +34,7 @@ This runs `scripts/reorder_data.py`, which sorts the following files:
 
 ### 2. Client-Side Reversal
 
-The reversal of order happens in the browser via `docs/assets/js/core/data-repository.js`.
+The reversal of order happens in the browser via `docs/assets/js/data/repository.js`.
 
 - **Global Collections**: Getters like `events`, `richBouts`, `richVideos`, and `richArticles` should return the array in reversed order (`[...data].reverse()`).
 - **Logical Groupings**: Sub-collections that represent a sequence (e.g., `boutsForEvent`) should **NOT** be reversed; they should remain in ascending order (Bout 1 -> Main Event) for a coherent narrative.
@@ -45,13 +45,11 @@ The reversal of order happens in the browser via `docs/assets/js/core/data-repos
 - **Lazy Enriched Getters**: Use the `rich*` getters in `DataRepository` to provide the reversed, supplemented collections to the UI.
 - **Validation**: Always run `make check` after re-sorting to ensure that IDs and relationships remain intact and that the viewer's logic handles the reversed arrays correctly.
 
-## VirtualList and Reversed Arrays
+## RecordList and Reversed Arrays
 
-The viewer uses `VirtualList` with a cache of rendered DOM rows keyed by index. **`VirtualList.extendItems()` is NOT safe for reversed arrays.**
+The viewer renders lists with `RecordList` (`docs/assets/js/ui/list.js`), which keys rendered rows by `keyOf(item)` (the record ID), never by array index. When data arrives (`refresh(desc)`), it compares the key sequence of the rendered window with the new items: identical keys → only heads/bodies whose HTML changed are replaced; different keys → the window is rebuilt. Reversed or re-partitioned collections (`richBouts`, `richVideos`, `events`, `richArticles`, `richFighters` after `lowReliabilityLast`) are therefore safe: a record that moves to another index is re-rendered at its new position instead of showing stale DOM.
 
-Because each streaming batch appends to the underlying array before `.reverse()` is applied, every index 0..N-1 points to a different item after each new batch arrives. `extendItems` preserves cached rows by index without re-rendering them — stale DOM from the previous batch would be shown at those positions.
-
-**Rule:** Never call `extendItems` for `richBouts`, `richVideos`, `events`, `richArticles`, or any collection that is reversed or reordered after construction. `TabRendererRegistry` always uses `refreshItems` for non-tab-change updates precisely because of this invariant. If you add a new reversed getter, verify that no rendering path calls `extendItems` for it.
+**Rule:** rows must have stable, unique keys (`keyOf`). Never key a row by index, and never cache rendered HTML by index. `validate_json.js` asserts key uniqueness per section on the real data.
 
 ## Documenting Changes
 

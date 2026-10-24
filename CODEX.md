@@ -47,11 +47,10 @@ make clean-generated: DONE
 GitHub Pages viewer で以下を確認済みです。
 
 ```text
-試合 / 選手 / 大会 / 団体 / 王座 / 動画 / 出典本文 / 出典言及 / 関連出典候補 / 出典リンク横の詳細トグル
-archive 由来の動画・記事メタデータ補助表示
-仮想スクロール（@tanstack/virtual-core@3 CDN）
-SAX ストリーミング JSON パース（@streamparser/json CDN）
-Phase 1 インクリメンタル表示 → Phase 2 エンリッチメント更新
+公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画 / 出典本文 / 出典言及 / 名鑑・公式の管理セクション
+関連出典候補 / 本文・概要欄の折りたたみ / archive 由来の動画・記事メタデータ補助表示
+段階描画する一覧（docs/assets/js/ui/list.js、CDN 依存なし）
+ファイル単位の段階ロード（Phase 0 公式 → Phase 1 一覧データ → Phase 2 補完・出典候補 → タブ別遅延）
 ```
 
 ### 最初に渡すおすすめプロンプト
@@ -93,7 +92,7 @@ README.md、AGENTS.md、HANDOFF.md、TASKS.md、OPERATIONS_CHECKLIST.md を読�
 ### viewer を変更させる
 
 ```text
-docs/index.html、docs/assets/js/、docs/assets/style.css を対象に viewer を更新してください。
+docs/index.html、docs/assets/js/、docs/assets/app.css を対象に viewer を更新してください。
 AGENTS.md と .agents/skills/arakaku-viewer-ui/SKILL.md を必ず読んでください。
 変更後は make check と make clean-generated を実行してください。
 docs/data/*.json は編集・コミットしないでください。
@@ -192,13 +191,13 @@ Codex にタスクを依頼する前に要件を明確化するためのテン�
 ## 対象ファイル
 
 docs/assets/js/
-docs/assets/style.css
+docs/assets/app.css
 docs/index.html
 
 ## 変更してよいファイル
 
 docs/assets/js/
-docs/assets/style.css
+docs/assets/app.css
 
 ## 変更してはいけないファイル
 
@@ -331,31 +330,30 @@ pytest passed
 
 ### 6. viewer 変更の確認
 
-`docs/assets/js/` / `style.css` / `index.html` が変わった場合:
+`docs/assets/js/` / `app.css` / `index.html` が変わった場合:
 
-- タブが表示される
+- ナビのセクションが表示され、切り替わる（管理ビューも開ける）
 - 検索が動く
-- 試合 view が壊れていない
-- 選手クリックが動く
-- 大会クリックが動く
-- 出典本文 view が表示される
-- 出典言及 view が表示される
+- 試合セクションが壊れていない（行が開き、動画・出典候補・詳細が出る）
+- 選手クリックで選手セクションのその 1 件が開く
+- 大会クリックで大会セクションのその 1 件が開く
+- 出典本文セクションが表示される（本文は遅延ロード）
+- 出典言及セクションが表示される（種別セレクトが効く）
 - 関連出典候補が候補として表示され、確定情報のように見えない
-- note本文リンク、出典候補リンク、動画リンクの `▶ 詳細` / `▼ 詳細` が開閉する
+- note 記事リンク・出典候補リンク・動画の「本文を表示」「概要欄を表示」が開閉する
 - archive 由来の動画タイトル・投稿者・投稿日が補助表示として使われる
 - archive 由来の note title が記事リンクの補助表示として使われる
 - archive 由来の文字列が検索対象に入っている
-- Console に viewer JS 由来のエラーがない
+- Console に viewer JS 由来のエラーがない（favicon 404 も含めて 0 件）
 
-仮想スクロール・ストリーミング固有:
+段階ロード・一覧固有:
 
-- データがインクリメンタルに表示される（一気に表示されるのではなく段階的に増える）
-- Phase 2 エンリッチメント後にスクロール位置がリセットされない
+- 公式セクションが先に出て、他のデータが届くたびに件数が増える
+- Phase 2 エンリッチメント後にスクロール位置がリセットされず、開いていた行が閉じない
 - 検索クリア後（アイテム数が増加するフィルタ変更後）に古い内容が残らない
-- `TabRenderers` のメソッドが `{ items, renderItem, estimateSize? }` descriptor を返している（HTML文字列ではない）
-- `TabRendererRegistry` で `extendItems` を呼んでいない（常に `setItems` か `refreshItems` のみ）
-- `.virtual-list` に `position: relative` が当たっている
-- `node scripts/validate_json.js` が通る（`CORE_DATA_KEYS` 全件が `loadedDataKeys` に入っている）
+- `ui/sections/*.js` の `build()` が `{ items, keyOf, renderHead, renderBody }` を返している（HTML 文字列ではない）
+- `node scripts/validate_json.js` が通る（`CORE_DATA_KEYS` 全件が `loadedDataKeys` に入り、全セクションの全行が Node で描画できる）
+- スマートフォン幅（390px）で横スクロールが出ない
 
 ### 7. Actions 変更の確認
 

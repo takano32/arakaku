@@ -243,18 +243,15 @@ The frontend loads the smaller per-view JSON files; consumers who need the full 
 
 The viewer remains a static GitHub Pages app under `docs/`.
 
-Current structure:
+Current structure (rebuilt in T.56; no CDN or framework dependency):
 
-- `docs/index.html`
-- `docs/assets/js/config.js`
-- `docs/assets/js/data-loader.js`
-- `docs/assets/js/core/`
-- `docs/assets/js/services/`
-- `docs/assets/js/tabs/`
-- `docs/assets/js/ui/`
-- `docs/assets/style.css`
+- `docs/index.html`, `docs/assets/app.css`, `docs/sw.js`
+- `docs/assets/js/main.js`, `docs/assets/js/config.js` (`DATA_FILES`, tabs, load phases)
+- `docs/assets/js/app/state.js` (UI state + URL query sync)
+- `docs/assets/js/data/` (parser, loader, repository, enricher, reliability, query, filters, labels — the data rules)
+- `docs/assets/js/ui/` (shell, list, parts, keyboard, html, markdown, `sections/*.js` per tab)
 
-`config.js` now includes the normalized JSON files. Existing tabs continue to render derived per-view data so the UI remains stable while the source model improves.
+`config.js` lists every generated JSON file. The data layer under `docs/assets/js/data/` is the only place that interprets JSON shapes; `ui/sections/*.js` render the derived per-view records. `docs/VIEWER_FEATURES.md` maps each viewer feature to its module.
 
 ## 10. Recommended Implementation Order
 

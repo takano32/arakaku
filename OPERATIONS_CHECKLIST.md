@@ -184,14 +184,13 @@ push 後に確認:
 
 ```text
 docs/index.html
-docs/assets/js/config.js
+docs/assets/app.css
 docs/assets/js/main.js
-docs/assets/js/data-loader.js
-docs/assets/js/core/
-docs/assets/js/services/
-docs/assets/js/tabs/
+docs/assets/js/config.js
+docs/assets/js/app/
+docs/assets/js/data/
 docs/assets/js/ui/
-docs/assets/style.css
+docs/sw.js
 ```
 
 確認項目:
@@ -211,26 +210,27 @@ docs/assets/style.css
 - archive 由来の文言で検索できる
 - Console に viewer JS 由来のエラーがない
 
-仮想スクロール・ストリーミング固有の確認:
+段階ロード・一覧固有の確認:
 
-- データがインクリメンタルに増えていく（ストリーミング）
-- スクロールが滑らか
-- Phase 2 エンリッチメント後にスクロール位置がリセットされない
-- 検索クリア後に古いカードが残らない
-- `TabRenderers` のメソッドが descriptor `{ items, renderItem, estimateSize? }` を返している
+- 公式セクションが先に出て、他のセクションのデータが届くたびに件数が増える（ファイル単位の段階ロード）
+- 一覧は最初の 30 行だけ描画され、スクロールすると続きが足される（「さらに表示」ボタンでも可）
+- Phase 2 エンリッチメント後にスクロール位置がリセットされず、開いていた行が閉じない
+- 検索クリア後に古い行が残らない
+- `ui/sections/*.js` の `build()` が `{ items, keyOf, renderHead, renderBody }` を返している
 - `config.js` の `PRIMARY_DATA_KEYS` / `ENRICHMENT_DATA_KEYS` に追加したキーが入っている
-- `validate_json.js` が通る（`node scripts/validate_json.js`）
+- `validate_json.js` が通る（`node scripts/validate_json.js`。全セクションの全行を Node で描画する）
+- スマートフォン幅で横スクロールが出ない
 
 新しいデータキーを追加したとき:
 
 - `config.js` の `DATA_FILES` にパスを追加する
-- ロードタイミングに応じて、次の4つのいずれかにキーを分類する:
-  - `config.js` の `PRIMARY_DATA_KEYS`: 表示に直結し、初期ロードで Phase 1 ストリーミングするもの
-  - `config.js` の `ENRICHMENT_DATA_KEYS`: Phase 1 の後にバックグラウンドでエンリッチに使うもの
-  - `data-loader.js` の `PUBLIC_REFERENCE_DATA_KEYS`: 出典参照候補など、エンリッチメント後に並列ストリームする公開参照
-  - `data-loader.js` の `TAB_DATA_KEYS`: 特定タブを開いたときだけ遅延ロードするもの（例: `sourceDocumentBodies`）
-- `data-parser.js` の `fallbackForDataKey` に追加する（配列なら `[]`、オブジェクトなら `{}`）
-- `CORE_DATA_KEYS` は `PRIMARY_DATA_KEYS` + `ENRICHMENT_DATA_KEYS` の合成。`PRIMARY` / `ENRICHMENT` に入れたキーは `validate_json.js` の `CORE_DATA_KEYS` チェック対象になるので、これが通ることを確認する。`PUBLIC_REFERENCE_DATA_KEYS` / `TAB_DATA_KEYS` のみのキーは `CORE_DATA_KEYS` に含まれない点に注意する。
+- ロードタイミングに応じて、次の4つのいずれかにキーを分類する（すべて `config.js`）:
+  - `PRIMARY_DATA_KEYS`: 公開セクションの一覧に直結し、初期ロードの Phase 1 で並列取得するもの
+  - `ENRICHMENT_DATA_KEYS`: Phase 1 の後に補完に使うもの
+  - `PUBLIC_REFERENCE_DATA_KEYS`: 出典参照候補など、Phase 2 で補完と同じ並列プールで取得する公開参照
+  - `TAB_DATA_KEYS`: 特定タブを開いたときだけ遅延ロードするもの（例: `sourceDocumentBodies`）。描画に必須なら `REQUIRED_TAB_DATA_KEYS` にも入れる
+- `data/parser.js` の `fallbackForDataKey` に追加する（配列なら `[]`、オブジェクトなら `{}`）
+- `CORE_DATA_KEYS` は `INITIAL_TAB_DATA_KEYS` + `PRIMARY_DATA_KEYS` + `ENRICHMENT_DATA_KEYS` の合成。ここに入れたキーは `validate_json.js` の `CORE_DATA_KEYS` チェック対象になるので、これが通ることを確認する。`PUBLIC_REFERENCE_DATA_KEYS` / `TAB_DATA_KEYS` のみのキーは `CORE_DATA_KEYS` に含まれない点に注意する。
 
 コマンド:
 
@@ -340,7 +340,7 @@ ls tmp/youtube-api/*.json | head
 
 ### source_documents.json と本文の分離
 
-本文（`content_text`）は分離済みです。`build_json.py` は `source_documents.json`（preview + メタデータの軽量インデックス）と `source_document_bodies.json`（`{source_id, content_text}` の本文本体）を別々に生成します。本文は `data-loader.js` の `TAB_DATA_KEYS`（`tsushin` / `sources` タブ）で必要時に遅延ロードされるため、初期ロードには全文を載せません（`mentions` タブは `sourceDocuments` / `sourceMentions` を遅延ロード）。
+本文（`content_text`）は分離済みです。`build_json.py` は `source_documents.json`（preview + メタデータの軽量インデックス）と `source_document_bodies.json`（`{source_id, content_text}` の本文本体）を別々に生成します。本文は `config.js` の `TAB_DATA_KEYS`（`tsushin` / `sources` タブ）で必要時に遅延ロードされるため、初期ロードには全文を載せません（`mentions` タブは `sourceDocuments` / `sourceMentions` を遅延ロード）。
 
 ### make check が build_json.py で落ちる
 

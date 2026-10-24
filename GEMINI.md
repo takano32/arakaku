@@ -72,11 +72,11 @@ Numbers-derived fight records are comparison data. Do not directly promote them 
 1. `make download-official-data` (Fetches `src/` tree from kobayashi856/arakaku-site into `tmp/arakaku-site/`)
 2. `python scripts/generate_official_csvs.py` (runs `generate_official_csvs.py` → `data-src/official_*.csv`)
 3. `make build` (runs `build_official_json.py` → `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, `official_history.json`; `build_official_pages_json.py` → `official_news.json`, `official_pages.json`)
-4. Enrichment happens automatically client-side in `data-enricher.js` — do NOT add official data to `build_json.py`.
+4. Enrichment happens automatically client-side in `docs/assets/js/data/enricher.js` — do NOT add official data to `build_json.py`.
 
 ### Viewer Development
-1. Modify `docs/index.html`, `docs/assets/*.js`, or `docs/assets/style.css`.
+1. Modify `docs/index.html`, `docs/assets/js/**/*.js`, or `docs/assets/app.css`.
 2. Run `make check`.
 3. Verify changes locally if possible, or push to `master` and check GitHub Pages.
 
-Current viewer features include URL permalink sync (`url-sync.js`), keyboard navigation (`keyboard-nav.js`), virtual list cursor, and search clear button.
+Current viewer features include URL permalink sync (`app/state.js`), keyboard navigation (`ui/keyboard.js`), a progressively rendered list with a row cursor (`ui/list.js`), per-tab filters (`data/filters.js`), light/dark theming, and a search clear button. The feature map is `docs/VIEWER_FEATURES.md`.
