@@ -69,6 +69,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.52 | 作業ルールを AGENTS.md に足す（次タスクへの自動着手、細かいコミット） | 完了 | 2026-10-24 |
 | T.53 | 公式ニュースの出場者紹介を時点情報（`fighter_snapshots.csv`）として取り込む | 完了 | 2026-10-24 |
 | T.54 | MAXバウトのスペシャルワンマッチ大会を Numbers の SP / SP2 と照合する | 完了 | 2026-10-24 |
+| T.55 | 出典言及の結果判定で英単語の一部を KO などと誤検出しない | 進行中 | |
 
 ---
 
@@ -607,3 +608,12 @@ T.50 の残り。Numbers の個人成績はスペシャルワンマッチ大会�
   - 残りの 12 件: エリートスピリッツミドル級GP 7、ターゲットNo.87・No.14 各 1、第6回ライト級トーナメント 1、動画カタログ 2。どれも note・Numbers に結果が無い
 - [x] T.54.4 README・SCHEMA_NOTES に `numbers_event_number` を書く（d77c187, 2026-10-24）
 - 見つけた Numbers 側の不審な記録: 名鑑のみの試合 `numbers-emperor-105-2`（エンペラーNo.105）も両者とも勝ちになっている
+
+## T.55 出典言及の結果判定で英単語の一部を KO などと誤検出しない
+
+- 状態: 進行中
+- 期間: 2026-10-24
+
+T.45.2 で記録した誤検出。`build_source_documents.py` の `RESULT_RE` が `KO` を単語の区切りなしで探すため、note のプロフィール欄の `kobayashi856.github.io/arakaku-site/` が `result` の言及として拾われる（`source_mentions.csv` と `review/source_mention_result_candidates.csv` に 1 件ずつ）。
+
+- [ ] T.55.1 `KO` / `TKO` / `NC` / `DQ` は前後が英字でないときだけ一致させ、作り直して誤検出だけが消えることを確かめる
