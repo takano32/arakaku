@@ -69,8 +69,9 @@ MENTION_FIELDS = [
 ]
 
 
+# 英字の略語は英単語の一部 (例: URL の kobayashi) に一致させない
 RESULT_RE = re.compile(
-    r"(KO|TKO|一本|判定|ドロー|ノーコンテスト|NC|失格|DQ|勝利|勝ち|敗北|防衛|王座|タイトル)",
+    r"((?<![A-Za-z])(?:KO|TKO|RNC|NC|DQ)(?![A-Za-z])|一本|判定|ドロー|ノーコンテスト|失格|勝利|勝ち|敗北|防衛|王座|タイトル)",
     re.IGNORECASE,
 )
 EVENT_RE = re.compile(
