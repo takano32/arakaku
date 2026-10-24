@@ -70,6 +70,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.53](tasks/T.53.md) | 公式ニュースの出場者紹介を時点情報（`fighter_snapshots.csv`）として取り込む | 完了 | 2026-10-24 |
 | [T.54](tasks/T.54.md) | MAXバウトのスペシャルワンマッチ大会を Numbers の SP / SP2 と照合する | 完了 | 2026-10-24 |
 | [T.55](tasks/T.55.md) | 出典言及の結果判定で英単語の一部を KO などと誤検出しない | 完了 | 2026-10-24 |
+| T.56 | ビューアを今の見た目にとらわれずに作り直す（機能は残す） | 進行中 | |
 
 ---
 
@@ -86,3 +87,14 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 - `config.js` の `PUBLIC_TABS` で `["official", "公式"]` を `["officialPages", "公式ページ"]` と `["officialNews", "公式ニュース"]` に分ける
 - `TAB_DATA_KEYS` も同様に分ける
 - `tab-registry.js` と `tab-renderers.js` で descriptor を分ける
+
+## T.56 ビューアを今の見た目にとらわれずに作り直す（機能は残す）
+
+- 状態: 進行中
+- 期間: 2026-10-24
+
+2026-10-24 にユーザーが依頼:「既存ビューのことを忘れつつ、機能を活かしてリビルドしてほしい」。作業は Fable（effort max）のエージェントに worktree で任せ、結果を確かめてから master に取り込む。
+
+- [ ] T.56.1 今のビューアの機能を洗い出す
+- [ ] T.56.2 新しいビューアを作る
+- [ ] T.56.3 検証（`make check`・ブラウザの Console・機能の一覧との突き合わせ）して master に取り込む
