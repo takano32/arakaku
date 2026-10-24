@@ -50,6 +50,7 @@ export class DataRepository extends BaseRepository {
     this.#richSourceMentions = null;
     this.#sourceDocLookup = null;
     this.#numbersOnly = null;
+    this.#memo = new Map();
   }
 
   #richEvents;
@@ -64,6 +65,7 @@ export class DataRepository extends BaseRepository {
   #richSourceMentions;
   #sourceDocLookup;
   #numbersOnly;
+  #memo;
 
   /**
    * this.data の中身が更新された後に全キャッシュを破棄する。
@@ -84,6 +86,7 @@ export class DataRepository extends BaseRepository {
     this.#richSourceMentions = null;
     this.#sourceDocLookup = null;
     this.#numbersOnly = null;
+    this.#memo.clear();
     this.indexes.clear();
     this.enricher.reset();
   }
@@ -508,16 +511,25 @@ export class DataRepository extends BaseRepository {
     };
   }
 
+  // 同じ引数の結果を invalidate() まで使い回す (検索のキー入力ごとの再フィルタ・再ソートを避ける)
+  #memoized(key, compute) {
+    if (!this.#memo.has(key)) this.#memo.set(key, compute());
+    return this.#memo.get(key);
+  }
+
   fighterSnapshotsForFighter(fighterId) {
-    const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
-    return this.fighterSnapshots
-      .filter(s => ids.has(s.fighter_id))
-      .sort((a, b) => String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
+    return this.#memoized(`fighterSnapshots:${fighterId}`, () => {
+      const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
+      return this.fighterSnapshots
+        .filter(s => ids.has(s.fighter_id))
+        .sort((a, b) => String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
+    });
   }
 
   eventsForPromotion(promotionId) {
-    return [...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]
-      .sort((a, b) => String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja"));
+    return this.#memoized(`eventsForPromotion:${promotionId}`, () =>
+      [...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]
+        .sort((a, b) => String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja")));
   }
 
   titlesForPromotion(promotionId) { return this.richTitles.filter(t => t.promotion_id === promotionId); }
@@ -545,8 +557,10 @@ export class DataRepository extends BaseRepository {
 
   relatedBoutsForFighter(fighterId) {
     if (!fighterId) return [];
-    const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
-    return this.richBouts.filter(b => (b.fighters ?? []).some(f => ids.has(f.fighter_id)));
+    return this.#memoized(`relatedBouts:${fighterId}`, () => {
+      const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
+      return this.richBouts.filter(b => (b.fighters ?? []).some(f => ids.has(f.fighter_id)));
+    });
   }
 
   boutsForEvent(eventId) {
