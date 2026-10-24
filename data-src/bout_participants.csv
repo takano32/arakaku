@@ -110,7 +110,7 @@ emperor-120-dxknai8nu0k-blue,emperor-120-dxknai8nu0k,blue,fighter_b9115f2d71,チ
 mh-39-zvs_zboqwzm-red,mh-39-zvs_zboqwzm,red,fighter_23a078dc11,トルー・パルドレス,,unknown
 mh-39-zvs_zboqwzm-blue,mh-39-zvs_zboqwzm,blue,fighter_8d86ebfe6f,ヘル・ラッサー,,unknown
 emperor-120-wgbrpkw3_u-red,emperor-120-wgbrpkw3_u,red,fighter_30b7a4a468,ステシエン・チェット,,unknown
-emperor-120-wgbrpkw3_u-blue,emperor-120-wgbrpkw3_u,blue,fighter_8e8b526dc1,ルーペデビル,,unknown
+emperor-120-wgbrpkw3_u-blue,emperor-120-wgbrpkw3_u,blue,fighter_8e8b526dc1,ループデビル,,unknown
 target-102-rqenv8yfeci-red,target-102-rqenv8yfeci,red,fighter_31e0efe5d2,シガー・ユーナイム,,unknown
 target-102-rqenv8yfeci-blue,target-102-rqenv8yfeci,blue,zamon,ザモン,,unknown
 target-102-48v5jmjeu1e-red,target-102-48v5jmjeu1e,red,fighter_a850bd04f1,サム・ラッシュ,,loss
@@ -122,7 +122,7 @@ emperor-119-wae2pl4rfdw-blue,emperor-119-wae2pl4rfdw,blue,rouged_starry,ルー�
 emperor-120-gencjoexft8-red,emperor-120-gencjoexft8,red,fighter_3c507e2d6d,エス・ガリオン,,win
 emperor-120-gencjoexft8-blue,emperor-120-gencjoexft8,blue,fighter_1eccfcf027,ロン,,loss
 mh-40-bujuelt6hfo-red,mh-40-bujuelt6hfo,red,rolling_jr,ローリングジュニア,,loss
-mh-40-bujuelt6hfo-blue,mh-40-bujuelt6hfo,blue,fighter_0f7f08df67,トゥワックデビル,,win
+mh-40-bujuelt6hfo-blue,mh-40-bujuelt6hfo,blue,fighter_0f7f08df67,トワックデビル,,win
 mh-38-3jbgtu_pkeu-red,mh-38-3jbgtu_pkeu,red,rolling_jr,ローリングジュニア,,unknown
 mh-38-3jbgtu_pkeu-blue,mh-38-3jbgtu_pkeu,blue,python_hayashi,ぱいそんはやし,,unknown
 mh-38-htdjihj6z_q-red,mh-38-htdjihj6z_q,red,fighter_169d4ecfe8,ラドフ,,unknown
@@ -148,7 +148,7 @@ target-101-np5jzwchxi0-blue,target-101-np5jzwchxi0,blue,aurora_devil,オーロ�
 target-101-0nt8ufrwimc-red,target-101-0nt8ufrwimc,red,kabuto,かぶと,,unknown
 target-101-0nt8ufrwimc-blue,target-101-0nt8ufrwimc,blue,fighter_020b361a38,イベルト・キューミ,,unknown
 target-101-ttl61cvhxrw-red,target-101-ttl61cvhxrw,red,kabei,かべい,,unknown
-target-101-ttl61cvhxrw-blue,target-101-ttl61cvhxrw,blue,fighter_7e5c52a901,ラミロ・コーテ,,unknown
+target-101-ttl61cvhxrw-blue,target-101-ttl61cvhxrw,blue,fighter_7e5c52a901,ラミーロ・コート,,unknown
 mh-39-zetalrxjn68-red,mh-39-zetalrxjn68,red,fighter_d9983ebeb3,クロノ・マリーケン,,unknown
 mh-39-zetalrxjn68-blue,mh-39-zetalrxjn68,blue,fighter_392d495da8,ライン・デュオ,,unknown
 emperor-119-lieo6s_renc-red,emperor-119-lieo6s_renc,red,fighter_e590e4eb0f,アトゥリうえはら,,loss
@@ -521,7 +521,7 @@ elite-spirits-middleweight-gp-1gjvqnjwjo4-red,elite-spirits-middleweight-gp-1gjv
 elite-spirits-middleweight-gp-1gjvqnjwjo4-blue,elite-spirits-middleweight-gp-1gjvqnjwjo4,blue,fighter_41a3b1ba33,ジャニマード・トスパチ,,unknown
 elite-spirits-middleweight-gp-mtwfjz88t8q-red,elite-spirits-middleweight-gp-mtwfjz88t8q,red,aurora_devil,オーロラデビル,,unknown
 elite-spirits-middleweight-gp-mtwfjz88t8q-blue,elite-spirits-middleweight-gp-mtwfjz88t8q,blue,python_hayashi,ぱいそんはやし,,unknown
-elite-spirits-middleweight-gp-youvqzjbhty-red,elite-spirits-middleweight-gp-youvqzjbhty,red,fighter_c98552cdc9,Ｂ オーロラデビル,,unknown
+elite-spirits-middleweight-gp-youvqzjbhty-red,elite-spirits-middleweight-gp-youvqzjbhty,red,aurora_devil,オーロラデビル,,unknown
 elite-spirits-middleweight-gp-youvqzjbhty-blue,elite-spirits-middleweight-gp-youvqzjbhty,blue,fighter_3c507e2d6d,エス・ガリオン,,unknown
 elite-spirits-middleweight-gp-0f7ci7mo380-red,elite-spirits-middleweight-gp-0f7ci7mo380,red,fighter_41a3b1ba33,ジャニマード・トスパチ,,unknown
 elite-spirits-middleweight-gp-0f7ci7mo380-blue,elite-spirits-middleweight-gp-0f7ci7mo380,blue,kodama,こだま,,unknown
@@ -531,9 +531,9 @@ elite-spirits-middleweight-gp-n20_g5cynje-red,elite-spirits-middleweight-gp-n20_
 elite-spirits-middleweight-gp-n20_g5cynje-blue,elite-spirits-middleweight-gp-n20_g5cynje,blue,aurora_devil,オーロラデビル,,unknown
 elite-spirits-middleweight-gp-tg_jild1vk0-red,elite-spirits-middleweight-gp-tg_jild1vk0,red,kazeno,かぜの,,unknown
 elite-spirits-middleweight-gp-tg_jild1vk0-blue,elite-spirits-middleweight-gp-tg_jild1vk0,blue,fighter_3c507e2d6d,エス・ガリオン,,unknown
-mh-37-e8wdonlgqdm-red,mh-37-e8wdonlgqdm,red,fighter_5fa6c40d05,ヤック・ティアット,,unknown
-mh-37-e8wdonlgqdm-blue,mh-37-e8wdonlgqdm,blue,fighter_130ce1e900,キクチ・ピアノセン,,unknown
-mh-37-wb89rr2aolc-red,mh-37-wb89rr2aolc,red,fighter_0f7f08df67,トゥワックデビル,,unknown
+mh-37-e8wdonlgqdm-red,mh-37-e8wdonlgqdm,red,fighter_5fa6c40d05,ヤック・タイアット,,unknown
+mh-37-e8wdonlgqdm-blue,mh-37-e8wdonlgqdm,blue,fighter_130ce1e900,きくちぴあのせん,,unknown
+mh-37-wb89rr2aolc-red,mh-37-wb89rr2aolc,red,fighter_0f7f08df67,トワックデビル,,unknown
 mh-37-wb89rr2aolc-blue,mh-37-wb89rr2aolc,blue,fighter_169d4ecfe8,ラドフ,,unknown
 mh-37-ja9gvq_3_w0-red,mh-37-ja9gvq_3_w0,red,rancher_sugaya,らんちゃーすがや,,win
 mh-37-ja9gvq_3_w0-blue,mh-37-ja9gvq_3_w0,blue,fighter_392d495da8,ライン・デュオ,,loss
