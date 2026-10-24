@@ -202,6 +202,7 @@ def build_events() -> list[dict[str, Any]]:
             "name": "name",
             "promotion_id": "promotion_id",
             "event_number": int_field("event_number"),
+            "numbers_event_number": "numbers_event_number",
             "event_type": "event_type",
             "event_date": "event_date",
             "published_at": "published_at",
