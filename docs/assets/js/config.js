@@ -67,6 +67,9 @@ export const ADMIN_TABS = [
 export const DEFAULT_TAB = "official";
 export const DEFAULT_ADMIN_TAB = "sources";
 
+// 団体公式サイトの URL。公式ページ本文 (body_html) の「/」始まりのリンク・画像はこのサイトを基準にする。
+export const OFFICIAL_SITE_URL = "https://kobayashi856.github.io/arakaku-site/";
+
 export const ADMIN_TAB_IDS = new Set(ADMIN_TABS.map(([id]) => id));
 
 // 「出典言及」の種別セレクトの並び順。

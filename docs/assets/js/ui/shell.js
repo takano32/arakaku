@@ -180,7 +180,7 @@ export class Shell {
     const iframe = document.createElement("iframe");
     iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
     iframe.title = el.querySelector(".yt-play")?.getAttribute("aria-label") ?? "YouTube";
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
     iframe.allowFullscreen = true;
     el.replaceChildren(iframe);
     el.classList.add("is-active");

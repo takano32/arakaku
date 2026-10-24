@@ -1,5 +1,21 @@
+import { OFFICIAL_SITE_URL } from "../../config.js";
 import { escapeHtml, joinPresent } from "../html.js";
 import { mdToHtml } from "../markdown.js";
+
+/**
+ * 公式サイトから取り込んだ本文 HTML (body_html) を、このビューアで表示できる形に整える。
+ * - 「/」始まりの画像・リンクは公式サイト (Astro の base 配下) を基準に絶対 URL にする。
+ *   そのままだと GitHub Pages 上で 404 になる (例: /logos/logo_target.jpeg)。
+ * - リンクは別タブで開く。
+ * - iframe の allow に含まれる web-share はブラウザが未対応の警告を出すので外す。
+ * 文面そのものは変えない。
+ */
+export function officialBodyHtml(html) {
+  return (html ?? "")
+    .replace(/\b(src|href)="\/(?!\/)([^"]*)"/g, (_, attr, path) => `${attr}="${OFFICIAL_SITE_URL}${path}"`)
+    .replace(/<a\b(?![^>]*\btarget=)/g, '<a target="_blank" rel="noopener noreferrer"')
+    .replace(/;?\s*web-share/g, "");
+}
 
 /**
  * 公式タブ: 公式サイトの固定ページ (about / history) とニュース。
@@ -36,7 +52,7 @@ export const officialSection = {
            </div>
            <div class="rec-aside">${parts.badge("公式ニュース", "official")}</div>`,
       renderBody: (item) => item._kind === "page"
-        ? `<div class="official-doc">${item.body_html}</div>`
+        ? `<div class="official-doc">${officialBodyHtml(item.body_html)}</div>`
         : `<div class="official-doc md">${mdToHtml(item.body_md ?? "")}</div>`,
     };
   },
