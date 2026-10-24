@@ -1,42 +1,19 @@
-import { AppState } from "./core/app-state.js";
-import { ViewContext } from "./core/view-context.js";
-import { readFromURL, writeToURL } from "./core/url-sync.js";
-import { ComponentFactory } from "./ui/component-builder.js";
-import { Navigator } from "./ui/navigation.js";
-import { SourceRenderers } from "./services/source-renderers.js";
-import { RelatedRenderers } from "./services/related-renderers.js";
-import { TabRenderers } from "./tabs/tab-renderers.js";
-import { TabRendererRegistry } from "./tabs/tab-registry.js";
-import { ViewController } from "./view-controller.js";
-import { DataLoader } from "./data-loader.js";
-import { EventController, renderLoadError } from "./event-controller.js";
-import { KeyboardNav } from "./ui/keyboard-nav.js";
+import { Store, readFromURL, writeToURL } from "./app/state.js";
+import { DataLoader } from "./data/loader.js";
+import { QueryMatcher } from "./data/query.js";
+import { Parts } from "./ui/parts.js";
+import { Shell } from "./ui/shell.js";
+import { KeyboardNav } from "./ui/keyboard.js";
+import { escapeHtml } from "./ui/html.js";
 
 /**
- * 役割: viewer の composition root / ブラウザ実行のエントリポイント。
- *   AppState を起点に全サービス (Navigator/各 Renderer/ViewController/DataLoader/
- *   EventController/KeyboardNav) を生成・結線し、URL 復元 → イベント束ね →
- *   データロード → Service Worker 登録までの起動シーケンスを 1 回実行する。
- * アーキ上の位置: docs/index.html から module として読み込まれる末端 (誰も import しない)。
- *   状態は AppState シングルトン、描画契約は EventController.bind() が登録する
- *   state.subscribe → ViewController.render (ここ main.js では writeToURL の購読のみ登録)、
- *   データ取得は DataLoader。生成順 = 依存順なので結線ブロックの並び替えは要注意。
- * 不変条件:
- *   - 副作用は import 時に即実行される (関数で包まれていない)。テストから import しない想定。
- *   - URL からの初期状態復元は state.subscribe(writeToURL) の登録より前に行うこと
- *     (復元中の patch を URL へ書き戻してループ/上書きしないため)。
- *   - DOM 要素 (#search 等) と index.html の id は同期が必要。
- * 関連スキル: .agents/skills/arakaku-viewer-ui
+ * ビューアの起動シーケンス (docs/index.html から module として読み込まれる)。
+ *   URL から状態を復元 → UI を配線 → データを段階的に読み込む → Service Worker を登録。
+ * 致命的な失敗 (load() 自体の reject) だけをここで表示する。個別ファイルの失敗は
+ * DataLoader が吸収し、Shell が「データ読み込み失敗」として一覧の上に出す。
  */
+const state = new Store();
 
-// lite-youtube-embed はカスタム要素の登録のみ。静的 import だと esm.sh の応答まで
-// boot 全体 (Phase 0 含む) がブロックされるため、await せず動的 import する。
-// 失敗しても <lite-youtube> が未登録のまま表示されるだけで viewer 本体は動く。
-import("https://esm.sh/lite-youtube-embed").catch(() => {});
-
-const state = AppState.getInstance();
-
-// URL から初期状態を復元
 const urlPatch = readFromURL();
 if (Object.keys(urlPatch).length > 0) {
   state.patch(urlPatch);
@@ -45,50 +22,47 @@ if (Object.keys(urlPatch).length > 0) {
   const clearButton = document.querySelector("#search-clear");
   if (clearButton && urlPatch.query) clearButton.hidden = false;
 }
-
+// URL への書き戻しは復元が終わってから購読する (復元中の patch をループさせない)
 state.subscribe((s) => writeToURL(s));
 
-const ctx = new ViewContext(state);
+const loader = new DataLoader(state);
+const ctx = { state, get repo() { return state.repository; } };
+const query = new QueryMatcher(state, () => state.repository);
+const parts = new Parts(ctx);
+const shell = new Shell({ state, loader, parts, query });
+shell.bind();
+new KeyboardNav({
+  state,
+  switchTab: (tabId) => shell.switchTab(tabId),
+  list: () => shell.currentList(),
+  clearSearch: () => shell.clearSearch(),
+  toast: (message) => shell.toast(message),
+}).bind();
 
-const components = new ComponentFactory();
-const navigation = new Navigator(ctx);
-const sources = new SourceRenderers(ctx);
-const related = new RelatedRenderers(ctx);
-const tabs = new TabRenderers(ctx);
-
-ctx.bindServices({ sources, related, navigation, components, tabs });
-
-const tabRegistry = new TabRendererRegistry(tabs, ctx);
-const viewController = new ViewController(ctx, tabRegistry);
-const dataLoader = new DataLoader(state);
-const eventController = new EventController(state, navigation, viewController, dataLoader);
-
-eventController.bind();
-new KeyboardNav(tabRegistry, state, dataLoader).bind();
-
-// 起動ロード: フェーズ別 load() の後、復元された初期タブ固有の遅延データを取りに行く。
-// 致命的失敗のみ renderLoadError (個別キーの失敗は DataLoader 内で吸収されエラーカード表示)。
-dataLoader
+loader
   .load()
-  .then(() => dataLoader.loadForTab(state.tab))
+  .then(() => loader.loadForTab(state.tab))
   .catch((error) => {
-    renderLoadError(error);
+    console.error("viewer: data load failed", error);
+    const host = document.querySelector("#list-host");
+    if (host) {
+      host.innerHTML = `<div class="alert" role="alert"><p class="alert-title">読み込みに失敗しました</p><p>${escapeHtml(error.message)}</p></div>`;
+    }
   });
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 
   // sw.js が新しい docs/data を検知すると DATA_UPDATED を postMessage する。
-  // 再読み込みバナーは 1 セッション 1 回だけ (フラグでガード)。
+  // 再読み込みバナーは 1 セッション 1 回だけ。
   let updateBannerShown = false;
   navigator.serviceWorker.addEventListener("message", (event) => {
     if (event.data?.type !== "DATA_UPDATED" || updateBannerShown) return;
     updateBannerShown = true;
-
     const banner = document.createElement("div");
     banner.className = "update-banner";
-    banner.innerHTML =
-      'データが更新されました。<button class="update-banner-btn">再読み込み</button>';
+    banner.setAttribute("role", "status");
+    banner.innerHTML = 'データが更新されました。<button type="button" class="update-banner-button">再読み込み</button>';
     banner.querySelector("button").addEventListener("click", () => location.reload());
     document.body.appendChild(banner);
   });

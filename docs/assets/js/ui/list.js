@@ -308,7 +308,8 @@ export class RecordList {
     const index = Number(rec.dataset.index);
     if (!Number.isInteger(index)) return;
     this.toggle(index);
+    // クリックした行をキーボード操作の起点にする (枠はキーボードで動かしたときだけ付ける)
     this.#cursor = index;
-    this.#rows.forEach((row, i) => row.el.classList.toggle("rec-cursor", i === index));
+    for (const row of this.#rows) row.el.classList.remove("rec-cursor");
   }
 }

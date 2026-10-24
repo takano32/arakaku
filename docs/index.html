@@ -3,92 +3,88 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="アラカクの団体・大会・試合・選手・王座・動画・出典本文を整理した非公式データベース">
   <title>Unofficial ARAKAKU Database</title>
-  <link rel="preconnect" href="https://esm.sh" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23d7141a'/%3E%3Ctext x='16' y='22' font-size='17' font-weight='700' font-family='sans-serif' text-anchor='middle' fill='%23fff'%3E%E3%82%A2%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./assets/app.css">
+  <script>
+    // 保存済みの配色をスタイル適用前に反映する (ちらつき防止)。未保存なら OS 設定に従う。
+    try {
+      const theme = localStorage.getItem("arakaku-theme");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch (e) { /* localStorage が使えない環境では OS 設定に従う */ }
+  </script>
 </head>
 <body>
-  <div class="github-ribbon-container">
-    <a href="https://github.com/takano32/arakaku" class="github-ribbon" target="_blank" rel="noopener">GitHub</a>
-  </div>
-  <header class="site-header">
-    <div>
-      <h1>Unofficial ARAKAKU Database</h1>
-      <p>アラカク非公式データベース</p>
-    </div>
-  </header>
-
-  <main>
-    <section class="summary-grid" id="summary"></section>
-
-    <section id="data-load-errors" class="data-load-errors" hidden></section>
-
-    <section class="toolbar">
-      <div class="search-wrap">
-        <input id="search" type="search" aria-label="検索" placeholder="選手名・大会名・団体名・王座で検索">
-        <button type="button" id="search-clear" class="search-clear" aria-label="検索をクリア" hidden>✕</button>
+  <a class="skip-link" href="#content">本文へ移動</a>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <a class="brand-link" href="./" aria-label="Unofficial ARAKAKU Database のトップへ">
+          <img class="brand-logo" src="./assets/images/header.webp" alt="" width="1280" height="651">
+          <span class="brand-text">
+            <span class="brand-title">Unofficial ARAKAKU Database</span>
+            <span class="brand-sub">アラカク非公式データベース</span>
+          </span>
+        </a>
+        <button type="button" class="icon-button" id="theme-toggle" aria-label="配色を切り替える" title="配色を切り替える">
+          <span class="theme-icon" aria-hidden="true"></span>
+        </button>
       </div>
-    </section>
 
-    <div class="tab-toolbar">
-      <nav class="tabs" aria-label="表示切替">
-        <button type="button" class="tab active" data-tab="bouts">試合</button>
-        <button type="button" class="tab" data-tab="fighters">選手</button>
-        <button type="button" class="tab" data-tab="events">大会</button>
-        <button type="button" class="tab" data-tab="promotions">団体</button>
-        <button type="button" class="tab" data-tab="titles">王座</button>
-        <button type="button" class="tab" data-tab="videos">動画</button>
-      </nav>
-      <div class="view-mode-switch" aria-label="表示モード切替"></div>
-    </div>
+      <nav class="nav" id="nav" aria-label="セクション"></nav>
 
-    <section id="mention-filters" class="mention-filters" hidden>
-      <select id="mention-type-filter" aria-label="言及種別で絞り込み">
-        <option value="">すべての言及</option>
-      </select>
-    </section>
+      <section class="stats" id="stats" aria-label="データ件数"></section>
 
-    <!-- ボタンは filters.js の TAB_FILTERS からアクティブタブに応じて ViewController が生成 -->
-    <section id="tab-filters" class="tab-filters" hidden></section>
+      <div class="side-foot">
+        <p class="side-links">
+          <a href="https://kobayashi856.github.io/arakaku-site/" target="_blank" rel="noopener">公式サイト</a>
+          <a href="https://note.com/xyz1090" target="_blank" rel="noopener">アラカク通信のーと</a>
+          <a href="https://www.youtube.com/@%E3%82%A2%E3%83%A9%E3%82%AB%E3%82%AF%E9%80%9A%E4%BF%A1" target="_blank" rel="noopener">YouTube</a>
+          <a href="https://github.com/takano32/arakaku" target="_blank" rel="noopener">GitHub</a>
+        </p>
+        <p><button type="button" class="text-button" id="help-open">キーボード操作 <kbd>?</kbd></button></p>
+      </div>
+    </aside>
 
-    <section id="content" class="content"></section>
-  </main>
+    <main class="main" id="content">
+      <div class="topbar">
+        <form class="search" role="search" onsubmit="return false">
+          <span class="search-icon" aria-hidden="true"></span>
+          <input id="search" type="search" aria-label="検索" placeholder="選手名・大会名・団体名・王座で検索" autocomplete="off">
+          <button type="button" id="search-clear" class="search-clear" aria-label="検索をクリア" hidden>✕</button>
+        </form>
+        <div class="toolbar" id="toolbar"></div>
+        <div class="filters" id="filters" hidden></div>
+      </div>
+      <div id="alerts" class="alerts"></div>
+      <div id="list-host" class="list-host"></div>
+    </main>
+  </div>
 
-  <footer>
-    <p>
-      <a href="https://kobayashi856.github.io/arakaku-site/" target="_blank" rel="noopener">公式サイト</a>
-      /
-      <a href="https://note.com/xyz1090" target="_blank" rel="noopener">アラカク通信のーと</a>
-      /
-      <a href="https://www.youtube.com/@%E3%82%A2%E3%83%A9%E3%82%AB%E3%82%AF%E9%80%9A%E4%BF%A1" target="_blank" rel="noopener">YouTube</a>
-    </p>
-  </footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <dialog id="keyboard-help">
-    <h2>キーボードショートカット</h2>
+  <dialog id="help" class="help">
+    <h2>キーボード操作</h2>
     <table>
       <tbody>
-        <tr><td><kbd>j</kbd> / <kbd>↓</kbd></td><td>次のアイテムへ</td></tr>
-        <tr><td><kbd>k</kbd> / <kbd>↑</kbd></td><td>前のアイテムへ</td></tr>
-        <tr><td><kbd>g</kbd></td><td>リスト先頭へ</td></tr>
-        <tr><td><kbd>G</kbd></td><td>リスト末尾へ</td></tr>
-        <tr><td><kbd>Enter</kbd></td><td>アイテムを開く</td></tr>
-        <tr><td><kbd>o</kbd></td><td>詳細を展開/折りたたむ</td></tr>
-        <tr><td><kbd>Space</kbd></td><td>半ページ下スクロール</td></tr>
-        <tr><td><kbd>Shift+Space</kbd></td><td>半ページ上スクロール</td></tr>
+        <tr><td><kbd>j</kbd> / <kbd>↓</kbd></td><td>次の行へ</td></tr>
+        <tr><td><kbd>k</kbd> / <kbd>↑</kbd></td><td>前の行へ</td></tr>
+        <tr><td><kbd>g</kbd> / <kbd>G</kbd></td><td>先頭 / 末尾の行へ</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>行を開く / 閉じる</td></tr>
+        <tr><td><kbd>o</kbd></td><td>行内の「詳細」を開く / 閉じる</td></tr>
+        <tr><td><kbd>Space</kbd> / <kbd>Shift</kbd>+<kbd>Space</kbd></td><td>半ページ下 / 上へスクロール</td></tr>
         <tr><td><kbd>/</kbd></td><td>検索ボックスへ</td></tr>
-        <tr><td><kbd>h</kbd> / <kbd>l</kbd></td><td>前/次のタブへ</td></tr>
-        <tr><td><kbd>1</kbd>〜<kbd>8</kbd></td><td>タブ直接切り替え</td></tr>
-        <tr><td><kbd>c</kbd></td><td>現在のURLをコピー</td></tr>
+        <tr><td><kbd>h</kbd> / <kbd>l</kbd></td><td>前 / 次のセクションへ</td></tr>
+        <tr><td><kbd>1</kbd>〜<kbd>8</kbd></td><td>セクションを直接選ぶ</td></tr>
+        <tr><td><kbd>c</kbd></td><td>現在の URL をコピー</td></tr>
         <tr><td><kbd>r</kbd></td><td>再読み込み</td></tr>
-        <tr><td><kbd>Esc</kbd></td><td>検索をクリア / ヘルプを閉じる</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>検索をクリア / このヘルプを閉じる</td></tr>
         <tr><td><kbd>?</kbd></td><td>このヘルプを表示</td></tr>
       </tbody>
     </table>
-    <button type="button" id="keyboard-help-close">閉じる</button>
+    <button type="button" id="help-close" class="button">閉じる</button>
   </dialog>
 
   <script type="module" src="./assets/js/main.js"></script>
