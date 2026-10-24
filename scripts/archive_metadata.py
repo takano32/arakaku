@@ -6,6 +6,8 @@
 # 不変条件: archived_at は既存行の値を existing_archive_times() で引き継ぎ、新規行のみ
 #   現在時刻を入れる -> 再実行しても差分が最小 (決定論的)。出力は display_id / filename で
 #   ソート固定。YOUTUBE_FIELDS / NOTE_FIELDS は出力スキーマで、flat_data の作りと一致必須。
+#   キャッシュに無い既存行 (削除・非公開・未取得) は消さずにそのまま残し、件数を表示する
+#   -> アーカイブは再取得できなくなった後の記録として機能する。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 from datetime import datetime
 import html
@@ -33,14 +35,18 @@ YOUTUBE_FIELDS = [
 NOTE_FIELDS = ["filename", "webpage_url", "title", "description", "archived_at"]
 
 
-def existing_archive_times(path: Path, key_field: str) -> dict[str, str]:
+def existing_archive_rows(path: Path, key_field: str) -> dict[str, dict[str, str]]:
     if not path.exists():
         return {}
-    return {
-        row[key_field]: row.get("archived_at", "")
-        for row in read_csv(path)
-        if row.get(key_field)
-    }
+    return {row[key_field]: row for row in read_csv(path) if row.get(key_field)}
+
+
+def keep_uncached_rows(rows: list[dict[str, str]], existing: dict[str, dict[str, str]], key_field: str, path: Path) -> None:
+    cached_keys = {row[key_field] for row in rows}
+    kept = [row for key, row in existing.items() if key not in cached_keys]
+    for row in kept:
+        print(f"[kept] {path.name}: {row[key_field]} is not in the cache; keeping the archived row")
+    rows.extend(kept)
 
 
 def current_archive_time() -> str:
@@ -93,7 +99,7 @@ def archive_youtube():
     if not YOUTUBE_CACHE_DIR.exists():
         return
 
-    archived_at_by_display_id = existing_archive_times(YT_ARCHIVE, "display_id")
+    existing = existing_archive_rows(YT_ARCHIVE, "display_id")
     new_archived_at = current_archive_time()
     raw_data = []
     for _, video in iter_cached_videos():
@@ -108,9 +114,10 @@ def archive_youtube():
             "view_count": video["view_count"],
             "like_count": video["like_count"],
             "description": video["description"],
-            "archived_at": archived_at_by_display_id.get(display_id) or new_archived_at,
+            "archived_at": existing.get(display_id, {}).get("archived_at") or new_archived_at,
         })
 
+    keep_uncached_rows(raw_data, existing, "display_id", YT_ARCHIVE)
     raw_data.sort(key=lambda row: row["display_id"])
     write_csv(YT_ARCHIVE, YOUTUBE_FIELDS, raw_data)
     print(f"[done] Archived {len(raw_data)} videos to {YT_ARCHIVE}")
@@ -119,7 +126,7 @@ def archive_notes():
     if not NOTE_CACHE.exists():
         return
 
-    archived_at_by_filename = existing_archive_times(NOTE_ARCHIVE, "filename")
+    existing = existing_archive_rows(NOTE_ARCHIVE, "filename")
     new_archived_at = current_archive_time()
     raw_data = []
     for cache_file in sorted(NOTE_CACHE.glob("*.html")):
@@ -130,9 +137,10 @@ def archive_notes():
             "webpage_url": metadata["webpage_url"],
             "title": metadata["title"],
             "description": metadata["description"],
-            "archived_at": archived_at_by_filename.get(cache_file.name) or new_archived_at,
+            "archived_at": existing.get(cache_file.name, {}).get("archived_at") or new_archived_at,
         })
 
+    keep_uncached_rows(raw_data, existing, "filename", NOTE_ARCHIVE)
     raw_data.sort(key=lambda row: row["filename"])
     write_csv(NOTE_ARCHIVE, NOTE_FIELDS, raw_data)
     print(f"[done] Archived {len(raw_data)} notes to {NOTE_ARCHIVE}")

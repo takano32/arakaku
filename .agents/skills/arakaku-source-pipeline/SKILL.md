@@ -151,6 +151,8 @@ data-src/archives/youtube.csv
 
 Archive CSVs preserve external metadata for display and review. They are generated from local caches, but are committed as source CSVs because cache files are not committed.
 
+Rows whose cache file is missing (deleted, private, or not fetched) are kept unchanged and reported as `[kept]`, so an empty or partial cache never shrinks an archive.
+
 ---
 
 ## source_documents.csv
