@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 
+// 生成 JSON をビューアの実モジュール (パーサ / ローダ / リポジトリ / 検索 / セクション描画) に通して
+// 検証する。ブラウザを使わず Node で、実データに対して「読める・引ける・検索できる・描ける」を確かめる。
+
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { DATA_FILES } from "../docs/assets/js/config.js";
-import { CORE_DATA_KEYS, DataLoader } from "../docs/assets/js/data-loader.js";
-import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/core/data-parser.js";
-import { QueryMatcher } from "../docs/assets/js/core/query-matcher.js";
-import { SourceRenderers } from "../docs/assets/js/services/source-renderers.js";
-import { TabRenderers } from "../docs/assets/js/tabs/tab-renderers.js";
+import { ADMIN_TABS, CORE_DATA_KEYS, DATA_FILES, PUBLIC_TABS } from "../docs/assets/js/config.js";
+import { DataLoader } from "../docs/assets/js/data/loader.js";
+import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/data/parser.js";
+import { QueryMatcher } from "../docs/assets/js/data/query.js";
+import { TAB_FILTERS } from "../docs/assets/js/data/filters.js";
+import { Parts } from "../docs/assets/js/ui/parts.js";
+import { SECTIONS } from "../docs/assets/js/ui/sections/index.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(SCRIPT_DIR, "..");
@@ -24,6 +28,8 @@ function localDataFiles() {
   );
 }
 
+// DataLoader.fetchText の Node 実装。無いファイルは fallback テキストで補う
+// (ブラウザ実装は HTTP エラーで throw し、ローダ側が fallback + dataLoadErrors に倒す)。
 async function readTextWithFallback(path, fallback) {
   try {
     return await readFile(path, "utf8");
@@ -35,29 +41,21 @@ async function readTextWithFallback(path, fallback) {
   }
 }
 
-// DataLoader のストリーミング経路 (#streamKey) 用。ブラウザの fetch と同じく、無いファイルは
-// 404 の Response にして DataLoader 側の失敗処理 (fallback + dataLoadErrors) に任せる。
-async function readResponse(path) {
-  try {
-    return new Response(await readFile(path));
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      return new Response(null, { status: 404 });
-    }
-    throw error;
-  }
-}
-
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
 }
 
-function validateTabRendererMethods() {
-  const REQUIRED_METHODS = ["bouts", "fighters", "events", "promotions", "titles", "videos", "sources", "mentions"];
-  for (const method of REQUIRED_METHODS) {
-    assert(typeof TabRenderers.prototype[method] === "function", `TabRenderers.${method} must be a function`);
+function validateSectionRegistry() {
+  for (const [id] of [...PUBLIC_TABS, ...ADMIN_TABS]) {
+    const section = SECTIONS[id];
+    assert(section, `SECTIONS must define the tab: ${id}`);
+    assert(typeof section.build === "function", `SECTIONS.${id}.build must be a function`);
+    assert(section.label, `SECTIONS.${id} must have a label`);
+  }
+  for (const tabId of Object.keys(TAB_FILTERS)) {
+    assert(SECTIONS[tabId], `TAB_FILTERS refers to an unknown tab: ${tabId}`);
   }
 }
 
@@ -97,15 +95,18 @@ function validateLoadedData(data, repository) {
   for (const bout of data.bouts) {
     const found = repository.findBout(bout.bout_id);
     assert(found && found.bout_id === bout.bout_id, `repository cannot resolve bout: ${bout.bout_id}`);
+    assert(repository.findRichBout(bout.bout_id), `repository cannot resolve rich bout: ${bout.bout_id}`);
   }
 
   for (const event of data.events) {
     assert(repository.findEvent(event.event_id) === event, `repository cannot resolve event: ${event.event_id}`);
+    assert(repository.findRichEvent(event.event_id), `repository cannot resolve rich event: ${event.event_id}`);
   }
 
   for (const fighter of data.fighters) {
     const found = repository.findFighter(fighter.fighter_id);
     assert(found && found.fighter_id === fighter.fighter_id, `repository cannot resolve fighter: ${fighter.fighter_id}`);
+    assert(repository.findRichFighter(fighter.fighter_id), `repository cannot resolve rich fighter (merge/alias index): ${fighter.fighter_id}`);
   }
 
   for (const promotion of data.promotions) {
@@ -126,6 +127,14 @@ function validateLoadedData(data, repository) {
   for (const link of data.videoLinks) {
     assert(repository.videoById(link.video_id), `video link points to unknown video: ${link.video_id}`);
   }
+
+  // 名鑑のみの合成行も ID で引けること
+  for (const event of repository.numbersOnlyEvents) {
+    assert(repository.findEvent(event.event_id) === event, `numbers-only event is not resolvable: ${event.event_id}`);
+  }
+  for (const bout of repository.numbersOnlyBouts) {
+    assert(repository.findBout(bout.bout_id) === bout, `numbers-only bout is not resolvable: ${bout.bout_id}`);
+  }
 }
 
 function makeViewerContext(state) {
@@ -134,50 +143,92 @@ function makeViewerContext(state) {
     get repo() {
       return this.state.repository;
     },
-    sources: null,
   };
-  ctx.sources = new SourceRenderers(ctx);
-  ctx.query = new QueryMatcher(ctx);
+  ctx.query = new QueryMatcher(state, () => state.repository);
+  ctx.parts = new Parts(ctx);
   return ctx;
 }
 
 function validateViewerSearchPaths(state) {
   const ctx = makeViewerContext(state);
+  const repo = state.repository;
 
   state.query = "";
-  for (const fighter of state.data.fighters) assert(ctx.query.fighterMatches(fighter), `empty query must match fighter: ${fighter.fighter_id}`);
-  for (const bout of state.data.bouts) assert(ctx.query.includes(ctx.query.boutSearchText(bout)), `empty query must match bout: ${bout.bout_id}`);
-  for (const event of state.data.events) assert(ctx.query.eventMatches(event), `empty query must match event: ${event.event_id}`);
-  for (const promotion of state.data.promotions) assert(ctx.query.promotionMatches(promotion), `empty query must match promotion: ${promotion.promotion_id}`);
-  for (const video of state.data.videos) assert(ctx.query.videoMatches(video), `empty query must match video: ${video.video_id}`);
-  for (const title of state.data.titles) assert(ctx.query.titleMatches(title), `empty query must match title: ${title.title_id}`);
-  for (const mention of state.data.sourceMentions) assert(ctx.query.mentionMatches(mention), `empty query must match mention: ${mention.mention_id}`);
-  for (const document of state.data.sourceDocuments) assert(ctx.query.sourceDocumentMatches(document), `empty query must match source document: ${document.source_id}`);
+  for (const fighter of repo.richFighters) assert(ctx.query.fighterMatches(fighter), `empty query must match fighter: ${fighter.fighter_id}`);
+  for (const bout of repo.richBouts) assert(ctx.query.includes(ctx.query.boutSearchText(bout)), `empty query must match bout: ${bout.bout_id}`);
+  for (const event of repo.richEvents) assert(ctx.query.eventMatches(event), `empty query must match event: ${event.event_id}`);
+  for (const promotion of repo.richPromotions) assert(ctx.query.promotionMatches(promotion), `empty query must match promotion: ${promotion.promotion_id}`);
+  for (const video of repo.richVideos) assert(ctx.query.videoMatches(video), `empty query must match video: ${video.video_id}`);
+  for (const title of repo.richTitles) assert(ctx.query.titleMatches(title), `empty query must match title: ${title.title_id}`);
+  for (const mention of repo.richSourceMentions) assert(ctx.query.mentionMatches(mention), `empty query must match mention: ${mention.mention_id}`);
+  for (const document of repo.sourceDocuments) assert(ctx.query.sourceDocumentMatches(document), `empty query must match source document: ${document.source_id}`);
 
   const firstBout = state.data.bouts[0];
   if (firstBout) {
     state.query = firstBout.bout_id;
     assert(ctx.query.includes(ctx.query.boutSearchText(firstBout)), `bout id query must match bout: ${firstBout.bout_id}`);
+    assert(ctx.query.boutMatches(firstBout), `bout id query must match bout via boutMatches: ${firstBout.bout_id}`);
   }
+  state.query = "";
+}
+
+// 全セクションを実データで build し、全行の head / body を実際に描画する (DOM 不要の文字列生成)。
+// 描画関数が例外を投げる・空文字を返す・キーが重複する、といった壊れた行を Node で検出する。
+function validateSectionRendering(state) {
+  const ctx = makeViewerContext(state);
+  state.query = "";
+  state.mentionType = "";
+  const summary = [];
+  for (const [id, section] of Object.entries(SECTIONS)) {
+    const desc = section.build(ctx);
+    assert(Array.isArray(desc.items), `section ${id}: items must be an array`);
+    assert(typeof desc.keyOf === "function", `section ${id}: keyOf must be a function`);
+    assert(typeof desc.renderHead === "function" && typeof desc.renderBody === "function", `section ${id}: renderHead/renderBody must be functions`);
+    const keys = new Set();
+    for (const item of desc.items) {
+      const key = desc.keyOf(item);
+      assert(typeof key === "string" && key !== "", `section ${id}: every item needs a non-empty key`);
+      assert(!keys.has(key), `section ${id}: duplicate row key ${key}`);
+      keys.add(key);
+      const head = desc.renderHead(item);
+      assert(typeof head === "string" && head.trim() !== "", `section ${id}: renderHead returned nothing for ${key}`);
+      if (!desc.isHeader?.(item)) {
+        const body = desc.renderBody(item);
+        assert(typeof body === "string", `section ${id}: renderBody must return a string for ${key}`);
+        assert(!/undefined|\[object Object\]|NaN/.test(body.replace(/<code>[^<]*<\/code>/g, "")), `section ${id}: renderBody leaked an undefined/object value for ${key}`);
+      }
+    }
+    summary.push(`${id}=${desc.items.length}`);
+  }
+  // フォーカス (特定レコードだけの表示) も描けること
+  const fighter = state.repository.richFighters[0];
+  state.focusFighterId = fighter.fighter_id;
+  const focused = SECTIONS.fighters.build(ctx);
+  assert(focused.items.length === 1 && focused.items[0].fighter_id === fighter.fighter_id, "fighter focus must narrow the list to that fighter");
+  state.focusFighterId = "";
+  return summary.join(" ");
 }
 
 function makeTestState() {
-  return {
+  const state = {
     data: null,
     repository: null,
     query: "",
-    titlePromotion: "",
-    titleDivision: "",
     mentionType: "",
+    focusFighterId: "",
+    focusEventId: "",
+    focusBoutId: "",
     patchCount: 0,
     patch() {
       this.patchCount += 1;
     },
   };
+  for (const group of Object.values(TAB_FILTERS).flat()) state[group.stateKey] = "";
+  return state;
 }
 
 async function main() {
-  validateTabRendererMethods();
+  validateSectionRegistry();
   validateParserFallbacks();
 
   const files = localDataFiles();
@@ -190,12 +241,9 @@ async function main() {
 
   const parsedData = parseDataFileEntries(parserEntries);
 
+  // 段階ロード (ブラウザと同じ load()) で CORE キーが揃い、ファイル内容と一致すること
   const initialState = makeTestState();
-  await new DataLoader(initialState, {
-    dataFiles: files,
-    fetchText: readTextWithFallback,
-    fetchResponse: readResponse,
-  }).load();
+  await new DataLoader(initialState, { dataFiles: files, fetchText: readTextWithFallback }).load();
   for (const key of CORE_DATA_KEYS) {
     assert(initialState.loadedDataKeys.has(key), `initial load must include core key: ${key}`);
     assert(!(key in initialState.dataLoadErrors), `initial load failed for core key ${key}: ${initialState.dataLoadErrors[key]}`);
@@ -204,20 +252,39 @@ async function main() {
       `initial load must match the parsed file for core key: ${key}`
     );
   }
-  assert(!initialState.loadedDataKeys.has("sourceDocumentBodies"), "initial load must not include sourceDocumentBodies (lazy-loaded on sources tab)");
+  assert(!initialState.loadedDataKeys.has("sourceDocumentBodies"), "initial load must not include sourceDocumentBodies (lazy-loaded on the tsushin/sources tabs)");
+  assert(!initialState.loadedDataKeys.has("sourceMentions"), "initial load must not include sourceMentions (lazy-loaded on the mentions tab)");
+  assert(initialState.loadingDataKeys.size === 0, "no key may be left in the loading state after load()");
 
+  // 失敗したファイルは fallback + dataLoadErrors + loaded 扱いになり、load() 自体は落ちないこと
+  const failingState = makeTestState();
+  const brokenFiles = { ...files, fighters: resolve(DOCS_DIR, "data/does-not-exist.json") };
+  await new DataLoader(failingState, {
+    dataFiles: brokenFiles,
+    fetchText: async (path) => {
+      const text = await readFile(path, "utf8");
+      return text;
+    },
+  }).load();
+  assert(failingState.loadedDataKeys.has("fighters"), "a failed key must still be marked loaded");
+  assert("fighters" in failingState.dataLoadErrors, "a failed key must be recorded in dataLoadErrors");
+  assert(Array.isArray(failingState.data.fighters) && failingState.data.fighters.length === 0, "a failed array key must fall back to []");
+
+  // タブ遅延ロードで本文と言及が届くこと
+  await new DataLoader(initialState, { dataFiles: files, fetchText: readTextWithFallback }).loadForTab("mentions");
+  assert(initialState.loadedDataKeys.has("sourceMentions"), "loadForTab(mentions) must load sourceMentions");
+
+  // 一括ロードがパーサと同一で、Repository / 検索 / セクション描画が実データで通ること
   const state = makeTestState();
-  await new DataLoader(state, {
-    dataFiles: files,
-    fetchText: readTextWithFallback,
-  }).loadAll();
+  await new DataLoader(state, { dataFiles: files, fetchText: readTextWithFallback }).loadAll();
 
   assert(JSON.stringify(parsedData) === JSON.stringify(state.data), "parser and loader must produce identical data");
   validateLoadedData(state.data, state.repository);
   validateViewerSearchPaths(state);
+  const rendered = validateSectionRendering(state);
   assert(state.patchCount >= 1, "DataLoader must notify state after loading data");
 
-  console.log("viewer JSON parser/loader validation passed");
+  console.log(`viewer JSON parser/loader validation passed (${rendered})`);
 }
 
 main().catch((error) => {
