@@ -59,7 +59,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.42 | 公式タブを「公式ページ」と「公式ニュース」に分割 | 保留 | |
 | T.43 | 王座変遷の精度向上 | 未着手 | |
 | T.44 | Numbers データのさらなる突き合わせ | 未着手 | |
-| T.45 | note.com のページ構成変更による本文抽出のノイズ | 未着手 | |
+| T.45 | note.com のページ構成変更による本文抽出のノイズ | 完了 | 2026-10-24 |
 
 ---
 
@@ -217,7 +217,8 @@ HANDOFF.md の「次にやるとよい作業」にあった項目。対戦カー
 
 ## T.45 note.com のページ構成変更による本文抽出のノイズ
 
-- 状態: 未着手
+- 状態: 完了
+- 期間: 2026-10-24
 
 2026-10-24 に note HTML を取り直して `make archive-metadata` と `make build-sources` を実行したところ、note.com のページ構成が変わっていて、本文にページの部品が混ざるようになった。記事本文の行は 1 行も失われていないが、次のノイズが増える。そのため `data-src/archives/note.csv`・`source_documents.csv`・`source_mentions.csv` の更新はコミットしていない（T.33 では YouTube 分だけをコミット）。
 
@@ -227,6 +228,12 @@ HANDOFF.md の「次にやるとよい作業」にあった項目。対戦カー
   - 一部の記事で「あなたへのおすすめ」に並ぶ他の記事のタイトルが `event` / `matchup` として拾われる（34 件）
 - `note.csv` の 1 行（note のプロフィール説明）は note 側で実際に書き換わったもの
 
-- [ ] T.45.1 `build_source_documents.py` の note 本文抽出を新しいページ構成に合わせ、本文以外を除く
-- [ ] T.45.2 取り直した note データを反映し、`source_mentions.csv` に誤検出が増えないことを確かめてコミットする
-- [ ] T.45.3 `build_source_documents.py` が実行のたびに全行の `fetched_at` を書き換えるため、差分が毎回大きくなる。決定的な出力にするか検討する
+- [x] T.45.1 `build_source_documents.py` の note 本文抽出を新しいページ構成に合わせ、本文以外を除く
+  - [x] T.45.1.1 記事ページは記事タイトル（h1）・投稿日時（time）・`#note-body` だけを本文にする
+  - [x] T.45.1.2 `#note-body` の無いクリエイターのトップページ（`note-xyz1090`）は meta description を本文にする
+  - [x] T.45.1.3 `tests/test_70_note_body.py` を追加
+- [x] T.45.2 取り直した note データを反映し、`source_mentions.csv` に誤検出が増えないことを確かめてコミットする
+  - 479 文書すべて残る。旧本文から消えた行は、ページの部品・タブ用タイトル（`…｜アラカク通信のーと`）・ハッシュタグ・スキ数だけで、記事本文・記事タイトル・投稿日時は全件残る
+  - `source_mentions.csv` は 1794 → 1685 行。消えた 110 件はすべてタブ用タイトルの行から拾われていた重複（同じタイトルは h1 から引き続き拾われる）
+  - 増えた 1 件は、トップページのプロフィールに新しく載ったリンク `kobayashi856.github.io/arakaku-site/` が `result` として拾われたもの（`RESULT_RE` の `KO` が `kobayashi` に一致する誤検出）
+- [x] T.45.3 本文（`content_hash`）が前回と同じ行は `fetched_at` を引き継ぎ、再実行しても差分が出ないようにする

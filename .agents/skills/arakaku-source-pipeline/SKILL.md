@@ -136,6 +136,10 @@ data-src/source_documents.csv
 data-src/source_mentions.csv
 ```
 
+For note articles, the body is only the article title (`h1`), the post time (`time`), and `#note-body`; page chrome and the "あなたへのおすすめ" list are excluded. A page without `#note-body` (the creator top page) uses its meta description.
+
+`fetched_at` is carried over from the previous `source_documents.csv` when `content_hash` is unchanged, so a rerun without content changes produces no diff.
+
 ### archive_metadata.py
 
 Reads caches and writes:
