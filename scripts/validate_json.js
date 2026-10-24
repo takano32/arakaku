@@ -35,6 +35,19 @@ async function readTextWithFallback(path, fallback) {
   }
 }
 
+// DataLoader のストリーミング経路 (#streamKey) 用。ブラウザの fetch と同じく、無いファイルは
+// 404 の Response にして DataLoader 側の失敗処理 (fallback + dataLoadErrors) に任せる。
+async function readResponse(path) {
+  try {
+    return new Response(await readFile(path));
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return new Response(null, { status: 404 });
+    }
+    throw error;
+  }
+}
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
@@ -181,9 +194,15 @@ async function main() {
   await new DataLoader(initialState, {
     dataFiles: files,
     fetchText: readTextWithFallback,
+    fetchResponse: readResponse,
   }).load();
   for (const key of CORE_DATA_KEYS) {
     assert(initialState.loadedDataKeys.has(key), `initial load must include core key: ${key}`);
+    assert(!(key in initialState.dataLoadErrors), `initial load failed for core key ${key}: ${initialState.dataLoadErrors[key]}`);
+    assert(
+      JSON.stringify(initialState.data[key]) === JSON.stringify(parsedData[key]),
+      `initial load must match the parsed file for core key: ${key}`
+    );
   }
   assert(!initialState.loadedDataKeys.has("sourceDocumentBodies"), "initial load must not include sourceDocumentBodies (lazy-loaded on sources tab)");
 
