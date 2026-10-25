@@ -53,7 +53,8 @@ export class KeyboardNav {
     const dialog = document.querySelector("#help");
     if (e.key === "Escape") {
       if (dialog?.open) { dialog.close(); return; }
-      this.app.clearSearch();
+      // 検索語があるときだけ消す。無いときに消すと選手などの絞り込みまで外れて履歴も積まれていた (T.102)。
+      if (this.app.state.query) this.app.clearSearch();
       return;
     }
     if (e.key === "?") { e.preventDefault(); this.#toggleHelp(); return; }

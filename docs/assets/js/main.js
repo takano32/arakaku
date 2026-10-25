@@ -40,9 +40,15 @@ new KeyboardNav({
 }).bind();
 
 // ブラウザの「戻る」「進む」: URL の状態に戻し、検索欄と遅延データも合わせる。
-window.addEventListener("popstate", () => {
+window.addEventListener("popstate", (event) => {
   const patch = stateFromHistory();
   state.patch(patch);
+  // 離れたときのスクロール位置に戻す。一覧は最初 30 行しか描かないので、必要なら全行を描いてから。
+  const scrollY = event.state?.scrollY ?? 0;
+  requestAnimationFrame(() => {
+    if (scrollY > document.documentElement.scrollHeight - window.innerHeight) shell.currentList()?.renderAll();
+    window.scrollTo({ top: scrollY, behavior: "instant" });
+  });
   const searchInput = document.querySelector("#search");
   if (searchInput) searchInput.value = patch.query;
   const clearButton = document.querySelector("#search-clear");
