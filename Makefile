@@ -60,7 +60,7 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 # ──────────────────────────────────────────────────────────────────
 # Source crawl pipeline (requires network / local cache in tmp/)
 # ──────────────────────────────────────────────────────────────────
-.PHONY: discover-note-articles cache-note-html cache-youtube-api cache-sources \
+.PHONY: discover-note-articles discover-youtube-videos cache-note-html cache-youtube-api cache-sources \
         download-official-data \
         archive-metadata generate-articles build-sources refresh-sources \
         source-mention-result-candidates source-reference-candidates \
@@ -75,7 +75,12 @@ discover-note-articles:
 cache-note-html: discover-note-articles
 	python3 scripts/cache_note_html.py
 
-cache-youtube-api:
+# discover-youtube-videos: list every upload of the official channel (YouTube Data API) and append
+# the non-Shorts videos missing from videos.csv (T.87: cache-youtube-api only refetched known IDs).
+discover-youtube-videos:
+	python3 scripts/discover_youtube_videos.py
+
+cache-youtube-api: discover-youtube-videos
 	python3 scripts/cache_youtube_api.py
 
 download-official-data:
