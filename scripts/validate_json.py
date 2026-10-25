@@ -13,7 +13,9 @@ from __future__ import annotations
 #   並べ替え時は ID 集合の生成タイミングを崩さないこと。
 # 関連 skill: .agents/skills/arakaku-maintainer (make validate)。
 
+import re
 import sys
+import urllib.parse
 from typing import Any
 from arakaku.utils import DOCS_DATA, load_json
 from arakaku.validation import (
@@ -528,7 +530,37 @@ def validate_official_pages(pages: list[Any]) -> None:
         if not isinstance(x, dict):
             continue
         require_field(x, 'official_pages.json', i, 'title')
-        require_field(x, 'official_pages.json', i, 'body_html')
+        body = require_field(x, 'official_pages.json', i, 'body_html')
+        if isinstance(body, str):
+            for problem in unsafe_official_html(body):
+                add_error(f"official_pages.json[{i}] ({x.get('slug')}): body_html {problem}")
+
+# body_html is copied from a third-party repo and injected without sanitizing, so anything
+# that can run script or load an unexpected frame must fail the build instead of shipping.
+OFFICIAL_IFRAME_HOSTS = {'www.youtube.com', 'www.youtube-nocookie.com'}
+UNSAFE_TAG = re.compile(r'<\s*(script|object|embed|form|base|meta|link|style)\b', re.IGNORECASE)
+HTML_TAG = re.compile(r'<[a-zA-Z][^>]*>')
+EVENT_ATTR = re.compile(r'\son[a-z]+\s*=', re.IGNORECASE)
+URL_ATTR = re.compile(r'\b(?:src|href|action|formaction)\s*=\s*["\']?\s*([^"\'\s>]+)', re.IGNORECASE)
+
+def unsafe_official_html(body: str) -> list[str]:
+    problems = []
+    for m in UNSAFE_TAG.finditer(body):
+        problems.append(f"contains <{m.group(1).lower()}>")
+    for tag in HTML_TAG.findall(body):
+        if EVENT_ATTR.search(tag):
+            problems.append(f"has an event handler attribute: {tag[:80]}")
+        if re.search(r'\bsrcdoc\s*=', tag, re.IGNORECASE):
+            problems.append(f"has srcdoc: {tag[:80]}")
+        for url in URL_ATTR.findall(tag):
+            if re.match(r'(?:javascript|vbscript):', url, re.IGNORECASE):
+                problems.append(f"has a script URL: {tag[:80]}")
+        if re.match(r'<iframe\b', tag, re.IGNORECASE):
+            src = re.search(r'\bsrc="([^"]*)"', tag)
+            host = urllib.parse.urlsplit(src.group(1)).hostname if src else None
+            if host not in OFFICIAL_IFRAME_HOSTS:
+                problems.append(f"has an iframe from an unexpected host ({host}): {tag[:80]}")
+    return problems
 
 def main() -> int:
     ERRORS.clear()
