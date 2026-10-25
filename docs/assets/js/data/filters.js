@@ -47,6 +47,7 @@ const SOURCE_TYPE_OPTIONS = [
  * - label:      行ラベル
  * - stateKey:   Store 上の選択値フィールド名
  * - field:      レコードの照合対象フィールド名
+ * - matchPrefix: 真なら option.match との前方一致で照合する（省略時は完全一致）
  * - otherLabel: 設定すると「その他」(既知値以外) ボタンを末尾に追加する
  * - options:    選択肢
  * - forceOther: 指定した述語が真の項目は実値に関わらず「その他」扱い (任意)
@@ -92,7 +93,8 @@ export const TAB_FILTERS = {
     { type: "promotion", label: "団体", stateKey: "nrPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
   ],
   officialPlayers: [
-    { type: "division", label: "階級", stateKey: "opDivision", field: "weight_class", otherLabel: "その他", options: DIVISION_OPTIONS },
+    // 公式サイトの階級は「ヘビー級101kg」のように体重が付くことがあるので前方一致で照合する。
+    { type: "division", label: "階級", stateKey: "opDivision", field: "weight_class", otherLabel: "その他", options: DIVISION_OPTIONS, matchPrefix: true },
     { type: "promotion", label: "団体", stateKey: "opPromotion", field: "promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS },
   ],
 };
@@ -130,11 +132,12 @@ export function itemPassesFilters(item, groups, state) {
     // field は単一値・配列・空のいずれもありうる。配列に正規化していずれか一致で通過扱い。
     const values = Array.isArray(raw) ? raw : raw == null || raw === "" ? [] : [raw];
     const knownMatches = group.options.map(matchOf);
+    const same = group.matchPrefix ? (v, m) => String(v).startsWith(m) : (v, m) => v === m;
 
     if (selected === OTHER_VALUE) {
-      return forcedOther || !values.some((v) => knownMatches.includes(v));
+      return forcedOther || !values.some((v) => knownMatches.some((m) => same(v, m)));
     }
     const option = group.options.find((o) => o.value === selected);
-    return !forcedOther && option != null && values.includes(matchOf(option));
+    return !forcedOther && option != null && values.some((v) => same(v, matchOf(option)));
   });
 }
