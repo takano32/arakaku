@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Find note results for bouts whose result is still unknown (bout first, not note first)."""
+"""Find note results for unknown bouts, and note method details for known bouts (bout first, not note first)."""
 from __future__ import annotations
 
 # 役割: result_status=unknown の試合ごとに、その大会の結果 note (article_type=event_result) の
@@ -7,6 +7,8 @@ from __future__ import annotations
 #       結果は review/unknown_bout_note_results.csv に書き、Numbers の勝者と一致した行だけ
 #       apply=true にする (T.40 でユーザーが決めた反映条件)。反映は
 #       `python3 scripts/apply_structured_result_patches.py review/unknown_bout_note_results.csv`。
+#       結果が known の試合は、note の勝者が同じときだけ、空の決着欄を埋める候補を
+#       review/known_bout_note_methods.csv に書く (既存値と食い違う行は apply=false)。
 # なぜ別スクリプトか: extract_note_structured_results.py は note 側から試合を組み立てるので、
 #       合同大会の記事・片側だけの記号・「🟦ザモン」のようなコーナー記号付きの行を取りこぼし、
 #       別の試合の記号を混ぜることもあった (T.70)。こちらは試合の 2 人を先に決めて探す。
@@ -23,15 +25,23 @@ import unicodedata
 from arakaku.utils import DATA_SRC, DOCS_DATA, REVIEW, read_csv, write_csv
 
 OUTPUT = REVIEW / "unknown_bout_note_results.csv"
+# 結果が known なのに決着方法などが空の試合に、同じ note の行から空欄だけを埋める候補 (T.73)。
+METHOD_OUTPUT = REVIEW / "known_bout_note_methods.csv"
 FIELDS = [
     "apply", "agreement", "bout_id", "event_id", "fighter_a", "fighter_b", "winner", "loser",
     "numbers_winner", "round", "time", "method_raw", "method_normalized", "technique", "decision_score",
     "source_article_id", "source_line_start", "source_line_end", "source_text", "result_text",
 ]
+METHOD_FIELDS = [
+    "apply", "bout_id", "event_id", "winner", "loser", "round", "time", "method_raw", "method_normalized",
+    "technique", "decision_score", "existing", "clashes", "numbers_detail",
+    "source_article_id", "source_line_start", "source_line_end", "source_text", "result_text",
+]
 WIN_MARKS = "○◯"
 MARK_BEFORE_NAME = re.compile(r"([○◯●])[\s🟥🟦①-⑩]*$")
 NEAR_LINES = 3
-SUB_WORDS = ("チョーク", "RNC", "アームバー", "アームロック", "肩固め", "ギロチン", "三角", "ネックロック", "一本", "腕十字")
+SUB_WORDS = ("チョーク", "RNC", "アームバー", "アームロック", "肩固め", "ギロチン", "三角", "ネックロック", "一本", "腕十字",
+             "腕ひしぎ", "十字固め", "ヒールホールド")
 
 
 def norm(text: str) -> str:
@@ -115,6 +125,22 @@ def numbers_winners() -> dict[frozenset[str], set[str]]:
     return winners
 
 
+def same_value(value: str) -> str:
+    """Compare 3分4秒 and 3分04秒 as the same time."""
+    m = re.fullmatch(r"(\d{1,2})分(\d{1,2})秒", norm(value).strip())
+    return f"{int(m.group(1))}:{int(m.group(2)):02d}" if m else norm(value).strip()
+
+
+def numbers_detail_by_pair() -> dict[frozenset[str], set[str]]:
+    details: dict[frozenset[str], set[str]] = collections.defaultdict(set)
+    for r in json.loads((DOCS_DATA / "numbers_fight_records.json").read_text(encoding="utf-8")):
+        a = r.get("matched_fighter_id") or r.get("candidate_fighter_id")
+        o = r.get("opponent_matched_fighter_id") or r.get("opponent_candidate_fighter_id")
+        if a and o and r.get("detail_raw"):
+            details[frozenset((a, o))].add(r["detail_raw"].strip())
+    return details
+
+
 def main() -> int:
     bouts = read_csv(DATA_SRC / "bouts.csv")
     participants: dict[str, list[dict[str, str]]] = collections.defaultdict(list)
@@ -132,15 +158,12 @@ def main() -> int:
     }
     names = names_by_fighter()
     numbers = numbers_winners()
+    numbers_details = numbers_detail_by_pair()
 
-    rows = []
-    for bout in bouts:
-        pair = participants[bout["bout_id"]]
-        if bout["result_status"] != "unknown" or len(pair) != 2 or not all(p["fighter_id"] for p in pair):
-            continue
-        a, b = pair
+    def locate(a: dict[str, str], b: dict[str, str], event_id: str) -> tuple[str, str, int, int] | None:
+        """(winner fighter_id, article_id, first line, last line) when the marks name exactly one winner."""
         verdicts: dict[str, tuple[str, int, int]] = {}
-        for article_id in sorted(result_notes.get(bout["event_id"], ())):
+        for article_id in sorted(result_notes.get(event_id, ())):
             lines = bodies.get(article_id, "").split("\n")
             occ_a = [o for name in names[a["fighter_id"]] for o in occurrences(lines, name)]
             occ_b = [o for name in names[b["fighter_id"]] for o in occurrences(lines, name)]
@@ -155,34 +178,79 @@ def main() -> int:
                     winner = a if a_wins else b
                     verdicts.setdefault(winner["fighter_id"], (article_id, min(line_a, line_b), max(line_a, line_b)))
         if len(verdicts) != 1:
-            continue
+            return None
         winner_id, (article_id, first, last) = next(iter(verdicts.items()))
-        winner = a if a["fighter_id"] == winner_id else b
-        loser = b if winner is a else a
+        return winner_id, article_id, first, last
+
+    def source_fields(article_id: str, first: int, last: int) -> dict[str, str]:
         lines = bodies[article_id].split("\n")
-        text = result_text(lines, first, last)
-        number_winners = numbers.get(frozenset((a["fighter_id"], b["fighter_id"])), set())
-        agreement = "agree" if number_winners == {winner_id} else ("note_only" if not number_winners else "conflict")
-        rows.append({
-            "apply": "true" if agreement == "agree" else "false",
-            "agreement": agreement,
-            "bout_id": bout["bout_id"],
-            "event_id": bout["event_id"],
-            "fighter_a": a["fighter_name"],
-            "fighter_b": b["fighter_name"],
-            "winner": winner["fighter_name"],
-            "loser": loser["fighter_name"],
-            "numbers_winner": " / ".join(sorted(number_winners)),
-            **parse_result(text),
+        return {
             "source_article_id": article_id,
             "source_line_start": str(first + 1),
             "source_line_end": str(last + 1),
             "source_text": " / ".join(line.strip() for line in lines[first:last + 1]),
-            "result_text": text,
+            "result_text": result_text(lines, first, last),
+        }
+
+    rows = []
+    method_rows = []
+    for bout in bouts:
+        pair = participants[bout["bout_id"]]
+        if len(pair) != 2 or not all(p["fighter_id"] for p in pair):
+            continue
+        a, b = pair
+        found = locate(a, b, bout["event_id"])
+        if not found:
+            continue
+        winner_id, article_id, first, last = found
+        source = source_fields(article_id, first, last)
+        parsed = parse_result(source["result_text"])
+        key = frozenset((a["fighter_id"], b["fighter_id"]))
+        if bout["result_status"] == "unknown":
+            winner = a if a["fighter_id"] == winner_id else b
+            loser = b if winner is a else a
+            number_winners = numbers.get(key, set())
+            agreement = "agree" if number_winners == {winner_id} else ("note_only" if not number_winners else "conflict")
+            rows.append({
+                "apply": "true" if agreement == "agree" else "false",
+                "agreement": agreement,
+                "bout_id": bout["bout_id"],
+                "event_id": bout["event_id"],
+                "fighter_a": a["fighter_name"],
+                "fighter_b": b["fighter_name"],
+                "winner": winner["fighter_name"],
+                "loser": loser["fighter_name"],
+                "numbers_winner": " / ".join(sorted(number_winners)),
+                **parsed,
+                **source,
+            })
+            continue
+        # Known bout: fill only empty method fields, and only when the note names the same winner.
+        winner_side = next(p for p in pair if p["result"] == "win") if any(p["result"] == "win" for p in pair) else None
+        if not winner_side or winner_side["fighter_id"] != winner_id or not source["result_text"]:
+            continue
+        fills = {k: v for k, v in parsed.items() if v and not bout.get(k)}
+        clashes = [f"{k}: {bout[k]} / {v}" for k, v in parsed.items()
+                   if v and bout.get(k) and k in ("round", "time", "method_normalized") and same_value(bout[k]) != same_value(v)]
+        if not fills:
+            continue
+        method_rows.append({
+            "apply": "false" if clashes else "true",
+            "bout_id": bout["bout_id"],
+            "event_id": bout["event_id"],
+            "winner": "",
+            "loser": "",
+            **{k: fills.get(k, "") for k in parsed},
+            "existing": " / ".join(f"{k}={bout[k]}" for k in parsed if bout.get(k)),
+            "clashes": " / ".join(clashes),
+            "numbers_detail": " / ".join(sorted(numbers_details.get(key, set()))),
+            **source,
         })
     write_csv(OUTPUT, FIELDS, rows)
     counts = collections.Counter(r["agreement"] for r in rows)
     print(f"[rows] {len(rows)}  " + "  ".join(f"{k}={v}" for k, v in sorted(counts.items())))
+    write_csv(METHOD_OUTPUT, METHOD_FIELDS, method_rows)
+    print(f"[method rows] {len(method_rows)}  apply={sum(r['apply'] == 'true' for r in method_rows)}")
     return 0
 
 
