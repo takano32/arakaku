@@ -33,7 +33,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
-| B1 | フリーテキスト検索（150ms デバウンス、✕ クリア、Esc でクリア、入力でフォーカス解除） | `event-controller.js` | `ui/shell.js bind()`（`#search` / `#search-clear`）、`clearSearch()` | 検証済 | ブラウザ（「テール」で 1 件、クリアで 131 件、URL `q=`） |
+| B1 | フリーテキスト検索（150ms デバウンス、✕ クリア、Esc でクリア、入力でフォーカス解除） | `event-controller.js` | `ui/shell.js bind()`（`#search` / `#search-clear`）、`clearSearch()` | 変更 | ブラウザ（「テール」で 1 件、クリアで 131 件、URL `q=`）。T.66 で全角半角・ひらがなカタカナ・大文字小文字を同一視（`data/query.js normalizeSearchText`）、空白区切りは AND、選手は団体名でも引ける、日本語入力の変換中は検索しない。validate_json.js で検査 |
 | B2 | 小文字化した連結文字列への部分一致 | `query-matcher.js #matchQuery` | `data/query.js #matchQuery` | 検証済 | Node 旧新比較 |
 | B3〜B10 | 各エンティティの検索対象テキスト（選手 / 試合 / 大会 / 団体 / 動画 / 王座 / 言及 / 出典本文） | `query-matcher.js` | `data/query.js`（`sourceReferenceSearchText` を同ファイルに移動。公式タブ・名鑑系・公式系の管理タブにも `includes` で検索を追加） | 検証済 | Node 旧新比較（21 語 × 3 言及種別で全エンティティの一致結果が同一）。公式 / 名鑑選手 / 名前対応 / 名鑑記録 / 公式選手 / 公式(その他) は旧実装では検索対象外だったが新実装では検索できる（追加） |
 | B11 | 検索キャッシュは `repo.revision` で破棄 | `query-matcher.js #cachedText` | `data/query.js #cachedText` | 検証済 | コード同一 |
@@ -170,6 +170,6 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 表の行は 101（B3〜B10 の 8 機能を 1 行にまとめているので機能数は 108）。
 
-- 検証済: 82 行（機能数 89）
-- 変更: 19 行（A1, A2, A5, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
+- 検証済: 81 行（機能数 88）
+- 変更: 20 行（A1, A2, A5, B1, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
 - 廃止: 0
