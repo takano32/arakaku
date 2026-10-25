@@ -21,7 +21,7 @@ def reorder_csvs():
     # 1. Articles
     articles = read_csv(DATA_SRC / "articles.csv")
     if articles:
-        articles.sort(key=lambda x: sort_key_date(x, "published_at"))
+        articles.sort(key=lambda x: (sort_key_date(x, "published_at"), x["article_id"]))
         write_csv(DATA_SRC / "articles.csv", list(articles[0].keys()), articles)
 
     # 2. Events
