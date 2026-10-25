@@ -167,7 +167,9 @@ def max_bout_event_id(t: str, known_events: set[str]) -> str | None:
 
 def main() -> None:
     # ── Load reference data ──────────────────────────────────────────────────
-    articles = {r["article_id"]: r for r in read_csv(DATA_SRC / "articles.csv")}
+    # articles.csv の行順 (reorder_data.py の前後で変わる) に出力順を左右されないよう、同じキーで並べる (T.91)。
+    articles = {r["article_id"]: r for r in sorted(read_csv(DATA_SRC / "articles.csv"),
+                                                   key=lambda r: (r.get("published_at") or "0000-00-00", r["article_id"]))}
     known_events = {r["event_id"] for r in read_csv(DATA_SRC / "events.csv")}
 
     # Name → fighter_id lookup (display names + aliases)
