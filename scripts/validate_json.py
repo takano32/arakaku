@@ -84,7 +84,9 @@ def validate_articles(articles: list[Any]) -> set[str]:
     for i, x in enumerate(articles):
         if isinstance(x, dict):
             require_field(x, 'articles.json', i, 'title')
-            require_field(x, 'articles.json', i, 'url')
+            url = require_field(x, 'articles.json', i, 'url')
+            if url and not str(url).startswith(('http://', 'https://')):
+                add_error(f"articles.json[{i}]: invalid url: {url}")
     return ids
 
 def validate_promotions(promotions: list[Any], article_ids: set[str]) -> set[str]:
@@ -504,6 +506,9 @@ def validate_source_documents(data: list[Any]) -> None:
             add_error(f"source_documents.json[{index}]: missing source_ref_id")
         if not row.get("content_hash"):
             add_error(f"source_documents.json[{index}]: missing content_hash")
+        url = row.get("url")
+        if url and not str(url).startswith(("http://", "https://")):
+            add_error(f"source_documents.json[{index}]: invalid url: {url}")
 
 def validate_source_document_bodies(data: list[Any]) -> None:
     seen: set[str] = set()

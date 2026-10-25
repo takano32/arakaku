@@ -124,3 +124,10 @@ def test_validate_dates(validate_json_module):
     errors = '\n'.join(validate_json_module.ERRORS)
     assert '(a2)' in errors and '(e1)' in errors and '(n1)' in errors
     assert '(a1)' not in errors and '(y1)' not in errors
+
+def test_article_and_source_document_urls_must_be_http(validate_json_module):
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_articles([{'article_id': 'a1', 'title': 't', 'url': 'javascript:alert(1)'}])
+    validate_json_module.validate_source_documents([{'source_id': 's1', 'source_type': 'note_article', 'source_ref_id': 'a1', 'content_hash': 'h', 'url': 'data:text/html,x'}])
+    errors = '\n'.join(validate_json_module.ERRORS)
+    assert 'articles.json[0]: invalid url' in errors and 'source_documents.json[0]: invalid url' in errors
