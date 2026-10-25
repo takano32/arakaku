@@ -91,7 +91,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.74](tasks/T.74.md) | 選手の主な団体・階級が Numbers・公式サイトと食い違う | 完了 | 2026-10-25 |
 | [T.75](tasks/T.75.md) | 動画データの古い列と未リンク動画 | 完了 | 2026-10-25 |
 | [T.76](tasks/T.76.md) | 王座戦の title_id・title_result が全件空 | 完了 | 2026-10-25 |
-| T.77 | 日付の欠落と書式の不統一 | 保留 | 2026-10-25 |
+| [T.77](tasks/T.77.md) | 日付の欠落と書式の不統一 | 完了 | 2026-10-25 |
 | T.78 | 公式サイトの試合・歴史データがプレースホルダらしい | 保留 | 2026-10-25 |
 | T.79 | official_pages.json がローカルと CI で違う | 保留 | 2026-10-25 |
 | T.80 | ブラウザの「戻る」でサイトから出てしまう | 保留 | 2026-10-25 |
@@ -151,18 +151,6 @@ note の結果記事の書式（◯ U+25EF、1 行の `○A vs ●B`、片側だ
 - [x] T.70.4 note だけにある 1 試合の扱いをユーザーに確認する（fb70f51、2026-10-25）。2026-10-25 にユーザーが決定: 入れる。勝敗だけを反映し（note の行に決着の記載なし）、notes に「Numbers に記録なし」と書いた
   - `max-bout-6-lightweight-tournament-mzffdb97ygw` コルト・アプロー vs センサー・ファッジ: note-n96b3975ccdad 15 行目「○コルト・アプローvs●センサー・ファッジ」。Numbers に記録なし。`review/unknown_bout_note_results.csv` では apply=false
 - [x] T.70.5 T.40.5 の「note も Numbers も無い 21 試合」の一覧を見直す（2026-10-25）。T.40.5 の 21 試合のうち、スペシャルワンマッチ大会の 10 試合は反映済み。残りは エリートスピリッツ 7 試合（note も Numbers も無し）、`max-bout-6-lightweight-tournament-mzffdb97ygw`（T.70.4）、`target-14-d6tuqnfvmhy` と video-catalog 2 試合（T.71）
-
-## T.77 日付の欠落と書式の不統一
-
-- 状態: 保留
-- 期間: 2026-10-25
-
-T.62 の洗い出しで登録。
-
-`events.event_date`・`videos.published_at`・`articles.published_at` が全件空。source_documents と youtube アーカイブは YYYYMMDD、ほかは YYYY-MM-DD。日付の書式は検証していない。
-
-- [ ] T.77.1 大会の日付を何から決めるか（結果 note・最初の試合動画の公開日など）をユーザーに確認する
-- [ ] T.77.2 列ごとに日付の書式を決めて検証する。記事の公開日を note 本文 2 行目から入れる
 
 ## T.78 公式サイトの試合・歴史データがプレースホルダらしい
 
