@@ -10,34 +10,32 @@ Do not invent missing facts. Do not silently drop rows. Missing or contradictory
 
 ## 1. Current CSV Structure
 
-Current canonical source tables:
+Which tables are hand-edited (canonical) and which are regenerated (stage1 / stage2) is defined in README "CSV の出自" and the Makefile `clean-stage1-csvs` / `clean-stage2-csvs` targets. The full header of every table is in `scripts/arakaku/schema.py`.
 
-- `promotions.csv`: promotion entities and rule fields.
-- `events.csv`: event entities.
-- `bouts.csv`: bout entities and bout-level result fields.
+Canonical tables (hand-edited; no generator):
+
+- `events.csv`: event entities. `numbers_event_number` holds the Numbers event number when it is not the integer `event_number` (e.g. `SP` / `SP2` for the MAXバウト special one-match events). The viewer matches Numbers records by it.
+- `bouts.csv`: bout entities and bout-level result fields (`round` like `3R`; `time` like `3分04秒` or `終了`).
 - `bout_participants.csv`: two participant rows per bout.
 - `fighters.csv`: fighter entities.
-- `numbers_fighters.csv`: fighter profile rows extracted from `data-raw/アラカク選手名鑑.numbers`.
-- `numbers_name_matches.csv`: inferred links between Numbers fighter rows and canonical fighter IDs.
-- `numbers_fight_records.csv`: personal fight-record rows extracted from the Numbers "個人成績" sheet.
 - `fighter_snapshots.csv`: event/article-specific fighter profile facts. `source_id` is `note:<article_id>` or `official_news:<slug>`.
-- `titles.csv`: title entities.
-- `events.csv`: `numbers_event_number` holds the Numbers event number when it is not the integer `event_number` (e.g. `SP` / `SP2` for the MAXバウト special one-match events). The viewer matches Numbers records by it.
 - `title_reigns.csv`: title reign lineage rows. `end_reason` is empty or `vacated` (the champion gave up the title without losing it; `lost_at_event_id` must then be empty).
-- `articles.csv`: article/source metadata.
-- `videos.csv`: video metadata.
-- `archives/youtube.csv`: archived metadata extracted from cached YouTube Data API video JSON.
-- `archives/note.csv`: archived metadata extracted from cached note HTML.
-- `official_players.csv`: player profiles extracted from `tmp/arakaku-site/data/players.json` (official site).
-- `official_tournaments.csv`: tournament results extracted from `tmp/arakaku-site/data/tournaments.json`.
-- `official_matches.csv`: match records extracted from `tmp/arakaku-site/data/matches.json`.
-- `official_history.csv`: flattened history entries from `tmp/arakaku-site/data/history.json`.
-- `article_links.csv`: article-to-entity relationships.
-- `video_links.csv`: video-to-entity relationships.
-- `video_bout_links.csv`: hand-maintained links from additional videos (hype, preview, interview, public viewing) to a bout; primary key `(video_id, bout_id)`.
-- `aliases.csv`: alias-to-canonical entity mappings.
-- `source_documents.csv`: cached/extracted source text.
-- `source_mentions.csv`: candidate mentions extracted from source text.
+- `videos.csv`: video metadata (channel name, upload date and link status come from the archive and link tables at build time).
+- `video_bout_links.csv`: links from additional videos (hype, preview, interview, public viewing) to a bout; primary key `(video_id, bout_id)`.
+- `video_event_links.csv`: links from event-level videos (見どころ, digests, watch-along streams) to an event; primary key `(video_id, event_id)`.
+
+Stage1 tables (raw ingestion):
+
+- `numbers_fighters.csv` / `numbers_name_matches.csv` / `numbers_fight_records.csv`: extracted from `data-raw/アラカク選手名鑑.numbers` (profiles, inferred links to canonical fighter IDs, and personal fight records from the "個人成績" sheet).
+- `archives/youtube.csv` / `archives/note.csv`: archived metadata from cached YouTube Data API JSON and note HTML.
+- `articles.csv`: article/source metadata generated from `archives/note.csv`.
+- `source_documents.csv` / `source_mentions.csv`: cached source text and candidate mentions extracted from it.
+- `official_players.csv` / `official_tournaments.csv` / `official_matches.csv` / `official_history.csv`: extracted from `tmp/arakaku-site/data/*.json` (official site).
+
+Stage2 tables (derived):
+
+- `promotions.csv`, `titles.csv`, `aliases.csv`, `video_links.csv`, `article_links.csv`.
+- `official_news.csv` / `official_pages.csv`: official site news Markdown and pages from `tmp/arakaku-site`.
 
 Numbers-derived helper tables:
 
@@ -148,6 +146,11 @@ Primary keys:
 - `article_links.link_id`
 - `source_documents.source_id`
 - `source_mentions.mention_id`
+- `video_links (video_id, entity_type, entity_id, relation_type)`
+- `video_bout_links (video_id, bout_id)`
+- `video_event_links (video_id, event_id)`
+- `aliases (alias_type, alias)`
+- `official_players.id`, `official_tournaments.id`, `official_matches.id`, `official_news.slug`, `official_pages.slug` (`official_history` has no key)
 
 Important foreign keys:
 
@@ -233,9 +236,9 @@ Viewer-compatible generated files:
 - `official_history.json`
 - `official_pages.json`
 - `official_news.json`
-- source reference candidate JSON from `review/*.csv`
+- `source_event_references.json`, `source_bout_references.json`, `source_video_references.json` (source reference candidates from `review/*.csv`)
 
-The `DataRepository` in the viewer automatically merges `numbers_fighters.json` and `numbers_fight_records.json` into the objects returned by the `fighters` and `bouts` accessors at runtime. This ensures that canonical JSON files stay lean and strictly factual while the viewer provides a rich, supplemented experience.
+The `DataRepository` in the viewer merges `numbers_fighters.json` and `numbers_fight_records.json` into the `richFighters` and `richBouts` records at runtime (the plain `fighters` / `bouts` accessors return the JSON as is). This ensures that canonical JSON files stay lean and strictly factual while the viewer provides a rich, supplemented experience.
 
 The frontend loads the smaller per-view JSON files; consumers who need the full dataset should read the per-table JSON files (or the CSVs in `data-src/`) directly.
 
