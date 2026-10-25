@@ -416,7 +416,18 @@ export class DataRepository {
       const fighterId = r.matched_fighter_id || r.candidate_fighter_id || null;
       const opponentId = r.opponent_matched_fighter_id || r.opponent_candidate_fighter_id || null;
       const pairKey = `${eventId}:${[fighterId || r.fighter_name, opponentId || r.opponent_name].sort().join("|")}`;
-      if (bouts.has(pairKey)) continue;
+      if (bouts.has(pairKey)) {
+        // 相手側の行。両側の勝敗が食い違う (両者勝ち・両者負け) なら、どちらかに決めず不明にする (T.89)。
+        const bout = bouts.get(pairKey);
+        bout.numbers_records.push(r);
+        const own = bout.fighters.find(f => (fighterId && f.fighter_id === fighterId) || f.name === r.fighter_name);
+        if (own && r.result && own.result !== "unknown" && own.result !== r.result) {
+          for (const f of bout.fighters) f.result = "unknown";
+          Object.assign(bout, { winner_id: null, winner: null, loser_id: null, loser: null, result_status: "unknown" });
+          bout.notes = "名鑑（Numbers）の個人成績にだけある試合。両側の記録の勝敗が食い違うため不明。";
+        }
+        continue;
+      }
       const order = [...bouts.values()].filter(b => b.event_id === eventId).length + 1;
       const fighters = [
         { fighter_id: fighterId, name: r.fighter_name, side: null, corner: null, result: r.result || "unknown" },
