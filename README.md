@@ -590,7 +590,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### CSV 生成（generate_*）
 
-派生・静的設定から `data-src/*.csv` を再生成します。`make regenerate-csvs` が stage1 / stage2 に分けて実行します（前述の「CSV の出自」を参照）。
+派生・静的設定から `data-src/*.csv` を再生成します。`make regenerate-csvs` が stage1 / stage2 に分けて実行します（前述の「CSV の出自」を参照）。`extract_numbers.py` は `numbers-parser` パッケージを使うので、`python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt` で入れ、`.venv/bin` を PATH の先頭にして実行します（`make rebuild` は入っていなければ何も消さずに止まります）。
 
 - `scripts/generate_articles.py`: `archives/note.csv` から `articles.csv` を生成（stage1）。
 - `scripts/generate_official_csvs.py`: `tmp/arakaku-site/data/*.json` から `official_players.csv`、`official_tournaments.csv`、`official_matches.csv`、`official_history.csv` を生成（stage1）。
@@ -666,7 +666,7 @@ make check-generated  # 生成 CSV をオフラインで再生成し、git と�
 - `make validate`: Python・Node の JSON 検証に加え、`itemPassesFilters` の Node ユニットテストを実行します。
 - `make test`: pytest を実行します。
 - `make check`: build → validate → test を順に実行します。
-- `make check-generated`: stage2 の生成 CSV（promotions・titles・aliases・video_links・article_links）、`reorder_data.py`、review の候補 CSV を再生成し、`git diff --exit-code -- data-src review` で差分があれば失敗します。`bouts.csv` などを直したのに `make generate-stage2` を忘れた場合に気づけます。git と比べるので、コミット前の変更がない状態で実行します（`tmp/` が要る `generate_official_pages_csv.py` は含めません）。
+- `make check-generated`: まず `make build` し、`generate_articles.py`、stage2 の生成 CSV（promotions・titles・aliases・video_links・article_links）、`reorder_data.py`、review の候補 CSV、`match_unknown_bouts_to_note_results.py` の出力を再生成し、`git diff --exit-code -- data-src review` で差分があれば失敗します。`bouts.csv` などを直したのに `make generate-stage2` を忘れた場合に気づけます。git と比べるので、コミット前の変更がない状態で実行します（`tmp/` が要る `generate_official_pages_csv.py` は含めません）。
 
 ### クリーン
 
@@ -684,8 +684,8 @@ make clean-generated-csvs  # stage1 + stage2 生成 CSV をまとめて削除
 ```bash
 make generate-stage1   # 生データ取り込み（Numbers + crawl キャッシュ → base CSV）
 make generate-stage2   # 派生（stage1 CSV → 派生 CSV）
-make regenerate-csvs   # generate-stage1 → generate-stage2
-make rebuild           # clean-generated-csvs + clean-generated → regenerate-csvs → check
+make regenerate-csvs   # generate-stage1 → generate-stage2 → reorder-data
+make rebuild           # check-stage1/2-inputs → clean-generated-csvs + clean-generated → regenerate-csvs → check
 make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2 → check
 ```
 
@@ -706,7 +706,7 @@ make cache-sources           # 上記キャッシュ取得をまとめて実行
 make archive-metadata        # キャッシュから data-src/archives/*.csv を再生成
 make build-sources           # 本文DB（source_documents/source_mentions）を生成
 make reorder-data            # data-src/*.csv を安定行順に並べ直す
-make refresh-sources         # cache-sources（新しい note 記事の発見を含む）→ archive-metadata → generate-articles → build-sources → generate-stage2 → reorder-data → check
+make refresh-sources         # cache-sources（新しい note 記事・YouTube 動画の発見を含む）→ archive-metadata → generate-articles → build-sources → generate-official-csvs → generate-stage2（review の候補 CSV を含む）→ reorder-data → check
 make extract-numbers         # Numbers から numbers_*.csv を生成
 make source-mention-result-candidates  # 言及から結果候補CSVを作る
 make source-reference-candidates       # 出典参照候補CSVを作る
