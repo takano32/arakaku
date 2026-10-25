@@ -60,13 +60,19 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 # ──────────────────────────────────────────────────────────────────
 # Source crawl pipeline (requires network / local cache in tmp/)
 # ──────────────────────────────────────────────────────────────────
-.PHONY: cache-note-html cache-youtube-api cache-sources \
+.PHONY: discover-note-articles cache-note-html cache-youtube-api cache-sources \
         download-official-data \
-        archive-metadata build-sources refresh-sources \
+        archive-metadata generate-articles build-sources refresh-sources \
         source-mention-result-candidates source-reference-candidates \
         reorder-data
 
-cache-note-html:
+# discover-note-articles: list every article of the official note through the note API and
+# append the ones missing from articles.csv (T.86: without this step, refresh-sources only
+# refetched known URLs and new articles never arrived).
+discover-note-articles:
+	python3 scripts/crawl_note_articles.py --use-api
+
+cache-note-html: discover-note-articles
 	python3 scripts/cache_note_html.py
 
 cache-youtube-api:
@@ -80,13 +86,18 @@ cache-sources: cache-note-html cache-youtube-api download-official-data
 archive-metadata:
 	python3 scripts/archive_metadata.py
 
+generate-articles:
+	python3 scripts/generate_articles.py
+
 build-sources:
 	python3 scripts/build_source_documents.py
 
 reorder-data:
 	python3 scripts/reorder_data.py
 
-refresh-sources: cache-sources archive-metadata build-sources reorder-data check
+# Order matters: new articles are discovered and cached, archived, turned into articles.csv,
+# their bodies extracted, and the derived link tables regenerated before the check.
+refresh-sources: cache-sources archive-metadata generate-articles build-sources generate-stage2 reorder-data check
 
 source-mention-result-candidates:
 	python3 scripts/make_source_mention_result_candidates.py
