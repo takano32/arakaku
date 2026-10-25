@@ -29,7 +29,7 @@ from arakaku.utils import DATA_SRC, read_csv, write_csv
 #       title_reigns / fighter_snapshots / source_documents（本文）。出力はビューアの
 #       出典リンク表示が消費する。
 # 不変条件:
-#   - title_to_event_id が組み立てる event_id 文字列は events.csv の実 ID と完全一致が前提
+#   - title_to_event_ids が組み立てる event_id 文字列は events.csv の実 ID と完全一致が前提
 #     （known_events に無ければ採用しない）。命名規則はそちらと必ず同期。
 #   - article_type の値（event_card/event_result/promotion_profile）は generate_articles の
 #     分類と同期していること。
@@ -127,23 +127,25 @@ def extract_promotion_profile_fighters(content_text: str) -> list[str]:
     return list(dict.fromkeys(names))
 
 
-def title_to_event_id(title: str, known_events: set[str]) -> str | None:
-    """Derive event_id from article title string."""
+def title_to_event_ids(title: str, known_events: set[str]) -> list[str]:
+    """Derive event_ids from an article title (a joint event names several)."""
     # ここで組む ID 文字列は events.csv の event_id 命名規則そのもの。両者が一致して
     # いないとイベントリンクが一切張られなくなるので、命名を変えるなら両方同期すること。
+    # 「ターゲットNo.90　エンペラーNo.111合同大会試合結果」のような合同大会はタイトルに出る
+    # 大会をすべて返す (T.70: 以前は最初の 1 つだけで、エンペラー側に出典が付かなかった)。
     t = norm(title)
-    # target
-    m = re.search(r"ターゲットNo\.?\s*(\d+)", t)
-    if m:
-        return f"target-{m.group(1)}"
-    # emperor (with or without No.)
-    m = re.search(r"エンペラー(?:No?\.?\s*)?(\d+)", t)
-    if m:
-        return f"emperor-{m.group(1)}"
-    # mh
-    m = re.search(r"(?:マウンテン・ヒーローズ|M・H)\s*No?\.?\s*(\d+)", t)
-    if m:
-        return f"mh-{m.group(1)}"
+    numbered = [
+        *(f"target-{n}" for n in re.findall(r"ターゲットNo\.?\s*(\d+)", t)),
+        *(f"emperor-{n}" for n in re.findall(r"エンペラー(?:No?\.?\s*)?(\d+)", t)),
+        *(f"mh-{n}" for n in re.findall(r"(?:マウンテン・ヒーローズ|M・H)\s*No?\.?\s*(\d+)", t)),
+    ]
+    if numbered:
+        return numbered
+    event_id = max_bout_event_id(t, known_events)
+    return [event_id] if event_id else []
+
+
+def max_bout_event_id(t: str, known_events: set[str]) -> str | None:
     # max_bout GP (check before tournament for specificity)
     m = re.search(r"第(\d+)回.*?MAXバウト.*?(ライト|ミドル|ヘビー).*?GP", t)
     if m:
@@ -245,12 +247,13 @@ def main() -> None:
         if not content:
             continue
 
-        event_id = title_to_event_id(title, known_events)
-        if not event_id or event_id not in known_events:
+        event_ids = [e for e in title_to_event_ids(title, known_events) if e in known_events]
+        if not event_ids:
             continue
 
         # 4a. Event link
-        add_link(article_id, "event", event_id)
+        for event_id in event_ids:
+            add_link(article_id, "event", event_id)
 
         # 4b. Parse matchup pairs → bout links + fighter links
         # 両選手が解決でき、かつその2人が同一イベント内のある bout 参加者集合に含まれる
@@ -266,9 +269,10 @@ def main() -> None:
                 add_link(article_id, "fighter", fid2)
             if fid1 and fid2:
                 pair = {fid1, fid2}
-                for bout_id in bouts_by_event.get(event_id, []):
-                    if pair <= bout_fighters.get(bout_id, set()):
-                        add_link(article_id, "bout", bout_id)
+                for event_id in event_ids:
+                    for bout_id in bouts_by_event.get(event_id, []):
+                        if pair <= bout_fighters.get(bout_id, set()):
+                            add_link(article_id, "bout", bout_id)
 
     # ── 5. Fighter links from promotion profile content ───────────────────────
     for art in articles.values():
