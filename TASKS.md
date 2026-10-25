@@ -76,7 +76,30 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.59 | ローリングJr とギタミン・アーロンの主な階級を最新にする | 完了 | 2026-10-25 |
 | T.60 | ナビ下の件数表示を押すと該当タブに切り替える | 完了 | 2026-10-25 |
 | T.61 | 公式ニュース本文の `<iframe>` がタグのまま表示される | 完了 | 2026-10-25 |
-| T.62 | 新しいタスクを徹底的に洗い出す | 進行中 | 2026-10-25 |
+| T.62 | 新しいタスクを徹底的に洗い出す | 完了 | 2026-10-25 |
+| T.63 | 公式ニュース Markdown のリンクで XSS が起きる | 未着手 | 2026-10-25 |
+| T.64 | キーボードでボタン・リンク・チップを Enter / Space で押せない | 未着手 | 2026-10-25 |
+| T.65 | 試合の回が「3終了R」と表示される・時間に note の投稿時刻が入っている | 未着手 | 2026-10-25 |
+| T.66 | 検索で全角半角・ひらがなカタカナ・複数語を区別してしまう | 未着手 | 2026-10-25 |
+| T.67 | ビューアの細かい不具合とアクセシビリティ | 未着手 | 2026-10-25 |
+| T.68 | デプロイ前に pytest が走らない・生成 CSV のずれを検出しない | 未着手 | 2026-10-25 |
+| T.69 | 検証の穴をふさぐ | 未着手 | 2026-10-25 |
+| T.70 | note に結果があるのに unknown の 32 試合を取り込む | 未着手 | 2026-10-25 |
+| T.71 | 煽り動画から作られた重複試合 3 件と架空の大会 3 件 | 未着手 | 2026-10-25 |
+| T.72 | 試合の種別の誤り | 未着手 | 2026-10-25 |
+| T.73 | 決着方法・技・判定スコアを note から補う | 未着手 | 2026-10-25 |
+| T.74 | 選手の主な団体・階級が Numbers・公式サイトと食い違う | 未着手 | 2026-10-25 |
+| T.75 | 動画データの古い列と未リンク動画 | 未着手 | 2026-10-25 |
+| T.76 | 王座戦の title_id・title_result が全件空 | 保留 | 2026-10-25 |
+| T.77 | 日付の欠落と書式の不統一 | 保留 | 2026-10-25 |
+| T.78 | 公式サイトの試合・歴史データがプレースホルダらしい | 保留 | 2026-10-25 |
+| T.79 | official_pages.json がローカルと CI で違う | 保留 | 2026-10-25 |
+| T.80 | ブラウザの「戻る」でサイトから出てしまう | 保留 | 2026-10-25 |
+| T.81 | サービスワーカーのデータとアプリのコードがずれうる | 未着手 | 2026-10-25 |
+| T.82 | ドキュメントを T.56 以降の実態に合わせる | 未着手 | 2026-10-25 |
+| T.83 | TASKS.md の整理 | 未着手 | 2026-10-25 |
+| T.84 | 使われていないコードとスクリプト | 保留 | 2026-10-25 |
+| T.85 | テストの重複と性能の小改善 | 未着手 | 2026-10-25 |
 
 ---
 
@@ -186,9 +209,302 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 
 ## T.62 新しいタスクを徹底的に洗い出す
 
-- 状態: 進行中
+- 状態: 完了
 - 期間: 2026-10-25
 
 2026-10-25 にユーザーが依頼:「新しいタスクを徹底的に限界まで探そう」。
 
-- [ ] T.62.1 データ・スクリプト・テスト・ビューア・ドキュメント・CI を観点ごとに調べ、見つけた問題を新しい親タスクとして登録する
+- [x] T.62.1 データ・スクリプト・テスト・ビューア・ドキュメント・CI を観点ごとに調べ、見つけた問題を新しい親タスクとして登録する（T.63〜T.85 の 23 件。2026-10-25）
+  - 方法: 4 観点（データ・スクリプトと CI・ビューア・ドキュメント）を並行に調査し、公開サイトで Lighthouse（モバイル）・性能トレース・全タブの Console を確認。主な指摘（Markdown の XSS、Enter/Space 不具合、「3終了R」、投稿時刻の time、link_status）は手元で再現を確認
+
+## T.63 公式ニュース Markdown のリンクで XSS が起きる
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`ui/markdown.js` のリンク変換が `[a](javascript:alert(1))` を `href="javascript:alert(1"` に、`[a](https://x" onmouseover="alert(1))` を属性の注入にしてしまう（Node で再現）。`body_md` は第三者リポジトリ（kobayashi856/arakaku-site）から取り込んでいる。今のデータには該当なし。
+
+- [ ] T.63.1 リンクの URL を https/http に限り、属性値をエスケープする。Node のテストを追加
+- [ ] T.63.2 リストの直後の段落に `<p>` が付かない不具合を直す（`- x\n- y\n\ntext`）
+- [ ] T.63.3 `validate_json.py` で公式ページ本文 HTML の `<script`・`on*=`・`javascript:`・`srcdoc`・`<form`・`<object|embed>`・許可外ホストの iframe を失敗にする
+
+## T.64 キーボードでボタン・リンク・チップを Enter / Space で押せない
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`ui/keyboard.js` の `#onKeyDown` が INPUT/TEXTAREA/SELECT 以外で Enter と Space を `preventDefault()` するので、フォーカスした行の開閉ボタン・フィルタのチップ・ナビのリンクが動かない（Chrome で再現）。
+
+- [ ] T.64.1 フォーカスがボタン・リンク・summary にあるときは既定動作に任せる
+- [ ] T.64.2 j/k のカーソル移動でフォーカスも移す（今は見た目だけ）
+
+## T.65 試合の回が「3終了R」と表示される・時間に note の投稿時刻が入っている
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+- `bouts.csv` の `round` が `3R終了`（20 件）・`1R終了`（2 件）の行は `int_field` が文字列 `3終了` を返し、`html.js` が R を付けて「3終了R 判定」と表示される
+- 8 試合の `time`（`07分51秒` など）は引用元の note の投稿時刻（例: 2024年1月23日 07:51）と一致する。いずれも 083ab83 の low-confidence パッチ由来: emperor-114-g4yds9beona, max-bout-7-lightweight-gp-hmig9qnqcp8, mh-30-bjwu94npmh8, target-100-trhpbjg3e9i, target-101-0nt8ufrwimc, target-92-granro4uj_4, mh-38-3jbgtu_pkeu, max-bout-6-lightweight-tournament-mzffdb97ygw
+
+- [ ] T.65.1 「終了」の扱いを決めて `round` を整数にする（判定は終了ラウンドなので `3R終了` → round=3）
+- [ ] T.65.2 投稿時刻が入った 8 試合の `time` を空にするか、結果 note の時間に置き換える
+- [ ] T.65.3 検証: round は整数、time は 5:00 以下、round の無い time を失敗にする
+
+## T.66 検索で全角半角・ひらがなカタカナ・複数語を区別してしまう
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`data/query.js` は `trim().toLowerCase()` だけ。試合タブで「ターゲット」102 件に対し「ﾀｰｹﾞｯﾄ」「たーげっと」「ＴＡＲＧＥＴ」は 0 件、「ミドル 級」も 0 件。選手検索は団体名（ターゲット）を見ていない（17 件 / 絞り込みでは 42 件）。日本語入力の変換中にも検索が走る。
+
+- [ ] T.66.1 クエリと検索対象を NFKC・小文字・ひらがな→カタカナ・空白の正規化で揃え、空白区切りの複数語を AND で探す
+- [ ] T.66.2 選手などの検索対象に団体名を入れる
+- [ ] T.66.3 IME の変換中（`isComposing`）は検索しない
+
+## T.67 ビューアの細かい不具合とアクセシビリティ
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+ブラウザ（Lighthouse モバイル: アクセシビリティ 96、CLS 0.77〜0.87）とコード調査で見つかったもの。
+
+- [ ] T.67.1 公式選手の「ヘビー級」絞り込みが `ヘビー級101kg` などを拾わない（`filters.js` の完全一致）
+- [ ] T.67.2 URL の不正な値（`?tab=bogus`、`?fighter_promo=foo`、存在しない `?fighter=`）を読み込み時に捨てる
+- [ ] T.67.3 読み込み件数の分母を実際に取得するファイル数にする（今は 31 で、到達しない）
+- [ ] T.67.4 コントラスト: 選択中ナビの `--accent` / `--accent-soft` が 4.29:1（AA 未満）
+- [ ] T.67.5 ロゴリンクの aria-label が表示文字列を含まない、配色ボタンが状態を伝えない、読み込み表示の aria-live が毎回作り直される
+- [ ] T.67.6 公式ページ・Markdown の表をスマートフォン幅で横スクロールさせる
+- [ ] T.67.7 モバイルで読み込み中にサイドバーが 57px 縮み、本文が大きくずれる（CLS 0.77）
+
+## T.68 デプロイ前に pytest が走らない・生成 CSV のずれを検出しない
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`pages.yml` は `make build` と `make validate` だけで、`test.yml` と独立しているので、pytest の CSV 検査が落ちてもデプロイされる。第2段階の生成 CSV（promotions・titles・aliases・video_links・article_links、reorder、review 候補）は今は再生成と一致するが、CI で確かめていない。
+
+- [ ] T.68.1 `pages.yml` で `make check` を実行する（pytest を入れる）。`actions/setup-node` で Node を固定、`test.yml` に `permissions: contents: read`
+- [ ] T.68.2 `make check-generated`（オフラインで再生成して `git diff --exit-code data-src review`）を追加して CI で実行する
+
+## T.69 検証の穴をふさぐ
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+壊れた入力でも `make check` が通るケースがある（スクリプト調査で、作業用コピーに故障を入れて確認）。
+
+- [ ] T.69.1 CSV の列名変更・欠落ファイルを失敗にする（`read_csv` が `[]` を返す、`row.get` が None、test_05 は一部の列しか見ない）
+- [ ] T.69.2 未知の列挙値を警告ではなく失敗にし、bout_type・event_type・side などにも集合を定義する
+- [ ] T.69.3 `load_json` が JSONDecodeError を握りつぶすのをやめる。`validate_json.js` の ENOENT フォールバックも見直す
+- [ ] T.69.4 JSON を一時ファイル経由で原子的に書き込む（並行実行で書きかけの JSON を読んで失敗した）
+- [ ] T.69.5 `generate_official_pages_csv.py` が入力欠落時に空の CSV を書く・`make rebuild` が前提確認前に CSV を消す
+- [ ] T.69.6 表をまたぐ検査: 試合の団体と大会の団体、alias の canonical_id、`(alias_type, alias)` の重複、source_mentions の source_id、王座の喪失大会と次の獲得大会
+- [ ] T.69.7 検証エラーに CSV のファイル・行・主キーを出す
+
+## T.70 note に結果があるのに unknown の 32 試合を取り込む
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+note の結果記事の書式（◯ U+25EF、1 行の `○A vs ●B`、片側だけの ○/●、合同大会の記事、alias の無い「ローリングjr」）を抽出スクリプトが拾えていない。31 試合は Numbers の勝者と一致、`max-bout-6-lightweight-tournament-mzffdb97ygw`（コルト・アプロー 1R 3分51秒 KO 飛びヒザ）は note だけ。`mh-37-e8wdonlgqdm` は ○/● が無く勝者不明。
+
+- [ ] T.70.1 合同大会の note（note-n1dad6c53911a・note-nab6c0086a467・note-n6f402a63952c）をすべての大会に紐づける（`generate_article_links.py`）
+- [ ] T.70.2 ローリングジュニア / ローリングjr を alias に追加し、書き換えられた `videos.original_title` 12 件をアーカイブから戻す
+- [ ] T.70.3 抽出スクリプトを上の書式に対応させ、Numbers と一致する 31 試合を T.40.2 と同じ方法で反映する
+- [ ] T.70.4 note だけにある 1 試合の扱いをユーザーに確認する
+- [ ] T.70.5 T.40.5 の「note も Numbers も無い 21 試合」の一覧を見直す
+
+## T.71 煽り動画から作られた重複試合 3 件と架空の大会 3 件
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+T.50 で拾い漏れたもの。`target-14-d6tuqnfvmhy`（ライブNo.14 の見どころ動画、実際は mh-35-qx9qzizzru8）、`video-catalog-54kwdqyjoa8-*`（= emperor-115-qwxsvgtscqe）、`video-catalog-f93bk3gibcq-*`（= emperor-115-5zxi7yo4qzm）。
+
+- [ ] T.71.1 3 試合の動画を本来の試合の `video_bout_links` に移し、重複試合と空の大会 `target-14`・`video-catalog-54kwdqyjoa8`・`video-catalog-f93bk3gibcq` を消す（削除なのでユーザーに確認）
+
+## T.72 試合の種別の誤り
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`target-101-vplbxarc3pc`（ギタミン・アーロン vs おとさわ）は動画タイトルが「ターゲットNo.101 ミドル級タイトルマッチ」なのに `video_catalog_bout`・階級空・`is_title_bout=false`。ほかに target・mh・emperor の 22 試合が `video_catalog_bout` のまま（タイトルはワンマッチ）。`max-bout-special-2` は `one_match`、special-1 は `special_one_match`。
+
+- [ ] T.72.1 target-101-vplbxarc3pc を title_match・ミドル級・王座戦にする
+- [ ] T.72.2 ほかの `video_catalog_bout` とスペシャルワンマッチの種別を揃える
+
+## T.73 決着方法・技・判定スコアを note から補う
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+結果が known なのに決着方法が空の試合が 84 件。KO/TKO/SUB 76 件中 65 件で技が空、判定 22 件中 20 件でスコアが空。例: emperor-110-eqlubfqon_q は引用元 note の行に「1R1分22秒KO 右フック」。known の 170 試合に「勝敗・決着未入力」のメモが残っている。note と Numbers の違い（例: emperor-111-xyil3ugc6bq 左ボディブロー / 左フック）は報告する。
+
+- [ ] T.73.1 引用元の note 行から決着方法・技・時間・スコアを抽出して反映する（違いは一覧にして報告）
+- [ ] T.73.2 known の試合から古い「勝敗・決着未入力」メモを外す
+
+## T.74 選手の主な団体・階級が Numbers・公式サイトと食い違う
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+22 人の `main_promotion_id` が Numbers・公式サイトの両方と違う。18 人は大会である `max_bout`、あかそ（target → mh）、ルージュド・スターリー（target → emperor）、アンディ・ザメス・ぎんのすけ（elite_spirits → target）。8 人は試合がすべてミドル級なのに `main_division` が空。ぎんのすけは公式サイトだけヘビー級101kg。
+
+- [ ] T.74.1 2 つの出典が一致すれば直してよいかをユーザーに確認し、T.59 と同じように直す
+
+## T.75 動画データの古い列と未リンク動画
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`videos.link_status` は 355 件が `unlinked` だが、265 件は試合に紐づいていてビューアに「未紐づけ」と出る。`channel_name=NA`（359 件）、`published_at` が全件空（アーカイブに upload_date あり）、notes が yt-dlp 時代のまま。リンクの無い 90 動画のうち約 35 本は 1 つの大会のダイジェスト・見どころ・ライブ配信。
+
+- [ ] T.75.1 `link_status` をリンク表から導くか列を廃止する
+- [ ] T.75.2 `channel_name`・`published_at`・notes をアーカイブから直す
+- [ ] T.75.3 大会が明らかな約 35 本の動画に `video_links` を追加する
+
+## T.76 王座戦の title_id・title_result が全件空
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+王座戦 13 試合すべてで `title_id`・`title_result` が空。T.14.1 で入れた値は 8ec5ed1 で「再現できない」として消された。古い値には誤りもあった（emperor-112・mh-30 は防衛なのに change）。`title_reigns.csv` の mh-middleweight-2（ゼット）は won_at=mh-38 だが該当試合は unknown。
+
+- [ ] T.76.1 title_id（団体と階級から決まる）と title_result を入れ直すかをユーザーに確認する（8ec5ed1 の方針を変えることになる）
+
+## T.77 日付の欠落と書式の不統一
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`events.event_date`・`videos.published_at`・`articles.published_at` が全件空。source_documents と youtube アーカイブは YYYYMMDD、ほかは YYYY-MM-DD。日付の書式は検証していない。
+
+- [ ] T.77.1 大会の日付を何から決めるか（結果 note・最初の試合動画の公開日など）をユーザーに確認する
+- [ ] T.77.2 列ごとに日付の書式を決めて検証する。記事の公開日を note 本文 2 行目から入れる
+
+## T.78 公式サイトの試合・歴史データがプレースホルダらしい
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`official_matches.csv`・`official_history.csv` に「1995 アラカク グランプリ Vol.1 荒木好之 vs デーモンキング」「第5回MAXバウト 2005 デーモンキング vs アイアンウルフ」などがあり、note・公式の大会一覧・CSV と合わない。登場する選手はほかのどこにもいない。管理ビューの「公式」タブに出ている。
+
+- [ ] T.78.1 除外・注記・そのまま、のどれにするかをユーザーに確認する
+
+## T.79 official_pages.json がローカルと CI で違う
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`build_official_pages_json.py` は `tmp/arakaku-site/public` があると画像を base64 で埋め込む。ローカルは 1.9MB、公開サイトは 14.8KB。ビューアは `/` 始まりの URL を公式サイトに書き換えるので埋め込みは不要。ローカルでは全タブの最初の表示が 1.9MB を待つ（Phase 0 は `?tab=` に関係なく公式のデータを読む）。
+
+- [ ] T.79.1 base64 埋め込みをやめるかをユーザーに確認する
+- [ ] T.79.2 Phase 0 で URL のタブのデータを先に読む
+
+## T.80 ブラウザの「戻る」でサイトから出てしまう
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`app/state.js` は `replaceState` だけで `popstate` が無い。試合から選手に飛んで戻るとサイトを離れる。VIEWER_FEATURES C3 は replaceState を意図した仕様として記載。
+
+- [ ] T.80.1 タブ・選手などへの移動を `pushState` にして `popstate` で戻せるようにするかをユーザーに確認する
+
+## T.81 サービスワーカーのデータとアプリのコードがずれうる
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`sw.js` のキャッシュ名は手で上げる `arakaku-data-v1`。JSON の形が変わるデプロイの直後は、新しい JS が古いキャッシュの JSON で描く。キャッシュが無いときの `cache.put` が `waitUntil` の外。
+
+- [ ] T.81.1 ミス時の `cache.put` を `waitUntil` に入れ、キャッシュ名を上げる条件を文書にする（キャッシュ名の自動化は必要なら別途）
+
+## T.82 ドキュメントを T.56 以降の実態に合わせる
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+ドキュメント調査で見つかった古い記述。
+
+- [ ] T.82.1 HANDOFF.md（pytest 18、旧ビューアのファイル、完了済みの次の作業）と CODEX.md:43
+- [ ] T.82.2 README（articles.csv は生成物、載っていない重要ファイル、`scripts/arakaku/youtube.py`、見出しの参照、古い次の改善）と Makefile の .numbers のコメント
+- [ ] T.82.3 SCHEMA_NOTES.md（canonical / stage1 / stage2 の区別、events の重複、official 2 表、主キー一覧、DataRepository の説明）
+- [ ] T.82.4 data-src/GEMINI.md・scripts/GEMINI.md・CHRONICLE.md
+- [ ] T.82.5 OPERATIONS_CHECKLIST（`▶ 詳細` の表記、データキーの 5 グループ）、PR テンプレート（`app.js`）、arakaku-filters スキル（`#withNoteFilterFields`）、VIEWER_FEATURES E11
+
+## T.83 TASKS.md の整理
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+完了済みの T.56・T.58〜T.61 が本文に残っている。T.42 のメモが削除済みの `tab-registry.js` を指す。コミットで完了したのにハッシュが無い子タスク（T.33.1.1〜T.33.1.6、T.56.3.2）、Issue の編集だけの子タスク（T.57.1・T.57.2・T.59.2）。
+
+- [ ] T.83.1 完了した親を `tasks/T.N.md` に移し、T.42 のメモとハッシュの欠けを直す
+
+## T.84 使われていないコードとスクリプト
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+- ビューア: `repository.js` の `eventSourceVideoIdsWithoutBoutCoverage`・`findRichPromotion`、`list.js` の `count`・`renderedCount`・`cursorIndex`・`resetCursor`
+- Makefile から呼ばれないスクリプト: `crawl_note_articles.py`・`import_youtube_videos.py`（yt-dlp 時代）・`import_youtube_descriptions.py`・`extract_note_structured_results.py`・`make_structured_result_patch_candidates.py`・`apply_structured_result_patches.py`（T.70 で抽出系は使う可能性あり）
+- `make refresh-sources` が generate_articles などを飛ばす。名前の正規化が 3 か所に重複
+
+- [ ] T.84.1 ビューアの未使用コードを消す
+- [ ] T.84.2 スクリプトを消すか Makefile に組み込むかをユーザーに確認する
+
+## T.85 テストの重複と性能の小改善
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.62 の洗い出しで登録。
+
+`test_20_validate_json.py`・`test_30_validate_videos.py` は `make validate` と同じ検証を繰り返すだけ。`make test` が build に依存していない。`validate_json.js` は renderHead の漏れを見ていない。`boutsForEvent`・`videosForEntity`・`sourceReferenceForVideo` が行ごとの線形探索（全描画 813ms）。`mapping.py` が空の結果を null でなく `""` にする。
+
+- [ ] T.85.1 重複テストを異常系の単体テストに置き換え、`test: build` の依存と renderHead の検査を足す
+- [ ] T.85.2 線形探索をインデックスにする
