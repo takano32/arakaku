@@ -587,7 +587,9 @@ button { font-family: inherit; font-size: inherit; color: inherit; }
 /* ── 一覧 ─────────────────────────────────────────────────── */
 
 .list-status {
-  margin: 24px 4px;
+  /* margin だと親 (#list-host) の外へ相殺されて、行が届いた瞬間に一覧全体が 20px ずれるので padding で空ける */
+  margin: 0;
+  padding: 24px 4px;
   color: var(--muted);
 }
 .list-status.is-loading { padding-left: 20px; position: relative; }
@@ -987,7 +989,8 @@ button { font-family: inherit; font-size: inherit; color: inherit; }
 
 @media (max-width: 880px) {
   /* 1fr = minmax(auto, 1fr) だと横スクロールするナビの内容幅で列が広がるので minmax(0, 1fr) にする */
-  .app { grid-template-columns: minmax(0, 1fr); }
+  /* 行を伸ばすのは本文だけ。既定 (stretch) だと本文が短い読み込み中にサイドバーの行が伸び、一覧が届くと縮んで大きくずれる */
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
 
   .side {
     position: static;
@@ -1046,7 +1049,11 @@ button { font-family: inherit; font-size: inherit; color: inherit; }
   }
   .site-foot p { margin: 4px 0; }
 
-  .main { padding: 0 16px 48px; }
+  /* 読み込み中の短い本文でもフッターを画面外に置く (一覧が届いたときにフッターが押し出されるずれを防ぐ) */
+  .main { padding: 0 16px 48px; min-height: 100vh; }
+  /* ナビと件数は JS が描くまで空なので、描いた後の高さを先に確保する */
+  .nav:empty { min-height: 74px; }
+  .stats:empty { min-height: 43px; }
   .topbar { padding-top: 12px; }
   .rec { scroll-margin-top: 150px; }
   .rec-open { margin: 8px 0; padding: 0 8px; }
