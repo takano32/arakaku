@@ -25,6 +25,13 @@ PROMOTION_ALIASES = [
     ("MAXバウト", "max_bout"),
 ]
 
+# Static fighter aliases: spellings that appear in official video titles or note articles but are
+# not covered by Numbers (high confidence) or by display_name. Each needs a source.
+FIGHTER_ALIASES = [
+    ("ローリングJr.", "rolling_jr"),  # official video titles (e.g. youtube_bujuelt6hfo); fighters.csv display_name
+    ("ローリングjr", "rolling_jr"),   # official video titles (youtube_9hosl10mklo, youtube_ohxh8yuitfy) and note result articles
+]
+
 # Static method aliases (Japanese term → method code)
 METHOD_ALIASES = [
     ("KO", "KO"),
@@ -64,6 +71,12 @@ def main() -> None:
         display = fighter.get("display_name", "").strip()
         if display and display != fid:
             rows.append({"alias_type": "fighters", "alias": display, "canonical_id": fid})
+
+    # Static fighter aliases (skip ones the passes above already produced)
+    seen = {(row["alias_type"], row["alias"]) for row in rows}
+    for alias, fid in FIGHTER_ALIASES:
+        if ("fighters", alias) not in seen:
+            rows.append({"alias_type": "fighters", "alias": alias, "canonical_id": fid})
 
     # Promotion aliases
     for alias, cid in PROMOTION_ALIASES:
