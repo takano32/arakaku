@@ -7,6 +7,7 @@ import { FILTER_STATE_KEYS, TAB_FILTERS, filterButtons } from "../data/filters.j
  *
  * - フィルタ系プロパティ名は data/filters.js の group.stateKey と 1 対 1 (FILTER_STATE_KEYS から初期化)。
  * - 各フィルタの「未選択」は空文字 ""、tab の既定値は DEFAULT_TAB。writeToURL は既定値を省略する。
+ * - タブと飛び先 (選手・大会・試合) の変化だけ履歴に積み、main.js の popstate が stateFromHistory で戻す。
  * - data / repository / loadedDataKeys 等は data/loader.js が差し込む。
  * - viewMode はタブから導出する (管理タブなら "admin")。`?tab=sources` のような共有リンクが
  *   そのまま管理ビューを開けるようにするため、状態としては持たない。
@@ -123,11 +124,33 @@ export function searchStringFor(state) {
 }
 
 let lastSearch = null;
+let lastPlace = null;
 
-/** 状態を URL に反映する (replaceState。履歴は増やさず、直前と同じなら書き込まない) */
+// 「どこを見ているか」= タブと飛び先 (選手・大会・試合)。これが変わったときだけ履歴を増やし、
+// ブラウザの「戻る」で前の表示に戻れるようにする (T.80)。検索語・絞り込みの変更は履歴を置き換える。
+function placeOf(state) {
+  return [state.tab, state.focusFighterId, state.focusEventId, state.focusBoutId].join("\0");
+}
+
+/** 状態を URL に反映する (タブ・飛び先が変われば pushState、それ以外は replaceState。直前と同じなら書き込まない) */
 export function writeToURL(state) {
   const search = searchStringFor(state);
   if (search === lastSearch) return;
+  const place = placeOf(state);
+  const push = lastPlace !== null && place !== lastPlace;
   lastSearch = search;
-  history.replaceState(null, "", search || location.pathname);
+  lastPlace = place;
+  history[push ? "pushState" : "replaceState"](null, "", search || location.pathname);
+}
+
+/** 「戻る」「進む」で URL が変わったとき、その URL の状態 (既定値で埋めたもの) を返し、書き戻しを抑える */
+export function stateFromHistory(search = location.search) {
+  const patch = {
+    tab: DEFAULT_TAB, query: "", focusFighterId: "", focusEventId: "", focusBoutId: "", mentionType: "",
+    ...Object.fromEntries(FILTER_STATE_KEYS.map((key) => [key, ""])),
+    ...readFromURL(search),
+  };
+  lastSearch = searchStringFor(patch);
+  lastPlace = placeOf(patch);
+  return patch;
 }
