@@ -26,14 +26,34 @@ CsvRow = dict[str, str]
 SchemaSpec = Any
 RowTransform = Callable[[CsvRow], Any]
 
-def read_csv(path: Path) -> list[dict[str, str]]:
-    # 欠損ファイルはエラーにせず空リストで返す (まだ生成されていない中間 CSV を許容するため)。
+def read_csv(path: Path, missing_ok: bool = False) -> list[dict[str, str]]:
+    # data-src の CSV は arakaku.schema.CSV_HEADERS と列を照合し、無いファイル・列の違いはエラーにする
+    # (列の改名や消えたファイルを空の値として黙って通さないため)。まだ生成されていない中間 CSV を
+    # 読む呼び出しだけ missing_ok=True で空リストを受け取る。
+    from arakaku.schema import CSV_HEADERS
+    try:
+        rel = path.resolve().relative_to(DATA_SRC).as_posix()
+    except ValueError:
+        rel = None
     if not path.exists():
-        print(f"[warn] {path} not found")
-        return []
+        if missing_ok or rel not in CSV_HEADERS:
+            print(f"[warn] {path} not found")
+            return []
+        raise FileNotFoundError(f"{path}: required CSV is missing")
     # utf-8-sig: Numbers/Excel 由来 CSV の先頭 BOM を取り除いて読む。
     with path.open("r", encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        rows = list(reader)
+    expected = CSV_HEADERS.get(rel) if rel else None
+    if expected is not None and reader.fieldnames != expected:
+        actual = reader.fieldnames or []
+        missing = [c for c in expected if c not in actual]
+        extra = [c for c in actual if c not in expected]
+        raise ValueError(
+            f"{path}: header does not match arakaku/schema.py "
+            f"(missing: {missing or '-'}, unexpected: {extra or '-'}, order differs: {not missing and not extra})"
+        )
+    return rows
 
 def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)

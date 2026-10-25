@@ -341,7 +341,7 @@ def build_youtube_documents() -> list[dict[str, str]]:
 
 # 本文が変わっていない行は前回の fetched_at を引き継ぎ、再実行だけで全行が差分にならないようにする。
 def keep_unchanged_fetched_at(documents: list[dict[str, str]]) -> None:
-    previous = {row["source_id"]: row for row in read_csv(SOURCE_DOCUMENTS_CSV)}
+    previous = {row["source_id"]: row for row in read_csv(SOURCE_DOCUMENTS_CSV, missing_ok=True)}
     for document in documents:
         old = previous.get(document["source_id"])
         if old and old.get("content_hash") == document["content_hash"] and old.get("fetched_at"):
