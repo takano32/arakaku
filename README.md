@@ -162,11 +162,14 @@ JSON は viewer 用の生成物です。
 
 ```text
 .
+├── .agents/skills/         # エージェント向けの作業手順（データ・viewer・CI など）
 ├── .github/
 │   └── workflows/          # GitHub Actions
+├── data-raw/               # Numbers の選手名鑑（アラカク選手名鑑.numbers、手元で更新してコミット）
 ├── data-src/               # 正規ソースCSV
 ├── docs/                   # GitHub Pages 用 viewer
 │   ├── assets/
+│   │   ├── images/          # ロゴ画像
 │   │   ├── js/              # viewer（app/ 状態, data/ データ層, ui/ 描画）
 │   │   └── app.css          # viewer CSS
 │   ├── data/                # 生成JSON出力先。JSONはコミットしない
@@ -174,12 +177,21 @@ JSON は viewer 用の生成物です。
 │   ├── sw.js                # データ JSON の Service Worker
 │   └── VIEWER_FEATURES.md   # viewer の機能一覧（旧→新の対応と検証状況）
 ├── review/                 # 自動抽出・推定・反映前レビュー用CSV
-├── scripts/                # build / validate / import / extraction scripts
+├── scripts/                # build / validate / import / extraction scripts（arakaku/ は共有ヘルパ）
+├── tasks/                  # 完了した親タスクの記録（T.N.md）
 ├── tests/                  # pytest
-├── tmp/                    # ローカルキャッシュ
+├── tmp/                    # ローカルキャッシュ（中身はコミットしない）
+│   ├── arakaku-site/        # 公式サイトのソース（download_official_data.sh）
 │   ├── note-html/           # note HTML cache
 │   └── youtube-api/         # YouTube Data API video JSON cache
+├── AGENTS.md               # データとコードの作業ルール（CLAUDE.md から読み込む）
+├── CLAUDE.md               # Claude Code 向けの行動指針
+├── TASKS.md                # 作業台帳（T.N で採番）
+├── HANDOFF.md / CODEX.md / GEMINI.md  # 各エージェント向けの引き継ぎメモ
+├── CHRONICLE.md            # 2026-06 までの開発経緯（以降は TASKS.md）
+├── OPERATIONS_CHECKLIST.md # 更新作業のチェックリスト
 ├── Makefile
+├── pyproject.toml          # pytest の設定
 ├── SCHEMA_NOTES.md
 └── README.md
 ```
@@ -190,27 +202,29 @@ JSON は viewer 用の生成物です。
 
 ### コミットするもの
 
-- `data-src/*.csv`
+- `data-src/*.csv`、`data-src/archives/*.csv`
+- `data-raw/アラカク選手名鑑.numbers`
 - `review/*.csv`
 - `docs/data/.gitkeep`
-- `tmp/.gitkeep`
-- `tmp/note-html/.gitkeep`
-- `tmp/youtube-api/.gitkeep`
-- `scripts/*.py`
+- `tmp/.gitkeep`、`tmp/arakaku-site/.gitkeep`、`tmp/note-html/.gitkeep`、`tmp/youtube-api/.gitkeep`
+- `scripts/*.py`、`scripts/*.js`、`scripts/*.mjs`、`scripts/*.sh`、`scripts/arakaku/*.py`
 - `tests/*.py`
 - `docs/assets/js/**/*.js`
 - `docs/assets/app.css`
+- `docs/assets/images/`
 - `docs/index.html`
 - `docs/sw.js`
-- `.github/workflows/*.yml`
-- `README.md`
-- `SCHEMA_NOTES.md`
+- `.github/workflows/*.yml`、`.github/pull_request_template.md`
+- `.agents/skills/`
+- `README.md`、`SCHEMA_NOTES.md`、`AGENTS.md`、`CLAUDE.md`、`TASKS.md`、`tasks/`、そのほかのドキュメント
+- `Makefile`、`pyproject.toml`
 
 ### コミットしないもの
 
 - `docs/data/*.json`
 - `tmp/note-html/*.html`
 - `tmp/youtube-api/*.json`
+- `tmp/arakaku-site/` の中身
 - `__pycache__/`
 - `.pytest_cache/`
 - ローカル実験用の一時ファイル
@@ -454,7 +468,7 @@ YouTube などの動画 URL、動画タイトル、動画種別、重複候補�
 
 `tmp/note-html/*.html` から抽出した note メタデータのアーカイブです。
 
-`articles.csv` は手で管理する記事台帳、`archives/note.csv` は取得済みHTMLから保存した外部メタデータです。canonical URL、HTML title、description を保存し、viewer の補助表示や記事確認に使います。
+`articles.csv` は `archives/note.csv` から `generate_articles.py` が作る記事台帳（stage1 の生成物なので手で直しても再生成で消えます）、`archives/note.csv` は取得済みHTMLから保存した外部メタデータです。canonical URL、HTML title、description を保存し、viewer の補助表示や記事確認に使います。
 
 再生成時は `filename` で既存 `archived_at` を維持し、`filename` 順に並べます。
 
@@ -466,7 +480,7 @@ YouTube などの動画 URL、動画タイトル、動画種別、重複候補�
 
 ### `data-src/articles.csv`
 
-note 記事などの出典記事データです。
+note 記事などの出典記事データです。`archives/note.csv` から `generate_articles.py` が生成します（stage1）。
 
 記事ID、タイトル、URL、記事種別、団体ID、公開日、状態などを管理します。
 
@@ -562,7 +576,7 @@ viewer や抽出処理での検索・照合改善に使います。
 
 ## scripts の役割
 
-共有ヘルパは `scripts/arakaku/`（`utils.py` / `mapping.py` / `validation.py` / `textparse.py`）にまとめています。`textparse.py` には複数スクリプトで挙動が完全に一致するテキスト解析パターン・関数（URL 正規表現、全角数字正規化、決まり手・タイム推定）だけを置き、語彙が意図的に異なるパターンは各スクリプト側に残しています。スクリプトは用途で分類できます。
+共有ヘルパは `scripts/arakaku/`（`utils.py` / `mapping.py` / `validation.py` / `textparse.py` / `youtube.py` / `schema.py`）にまとめています。`textparse.py` には複数スクリプトで挙動が完全に一致するテキスト解析パターン・関数（URL 正規表現、全角数字正規化、決まり手・タイム推定）だけを置き、語彙が意図的に異なるパターンは各スクリプト側に残しています。スクリプトは用途で分類できます。
 
 ### JSON 生成（build_*）
 
@@ -577,7 +591,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### CSV 生成（generate_*）
 
-派生・静的設定から `data-src/*.csv` を再生成します。`make regenerate-csvs` が stage1 / stage2 に分けて実行します（後述の「data-src CSV の出自」を参照）。
+派生・静的設定から `data-src/*.csv` を再生成します。`make regenerate-csvs` が stage1 / stage2 に分けて実行します（前述の「CSV の出自」を参照）。
 
 - `scripts/generate_articles.py`: `archives/note.csv` から `articles.csv` を生成（stage1）。
 - `scripts/generate_official_csvs.py`: `tmp/arakaku-site/data/*.json` から `official_players.csv`、`official_tournaments.csv`、`official_matches.csv`、`official_history.csv` を生成（stage1）。
@@ -669,7 +683,7 @@ make clean-stage2-csvs     # stage2 生成 CSV を削除
 make clean-generated-csvs  # stage1 + stage2 生成 CSV をまとめて削除
 ```
 
-`clean-stage1-csvs` / `clean-stage2-csvs` が削除する CSV は、そのまま「どの CSV が生成物か」の典拠です（後述の「data-src CSV の出自」を参照）。canonical な手編集 CSV は削除しません。
+`clean-stage1-csvs` / `clean-stage2-csvs` が削除する CSV は、そのまま「どの CSV が生成物か」の典拠です（前述の「CSV の出自」を参照）。canonical な手編集 CSV は削除しません。
 
 ### CSV 再生成（再現性）
 
@@ -772,7 +786,7 @@ Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v
 - `アラカク選手名鑑.numbers` を三分割CSVに変換し、Numbers由来プロフィール・名前突合・個人成績をクライアントサイド比較用データとして追加
 - YouTube / note cache metadata を `data-src/archives/*.csv` に永続化し、`youtube_archives.json` / `note_archives.json` を viewer の補助表示・検索へ連携
 - 団体公式サイト (`kobayashi856/arakaku-site`) のデータを `official_*` CSV として取り込み、公式タブと選手プロフィール補完に連携
-- データ信頼性の階層（名鑑 > 公式 > 通信 > YouTube > 未登録）を `core/reliability.js` に定義し、enricher の重ね合わせ・低信頼の末尾寄せ・絞り込みの「その他/最小登録」判定へ適用
+- データ信頼性の階層（名鑑 > 公式 > 通信 > YouTube > 未登録）を `core/reliability.js`（T.56 以降は `docs/assets/js/data/reliability.js`）に定義し、enricher の重ね合わせ・低信頼の末尾寄せ・絞り込みの「その他/最小登録」判定へ適用
 - 全タブ共通の設定駆動フィルタ（`filters.js` の `TAB_FILTERS`、URL は英語トークン）と、名鑑=青/公式=緑の出所カラーリング、公式bio表示、表記ゆれ重複選手のビューア統合を追加
 - viewer を見た目から作り直し（T.56）: 左ナビ + 開閉する行の一覧、CDN 依存なし（自前の段階描画一覧・YouTube ファサード・ファイル単位の段階ロード）、ライト / ダーク配色、スマートフォン対応。データ層（`docs/assets/js/data/`）は旧実装と同じ規則を保つ
 
@@ -889,7 +903,4 @@ wc -l data-src/*.csv data-src/archives/*.csv
 
 ## 次の改善候補
 
-- 王座変遷の精度を上げる
-- 選手プロフィールを充実させる
-- unknown 試合の結果補完を進める
-- 出典詳細トグルと archive 補助表示を Pages 上で確認し、必要なら開閉時のレイアウトを微調整する
+最新の候補と判断待ちの事項は `TASKS.md` を見てください。
