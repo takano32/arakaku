@@ -767,10 +767,6 @@ youtube_seqvh_2ggvc,bout,target-104-05,full_fight,,,公式YouTube動画タイト
 youtube_seqvh_2ggvc,event,target-104,reference,,,Migrated from events.source_video_ids.
 youtube_seqvh_2ggvc,fighter,ginnosuke,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_seqvh_2ggvc,fighter,ethan_donstar,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_d6tuqnfvmhy,bout,target-14-d6tuqnfvmhy,reference,,,公式YouTube動画タイトルから推定。
-youtube_d6tuqnfvmhy,event,target-14,reference,,,Migrated from events.source_video_ids.
-youtube_d6tuqnfvmhy,fighter,rancher_sugaya,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_d6tuqnfvmhy,fighter,fighter_ffbd00f5ab,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_mnuuhlkn1lm,bout,target-87-mnuuhlkn1lm,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_mnuuhlkn1lm,event,target-87,reference,,,Migrated from events.source_video_ids.
 youtube_mnuuhlkn1lm,fighter,kitamura,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
@@ -979,14 +975,6 @@ youtube_pkhb34uskzs,bout,target-99-pkhb34uskzs,full_fight,,,公式YouTube動画�
 youtube_pkhb34uskzs,event,target-99,reference,,,Migrated from events.source_video_ids.
 youtube_pkhb34uskzs,fighter,fighter_ca8f747620,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_pkhb34uskzs,fighter,tsuoshi,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_54kwdqyjoa8,bout,video-catalog-54kwdqyjoa8-54kwdqyjoa8,preview,,,公式YouTube動画タイトルから推定。
-youtube_54kwdqyjoa8,event,video-catalog-54kwdqyjoa8,reference,,,Migrated from events.source_video_ids.
-youtube_54kwdqyjoa8,fighter,marco_fraser,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_54kwdqyjoa8,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
-youtube_f93bk3gibcq,bout,video-catalog-f93bk3gibcq-f93bk3gibcq,preview,,,公式YouTube動画タイトルから推定。
-youtube_f93bk3gibcq,event,video-catalog-f93bk3gibcq,reference,,,Migrated from events.source_video_ids.
-youtube_f93bk3gibcq,fighter,fighter_b23cf227ff,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
-youtube_f93bk3gibcq,fighter,fighter_e590e4eb0f,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_vdb8qzkxcy,bout,target-103-02,full_fight,,,公式YouTube動画タイトルから推定。
 youtube_vdb8qzkxcy,event,target-103,reference,,,Migrated from events.source_video_ids.
 youtube_vdb8qzkxcy,fighter,otosawa,reference,,,Migrated from fighters.inferred_from_video_ids.
@@ -1127,6 +1115,18 @@ youtube_bniqjtmfayw,bout,target-98-pj937dfydti,preview,,,公式YouTube動画タ�
 youtube_bniqjtmfayw,event,target-98,reference,,,Migrated from events.source_video_ids.
 youtube_bniqjtmfayw,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
 youtube_bniqjtmfayw,fighter,daina,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_d6tuqnfvmhy,bout,mh-35-qx9qzizzru8,reference,,,公式YouTube動画タイトルから推定。
+youtube_d6tuqnfvmhy,event,mh-35,reference,,,Migrated from events.source_video_ids.
+youtube_d6tuqnfvmhy,fighter,rancher_sugaya,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_d6tuqnfvmhy,fighter,fighter_ffbd00f5ab,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_54kwdqyjoa8,bout,emperor-115-qwxsvgtscqe,preview,,,公式YouTube動画タイトルから推定。
+youtube_54kwdqyjoa8,event,emperor-115,reference,,,Migrated from events.source_video_ids.
+youtube_54kwdqyjoa8,fighter,marco_fraser,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_54kwdqyjoa8,fighter,blue_one,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_f93bk3gibcq,bout,emperor-115-5zxi7yo4qzm,preview,,,公式YouTube動画タイトルから推定。
+youtube_f93bk3gibcq,event,emperor-115,reference,,,Migrated from events.source_video_ids.
+youtube_f93bk3gibcq,fighter,fighter_b23cf227ff,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_f93bk3gibcq,fighter,fighter_e590e4eb0f,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_nethwrkgjga,event,elite-spirits-middleweight-gp,reference,,,動画タイトルに大会名がある（T.75）
 youtube_bzjeda8zhbm,event,emperor-110,reference,,,動画タイトルに大会名がある（T.75）
 youtube_gmcs_m19ofq,event,emperor-112,reference,,,動画タイトルに大会名がある（T.75）
