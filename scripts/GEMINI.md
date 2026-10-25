@@ -10,7 +10,7 @@ Python scripts in this directory handle data processing, validation, and extract
 
 ### 2. No Side Effects on Canonical Data (mostly)
 - Build and validation scripts read from `data-src/` and output to `docs/data/` or `review/`.
-- Scripts that write `data-src/*.csv`: the generators (`generate_*.py`, `extract_numbers.py`, `archive_metadata.py`, `build_source_documents.py`, `import_youtube_videos.py`), `reorder_data.py` (row order only) and the review-gated `apply_structured_result_patches.py`. Generated CSVs are listed in README "CSV の出自"; hand edits to them are lost on regeneration.
+- Scripts that write `data-src/*.csv`: the generators (`generate_*.py`, `extract_numbers.py`, `archive_metadata.py`, `build_source_documents.py`, `discover_youtube_videos.py`, `crawl_note_articles.py`), `reorder_data.py` (row order only) and the review-gated `apply_structured_result_patches.py`. Generated CSVs are listed in README "CSV の出自"; hand edits to them are lost on regeneration.
 - `extract_numbers.py` is an explicit source import script: it reads `data-raw/アラカク選手名鑑.numbers` and regenerates the Numbers-derived CSVs in `data-src/`.
 - Numbers-derived CSVs are comparison/review inputs. Do not use import scripts to confirm winners, bouts, or participant results without a separate review step. The static viewer uses these for automated supplementation of unknown fields.
 - `archive_metadata.py` is an explicit cache-to-source archiving script: it reads local cache files and regenerates `data-src/archives/youtube.csv` and `data-src/archives/note.csv`.

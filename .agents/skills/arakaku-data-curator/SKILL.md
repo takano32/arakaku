@@ -162,7 +162,7 @@ Video metadata. Canonical (hand-edit).
 
 Do not duplicate videos unless URLs differ or there is a clear reason.
 
-`scripts/import_youtube_videos.py` can append yt-dlp rows, but by default it preserves curated values: it only fills blank cells on existing rows and adds new rows, never overwriting non-empty fields. Use `--replace` only when you intend to discard curated edits.
+`scripts/discover_youtube_videos.py` (run by `make cache-youtube-api`) appends rows for new uploads of the official channel (Shorts are left out) and never changes existing rows. It does not link videos to bouts or events.
 
 ### article_links.csv
 
