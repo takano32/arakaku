@@ -8,6 +8,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -21,6 +24,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
@@ -28,3 +36,6 @@ jobs:
 
       - name: Build, validate, and test
         run: make check
+
+      - name: Check generated CSVs are up to date
+        run: make check-generated
