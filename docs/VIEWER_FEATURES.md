@@ -52,7 +52,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 |---|---|---|---|---|---|
 | C1 | `PARAM_MAP`（25 パラメータ） | `core/url-sync.js` | `app/state.js PARAM_MAP`（同じ 25 個 + `bout`（試合フォーカス）を追加） | 検証済 | ブラウザで `?tab=events&event=max-bout-special-1`、`?tab=fighters&fighter=kabei`、`?tab=titles&title_promo=target` などを確認 |
 | C2 | 起動時に URL から復元し検索ボックスにも反映 | `main.js`, `url-sync.js readFromURL` | `main.js`, `app/state.js readFromURL` | 検証済 | ブラウザ |
-| C3 | `replaceState` で URL を更新（既定値省略、同一なら書かない） | `url-sync.js writeToURL` | `app/state.js writeToURL / searchStringFor` | 検証済 | ブラウザ（フィルタ・検索・フォーカスの URL を確認） |
+| C3 | `replaceState` で URL を更新（既定値省略、同一なら書かない） | `url-sync.js writeToURL` | `app/state.js writeToURL / searchStringFor / stateFromHistory`, `main.js` の popstate | 変更 | ブラウザ（フィルタ・検索・フォーカスの URL を確認）。T.80 でタブと飛び先（選手・大会・試合）が変わったときだけ `pushState` にし、ブラウザの「戻る」「進む」で前の表示に戻れるようにした（検索・絞り込みは今までどおり `replaceState`） |
 
 ## D. 遷移・フォーカス
 
@@ -170,6 +170,6 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 表の行は 101（B3〜B10 の 8 機能を 1 行にまとめているので機能数は 108）。
 
-- 検証済: 81 行（機能数 88）
-- 変更: 20 行（A1, A2, A5, B1, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
+- 検証済: 80 行（機能数 87）
+- 変更: 21 行（A1, A2, A5, B1, C3, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
 - 廃止: 0
