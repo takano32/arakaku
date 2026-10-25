@@ -1,4 +1,2 @@
 apply,agreement,bout_id,event_id,fighter_a,fighter_b,winner,loser,numbers_winner,round,time,method_raw,method_normalized,technique,decision_score,source_article_id,source_line_start,source_line_end,source_text,result_text
-true,agree,emperor-118-u6_s5feulqm,emperor-118,ダイス・ヴォルケード,バルバード・ブワーズ,ダイス・ヴォルケード,バルバード・ブワーズ,fighter_5d7998006d,,,,,,,note-nced343dbb736,20,24,○ダイス・ヴォルケード / 35歳 190cm ＫＢMトップチーム / 【7勝3敗】 / 🆚 / ●バルバード・ブワーズ,
 false,conflict,target-101-0nt8ufrwimc,target-101,かぶと,イベルト・キューミ,かぶと,イベルト・キューミ,fighter_020b361a38,3R,2分11秒,KO パウンド,KO,パウンド,,note-n15885dea4393,21,23,○かぶと【11勝13敗】 / 🆚 / ●イベルト・キューミ【3勝4敗】,3R2分11秒KO パウンド
-true,agree,mh-38-3jbgtu_pkeu,mh-38,ローリングJr.,ぱいそんはやし,ぱいそんはやし,ローリングJr.,python_hayashi,3R,終了,判定3-0,DEC,,3-0,note-nea973af387f1,24,28,●ローリングJr. / 29歳186cmチームハーツ / 【5勝4敗】 / 🆚 / ○ぱいそんはやし,3R終了 判定3-0
