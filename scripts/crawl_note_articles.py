@@ -35,6 +35,7 @@ USER_AGENT = "arakaku-note-crawler/1.0 (+https://github.com/takano32/arakaku)"
 
 NOTE_ARTICLE_RE = re.compile(r"https://note\.com/[^/\s\"')）]+/n/[A-Za-z0-9_-]+")
 NOTE_ID_RE = re.compile(r"/n/([A-Za-z0-9_-]+)")
+NOTE_KEY_URL_RE = re.compile(r"/n/n[0-9a-f]{12}(?:[/?#]|$)")
 
 
 def fetch_text(url: str, *, sleep: float = 0.5) -> str:
@@ -215,6 +216,10 @@ def row_from_note_object(obj: dict[str, Any]) -> dict[str, str] | None:
 
     if not url or "/n/" not in str(url):
         return None
+    # API の JSON は入れ子を全部たどるので、記事以外の key (32 桁の英数字。開くと 404) も拾ってしまう。
+    # 記事の ID は n + 12 桁の 16 進数なので、それ以外は捨てる (T.86)。
+    if not NOTE_KEY_URL_RE.search(str(url)):
+        return None
 
     title = obj.get("name") or obj.get("title") or ""
     published_at = obj.get("publishAt") or obj.get("publishedAt") or obj.get("createdAt") or ""
@@ -349,7 +354,8 @@ def main() -> int:
     parser.add_argument("--articles", type=Path, default=ARTICLES_CSV)
     parser.add_argument("--use-html", action="store_true")
     parser.add_argument("--use-api", action="store_true")
-    parser.add_argument("--page-limit", type=int, default=20)
+    # 2026-10 時点で記事一覧は 28 ページ。上限で止まると古い記事を取りこぼすので大きめにする (空ページで終わる)。
+    parser.add_argument("--page-limit", type=int, default=200)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--sleep", type=float, default=0.5)
 
