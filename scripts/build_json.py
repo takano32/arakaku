@@ -56,6 +56,13 @@ SOURCE_DOCUMENTS = rows("source_documents.csv")
 # videos.json は viewer の最初の描画で使うため、後から読み込まれる youtube_archives.json を
 # 待たずに済むようサムネイルの種類だけここで写す。未アーカイブの動画は空文字。
 YOUTUBE_THUMBNAIL_SIZES = {row["display_id"]: row["thumbnail_sizes"] for row in rows("archives/youtube.csv")}
+# 動画の紐づけ状態はリンク表から導く (T.75: 以前は videos.csv の手入力列で、355 本が古い unlinked のままだった)。
+# 試合の元動画 (bouts.inferred_from_video_id)・video_bout_links・video_links のどれかにあれば linked。
+LINKED_VIDEO_IDS = (
+    {row["inferred_from_video_id"] for row in rows("bouts.csv") if row.get("inferred_from_video_id")}
+    | {row["video_id"] for row in rows("video_bout_links.csv")}
+    | {row["video_id"] for row in VIDEO_LINKS}
+)
 
 
 def index_link_ids(links: list[CsvRow], id_field: str) -> dict[tuple[str, str], list[str]]:
@@ -333,7 +340,7 @@ def build_videos() -> list[dict[str, Any]]:
             "published_at": "published_at",
             "official_status": field_or_default("official_status", "unknown"),
             "video_type": field_or_default("video_type", "reference"),
-            "link_status": field_or_default("link_status", "unlinked"),
+            "link_status": lambda row: "linked" if row["video_id"] in LINKED_VIDEO_IDS else "unlinked",
             "duplicate_group_id": "duplicate_group_id",
             "duplicate_note": "duplicate_note",
             "notes": field_or_empty("notes"),
