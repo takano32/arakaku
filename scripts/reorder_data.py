@@ -25,14 +25,34 @@ def reorder_csvs():
         write_csv(DATA_SRC / "articles.csv", list(articles[0].keys()), articles)
 
     # 2. Events
+    # 大会の日付は CSV に無いので、結果 note の投稿日 (build_json.py の result_published_at と同じ)、
+    # 無ければその大会の note のいちばん早い投稿日 (対戦カードだけの大会)、それも無ければ published_at で並べる (T.77)。
+    article_dates = {a["article_id"]: (a.get("article_type", ""), a.get("published_at", "")) for a in articles}
+    result_dates: dict[str, str] = {}
+    any_note_dates: dict[str, str] = {}
+    for link in read_csv(DATA_SRC / "article_links.csv"):
+        if link["entity_type"] != "event":
+            continue
+        article_type, date = article_dates.get(link["article_id"], ("", ""))
+        if not date:
+            continue
+        event_id = link["entity_id"]
+        if article_type == "event_result" and date < result_dates.get(event_id, "9999"):
+            result_dates[event_id] = date
+        if date < any_note_dates.get(event_id, "9999"):
+            any_note_dates[event_id] = date
+
+    def event_date(e: dict[str, str]) -> str:
+        return result_dates.get(e["event_id"]) or any_note_dates.get(e["event_id"]) or sort_key_date(e, "published_at")
+
     events = read_csv(DATA_SRC / "events.csv")
     if events:
-        events.sort(key=lambda x: (sort_key_date(x, "published_at"), x["event_id"]))
+        events.sort(key=lambda x: (event_date(x), x["event_id"]))
         write_csv(DATA_SRC / "events.csv", list(events[0].keys()), events)
 
     # bouts はイベント日付で並べたいが bouts.csv 自体に日付列が無いので、
     # 整列済み events から event_id→日付の対応表を作って引く。
-    event_date_map = {e["event_id"]: sort_key_date(e, "published_at") for e in events}
+    event_date_map = {e["event_id"]: event_date(e) for e in events}
 
     # 3. Bouts
     bouts = read_csv(DATA_SRC / "bouts.csv")
