@@ -32,12 +32,11 @@ def test_validate_real_aliases_shape(validate_json_module, docs_data, json_file)
     assert validate_json_module.ERRORS == []
     assert set(aliases) >= {'fighters','promotions','methods'}
 
-def test_validate_bouts_warns_on_unusual_method(validate_json_module):
+def test_validate_bouts_rejects_unusual_method(validate_json_module):
     bouts=[{'bout_id':'sample-001','event_id':'target-103','promotion_id':'target','fighters':[{'fighter_id':'waku','name':'わく','result':'win'},{'fighter_id':'tsukurihara','name':'つくりはら','result':'loss'}],'winner_id':'waku','winner':'わく','loser_id':'tsukurihara','loser':'つくりはら','result':{'method_normalized':'SPECIAL'},'source_article_id':'note-target-103-result'}]
     validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
     validate_json_module.validate_bouts(bouts=bouts,event_ids={'target-103'},promotion_ids={'target'},fighter_ids={'waku','tsukurihara'},article_ids={'note-target-103-result'})
-    assert validate_json_module.ERRORS == []
-    assert 'unusual method_normalized: SPECIAL' in '\n'.join(validate_json_module.WARNINGS)
+    assert 'unusual method_normalized: SPECIAL' in '\n'.join(validate_json_module.ERRORS)
 
 def test_validate_title_reigns_rejects_vacated_reign_with_lost_at(validate_json_module):
     reigns=[{'reign_id':'mh-middleweight-1','title_id':'mh-middleweight','reign_order':'1','fighter_id':'tail_junk','end_reason':'vacated','lost_at_event_id':'mh-38'},{'reign_id':'mh-middleweight-2','title_id':'mh-middleweight','reign_order':'2','fighter_id':'tail_junk','end_reason':'retired'}]
@@ -72,3 +71,14 @@ def test_round_time_problems(validate_json_module):
     ok=validate_json_module.round_time_problems
     assert ok(3,'終了') == [] and ok(1,'3分04秒') == [] and ok(None,None) == [] and ok(2,'5分0秒') == []
     assert ok('3終了','') and ok(6,'') and ok(3,'07分51秒') and ok(None,'1分00秒') and ok(1,'1分60秒')
+
+def test_validate_enums_rejects_unknown_values(validate_json_module):
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_enums({
+        'bouts': [{'bout_id': 'b1', 'bout_type': 'one_matc'}, {'bout_id': 'b2', 'bout_type': 'one_match', 'inferred_confidence': None}],
+        'events': [], 'fighters': [], 'bout_participants': [{'participant_id': 'p1', 'side': 'green'}],
+        'source_mentions': [], 'numbers_name_matches': [], 'articles': [],
+    })
+    errors = '\n'.join(validate_json_module.ERRORS)
+    assert 'unknown bout_type: one_matc' in errors and 'unknown side: green' in errors
+    assert '(b2)' not in errors
