@@ -54,7 +54,8 @@ const SOURCE_TYPE_OPTIONS = [
  */
 export const TAB_FILTERS = {
   fighters: [
-    { type: "division", label: "階級", stateKey: "fighterDivision", field: "main_division", otherLabel: "その他", options: DIVISION_OPTIONS, forceOther: isMinimalFighter },
+    // 公式サイトの階級で上書きされた選手は「ヘビー級118kg」のように体重が付くので前方一致 (T.111)。
+    { type: "division", label: "階級", stateKey: "fighterDivision", field: "main_division", otherLabel: "その他", options: DIVISION_OPTIONS, forceOther: isMinimalFighter, matchPrefix: true },
     { type: "promotion", label: "団体", stateKey: "fighterPromotion", field: "main_promotion_id", otherLabel: "その他", options: PROMOTION_OPTIONS, forceOther: isMinimalFighter },
   ],
   bouts: [
