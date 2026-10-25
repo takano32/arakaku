@@ -92,7 +92,7 @@ def main() -> None:
             "source_type": "official_note",
             "article_type": art_type,
             "promotion_id": promo,
-            "published_at": "",
+            "published_at": note.get("published_at", ""),
             "last_checked_at": note.get("archived_at", ""),
             "status": "unparsed",
             "notes": article_notes,
