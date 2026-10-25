@@ -12,7 +12,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 検証の概要（T.56.3）:
 
 - データ層は旧 `core/*` と新 `data/*` を Node で同じ `docs/data` に対して突き合わせ、`richFighters` (131) / `richBouts` (315) / `richEvents` (67) / `richVideos` (360) / `richArticles` (120) / `richTitles` (16) / `sourceDocuments` (479) / `richSourceMentions` (1683)、すべての finder と関係ヘルパ、信頼性ティア、全フィルタのバケット件数、21 語 × 3 言及種別の検索一致が完全一致（188/188）。
-- `make check`（build → validate_json.py → validate_json.js → test_filters.mjs → pytest）が通る。`validate_json.js` は全 15 セクションの全行を Node で描画する。
+- `make check`（build → validate_json.py → validate_json.js → test_filters.mjs → test_markdown.mjs → pytest）が通る。`validate_json.js` は全 15 セクションの全行を Node で描画する。
 - Chrome（1280px と 390px）で全 15 セクション、検索・絞り込み・フォーカス遷移・キーボード・配色切替・共有リンク（`?tab=events&event=max-bout-special-1`、`?tab=fighters&fighter=kabei`、`?tab=titles&title_promo=target`、`?tab=sources&src_type=note_article`、`?tab=mentions&mention=result`、`?tab=numbersFightRecords&nr_promo=max_bout`、`?tab=bogus`）を確認。Console はエラー・警告ともに 0 件（favicon の 404 も無し）。
 
 ## A. 画面構成・ナビゲーション

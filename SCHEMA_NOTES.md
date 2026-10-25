@@ -173,6 +173,8 @@ Important foreign keys:
 - `video_links.video_id -> videos.video_id`
 - `video_bout_links.video_id -> videos.video_id`
 - `video_bout_links.bout_id -> bouts.bout_id`
+- `video_event_links.video_id -> videos.video_id`
+- `video_event_links.event_id -> events.event_id`
 - `source_mentions.source_id -> source_documents.source_id`
 
 `article_links.entity_type/entity_id` and `video_links.entity_type/entity_id` are polymorphic relationships validated against allowed entity tables.
