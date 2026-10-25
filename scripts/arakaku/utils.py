@@ -11,10 +11,13 @@
 
 import csv
 import json
+import os
 import re
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from typing import Any, Callable
+from typing import Any, Callable, Iterator, TextIO
 
 # parents[2] = リポジトリ直下 (scripts/arakaku/utils.py から 2 つ上)。ここを基準に全パスが決まる。
 ROOT = Path(__file__).resolve().parents[2]
@@ -55,9 +58,26 @@ def read_csv(path: Path, missing_ok: bool = False) -> list[dict[str, str]]:
         )
     return rows
 
-def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:
+# 書き込みは同じディレクトリの一時ファイルに書いてから os.replace で差し替える。書きかけのファイルを
+# 別のプロセス (並行して走る make validate など) が読んで壊れた JSON と判定することがあったため (T.69)。
+_UMASK = os.umask(0)
+os.umask(_UMASK)
+
+@contextmanager
+def atomic_open(path: Path, newline: str | None = None) -> Iterator[TextIO]:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as f:
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline=newline) as f:
+            yield f
+        os.chmod(tmp, 0o666 & ~_UMASK)  # mkstemp は 0600 で作るので、通常の open と同じ権限に戻す
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:
+    with atomic_open(path, newline="") as f:
         # lineterminator="\n": OS 非依存の改行で書き、extrasaction="ignore" で
         # fieldnames に無い余分なキーは黙って捨てる (出力スキーマを fieldnames で固定する契約)。
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore", lineterminator="\n")
@@ -66,8 +86,7 @@ def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> 
     print(f"[info] {path}")
 
 def write_json(path: Path, data: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
+    with atomic_open(path) as f:
         # 決定的出力: 日本語をそのまま (ensure_ascii=False)、2 スペースインデント、末尾改行。
         # フォーマットを変えると docs/data/*.json の diff が無関係に膨らむので維持すること。
         json.dump(data, f, ensure_ascii=False, indent=2)
