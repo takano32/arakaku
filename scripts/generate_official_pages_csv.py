@@ -8,9 +8,8 @@ import re
 #       official_pages.csv に変換する。news は YAML frontmatter を抜き、pages は Astro/JSX を
 #       素の HTML へ正規表現で還元する（軽量な“脱 Astro”処理）。
 # アーキ上の位置: generate-stage2 の最後に実行（generate_official_csvs と同じく公式比較データ
-#       系統）。入力 tmp/arakaku-site/ は git 管理外。NEWS_DIR が無ければ generate_news は
-#       早期 return して official_news.csv を温存するが、generate_pages は全 slug を skip
-#       しても末尾で write_csv を呼ぶため official_pages.csv は空で上書きされる点に注意。
+#       系統）。入力 tmp/arakaku-site/ は git 管理外。入力が欠けていれば CSV を書かずに
+#       エラーで止まる（以前は official_pages.csv を空で上書きしていた。T.69）。
 #       出力は build_official_pages_json.py が消費する。
 # 不変条件: ASTRO_PAGES は変換対象スラッグ・表示タイトル・説明文の固定リスト。
 #       extract_astro_body の正規表現は順序依存（frontmatter→レイアウトタグ→コメント→
@@ -91,10 +90,13 @@ def extract_astro_body(text: str) -> str:
     return text.strip()
 
 
+def missing_input(path) -> SystemExit:
+    return SystemExit(f"[error] {path} not found; fetch it with `make download-official-data` (no CSV was written)")
+
+
 def generate_news() -> None:
     if not NEWS_DIR.exists():
-        print(f"[skip] {NEWS_DIR} not found")
-        return
+        raise missing_input(NEWS_DIR)
     fields = ["slug", "title", "date", "category", "summary", "body_md"]
     rows = []
     for path in sorted(NEWS_DIR.glob("*.md")):
@@ -117,8 +119,7 @@ def generate_pages() -> None:
     for slug, title, description in ASTRO_PAGES:
         path = PAGES_DIR / f"{slug}.astro"
         if not path.exists():
-            print(f"[skip] {path} not found")
-            continue
+            raise missing_input(path)
         body_html = extract_astro_body(path.read_text(encoding="utf-8"))
         rows.append({
             "slug":        slug,
