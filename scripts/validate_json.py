@@ -414,6 +414,38 @@ def validate_aliases(aliases: Any) -> None:
         if not isinstance(v, dict):
             add_error(f"aliases.json[{k}]: expected object")
 
+def validate_cross_tables(bouts: list[Any], events: list[Any], aliases: Any, fighter_ids: set[str], promotion_ids: set[str], title_reigns: list[Any], source_mentions: list[Any], source_documents: list[Any]) -> None:
+    # Rules that span tables (T.69). Each held on the data when added; a violation is a real inconsistency.
+    event_promotion = {e.get('event_id'): e.get('promotion_id') for e in events if isinstance(e, dict)}
+    for i, b in enumerate(bouts):
+        if isinstance(b, dict) and b.get('event_id') in event_promotion and b.get('promotion_id') != event_promotion[b.get('event_id')]:
+            add_error(f"bouts.json[{i}] ({b.get('bout_id')}): promotion_id {b.get('promotion_id')} differs from its event {b.get('event_id')} ({event_promotion[b.get('event_id')]})")
+    if isinstance(aliases, dict):
+        targets = {'fighters': fighter_ids, 'promotions': promotion_ids}
+        for alias_type, mapping in aliases.items():
+            if not isinstance(mapping, dict):
+                continue
+            for alias, canonical_id in mapping.items():
+                if alias_type in targets and canonical_id not in targets[alias_type]:
+                    add_error(f"aliases.json[{alias_type}][{alias}]: unknown canonical_id: {canonical_id}")
+                if alias_type == 'methods' and str(canonical_id).split('_')[0] not in VALID_METHODS:
+                    add_error(f"aliases.json[methods][{alias}]: canonical_id does not start with a known method: {canonical_id}")
+    source_ids = {d.get('source_id') for d in source_documents if isinstance(d, dict)}
+    for i, m in enumerate(source_mentions):
+        if isinstance(m, dict) and m.get('source_id') and m.get('source_id') not in source_ids:
+            add_error(f"source_mentions.json[{i}] ({m.get('mention_id')}): unknown source_id: {m.get('source_id')}")
+    # Within one title, the event where a reign ended must be the event where the next reign began.
+    by_title: dict[str, list[dict[str, Any]]] = {}
+    for r in title_reigns:
+        if isinstance(r, dict) and str(r.get('reign_order') or '').isdigit():
+            by_title.setdefault(r.get('title_id'), []).append(r)
+    for title_id, reigns in by_title.items():
+        reigns.sort(key=lambda r: int(r['reign_order']))
+        for prev, nxt in zip(reigns, reigns[1:]):
+            lost, won = prev.get('lost_at_event_id'), nxt.get('won_at_event_id')
+            if lost and won and lost != won:
+                add_error(f"title_reigns.json ({title_id}): reign {prev['reign_order']} ended at {lost} but reign {nxt['reign_order']} began at {won}")
+
 def validate_source_documents(data: list[Any]) -> None:
     seen = set()
     for index, row in enumerate(data):
@@ -679,6 +711,8 @@ def main() -> int:
     validate_source_references(load_json('source_bout_references.json', []), 'source_bout_references.json', 'bout_id', bout_ids)
     validate_source_references(load_json('source_video_references.json', []), 'source_video_references.json', 'video_id', video_ids)
     validate_aliases(aliases)
+    validate_cross_tables(bouts, events, aliases, fighter_ids, promotion_ids, title_reigns,
+                          load_json('source_mentions.json', []), load_json('source_documents.json', []))
     validate_enums({
         'bouts': bouts, 'events': events, 'fighters': fighters, 'bout_participants': bout_participants,
         'source_mentions': load_json('source_mentions.json', []), 'numbers_name_matches': numbers_name_matches,
