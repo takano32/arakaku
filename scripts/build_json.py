@@ -202,6 +202,18 @@ def build_promotions() -> list[dict[str, Any]]:
     )
 
 
+# 大会の日付: 架空の団体なので開催日はどこにも書かれていない。結果 note (article_type=event_result) の
+# 投稿日のうち最も早いものを「結果発表日」として出す (T.77、ユーザー判断)。結果 note が無ければ null。
+ARTICLES_BY_ID = {row["article_id"]: row for row in rows("articles.csv")}
+RESULT_PUBLISHED_AT: dict[str, str] = {}
+for _link in ARTICLE_LINKS:
+    _article = ARTICLES_BY_ID.get(_link["article_id"], {})
+    if _link["entity_type"] == "event" and _article.get("article_type") == "event_result" and _article.get("published_at"):
+        _current = RESULT_PUBLISHED_AT.get(_link["entity_id"])
+        if _current is None or _article["published_at"] < _current:
+            RESULT_PUBLISHED_AT[_link["entity_id"]] = _article["published_at"]
+
+
 def build_events() -> list[dict[str, Any]]:
     return map_csv(
         "events.csv",
@@ -212,7 +224,7 @@ def build_events() -> list[dict[str, Any]]:
             "event_number": int_field("event_number"),
             "numbers_event_number": "numbers_event_number",
             "event_type": "event_type",
-            "event_date": "event_date",
+            "result_published_at": lambda row: RESULT_PUBLISHED_AT.get(row["event_id"]),
             "published_at": "published_at",
             "source_article_id": lambda row: first_article_id_for("event", row["event_id"]),
             "summary": field_or_empty("summary"),
