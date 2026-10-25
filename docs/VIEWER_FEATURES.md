@@ -19,7 +19,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
-| A1 | ヘッダ（タイトル、ロゴ画像 `header.webp`、GitHub リンク） | `index.html`, `style.css` | `index.html` `.brand` / `.side-links`、`app.css` | 変更 | ロゴとタイトルは左ナビの先頭に置き、GitHub は斜めリボンではなくナビ下部のリンク群に入れた。スマートフォンでは上部の 1 行になる。ブラウザで確認 |
+| A1 | ヘッダ（タイトル、ロゴ画像 `header.webp`、GitHub リンク） | `index.html`, `style.css` | `index.html` `.brand` / `.side-links`、`app.css` | 変更 | ロゴとタイトルは左ナビの先頭に置き、GitHub は斜めリボンではなくナビ下部のリンク群に入れた。スマートフォンでは上部の 1 行になる。ブラウザで確認。T.67 でロゴリンクのアクセシブル名を表示文字列に合わせ、配色ボタンのラベルを「ダーク / ライト配色に切り替える」にし、選択中ナビと王座戦バッジのコントラストを 4.5:1 以上にした。スマートフォンの読み込み中のレイアウトのずれ（CLS 0.777）を 0 にした（Lighthouse モバイルでアクセシビリティ 100） |
 | A2 | サマリー件数 8 項目（団体・大会・試合・選手・王座・動画・出典・出典候補）と未ロード時 `...`、選手は関係キーが揃ってから `richFighters.length`、大会・試合は名鑑のみ分を加算 | `view-controller.js renderSummary` | `ui/shell.js #counts / #renderStats`（ナビ下の「データ件数」。未ロードは `…`） | 変更 | 同じ規則。ブラウザで 7 / 67 / 315 / 131 / 16 / 360 / 479 / 1448 を確認。T.60 で各件数を該当タブへのリンクにした（出典・出典候補は出典本文へ） |
 | A3 | 通常ビューのタブ 8 個（公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画、順 = キーボード 1〜8） | `config.js PUBLIC_TABS`, `view-controller.js renderTabs` | `config.js PUBLIC_TABS`, `ui/shell.js #renderNav`（`<a href="?tab=…">` のリスト） | 検証済 | ブラウザで全タブを巡回 |
 | A4 | 管理ビューのタブ 7 個 | `config.js ADMIN_TABS` | `config.js ADMIN_TABS`, `ui/shell.js #renderNav`（`<details class="nav-admin">` 内） | 検証済 | ブラウザで全 7 タブを巡回 |
