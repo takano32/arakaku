@@ -1,6 +1,7 @@
 /**
- * フリーテキスト検索。各エンティティの検索対象テキストを集約し、小文字化した連結文字列に対する
- * 部分一致で評価する。
+ * フリーテキスト検索。各エンティティの検索対象テキストを集約し、正規化した連結文字列に対する
+ * 部分一致で評価する。検索語は空白で区切り、すべての語を含むものを残す (AND)。
+ * 正規化 (normalizeSearchText): NFKC (全角英数・半角カナを揃える)、小文字化、ひらがな→カタカナ、空白の圧縮。
  *
  * - キャッシュは repo.revision を世代キーにしており、repo.invalidate() で revision が進むと自動破棄される。
  * - 検索対象に項目を足すときは、その項目を含むメソッドの配列に追記するだけでよい
@@ -10,6 +11,20 @@
 // 出典候補 (source_*_references) 1 件の検索テキスト。試合・大会の検索と出典候補表示で共用する。
 export function sourceReferenceSearchText(r) {
   return [r.candidate_id, r.source_id, r.source_type, r.source_ref_id, r.source_title, r.source_url, r.line_numbers, r.mention_types, r.matched_texts, r.content_preview, r.confidence, r.notes].filter(Boolean).join(" ");
+}
+
+export function normalizeSearchText(value) {
+  return String(value ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\u3041-\u3096]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function queryTerms(query) {
+  const q = normalizeSearchText(query);
+  return q ? q.split(" ") : [];
 }
 
 export class QueryMatcher {
@@ -37,20 +52,20 @@ export class QueryMatcher {
       this.#cache.clear();
     }
     if (!this.#cache.has(key)) {
-      this.#cache.set(key, buildFn().filter(Boolean).join(" ").toLowerCase());
+      this.#cache.set(key, normalizeSearchText(buildFn().filter(Boolean).join(" ")));
     }
     return this.#cache.get(key);
   }
 
   #matchQuery(text) {
-    const q = this.state.query.trim().toLowerCase();
-    return !q || text.includes(q);
+    return queryTerms(this.state.query).every((term) => text.includes(term));
   }
 
   includes(values) {
-    const q = this.state.query.trim().toLowerCase();
-    if (!q) return true;
-    return values.filter(Boolean).join(" ").toLowerCase().includes(q);
+    const terms = queryTerms(this.state.query);
+    if (terms.length === 0) return true;
+    const text = normalizeSearchText(values.filter(Boolean).join(" "));
+    return terms.every((term) => text.includes(term));
   }
 
   fighterMatches(fighter) {
@@ -61,6 +76,7 @@ export class QueryMatcher {
         fighter.aliases?.join(" "),
         fighter.main_division,
         fighter.main_promotion_id,
+        this.repo.promotionName(fighter.main_promotion_id),
         fighter.profile?.height,
         fighter.profile?.age,
         fighter.profile?.gym,
