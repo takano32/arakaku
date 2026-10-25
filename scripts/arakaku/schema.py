@@ -4,7 +4,7 @@
 
 CSV_HEADERS: dict[str, list[str]] = {
     "aliases.csv": ["alias_type", "alias", "canonical_id"],
-    "archives/note.csv": ["filename", "webpage_url", "title", "description", "archived_at"],
+    "archives/note.csv": ["filename", "webpage_url", "title", "description", "published_at", "archived_at"],
     "archives/youtube.csv": ["display_id", "webpage_url", "fulltitle", "uploader", "upload_date", "duration_string", "view_count", "like_count", "description", "thumbnail_sizes", "archived_at"],
     "article_links.csv": ["link_id", "article_id", "entity_type", "entity_id", "relation_type", "notes"],
     "articles.csv": ["article_id", "title", "url", "source_type", "article_type", "promotion_id", "published_at", "last_checked_at", "status", "notes"],

@@ -11,6 +11,7 @@
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 from datetime import datetime
 import html
+import re
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -33,7 +34,7 @@ YOUTUBE_FIELDS = [
     "thumbnail_sizes",
     "archived_at",
 ]
-NOTE_FIELDS = ["filename", "webpage_url", "title", "description", "archived_at"]
+NOTE_FIELDS = ["filename", "webpage_url", "title", "description", "published_at", "archived_at"]
 
 
 def existing_archive_rows(path: Path, key_field: str) -> dict[str, dict[str, str]]:
@@ -86,13 +87,20 @@ class NoteMetadataParser(HTMLParser):
         return html.unescape("".join(self.title_parts)).strip()
 
 
+# 記事の公開日は構造化データ (JSON-LD) の datePublished にある (例: 2026-07-31T09:42:15.000+09:00)。
+# 日付部分 (日本時間の YYYY-MM-DD) だけを残す (T.77)。
+DATE_PUBLISHED_RE = re.compile(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})')
+
+
 def parse_note_metadata(html: str) -> dict[str, str]:
     parser = NoteMetadataParser()
     parser.feed(html)
+    published = DATE_PUBLISHED_RE.search(html)
     return {
         "title": parser.title,
         "webpage_url": parser.canonical_url,
         "description": parser.description,
+        "published_at": published.group(1) if published else "",
     }
 
 
@@ -139,6 +147,7 @@ def archive_notes():
             "webpage_url": metadata["webpage_url"],
             "title": metadata["title"],
             "description": metadata["description"],
+            "published_at": metadata["published_at"],
             "archived_at": existing.get(cache_file.name, {}).get("archived_at") or new_archived_at,
         })
 
