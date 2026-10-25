@@ -656,24 +656,10 @@ export class DataRepository {
   get richTitles() {
     if (this.#richTitles) return this.#richTitles;
 
-    // source_video_id → event_id (bouts.inferred_from_video_id から)
-    const videoEventMap = new Map();
-    for (const bout of this.raw("bouts")) {
-      if (bout.inferred_from_video_id && bout.event_id) {
-        videoEventMap.set(bout.inferred_from_video_id, bout.event_id);
-      }
-    }
-
+    // 出典動画 (source_video_id) から獲得大会は導かない。王座の出典動画は防衛戦のこともあり、
+    // そうした 4 王座で獲得・喪失の大会が誤っていた (T.89)。獲得大会は title_reigns.csv に明示されたものだけ。
     this.#richTitles = this.titles.map((title) => {
       const lineage = (title.lineage ?? []).map((r) => ({ ...r }));
-
-      // 出典動画から獲得大会を導出
-      for (const reign of lineage) {
-        if (!reign.won_at_event_id && reign.source_video_id) {
-          const eventId = videoEventMap.get(reign.source_video_id);
-          if (eventId) reign.won_at_event_id = eventId;
-        }
-      }
 
       // 前進パス: 次代の獲得大会を喪失大会に
       // (返上して空位になった王者は、次の王者が王座決定戦で獲得しても負けていない)
