@@ -196,6 +196,7 @@ function validateSectionRendering(state) {
         const body = desc.renderBody(item);
         assert(typeof body === "string", `section ${id}: renderBody must return a string for ${key}`);
         assert(!/undefined|\[object Object\]|NaN/.test(body.replace(/<code>[^<]*<\/code>/g, "").replace(/data:[^"'\s)]+/g, "")), `section ${id}: renderBody leaked an undefined/object value for ${key}`);
+        assert(!body.includes("&lt;iframe"), `section ${id}: renderBody shows a raw <iframe> tag as text for ${key}`);
       }
     }
     summary.push(`${id}=${desc.items.length}`);
