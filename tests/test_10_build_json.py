@@ -28,3 +28,11 @@ def test_split_list(utils_module):
     assert utils_module.split_list(None) == []
     assert utils_module.split_list('note-target,note-target-103') == ['note-target','note-target-103']
     assert utils_module.split_list('ターゲット、エンペラー／M・H') == ['ターゲット','エンペラー','M・H']
+
+def test_load_json_raises_on_invalid_json(utils_module, tmp_path, monkeypatch):
+    import pytest
+    monkeypatch.setattr(utils_module, "DOCS_DATA", tmp_path)
+    (tmp_path / "broken.json").write_text('[{"a": 1', encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid JSON"):
+        utils_module.load_json("broken.json", [])
+    assert utils_module.load_json("absent.json", []) == []
