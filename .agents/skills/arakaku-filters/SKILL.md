@@ -75,7 +75,7 @@ them in the section's `build()` (`docs/assets/js/ui/sections/*.js`) before `item
 
 - `videos` → `promotion_id`/`division` derived in `enrichVideo` from `video_links`
   → bout/event.
-- `tsushin` → `#withNoteFilterFields(doc)` adds `promotion_id` (from the article)
+- `tsushin` → `withFilterFields(doc)` in `ui/sections/tsushin.js` adds `promotion_id` (from the article)
   and `divisions[]` (from `article_links` → bout).
 - `officialPlayers` → `ui/sections/admin.js` maps `organization` → `promotion_id` via
   `repo.promotionIdByName(...)` before filtering.
