@@ -428,7 +428,6 @@ export class DataRepository {
         }
         continue;
       }
-      const order = [...bouts.values()].filter(b => b.event_id === eventId).length + 1;
       const fighters = [
         { fighter_id: fighterId, name: r.fighter_name, side: null, corner: null, result: r.result || "unknown" },
         { fighter_id: opponentId, name: r.opponent_name, side: null, corner: null, result: flip[r.result] ?? "unknown" },
@@ -436,10 +435,12 @@ export class DataRepository {
       const winner = fighters.find(f => f.result === "win");
       const loser = fighters.find(f => f.result === "loss");
       bouts.set(pairKey, {
-        bout_id: `${eventId}-${order}`,
+        // ID は 2 人の組から作る (Numbers の記録の並びが変わっても共有リンクがずれない)。試合順は
+        // Numbers に無いので持たない (以前は記録の並びを「第N試合」と表示していた。T.90)。
+        bout_id: `${eventId}--${[fighterId || r.fighter_name, opponentId || r.opponent_name].sort().join("--")}`,
         event_id: eventId,
         promotion_id: r.promotion_id,
-        bout_order: order,
+        bout_order: null,
         matchup: `${r.fighter_name} vs ${r.opponent_name}`,
         division: r.division || null,
         bout_type: null,
@@ -457,7 +458,10 @@ export class DataRepository {
     }
     const byNumber = (a, b) => a.promotion_id.localeCompare(b.promotion_id) || a.event_number - b.event_number;
     const eventList = [...events.values()].sort(byNumber);
-    const boutList = [...bouts.values()];
+    // 大会 (団体・興行番号) → 対戦の名前の順に並べる。記録の並びのままだと試合タブで大会が混ざる (T.90)。
+    const eventOrder = new Map(eventList.map((e, i) => [e.event_id, i]));
+    const boutList = [...bouts.values()].sort((a, b) =>
+      (eventOrder.get(a.event_id) ?? 0) - (eventOrder.get(b.event_id) ?? 0) || a.matchup.localeCompare(b.matchup, "ja"));
     this.#numbersOnly = {
       events: eventList,
       bouts: boutList,

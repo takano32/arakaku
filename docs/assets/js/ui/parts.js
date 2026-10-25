@@ -339,7 +339,7 @@ export class Parts {
     const result = this.boutResultSummary(bout);
     const line = this.boutResultLine(bout);
     const head = [
-      showOrder ? `<span class="muted small">第${escapeHtml(bout.bout_order ?? "?")}試合</span>` : "",
+      showOrder && bout.bout_order ? `<span class="muted small">第${escapeHtml(bout.bout_order)}試合</span>` : "",
       showEvent ? `<span class="small">${this.eventLink(bout.event_id, this.repo.eventName(bout.event_id))}</span>` : "",
     ].filter(Boolean).join(" ");
     return this.item(`
