@@ -8,41 +8,25 @@ README.md / AGENTS.md / .agents/skills/arakaku-maintainer/SKILL.md を読んだ�
 
 ## 現在の安定状態
 
-直近の同期確認では、以下が成立しています。
+2026-10-25 時点で、以下が成立しています（件数は変わるので固定しません）。
 
 ```text
-make check: PASS
+make check: PASS（build → validate_json.py / validate_json.js / test_filters.mjs / test_markdown.mjs → pytest）
+make check-generated: PASS（生成 CSV が再生成と一致）
 json validation passed: 0 warning(s)
-pytest: 18 passed
-make clean-generated: DONE
 ```
 
-GitHub Pages viewer でも、以下の正常動作を確認済みです。
+GitHub Actions の Test と Deploy Pages はどちらも `make check` と `make check-generated` を通ったときだけ成功・デプロイします。
 
-**通常ビュー（PUBLIC_TABS）:**
+viewer は T.56（2026-10-24）で作り直しました。構成は README の「viewer の構成」、機能の一覧は `docs/VIEWER_FEATURES.md` を見てください。
 
-- 公式 view（公式ページ + 公式ニュース）
-- 試合 view
-- 選手 view
-- 大会 view
-- 団体 view
-- 王座 view
-- 動画 view
+**通常ビュー（PUBLIC_TABS、キーボード 1〜8）:** 公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画
 
-**管理ビュー（ADMIN_TABS）:**
+**管理ビュー（ADMIN_TABS）:** 出典本文 / 出典言及 / 名鑑選手 / 名前対応 / 名鑑記録 / 公式選手 / 公式（トーナメント・試合・沿革）
 
-- 出典本文 view
-- 出典言及 view
-- 名鑑選手 view
-- 名前対応 view
-- 名鑑記録 view
-- 公式選手 view
-- 公式 view（officialMisc: トーナメント・試合・沿革）
+行は開閉式で、note 本文や YouTube 概要欄は「本文を表示」「概要欄を表示」で開きます。
 
-**共通:**
-
-- 試合・大会・動画カードの関連出典候補
-- note本文リンクと動画リンクの `▶ 詳細` / `▼ 詳細` 展開
+作業の記録と残タスクは `TASKS.md`（完了した親タスクは `tasks/T.N.md`）にあります。
 
 ---
 
@@ -65,7 +49,9 @@ PY
 
 ---
 
-## 直近で追加・整備したもの
+## 2026-06 までの作業記録（T.56 前の旧 viewer）
+
+> この節から「全コミット履歴の作業サマリ」までは 2026-06-15 までの記録で、ファイル名などは T.56 で作り直す前の旧 viewer のものです（`data-loader.js`・`data-enricher.js`・`core/`・`tabs/`・`style.css` などはもうありません）。それ以降の作業は `TASKS.md` と `tasks/` を見てください。
 
 ### Phase 24: 名鑑の実データを折りたたみから可視位置へ (2026-06-15)
 
@@ -565,7 +551,7 @@ scripts/extract_numbers.py
 
 「個人成績」シートは、既存 `bouts.csv` / `bout_participants.csv` へ直接反映しません。ペア化、重複検出、既存イベント・試合との突合、勝敗矛盾の表示は JavaScript 側で行う方針です。
 
-Numbers 由来三テーブルの JSON（`numbers_fighters.json`、`numbers_name_matches.json`、`numbers_fight_records.json`）は `build_numbers_json.py` が生成します。`docs/assets/js/data-loader.js` がこれらをロードし、管理ビューの名鑑タブと `data-enricher.js` のクライアントサイド突合に使います。
+Numbers 由来三テーブルの JSON（`numbers_fighters.json`、`numbers_name_matches.json`、`numbers_fight_records.json`）は `build_numbers_json.py` が生成します。`docs/assets/js/data/loader.js` がこれらをロードし、管理ビューの名鑑タブと `docs/assets/js/data/enricher.js` のクライアントサイド突合に使います。
 
 ### 本文キャッシュ系スクリプト
 
@@ -592,34 +578,7 @@ make refresh-sources
 
 ### viewer
 
-以下のタブを追加済みです。
-
-```text
-出典本文
-出典言及
-```
-
-viewer は以下のファイルへ分割済みです。
-
-```text
-docs/assets/js/config.js
-docs/assets/js/main.js
-docs/assets/js/data-loader.js
-docs/assets/js/core/
-docs/assets/js/services/
-docs/assets/js/tabs/
-docs/assets/js/ui/
-docs/assets/style.css
-```
-
-関連出典候補と本文展開 UI も追加済みです。
-
-- 出典言及 view に `mention_type` フィルタ
-- 試合・大会 view に関連出典候補
-- 動画 view に YouTube概要欄 preview
-- note本文リンク横の `▶ 詳細` / `▼ 詳細`
-- 出典候補にある note本文リンク横の `▶ 詳細` / `▼ 詳細`
-- 動画リンク横の `▶ 詳細` / `▼ 詳細`
+viewer のファイル構成は README の「viewer の構成」、機能は `docs/VIEWER_FEATURES.md` が正本です（T.56 で作り直し）。
 
 ### GitHub Actions
 
@@ -628,6 +587,7 @@ docs/assets/style.css
 ```text
 actions/checkout@v5
 actions/setup-python@v6
+actions/setup-node@v5 (Node 24)
 actions/configure-pages@v6
 actions/upload-pages-artifact@v5
 actions/deploy-pages@v5
@@ -725,7 +685,7 @@ make clean-generated
 本文を含めると `source_documents.json` が肥大化するため、本文は別ファイルに分離済みです。
 
 - `source_documents.json`: `content_text` を除いた軽量インデックス（メタデータ + preview）。エンリッチメントで通常ロードされる。
-- `source_document_bodies.json`: `{source_id, content_text}` のみの本文本体。`data-loader.js` の `TAB_DATA_KEYS`（`tsushin` / `sources` タブ）で必要時に遅延ロードされる（`mentions` タブは `sourceDocuments` / `sourceMentions` を遅延ロード）。
+- `source_document_bodies.json`: `{source_id, content_text}` のみの本文本体。`docs/assets/js/config.js` の `TAB_DATA_KEYS`（`tsushin` / `sources` タブ）で必要時に遅延ロードされる（`mentions` タブは `sourceDocuments` / `sourceMentions` を遅延ロード）。
 
 これにより初期ロードに全文を載せず、出典本文・通信タブを開いたときだけ本文を取得します。今後本文量がさらに増える場合は、本文側のページング等を追加検討してください。
 
@@ -752,25 +712,19 @@ make clean-generated
 
 ## 次にやるとよい作業
 
-優先度順のおすすめです。詳細と番号は `TASKS.md`（作業台帳）を参照。
-
-1. T.36 公式データの選手マッチング精度向上（display_name 完全一致 + 表記ゆれ正規化で、official_players.csv 106人中99人がマッチ。残り7人は表記差で未一致）
-2. T.42 公式ページ・ニュースが増えたら「公式ページ」「公式ニュース」タブに分割
-3. T.44 Numbers データの更なる突合（対戦カードの不一致検出など）
-4. T.43 王座変遷の精度向上
+`TASKS.md` の一覧で「未着手」「保留」の親タスクを見てください。保留のものはユーザーの判断待ちで、理由と選択肢が各タスクに書いてあります。
 
 ---
 
 ## 再開時の推奨手順
 
 1. 最新の `master` を pull する
-2. `make check` を実行する
-3. `make clean-generated` を実行する
-4. Pages / Actions の状態を確認する
-5. 次タスクへ進む
+2. `make check` と `make check-generated` を実行する
+3. Pages / Actions の状態を確認する（`gh run list`）
+4. `TASKS.md` の次のタスクへ進む
 
 ```bash
 git pull
 make check
-make clean-generated
+make check-generated
 ```
