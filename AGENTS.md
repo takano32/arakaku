@@ -300,7 +300,7 @@ All work is tracked in `TASKS.md`.
 - **Mandatory:** keep moving forward automatically. When a task is completed, start the next task right away, without waiting for confirmation, unless there is a specific problem with it.
   - Pick the next task in order of cost-effectiveness.
   - Do not stop to ask whether to continue.
-  - Commit as you go, and push once `make check` passes.
+  - Commit as you go, and push once `make check` and `make check-generated` pass.
   - A specific problem means a decision only the user can make, an ambiguous or inconsistent record that must be reported first, or failing checks. Only in that case, stop and report it. For a decision only the user can make, record the inconsistency in `TASKS.md` and continue with other work where possible.
 - **Mandatory:** split commits as finely as possible. Each commit holds one logical change. Keep these in separate commits:
   - source data changes
