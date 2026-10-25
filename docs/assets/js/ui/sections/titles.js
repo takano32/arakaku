@@ -2,6 +2,14 @@ import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
 import { escapeHtml } from "../html.js";
 
 /** 王座タブ: 団体 → 階級で並べ、「団体 / 階級」の見出し行を挟む。各王座は歴代を開いた状態で見せる。 */
+// 最後の王者が返上・喪失していれば「現王者」ではなく空位 (T.89: ギタミン・アーロンは返上済み)。
+function championLabel(latest, isTournament) {
+  if (isTournament) return `最新優勝: ${escapeHtml(latest.fighter_name)}`;
+  if (latest.end_reason === "vacated") return `空位（${escapeHtml(latest.fighter_name)} が返上）`;
+  if (latest.lost_at_event_id) return "空位";
+  return `現王者: ${escapeHtml(latest.fighter_name)}`;
+}
+
 export const titlesSection = {
   id: "titles",
   label: "王座",
@@ -57,7 +65,7 @@ export const titlesSection = {
             <p class="rec-title">${escapeHtml(repo.titleDisplayName(item))}</p>
             <p class="rec-sub">${escapeHtml(item.lineage?.length ?? 0)} ${isTournament ? "回の開催" : "代の変遷"}</p>
           </div>
-          <div class="rec-aside">${latest ? `<span class="result-line">${isTournament ? "最新優勝" : "現王者"}: ${escapeHtml(latest.fighter_name)}</span>` : ""}</div>`;
+          <div class="rec-aside">${latest ? `<span class="result-line">${championLabel(latest, isTournament)}</span>` : ""}</div>`;
       },
       renderBody: (t) => {
         const lineage = [...(t.lineage ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
