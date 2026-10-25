@@ -20,7 +20,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
 | A1 | ヘッダ（タイトル、ロゴ画像 `header.webp`、GitHub リンク） | `index.html`, `style.css` | `index.html` `.brand` / `.side-links`、`app.css` | 変更 | ロゴとタイトルは左ナビの先頭に置き、GitHub は斜めリボンではなくナビ下部のリンク群に入れた。スマートフォンでは上部の 1 行になる。ブラウザで確認 |
-| A2 | サマリー件数 8 項目（団体・大会・試合・選手・王座・動画・出典・出典候補）と未ロード時 `...`、選手は関係キーが揃ってから `richFighters.length`、大会・試合は名鑑のみ分を加算 | `view-controller.js renderSummary` | `ui/shell.js #counts / #renderStats`（ナビ下の「データ件数」。未ロードは `…`） | 検証済 | 同じ規則。ブラウザで 7 / 67 / 315 / 131 / 16 / 360 / 479 / 1448 を確認 |
+| A2 | サマリー件数 8 項目（団体・大会・試合・選手・王座・動画・出典・出典候補）と未ロード時 `...`、選手は関係キーが揃ってから `richFighters.length`、大会・試合は名鑑のみ分を加算 | `view-controller.js renderSummary` | `ui/shell.js #counts / #renderStats`（ナビ下の「データ件数」。未ロードは `…`） | 変更 | 同じ規則。ブラウザで 7 / 67 / 315 / 131 / 16 / 360 / 479 / 1448 を確認。T.60 で各件数を該当タブへのリンクにした（出典・出典候補は出典本文へ） |
 | A3 | 通常ビューのタブ 8 個（公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画、順 = キーボード 1〜8） | `config.js PUBLIC_TABS`, `view-controller.js renderTabs` | `config.js PUBLIC_TABS`, `ui/shell.js #renderNav`（`<a href="?tab=…">` のリスト） | 検証済 | ブラウザで全タブを巡回 |
 | A4 | 管理ビューのタブ 7 個 | `config.js ADMIN_TABS` | `config.js ADMIN_TABS`, `ui/shell.js #renderNav`（`<details class="nav-admin">` 内） | 検証済 | ブラウザで全 7 タブを巡回 |
 | A5 | 通常 / 管理ビューの切替と、各ビューの最後のタブの記憶・復元 | `event-controller.js #prevPublicTab / #prevAdminTab`, `view-controller.js renderViewModeSwitch` | `ui/shell.js bind()` の `toggle` ハンドラと `#prevPublicTab / #prevAdminTab`。`viewMode` は `app/state.js` でタブから導出 | 変更 | 切替ボタンではなく、ナビの「管理ビュー」グループの開閉がビュー切替。閉じると直前の通常タブ、開くと直前の管理タブへ戻る（ブラウザで確認: 閉じる → `?nr_promo=…`（公式）、開く → `?tab=sources`）。`?tab=sources` のような管理タブの共有リンクがそのまま管理ビューを開けるようになった |
@@ -170,6 +170,6 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 表の行は 101（B3〜B10 の 8 機能を 1 行にまとめているので機能数は 108）。
 
-- 検証済: 83 行（機能数 90）
-- 変更: 18 行（A1, A5, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
+- 検証済: 82 行（機能数 89）
+- 変更: 19 行（A1, A2, A5, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
 - 廃止: 0
