@@ -86,7 +86,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | T.69 | 検証の穴をふさぐ | 完了 | 2026-10-25 |
 | T.70 | note に結果があるのに unknown の 32 試合を取り込む | 未着手 | 2026-10-25 |
 | T.71 | 煽り動画から作られた重複試合 3 件と架空の大会 3 件 | 未着手 | 2026-10-25 |
-| T.72 | 試合の種別の誤り | 未着手 | 2026-10-25 |
+| T.72 | 試合の種別の誤り | 完了 | 2026-10-25 |
 | T.73 | 決着方法・技・判定スコアを note から補う | 未着手 | 2026-10-25 |
 | T.74 | 選手の主な団体・階級が Numbers・公式サイトと食い違う | 未着手 | 2026-10-25 |
 | T.75 | 動画データの古い列と未リンク動画 | 未着手 | 2026-10-25 |
@@ -343,15 +343,15 @@ T.50 で拾い漏れたもの。`target-14-d6tuqnfvmhy`（ライブNo.14 の見�
 
 ## T.72 試合の種別の誤り
 
-- 状態: 未着手
+- 状態: 完了
 - 期間: 2026-10-25
 
 T.62 の洗い出しで登録。
 
 `target-101-vplbxarc3pc`（ギタミン・アーロン vs おとさわ）は動画タイトルが「ターゲットNo.101 ミドル級タイトルマッチ」なのに `video_catalog_bout`・階級空・`is_title_bout=false`。ほかに target・mh・emperor の 22 試合が `video_catalog_bout` のまま（タイトルはワンマッチ）。`max-bout-special-2` は `one_match`、special-1 は `special_one_match`。
 
-- [ ] T.72.1 target-101-vplbxarc3pc を title_match・ミドル級・王座戦にする
-- [ ] T.72.2 ほかの `video_catalog_bout` とスペシャルワンマッチの種別を揃える
+- [x] T.72.1 target-101-vplbxarc3pc を title_match・ミドル級・王座戦にする（fafa9df、2026-10-25）。title_id は T.76 の判断待ちなので空のまま
+- [x] T.72.2 ほかの `video_catalog_bout` とスペシャルワンマッチの種別を揃える（fafa9df、2026-10-25）。動画タイトルがワンマッチの 17 試合を one_match、special-2 の 5 試合を special_one_match に。煽り動画由来の video-catalog-* 2 試合は T.71 で扱う。生成 CSV への影響なし（check-generated 成功）
 
 ## T.73 決着方法・技・判定スコアを note から補う
 
