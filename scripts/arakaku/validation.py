@@ -24,6 +24,6 @@ VALID_BOUT_TYPES = {
 VALID_EVENT_TYPES = {'numbered_event', 'tournament', 'special_event', 'video_catalog'}
 VALID_SIDES = {'red', 'blue'}
 VALID_INFERRED_CONFIDENCES = {'high', 'medium', 'low'}
-VALID_MENTION_TYPES = {'event', 'matchup', 'result', 'note_url', 'youtube_url'}
+VALID_MENTION_TYPES = {'event', 'matchup', 'match_result', 'result', 'note_url', 'youtube_url'}  # match_result: build_source_documents.classify_mention (vs + result on one line)
 VALID_NAME_MATCH_METHODS = {'exact_display_name', 'normalized_display_name', 'generated_candidate'}
 VALID_ARTICLE_STATUSES = {'unparsed'}
