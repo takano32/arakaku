@@ -1,0 +1,2 @@
+# Python packages CI needs (the Test and Deploy Pages workflows). Pinned so CI is reproducible.
+pytest==9.0.2

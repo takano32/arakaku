@@ -1,4 +1,4 @@
 # Python packages for the full local pipeline (CI only needs pytest).
 # python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-pytest
+pytest==9.0.2
 numbers-parser==4.22.0  # scripts/extract_numbers.py (make extract-numbers / make rebuild)
