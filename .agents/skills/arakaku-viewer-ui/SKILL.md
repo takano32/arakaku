@@ -23,7 +23,7 @@ docs/assets/js/ui/parts.js      shared HTML partials (badges, links, dl, folds, 
 docs/assets/js/ui/sections/     one module per tab + admin.js + index.js (SECTIONS registry)
 docs/assets/js/ui/keyboard.js   shortcuts
 docs/assets/js/ui/html.js       escapeHtml and formatting helpers
-docs/assets/js/ui/markdown.js   official news Markdown → HTML
+docs/assets/js/ui/markdown.js   official news Markdown → HTML (one-line <iframe>: tiget.net embedded, other hosts as links)
 docs/VIEWER_FEATURES.md         feature map (old implementation → new module, verification status)
 ```
 
