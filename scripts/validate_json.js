@@ -203,6 +203,7 @@ function validateSectionRendering(state) {
       keys.add(key);
       const head = desc.renderHead(item);
       assert(typeof head === "string" && head.trim() !== "", `section ${id}: renderHead returned nothing for ${key}`);
+      assert(!/undefined|\[object Object\]|NaN/.test(head.replace(/<code>[^<]*<\/code>/g, "")), `section ${id}: renderHead leaked an undefined/object value for ${key}`);
       if (!desc.isHeader?.(item)) {
         const body = desc.renderBody(item);
         assert(typeof body === "string", `section ${id}: renderBody must return a string for ${key}`);
