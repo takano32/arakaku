@@ -105,8 +105,8 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.88](tasks/T.88.md) | 新しいタスクを限界まで洗い出す（2 回目） | 完了 | 2026-10-25 |
 | [T.89](tasks/T.89.md) | ビューアが誤った事実を表示する | 完了 | 2026-10-25 |
 | T.90 | Numbers だけの試合の並び・試合順・ID が不安定 | 未着手 | 2026-10-25 |
-| T.91 | make rebuild が壊れている | 未着手 | 2026-10-25 |
-| T.92 | make refresh-sources と check-generated の抜け | 未着手 | 2026-10-25 |
+| T.91 | make rebuild が壊れている | 保留 | 2026-10-25 |
+| [T.92](tasks/T.92.md) | make refresh-sources と check-generated の抜け | 完了 | 2026-10-25 |
 | T.93 | note 解析の不具合とテスト不足 | 進行中 | 2026-10-25 |
 | T.94 | 結果不明の試合をさらに埋める | 保留 | 2026-10-25 |
 | T.95 | 決着欄の残りと書式 | 保留 | 2026-10-25 |
@@ -176,7 +176,7 @@ T.88 の洗い出しで登録。
 
 ## T.91 make rebuild が壊れている
 
-- 状態: 未着手
+- 状態: 保留（T.91.3 の判断待ち）
 - 期間: 2026-10-25
 
 T.88 の洗い出しで登録。
@@ -186,22 +186,9 @@ T.88 の洗い出しで登録。
 - `regenerate-csvs`・`rebuild-stage2` は stage2 の後に reorder しない
 - `clean-stage1-csvs` が archives/*.csv と source_documents.csv を消すので、archived_at・fetched_at と取得できなくなった行の履歴が失われる
 
-- [ ] T.91.1 reorder_data を stage2 の後に 1 回だけ動かす
-- [ ] T.91.2 numbers_parser を依存として宣言し、入力チェックで import を確かめる
+- [x] T.91.1 reorder_data を stage2 の後に 1 回だけ動かす（bddb2cc・d5780c8、2026-10-25）。作業用 worktree で .venv の Python を使い make rebuild を最後まで実行し、差分がタイムスタンプ（archived_at・last_checked_at・fetched_at）だけになることを確認（pytest は venv に無いので test で止まった）。記事の並びのキーに article_id を足し、article_links の出力順が rebuild でも同じになるようにした
+- [x] T.91.2 numbers_parser を依存として宣言し、入力チェックで import を確かめる（d5780c8・13290a7・8d0ebaf、2026-10-25）
 - [ ] T.91.3 rebuild で archives と source_documents を消すのをやめるかをユーザーに確認する
-
-## T.92 make refresh-sources と check-generated の抜け
-
-- 状態: 未着手
-- 期間: 2026-10-25
-
-T.88 の洗い出しで登録。
-
-- `refresh-sources` が review の候補 CSV（make_source_mention_result_candidates・make_source_reference_candidates）と generate_official_csvs.py を動かさない。次の CI の check-generated が落ち、viewer の出典候補も古いまま
-- `check-generated` に、オフラインで動く generate_articles.py と match_unknown_bouts_to_note_results.py（docs/data を読むので build の後）が入っていない
-
-- [ ] T.92.1 候補 CSV の生成を generate-stage2 に、generate_official_csvs を refresh-sources に入れる
-- [ ] T.92.2 generate_articles と match_unknown_bouts_to_note_results を check-generated に入れる
 
 ## T.93 note 解析の不具合とテスト不足
 
