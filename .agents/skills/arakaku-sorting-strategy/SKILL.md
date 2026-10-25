@@ -25,10 +25,10 @@ make reorder-data
 ```
 
 This runs `scripts/reorder_data.py`, which sorts the following files:
-- `events.csv`: Primary sort by `published_at` or `event_date`.
-- `bouts.csv`: Primary sort by event date, then by `bout_order`.
-- `articles.csv`: Primary sort by `published_at`.
-- `videos.csv`: Primary sort by `published_at`.
+- `events.csv`: There is no event date column. Sort by the earliest result-note date (`article_type=event_result` linked through `article_links.csv`, same as `build_json.py`'s `result_published_at`), else the earliest date of any note linked to the event, else `events.published_at` (rarely filled); then `event_id`.
+- `bouts.csv`: Primary sort by that derived event date, then `event_id`, then `bout_order`.
+- `articles.csv`: Sort by `(published_at, article_id)`.
+- `videos.csv`: `videos.csv` has no date column; sort by `upload_date` from `archives/youtube.csv` (joined on `platform_video_id` = `display_id`), then `video_id`.
 - `source_documents.csv`: Primary sort by `published_at`.
 - `title_reigns.csv`: Primary sort by `title_id`, then by `reign_order`.
 

@@ -23,6 +23,7 @@ Expected current action versions:
 ```text
 actions/checkout@v5
 actions/setup-python@v6
+actions/setup-node@v5  # Node 24
 actions/configure-pages@v6
 actions/upload-pages-artifact@v5
 actions/deploy-pages@v5
@@ -53,7 +54,9 @@ Pages should build generated JSON, upload artifact, and deploy.
 
 Generated JSON is not committed. It is produced during workflow build.
 
-The CI uses `make build` which runs all four build scripts:
+Both workflows (`test.yml` and `pages.yml`) run `make check` and then `make check-generated`; `pages.yml` deploys only if both pass. Python 3.12 (pip cache keyed on `requirements-ci.txt`, pytest 9.0.2), Node 24 via `actions/setup-node@v5`, `timeout-minutes: 15`.
+
+`make check` starts with `make build`, which runs all four build scripts:
 
 ```text
 scripts/build_json.py
