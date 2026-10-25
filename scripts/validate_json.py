@@ -129,7 +129,7 @@ def validate_fighters(fighters: list[Any], promotion_ids: set[str], article_ids:
 # bouts.csv: round is "<n>R" (built as an int); time is "<m>分<s>秒" within a 5-minute round,
 # or "終了" for a stop or decision at the end of the round. A time without a round is a mistake
 # (T.65 found note posting timestamps such as 07分51秒 stored as fight times).
-BOUT_TIME = re.compile(r'^(\d{1,2})分(\d{1,2})秒$')
+BOUT_TIME = re.compile(r'^(\d{1,2})分(\d{2})秒$')  # seconds are zero-padded: 3分04秒 (T.95)
 
 def round_time_problems(round_value: Any, time_value: Any) -> list[str]:
     problems = []
