@@ -6,6 +6,7 @@ import { PUBLIC_TABS } from "../config.js";
  *   Space/Shift+Space 半ページ、/ 検索、h/l/←/→ 前後のタブ、1〜8 タブ直接、
  *   c URL コピー、r 再読み込み、Esc 検索クリア/ヘルプを閉じる、? ヘルプ。
  * input/textarea/select にフォーカス中は Esc で blur するだけで他のキーは奪わない。修飾キー付きは無視。
+ * ボタン・リンク・summary にフォーカス中の Enter / Space は奪わない (キーボードだけで押せるように)。
  */
 export class KeyboardNav {
   /**
@@ -58,6 +59,8 @@ export class KeyboardNav {
     if (e.key === "?") { e.preventDefault(); this.#toggleHelp(); return; }
     if (dialog?.open) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    // フォーカス中のボタン・リンク・summary では Enter / Space をブラウザの既定動作 (押下) に任せる。
+    if ((e.key === "Enter" || e.key === " ") && e.target.closest?.("a, button, summary, iframe, [contenteditable]")) return;
 
     const list = this.app.list();
     switch (e.key) {

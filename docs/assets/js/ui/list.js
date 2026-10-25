@@ -185,7 +185,13 @@ export class RecordList {
     while (this.#rendered <= clamped) this.renderMore();
     this.#cursor = clamped;
     this.#rows.forEach((row, i) => row.el.classList.toggle("rec-cursor", i === clamped));
-    this.#rows[clamped]?.el.scrollIntoView({ block: "nearest" });
+    // 行そのものにフォーカスを移し、支援技術にもカーソル位置を伝える (行はボタンではないので Enter / Space は奪わない)。
+    const el = this.#rows[clamped]?.el;
+    if (el) {
+      el.tabIndex = -1;
+      el.focus({ preventScroll: true });
+      el.scrollIntoView({ block: "nearest" });
+    }
   }
 
   resetCursor() {
