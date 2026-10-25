@@ -38,7 +38,16 @@ def detect_promotion(title: str) -> str:
     return ""
 
 
-def classify_article(filename: str, title: str) -> tuple[str, str, str]:
+# 冒頭 (meta description) が対戦カードの形かどうか。タイトルに「対戦カード」が無いカード記事
+# (例:「第5回MAXバウトミドル級ＧＰ一回戦Aグループ」「マウンテン・ヒーローズNo.37」) を拾う (T.97)。
+CARD_BODY_RE = re.compile(r"🆚|🚨\s*①名前|[☆🟥🟦][^\n]{0,20}級")
+
+
+def looks_like_card(description: str) -> bool:
+    return bool(CARD_BODY_RE.search(description)) and not re.search(r"[○◯〇●]", description)
+
+
+def classify_article(filename: str, title: str, description: str = "") -> tuple[str, str, str]:
     """Returns (article_type, promotion_id, notes)."""
     clean = title.split("｜")[0].strip()
     aid = filename.replace(".html", "")
@@ -67,7 +76,7 @@ def classify_article(filename: str, title: str) -> tuple[str, str, str]:
 
     if "試合結果" in clean or re.search(r"試合結果|結果$", clean):
         return "event_result", promo, "Crawled from note JSON/API."
-    if "対戦カード" in clean or "カード" in clean:
+    if "対戦カード" in clean or "カード" in clean or looks_like_card(description):
         return "event_card", promo, "Crawled from note JSON/API."
 
     return "note_article", promo, "Crawled from note JSON/API."
@@ -83,7 +92,7 @@ def main() -> None:
         title = title_raw.split("｜")[0].strip() if "｜" in title_raw else title_raw
         url = note.get("webpage_url", "")
 
-        art_type, promo, article_notes = classify_article(filename, title_raw)
+        art_type, promo, article_notes = classify_article(filename, title_raw, note.get("description", ""))
 
         rows.append({
             "article_id": article_id,
