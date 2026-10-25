@@ -203,7 +203,7 @@ Generated JSON is deterministic. `make build` runs four build scripts:
 `build_json.py` (core/relational tables), `build_numbers_json.py` (the
 `numbers_*` tables), `build_official_json.py` (the `official_players/
 tournaments/matches/history` tables), and `build_official_pages_json.py`
-(`official_news` / `official_pages`, with images embedded as base64).
+(`official_news` / `official_pages`; image paths starting with `/` are rewritten to the official site by the viewer).
 JSON is emitted per table only; the all-in-one `database.json` snapshot was retired because the viewer never fetched it.
 
 Viewer-compatible generated files:
