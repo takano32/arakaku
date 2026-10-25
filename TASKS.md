@@ -98,7 +98,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.81](tasks/T.81.md) | サービスワーカーのデータとアプリのコードがずれうる | 完了 | 2026-10-25 |
 | [T.82](tasks/T.82.md) | ドキュメントを T.56 以降の実態に合わせる | 完了 | 2026-10-25 |
 | [T.83](tasks/T.83.md) | TASKS.md の整理 | 完了 | 2026-10-25 |
-| T.84 | 使われていないコードとスクリプト | 保留 | 2026-10-25 |
+| [T.84](tasks/T.84.md) | 使われていないコードとスクリプト | 完了 | 2026-10-25 |
 | [T.85](tasks/T.85.md) | テストの重複と性能の小改善 | 完了 | 2026-10-25 |
 
 | T.86 | アラカク通信のーとの記事が 49 件取り込まれていない | 完了 | 2026-10-25 |
@@ -151,20 +151,6 @@ note の結果記事の書式（◯ U+25EF、1 行の `○A vs ●B`、片側だ
 - [x] T.70.4 note だけにある 1 試合の扱いをユーザーに確認する（fb70f51、2026-10-25）。2026-10-25 にユーザーが決定: 入れる。勝敗だけを反映し（note の行に決着の記載なし）、notes に「Numbers に記録なし」と書いた
   - `max-bout-6-lightweight-tournament-mzffdb97ygw` コルト・アプロー vs センサー・ファッジ: note-n96b3975ccdad 15 行目「○コルト・アプローvs●センサー・ファッジ」。Numbers に記録なし。`review/unknown_bout_note_results.csv` では apply=false
 - [x] T.70.5 T.40.5 の「note も Numbers も無い 21 試合」の一覧を見直す（2026-10-25）。T.40.5 の 21 試合のうち、スペシャルワンマッチ大会の 10 試合は反映済み。残りは エリートスピリッツ 7 試合（note も Numbers も無し）、`max-bout-6-lightweight-tournament-mzffdb97ygw`（T.70.4）、`target-14-d6tuqnfvmhy` と video-catalog 2 試合（T.71）
-
-## T.84 使われていないコードとスクリプト
-
-- 状態: 保留
-- 期間: 2026-10-25
-
-T.62 の洗い出しで登録。
-
-- ビューア: `repository.js` の `eventSourceVideoIdsWithoutBoutCoverage`・`findRichPromotion`、`list.js` の `count`・`renderedCount`・`cursorIndex`・`resetCursor`
-- Makefile から呼ばれないスクリプト: `crawl_note_articles.py`・`import_youtube_videos.py`（yt-dlp 時代）・`import_youtube_descriptions.py`・`extract_note_structured_results.py`・`make_structured_result_patch_candidates.py`・`apply_structured_result_patches.py`（T.70 で抽出系は使う可能性あり）
-- `make refresh-sources` が generate_articles などを飛ばす。名前の正規化が 3 か所に重複
-
-- [x] T.84.1 ビューアの未使用コードを消す（9dfa00c、2026-10-25）。どこからも参照されていないことを grep で確認。`#prevFilterKeyFor` は使われているので残した
-- [ ] T.84.2 スクリプトを消すか Makefile に組み込むかをユーザーに確認する
 
 ## T.86 アラカク通信のーとの記事が 49 件取り込まれていない
 
