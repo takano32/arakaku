@@ -161,6 +161,18 @@ check-generated:
 	python3 scripts/make_source_reference_candidates.py
 	git diff --exit-code --stat -- data-src review
 
-rebuild: clean-generated-csvs clean-generated regenerate-csvs check
+# Inputs that are not in git. Check them before the clean-* targets delete committed CSVs,
+# so a missing cache stops the rebuild instead of leaving data-src half deleted.
+STAGE1_INPUTS = tmp/note-html tmp/youtube-api data-raw/アラカク選手名鑑.numbers tmp/arakaku-site
+STAGE2_INPUTS = tmp/arakaku-site/content/news tmp/arakaku-site/pages
 
-rebuild-stage2: clean-stage2-csvs clean-generated generate-stage2 check
+.PHONY: check-stage1-inputs check-stage2-inputs
+check-stage1-inputs:
+	@for p in $(STAGE1_INPUTS); do [ -e "$$p" ] || { echo "missing input: $$p (nothing was deleted)"; exit 1; }; done
+
+check-stage2-inputs:
+	@for p in $(STAGE2_INPUTS); do [ -e "$$p" ] || { echo "missing input: $$p (nothing was deleted)"; exit 1; }; done
+
+rebuild: check-stage1-inputs check-stage2-inputs clean-generated-csvs clean-generated regenerate-csvs check
+
+rebuild-stage2: check-stage2-inputs clean-stage2-csvs clean-generated generate-stage2 check
