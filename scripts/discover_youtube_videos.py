@@ -22,11 +22,39 @@ import urllib.request
 
 from arakaku.schema import CSV_HEADERS
 from arakaku.utils import DATA_SRC, read_csv, write_csv
-from import_youtube_videos import classify_video_type, slugify
 
 VIDEOS_CSV = DATA_SRC / "videos.csv"
 API = "https://www.googleapis.com/youtube/v3"
 CHANNEL_HANDLE = "@アラカク通信"
+
+
+# video_id の作り方と動画種別の推定は、以前の yt-dlp 取り込み (import_youtube_videos.py、T.84 で削除) と同じ。
+def slugify(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]+", "_", value).strip("_").lower()
+
+
+def classify_video_type(title: str) -> str:
+    lowered = title.lower()
+
+    if "full fight" in lowered or "full fight！" in title:
+        return "full_fight"
+
+    if "ダイジェスト" in title or "digest" in lowered:
+        return "highlight"
+
+    if "試合配信" in title or "試合観戦配信" in title or "live" in lowered:
+        return "stream_archive"
+
+    if "煽り" in title or "preview" in lowered:
+        return "preview"
+
+    if "short" in lowered or "#shorts" in lowered:
+        return "short"
+
+    if "インタビュー" in title or "interview" in lowered:
+        return "interview"
+
+    return "reference"
 
 
 def api_get(api_key: str, resource: str, params: dict[str, str]) -> dict:

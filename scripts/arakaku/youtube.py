@@ -1,7 +1,7 @@
 # 役割: YouTube Data API v3 (videos.list) のキャッシュ tmp/youtube-api/<id>.json を読み、
 #   下流スクリプトが使う平坦なメタデータ dict に正規化する共有モジュール。
 # アーキ上の位置: writer = cache_youtube_api.py。reader = archive_metadata.py /
-#   build_source_documents.py / import_youtube_descriptions.py。API 項目名の解釈はここに一元化する。
+#   build_source_documents.py。API 項目名の解釈はここに一元化する。
 # 不変条件: キャッシュ 1 ファイル = API の items[] 1 要素そのまま (加工しない)。
 #   upload_date は publishedAt の UTC 日付を YYYYMMDD、duration_string は H:MM:SS / M:SS / S。
 #   thumbnail_sizes は snippet.thumbnails のキーを THUMBNAIL_SIZE_ORDER 順に空白区切り。
