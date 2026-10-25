@@ -140,7 +140,9 @@ export function writeToURL(state) {
   const push = lastPlace !== null && place !== lastPlace;
   lastSearch = search;
   lastPlace = place;
-  history[push ? "pushState" : "replaceState"](null, "", search || location.pathname);
+  // 履歴を積む前に、いまの項目にスクロール位置を残す (「戻る」で戻すため。T.102)。
+  if (push) history.replaceState({ scrollY: window.scrollY }, "");
+  history[push ? "pushState" : "replaceState"](push ? null : history.state, "", search || location.pathname);
 }
 
 /** 「戻る」「進む」で URL が変わったとき、その URL の状態 (既定値で埋めたもの) を返し、書き戻しを抑える */

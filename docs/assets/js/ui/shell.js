@@ -82,6 +82,8 @@ export class Shell {
       document.querySelector(selector)?.addEventListener("click", (event) => {
         const link = event.target.closest("a[data-tab]");
         if (!link) return;
+        // Ctrl/Cmd/Shift クリックや中クリックはブラウザに任せて新しいタブ・ウィンドウで開く (T.102)。
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
         event.preventDefault();
         this.switchTab(link.dataset.tab);
       });
