@@ -1,3 +1,17 @@
 apply,agreement,bout_id,event_id,fighter_a,fighter_b,winner,loser,numbers_winner,round,time,method_raw,method_normalized,technique,decision_score,source_article_id,source_line_start,source_line_end,source_text,result_text
-false,note_only,max-bout-6-lightweight-tournament-mzffdb97ygw,max-bout-6-lightweight-tournament,コルト・アプロー,センサー・ファッジ,コルト・アプロー,センサー・ファッジ,,,,,,,,note-n96b3975ccdad,15,15,○コルト・アプローvs●センサー・ファッジ,
+true,agree,emperor-109-ghpf2shuuo0,emperor-109,ダイス・ヴォルケード,レイ・ガシーオ,ダイス・ヴォルケード,レイ・ガシーオ,fighter_5d7998006d,,,,,,,note-n0689666469fc,8,8,●レイ・ガシーオ🆚○ダイス・ヴォルケード,
+true,agree,emperor-109-xdyu346kpua,emperor-109,ダートソン,さかえだ,さかえだ,ダートソン,sakaeda,,,,,,,note-n0689666469fc,11,11,○さかえだ🆚●ダートソン,
+true,agree,emperor-109-zylg8y6wvq8,emperor-109,ナパーム,アイス・トロン,アイス・トロン,ナパーム,ice_tron,,,,,,,note-n0689666469fc,5,5,○アイス・トロン🆚●ナパーム,
+true,agree,emperor-109-xi7nktkis9a,emperor-109,ポン・レイゼ,ゆめろう,ゆめろう,ポン・レイゼ,fighter_4d6356d021,,,,,,,note-n0689666469fc,14,14,○ゆめろう🆚●ポン・レイゼ,
 false,conflict,target-101-0nt8ufrwimc,target-101,かぶと,イベルト・キューミ,かぶと,イベルト・キューミ,fighter_020b361a38,3R,2分11秒,KO パウンド,KO,パウンド,,note-n15885dea4393,21,23,○かぶと【11勝13敗】 / 🆚 / ●イベルト・キューミ【3勝4敗】,3R2分11秒KO パウンド
+false,conflict,target-87-mnuuhlkn1lm,target-87,きたむら,フラーム・グラン,フラーム・グラン,きたむら,frahm_gran / kitamura,,,,,,,note-n51ed6214f887,10,12,○フラーム・グラン【防衛3】 / 🆚 / ●きたむら,
+false,conflict,target-87-usushxozov0,target-87,アリベル・アリベラ,おとさわ,アリベル・アリベラ,おとさわ,aribel_aribera / otosawa,,,,,,,note-n51ed6214f887,15,17,●おとさわ / 🆚 / ○アリベル・アリベラ,
+false,conflict,target-87-wdwtmtyvh_y,target-87,センサー・ファッジ,イベルト・キューミ,センサー・ファッジ,イベルト・キューミ,fighter_020b361a38 / fighter_c333ddf234,,,,,,,note-n51ed6214f887,20,22,●イベルト・キューミ / 🆚 / ○センサー・ファッジ,
+true,agree,target-87-h5bbdqgpdb0,target-87,バイソンデビル,いたみ,バイソンデビル,いたみ,fighter_c6720136f7,,,,,,,note-n51ed6214f887,25,27,●いたみ / 🆚 / ○バイソンデビル,
+true,agree,target-87-iawju8_v9bm,target-87,パス・フィーリー,きんとき,きんとき,パス・フィーリー,kintoki,,,,,,,note-n51ed6214f887,30,32,○きんとき / 🆚 / ●パス・フィーリー,
+true,agree,target-87-dmjc2rydolm,target-87,ファン・ミール・セイバー,ルージュド・スターリー,ルージュド・スターリー,ファン・ミール・セイバー,rouged_starry,,,,,,,note-n51ed6214f887,5,7,○ルージュド・スターリー【防衛3】 / 🆚 / ●ファン・ミール・セイバー,
+true,agree,target-92-mns910ezhl0,target-92,ろっこう,スペイラ,スペイラ,ろっこう,fighter_3a174b0d17,2R,2分44秒,TKO パウンド[タオル投入],TKO,パウンド[タオル投入],,note-nd192a977dd47,5,5,○スペイラ🆚●ろっこう,2R2分44秒TKO パウンド[タオル投入]
+false,conflict,target-92-granro4uj_4,target-92,アリベル・アリベラ,おとさわ,おとさわ,アリベル・アリベラ,aribel_aribera / otosawa,1R,2分42秒,膝十字固め,SUB,膝十字固め,,note-nd192a977dd47,17,17,○おとさわ🆚アリベル・アリベラ,1R2分42秒 膝十字固め
+true,agree,target-92-c9dw76himya,target-92,シガー・ユーナイム,ビル・ジャガー,シガー・ユーナイム,ビル・ジャガー,fighter_31e0efe5d2,3R,2分32秒,KO 左アッパー,KO,左アッパー,,note-nd192a977dd47,14,14,●ビル・ジャガー🆚○シガー・ユーナイム,3R2分32秒KO 左アッパー
+true,agree,target-92-jh3r2cq39gc,target-92,センサー・ファッジ,ハリス・オルビック,ハリス・オルビック,センサー・ファッジ,harris_orbick,1R,4分59秒,KO 左フック,KO,左フック,,note-nd192a977dd47,11,11,○ハリス・オルビック🆚●センサー・ファッジ,1R4分59秒KO 左フック
+true,agree,target-92-sttxjk1ugrg,target-92,レーサー・ガルシア,だいな,だいな,レーサー・ガルシア,daina,1R,2分47秒,KO 左ハイキック→パウンド,KO,左ハイキック→パウンド,,note-nd192a977dd47,8,8,○だいな🆚●レーサー・ガルシア,1R2分47秒KO 左ハイキック→パウンド
