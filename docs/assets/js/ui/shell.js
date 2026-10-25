@@ -73,12 +73,14 @@ export class Shell {
     });
     clearButton?.addEventListener("click", () => this.clearSearch());
 
-    document.querySelector("#nav")?.addEventListener("click", (event) => {
-      const link = event.target.closest("a[data-tab]");
-      if (!link) return;
-      event.preventDefault();
-      this.switchTab(link.dataset.tab);
-    });
+    for (const selector of ["#nav", "#stats"]) {
+      document.querySelector(selector)?.addEventListener("click", (event) => {
+        const link = event.target.closest("a[data-tab]");
+        if (!link) return;
+        event.preventDefault();
+        this.switchTab(link.dataset.tab);
+      });
+    }
 
     document.querySelector("#nav")?.addEventListener("toggle", (event) => {
       // 管理ビューの開閉 = ビュー切替。離れる前の各ビューの最後のタブへ戻す。
@@ -261,22 +263,26 @@ export class Shell {
     const fightersFinal = ["fighters", "numbersFighters", "numbersNameMatches", "officialPlayers"].every((k) => loaded.has(k));
     const numbersOnlyLoaded = loaded.has("numbersFightRecords");
     const refsLoaded = ["sourceEventReferences", "sourceBoutReferences", "sourceVideoReferences"].every((k) => loaded.has(k));
+    // [ラベル, 件数, 押したときに開くタブ]。出典候補だけの一覧は無く、出典本文の各行に候補件数が出るので出典本文へ。
     return [
-      ["団体", d.promotions.length],
-      ["大会", d.events.length + (numbersOnlyLoaded ? repo.numbersOnlyEvents.length : 0)],
-      ["試合", d.bouts.length + (numbersOnlyLoaded ? repo.numbersOnlyBouts.length : 0)],
-      ["選手", fightersFinal ? repo.richFighters.length : d.fighters.length],
-      ["王座", d.titles.length],
-      ["動画", d.videos.length],
-      ["出典", loaded.has("sourceDocuments") ? d.sourceDocuments.length : "…"],
-      ["出典候補", refsLoaded ? (d.sourceEventReferences?.length ?? 0) + (d.sourceBoutReferences?.length ?? 0) + (d.sourceVideoReferences?.length ?? 0) : "…"],
+      ["団体", d.promotions.length, "promotions"],
+      ["大会", d.events.length + (numbersOnlyLoaded ? repo.numbersOnlyEvents.length : 0), "events"],
+      ["試合", d.bouts.length + (numbersOnlyLoaded ? repo.numbersOnlyBouts.length : 0), "bouts"],
+      ["選手", fightersFinal ? repo.richFighters.length : d.fighters.length, "fighters"],
+      ["王座", d.titles.length, "titles"],
+      ["動画", d.videos.length, "videos"],
+      ["出典", loaded.has("sourceDocuments") ? d.sourceDocuments.length : "…", "sources"],
+      ["出典候補", refsLoaded ? (d.sourceEventReferences?.length ?? 0) + (d.sourceBoutReferences?.length ?? 0) + (d.sourceVideoReferences?.length ?? 0) : "…", "sources"],
     ];
   }
 
   #renderStats() {
     const el = document.querySelector("#stats");
     if (!el) return;
-    const html = this.#counts().map(([label, count]) => `<div class="stat-cell"><span class="stat-num">${escapeHtml(count)}</span><span class="stat-label">${escapeHtml(label)}</span></div>`).join("");
+    const html = this.#counts().map(([label, count, tab]) => {
+      const name = SECTIONS[tab]?.label ?? label;
+      return `<a class="stat-cell" href="?tab=${escapeHtml(tab)}" data-tab="${escapeHtml(tab)}" title="${escapeHtml(name)}を表示"><span class="stat-num">${escapeHtml(count)}</span><span class="stat-label">${escapeHtml(label)}</span></a>`;
+    }).join("");
     if (el.innerHTML !== html) el.innerHTML = html;
   }
 
