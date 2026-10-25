@@ -308,6 +308,7 @@ Numbers の個人成績とは「団体 + 興行番号」で照合します。Num
 - 勝敗は参加者ごとの `result` として扱います。
 - `matchup`、`winner`、`loser` は生成 JSON 側の派生表示です。
 - 結果が不明な試合では参加者 `result=unknown` を使います。
+- `round` は `1R` のように「数字 + R」で書きます（JSON では整数）。`time` は `3分04秒` のように 5 分以内で書き、ラウンド終了時の判定やストップは `終了` と書きます（例: `round=3R`, `time=終了`, 判定）。`time` だけで `round` が空の行は `make validate` で失敗します。
 
 ### `data-src/bout_participants.csv`
 
