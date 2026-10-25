@@ -12,6 +12,7 @@ emperor-117,エンペラーNo.117,emperor,117,,numbered_event,,,エンペラーN
 emperor-118,エンペラーNo.118,emperor,118,,numbered_event,,,エンペラーNo.118。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 emperor-119,エンペラーNo.119,emperor,119,,numbered_event,,,エンペラーNo.119。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 emperor-120,エンペラーNo.120,emperor,120,,numbered_event,,,エンペラーNo.120。公式YouTube動画タイトルから抽出。,official_youtube_title,high
+emperor-122,エンペラーNo.122,emperor,122,,numbered_event,,,,note,high
 max-bout-5-middleweight-tournament,第5回MAXバウトミドル級トーナメント,max_bout,5,,tournament,,,第5回MAXバウトミドル級トーナメント。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 max-bout-6-lightweight-tournament,第6回MAXバウトライト級トーナメント,max_bout,6,,tournament,,,第6回MAXバウトライト級トーナメント。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 max-bout-7-lightweight-gp,第7回MAXバウトライト級GP,max_bout,7,,tournament,,,第7回MAXバウトライト級GP。公式YouTube動画タイトルから抽出。,official_youtube_title,high
@@ -31,9 +32,12 @@ mh-37,マウンテン・ヒーローズNo.37,mh,37,,numbered_event,,,マウン�
 mh-38,マウンテン・ヒーローズNo.38,mh,38,,numbered_event,,,マウンテン・ヒーローズNo.38。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 mh-39,マウンテン・ヒーローズNo.39,mh,39,,numbered_event,,,マウンテン・ヒーローズNo.39。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 mh-40,マウンテン・ヒーローズNo.40,mh,40,,numbered_event,,,マウンテン・ヒーローズNo.40。公式YouTube動画タイトルから抽出。,official_youtube_title,high
+mh-41,マウンテン・ヒーローズNo.41,mh,41,,numbered_event,,,,note,high
 target-100,ターゲットNo.100,target,100,,numbered_event,,,ターゲットNo.100。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-101,ターゲットNo.101,target,101,,numbered_event,,,ターゲットNo.101。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-102,ターゲットNo.102,target,102,,numbered_event,,,ターゲットNo.102。公式YouTube動画タイトルから抽出。,official_youtube_title,high
+target-104,ターゲットNo.104,target,104,,numbered_event,,,,note,high
+target-105,ターゲットNo.105,target,105,,numbered_event,,,,note,high
 target-14,ターゲットNo.14,target,14,,numbered_event,,,ターゲットNo.14。公式YouTube動画タイトルから抽出。,official_youtube_title,medium
 target-87,ターゲットNo.87,target,87,,numbered_event,,,ターゲットNo.87。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-88,ターゲットNo.88,target,88,,numbered_event,,,ターゲットNo.88。公式YouTube動画タイトルから抽出。,official_youtube_title,high
