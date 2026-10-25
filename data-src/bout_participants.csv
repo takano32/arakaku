@@ -297,8 +297,8 @@ mh-27-cgmlpwetfzy-red,mh-27-cgmlpwetfzy,red,fighter_e15b590179,ゼット,,loss
 mh-27-cgmlpwetfzy-blue,mh-27-cgmlpwetfzy,blue,gitamin_aaron,ギタミン・アーロン,,win
 target-92-jh3r2cq39gc-red,target-92-jh3r2cq39gc,red,fighter_c333ddf234,センサー・ファッジ,,loss
 target-92-jh3r2cq39gc-blue,target-92-jh3r2cq39gc,blue,harris_orbick,ハリス・オルビック,,win
-target-87-wdwtmtyvh_y-red,target-87-wdwtmtyvh_y,red,fighter_c333ddf234,センサー・ファッジ,,unknown
-target-87-wdwtmtyvh_y-blue,target-87-wdwtmtyvh_y,blue,fighter_020b361a38,イベルト・キューミ,,unknown
+target-87-wdwtmtyvh_y-red,target-87-wdwtmtyvh_y,red,fighter_c333ddf234,センサー・ファッジ,,win
+target-87-wdwtmtyvh_y-blue,target-87-wdwtmtyvh_y,blue,fighter_020b361a38,イベルト・キューミ,,loss
 emperor-116-r_scebsyoxg-red,emperor-116-r_scebsyoxg,red,fighter_30b7a4a468,ステシエン・チェット,,win
 emperor-116-r_scebsyoxg-blue,emperor-116-r_scebsyoxg,blue,fighter_4282deeb57,ワンシー・オーフェル,,loss
 emperor-113-5nkfum9czqg-red,emperor-113-5nkfum9czqg,red,fighter_30b7a4a468,ステシエン・チェット,,win
@@ -357,10 +357,10 @@ mh-34-o4qbvrk6qle-red,mh-34-o4qbvrk6qle,red,fighter_82d519db98,イスカン・�
 mh-34-o4qbvrk6qle-blue,mh-34-o4qbvrk6qle,blue,fighter_eddb8db316,ジョン・バレー,,loss
 target-89-fwvxk4micnm-red,target-89-fwvxk4micnm,red,aribel_aribera,アリベル・アリベラ,,loss
 target-89-fwvxk4micnm-blue,target-89-fwvxk4micnm,blue,kabei,かべい,,win
-target-92-granro4uj_4-red,target-92-granro4uj_4,red,aribel_aribera,アリベル・アリベラ,,unknown
-target-92-granro4uj_4-blue,target-92-granro4uj_4,blue,otosawa,おとさわ,,unknown
-target-87-usushxozov0-red,target-87-usushxozov0,red,aribel_aribera,アリベル・アリベラ,,unknown
-target-87-usushxozov0-blue,target-87-usushxozov0,blue,otosawa,おとさわ,,unknown
+target-92-granro4uj_4-red,target-92-granro4uj_4,red,aribel_aribera,アリベル・アリベラ,,loss
+target-92-granro4uj_4-blue,target-92-granro4uj_4,blue,otosawa,おとさわ,,win
+target-87-usushxozov0-red,target-87-usushxozov0,red,aribel_aribera,アリベル・アリベラ,,win
+target-87-usushxozov0-blue,target-87-usushxozov0,blue,otosawa,おとさわ,,loss
 emperor-110-dfo_4pwonie-red,emperor-110-dfo_4pwonie,red,fighter_e590e4eb0f,アトゥリうえはら,,loss
 emperor-110-dfo_4pwonie-blue,emperor-110-dfo_4pwonie,blue,sakaeda,さかえだ,,win
 mh-32-voviksvmlrk-red,mh-32-voviksvmlrk,red,ice_tron,アイス・トロン,,loss
@@ -427,8 +427,8 @@ target-97-dcfiqm3hguy-red,target-97-dcfiqm3hguy,red,kyonai,きょうない,,win
 target-97-dcfiqm3hguy-blue,target-97-dcfiqm3hguy,blue,katsuragi,かつらぎ,,loss
 target-91-d5p6vt8yd6e-red,target-91-d5p6vt8yd6e,red,kitamura,きたむら,,win
 target-91-d5p6vt8yd6e-blue,target-91-d5p6vt8yd6e,blue,fighter_cdb8d47163,ワインセル,,loss
-target-87-mnuuhlkn1lm-red,target-87-mnuuhlkn1lm,red,kitamura,きたむら,,unknown
-target-87-mnuuhlkn1lm-blue,target-87-mnuuhlkn1lm,blue,frahm_gran,フラーム・グラン,,unknown
+target-87-mnuuhlkn1lm-red,target-87-mnuuhlkn1lm,red,kitamura,きたむら,,loss
+target-87-mnuuhlkn1lm-blue,target-87-mnuuhlkn1lm,blue,frahm_gran,フラーム・グラン,,win
 target-100-lezep1guura-red,target-100-lezep1guura,red,kitamura,きたむら,,win
 target-100-lezep1guura-blue,target-100-lezep1guura,blue,tsuoshi,つおし,,loss
 target-94-k74fho1c9oa-red,target-94-k74fho1c9oa,red,kitamura,きたむら,,win
