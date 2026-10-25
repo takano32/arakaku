@@ -3,7 +3,7 @@
 T.56「ビューアを今の見た目にとらわれずに作り直す（機能は残す）」で、リビルド前のビューア（`docs/assets/js/core/` `services/` `tabs/` `ui/` と `style.css`、約 6,400 行）が持っていた利用者から見える機能とデータ側の振る舞いをすべて洗い出し、新しいビューア（`docs/assets/js/app/` `data/` `ui/` と `app.css`）のどこで実現しているかを対応づけた表です。
 
 - 「旧実装」はリビルド前にその機能が置かれていた場所（削除済みのファイル名）です。
-- 「新実装」は 2026-10-24 時点の場所です。
+- 「新実装」は 2026-10-24 時点の場所です（その後の変更は各行の備考に T 番号付きで書いています。2026-10-25 時点）。
 - 「状態」は次のいずれかです。
   - `検証済`: 新ビューアで同じ振る舞いを確認した。確認方法は備考に書く（ブラウザ = Chrome で実データを表示して確認、Node = `scripts/validate_json.js` または旧新比較スクリプトで確認）。
   - `変更`: 意図して形を変えた。何をどう変えたかと理由を備考に書く。機能そのものは残っている。
@@ -80,7 +80,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | E8 | 致命的失敗のカード | `event-controller.js renderLoadError` | `main.js`（`#list-host` にアラート） | 検証済 | コード |
 | E9 | 空フォールバックの形 | `core/data-parser.js` | `data/parser.js` | 検証済 | validate_json.js |
 | E10 | Repository シングルトン + `invalidate()` + `revision` | `core/data-repository.js` | `data/repository.js` | 検証済 | Node 旧新比較 |
-| E11 | Service Worker と「データが更新されました」バナー | `docs/sw.js`, `main.js` | `docs/sw.js`（無変更）, `main.js` | 検証済 | ブラウザ（SW が制御中。バナーはデータ更新時のみ） |
+| E11 | Service Worker と「データが更新されました」バナー | `docs/sw.js`, `main.js` | `docs/sw.js`, `main.js` | 検証済 | ブラウザ（SW が制御中。バナーはデータ更新時のみ）。T.58 で本文が変わったときだけ通知、T.81 でキャッシュに無いときの保存を `waitUntil` に入れた |
 | E12 | CDN 依存（virtual-core / streamparser / lite-youtube）と preconnect / Google Fonts | `ui/virtual-list.js`, `data-loader.js`, `main.js`, `index.html` | なし | 変更 | 外部依存を 0 にした（自前の一覧・ファサード・ファイル単位ロード、システムフォント）。`index.html` の外部リクエストは無く、favicon はインライン SVG |
 | E13 | Node 検証用の DI（`dataFiles` / `fetchText` / `fetchResponse`）と `loadAll()` | `data-loader.js` | `data/loader.js`（`dataFiles` / `fetchText`、`loadAll()`） | 変更 | ストリーミング経路が無くなったので `fetchResponse` を廃止。`validate_json.js` を更新 |
 | E14 | `validate_json.js` の検査項目 | `scripts/validate_json.js` | `scripts/validate_json.js` | 検証済 | 旧検査をすべて残し、rich レコード・名鑑のみ合成行の解決、失敗ファイルの封じ込め、`loadForTab`、全セクション全行の描画を追加 |

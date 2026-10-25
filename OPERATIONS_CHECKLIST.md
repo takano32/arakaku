@@ -204,7 +204,7 @@ docs/sw.js
 - 出典本文タブが表示される
 - 出典言及タブが表示される
 - 試合・大会・動画カードに関連出典候補が出る
-- note本文リンク、出典候補リンク、動画リンクの `▶ 詳細` / `▼ 詳細` が開閉する
+- 行の開閉ボタンと、note 本文・YouTube 概要欄の「本文を表示」「概要欄を表示」が開閉する（Enter / Space でも押せる）
 - YouTube archive のタイトル・投稿者・投稿日が動画 view と関連動画リンクに補助表示される
 - note archive の HTML title が記事リンクの補助表示に使われる
 - archive 由来の文言で検索できる
@@ -224,7 +224,8 @@ docs/sw.js
 新しいデータキーを追加したとき:
 
 - `config.js` の `DATA_FILES` にパスを追加する
-- ロードタイミングに応じて、次の4つのいずれかにキーを分類する（すべて `config.js`）:
+- ロードタイミングに応じて、次の5つのいずれかにキーを分類する（すべて `config.js`）:
+  - `INITIAL_TAB_DATA_KEYS`: 初期タブ（公式）のデータ。Phase 0 で最初に単独取得するもの
   - `PRIMARY_DATA_KEYS`: 公開セクションの一覧に直結し、初期ロードの Phase 1 で並列取得するもの
   - `ENRICHMENT_DATA_KEYS`: Phase 1 の後に補完に使うもの
   - `PUBLIC_REFERENCE_DATA_KEYS`: 出典参照候補など、Phase 2 で補完と同じ並列プールで取得する公開参照

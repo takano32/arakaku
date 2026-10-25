@@ -35,12 +35,10 @@
 
 ## viewer 変更がある場合
 
-- [ ] 試合 view を確認した
-- [ ] 選手 view を確認した
-- [ ] 大会 view を確認した
-- [ ] 出典本文 view を確認した
-- [ ] 出典言及 view を確認した
-- [ ] Browser Console に `app.js` 由来のエラーがない
+- [ ] 公式・通信・試合・選手・大会・動画 view を確認した
+- [ ] 出典本文・出典言及 view を確認した
+- [ ] スマートフォン幅（390px）で横スクロールが出ない
+- [ ] Browser Console に viewer JS（`docs/assets/js/`）由来のエラーがない
 
 ---
 
