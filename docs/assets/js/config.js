@@ -73,7 +73,7 @@ export const OFFICIAL_SITE_URL = "https://kobayashi856.github.io/arakaku-site/";
 export const ADMIN_TAB_IDS = new Set(ADMIN_TABS.map(([id]) => id));
 
 // 「出典言及」の種別セレクトの並び順。
-export const MENTION_TYPE_ORDER = ["event", "matchup", "result", "note_url", "youtube_url"];
+export const MENTION_TYPE_ORDER = ["event", "matchup", "match_result", "result", "note_url", "youtube_url"];
 
 // Phase 0: 初期タブ（公式）のデータ。合計 ~16KB なので最初に単独で取得して即描画する。
 export const INITIAL_TAB_DATA_KEYS = ["officialPages", "officialNews"];
