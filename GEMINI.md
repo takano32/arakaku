@@ -21,10 +21,13 @@ The **only** canonical data source is `data-src/*.csv`.
 ### 2. Validation First
 Always run validation after any data or script change.
 ```bash
+make generate-stage2   # after editing canonical CSVs: regenerate derived CSVs and review candidates
 make check
-make clean-generated
+# after committing, on a clean tree (CI runs this too):
+make check-generated
+make clean-generated   # optional cleanup
 ```
-`make check` performs building, JSON validation, and pytest.
+`make check` performs building, JSON validation, and pytest. `make check-generated` reruns the offline derivations and fails if the committed CSVs differ.
 
 ### 3. Data Integrity & Conservatism
 - Do **not** invent or infer confirmed facts (winners, methods, etc.).
@@ -50,21 +53,26 @@ To mitigate risks from external site structure changes or data deletion, critica
 ## Common Workflows
 
 ### Data Update
-1. Modify `data-src/*.csv`.
-2. Run `make check`.
-3. If successful, run `make clean-generated`.
+1. Modify canonical `data-src/*.csv` (bouts / fighters / events / bout_participants / videos / video_bout_links / video_event_links / title_reigns / fighter_snapshots).
+2. Run `make generate-stage2` (regenerates derived CSVs and review candidates).
+3. Run `make check`.
+4. After committing, `make check-generated` must pass on a clean tree (CI runs it).
+5. Optionally run `make clean-generated`.
 
 ### Source Document Processing
-1. `make cache-sources` (Fetches note HTML and YouTube info)
-2. `make archive-metadata` (Regenerates `data-src/archives/*.csv`)
-3. `make build-sources` (Generates `source_documents.csv` and `source_mentions.csv`)
-4. `make check`
-5. `make clean-generated`
+1. `make refresh-sources`, which runs in order:
+   `cache-sources` (fetches note HTML and YouTube info, including `discover-note-articles` and `discover-youtube-videos`)
+   → `archive-metadata` (regenerates `data-src/archives/*.csv`)
+   → `generate-articles` → `build-sources` (generates `source_documents.csv` and `source_mentions.csv`)
+   → `generate-official-csvs` → `generate-stage2` → `reorder-data` → `check`
+2. After committing, `make check-generated` must pass on a clean tree.
+3. Optionally run `make clean-generated`.
 
 ### Numbers Import
 1. `python scripts/extract_numbers.py` (Generates `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv`)
-2. `make check`
-3. `make clean-generated`
+2. `make generate-stage2` (`generate_aliases.py` reads `numbers_name_matches.csv`)
+3. `make check`
+4. Optionally run `make clean-generated`.
 
 Numbers-derived fight records are comparison data. Do not directly promote them into confirmed bouts or participant results.
 

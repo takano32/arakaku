@@ -29,16 +29,23 @@ Python scripts in this directory handle data processing, validation, and extract
 - `build_json.py`: The core build script. Rebuilds all JSON artifacts. **Do not add enrichment logic here.**
 - `build_official_json.py`: Builds `official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` from `data-src/official_*.csv`. Run via `make build`.
 - `validate_json.py`: Ensures structural integrity and referential correctness.
+- `validate_json.js`: Node check of the viewer's JSON parser/loader and render-path coverage (`make validate`).
+- `test_filters.mjs` / `test_markdown.mjs`: Node unit tests (`node:test`) for the viewer's `itemPassesFilters` and Markdown renderer (`make validate`).
 - `extract_numbers.py`: Exports `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv` from the Numbers file.
 - `download_official_data.sh`: Downloads `src/` tree from official site repo into `tmp/arakaku-site/`.
 - `generate_official_csvs.py`: Converts `tmp/arakaku-site/data/*.json` to `data-src/official_*.csv`.
+- `crawl_note_articles.py`: Discovers official note articles and appends unregistered URLs to `data-src/articles.csv` (append-only; `make discover-note-articles`).
+- `discover_youtube_videos.py`: Lists the official channel's uploads via the YouTube Data API and appends missing non-Shorts videos to `data-src/videos.csv` (append-only; `make discover-youtube-videos`).
 - `cache_*.py`: Fetch external data and cache it in `../tmp/`.
 - `archive_metadata.py`: Extracts critical metadata from cached data into `data-src/archives/` for permanent storage.
+- `generate_articles.py`: Generates `data-src/articles.csv` from `archives/note.csv` and classifies `article_type` (stage1; `make generate-articles`).
+- `reorder_data.py`: Rewrites the row order of the main `data-src` CSVs (no value changes; `make reorder-data`).
 - `make_*_candidates.py`: Analyze data and generate review candidates.
 - `match_unknown_bouts_to_note_results.py`: Bout-first search of result notes; writes `review/unknown_bout_note_results.csv` and `review/known_bout_note_methods.csv` for `apply_structured_result_patches.py`.
 
 ## Workflow for Script Changes
 1. Modify the script.
-2. Run `make check`.
+2. If the script writes derived CSVs, run `make generate-stage2`; then run `make check`.
 3. Verify that the generated JSON or review CSVs are correct.
-4. Run `make clean-generated` if appropriate.
+4. After committing, `make check-generated` must pass on a clean tree (CI runs it).
+5. Run `make clean-generated` if appropriate (optional cleanup).

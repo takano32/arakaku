@@ -23,7 +23,9 @@
 
 ## 確認したこと
 
+- [ ] 正本 CSV を直した場合は `make generate-stage2` を実行した
 - [ ] `make check` が通る
+- [ ] コミット後、変更のない作業ツリーで `make check-generated` が通る
 - [ ] `make clean-generated` を実行した
 - [ ] `docs/data/*.json` をコミットしていない
 - [ ] `tmp/note-html/*.html` をコミットしていない
@@ -35,7 +37,7 @@
 
 ## viewer 変更がある場合
 
-- [ ] 公式・通信・試合・選手・大会・動画 view を確認した
+- [ ] 公式・通信・試合・選手・大会・団体・王座・動画 view を確認した
 - [ ] 出典本文・出典言及 view を確認した
 - [ ] スマートフォン幅（390px）で横スクロールが出ない
 - [ ] Browser Console に viewer JS（`docs/assets/js/`）由来のエラーがない

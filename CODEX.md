@@ -20,7 +20,7 @@ OPERATIONS_CHECKLIST.md
 .agents/skills/arakaku-source-pipeline/SKILL.md
 ```
 
-公式 Codex の Skills 探索に合わせるなら、`.agents/skills/*/SKILL.md` にも同じ内容を配置してください。
+スキルは `.agents/skills/*/SKILL.md` に置いてあり、公式 Codex の Skills 探索の場所と同じです（別の場所へ複製する必要はありません）。
 
 ### 最初に実行するコマンド
 
@@ -71,7 +71,7 @@ README.md、AGENTS.md、HANDOFF.md、TASKS.md、OPERATIONS_CHECKLIST.md を読�
 - 不明な試合結果を推測で確定しない
 - 抽出候補はまず `review/`
 - Numbers由来の個人成績は比較データであり、確認前に `bouts.csv` / `bout_participants.csv` へ直接反映しない
-- 変更後は必ず `make check` と `make clean-generated`
+- 変更後は必ず `make check`（正本 CSV を直したときは先に `make generate-stage2`）、コミット後は変更のない作業ツリーで `make check-generated`（CI でも実行）。`make clean-generated` は任意の後片付け
 
 ### 次に着手しやすいタスク
 
@@ -104,7 +104,7 @@ docs/data/*.json は編集・コミットしないでください。
 data-src/*.csv の正規データを変更してください。
 AGENTS.md と .agents/skills/arakaku-data-curator/SKILL.md を必ず読んでください。
 不明な勝敗・決着方法・ラウンド・タイムを推測で確定しないでください。
-変更後は make check と make clean-generated を実行してください。
+変更後は make generate-stage2（派生 CSV と review の候補 CSV を再生成）、make check を実行してください。コミット後は変更のない作業ツリーで make check-generated が通ることを確認してください。
 ```
 
 ### Numbers 由来データを更新させる
@@ -124,7 +124,7 @@ note本文とYouTube概要欄の取り込み・archive metadata パイプライ�
 AGENTS.md と .agents/skills/arakaku-source-pipeline/SKILL.md を必ず読んでください。
 tmp/note-html/*.html と tmp/youtube-api/*.json はコミットしないでください。
 data-src/archives/youtube.csv と data-src/archives/note.csv は cache から生成した永続メタデータです。
-必要なら make cache-sources、make archive-metadata、make build-sources、make check、make clean-generated を実行してください。
+必要なら make refresh-sources（cache-sources（discover-note-articles と discover-youtube-videos を含む）→ archive-metadata → generate-articles → build-sources → generate-official-csvs → generate-stage2 → reorder-data → check）を実行してください。
 archive metadata を試合結果や選手同定の確定根拠として扱わないでください。
 ```
 
@@ -368,6 +368,7 @@ grep -RIn "uses: actions/" .github/workflows
 ```text
 actions/checkout@v5
 actions/setup-python@v6
+actions/setup-node@v5  # Node 24
 actions/configure-pages@v6
 actions/upload-pages-artifact@v5
 actions/deploy-pages@v5

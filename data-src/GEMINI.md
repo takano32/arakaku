@@ -9,7 +9,7 @@ Once assigned, `event_id`, `fighter_id`, `bout_id`, etc., should not be changed 
 
 ### 2. Mandatory Fields
 Ensure all mandatory fields (as defined in `scripts/validate_json.py`) are present.
-- `event_id` is required for bouts and video links.
+- `event_id` is required for bouts. `video_links.csv` has no `event_id`; it points at its target through `entity_type` / `entity_id`.
 - Bout participants are stored in `bout_participants.csv`; do not add embedded fighter columns to `bouts.csv`.
 
 ### 3. Data Entry Conservatism
@@ -34,7 +34,7 @@ Hand edits are lost on regeneration: the factual data for `promotions.csv` and `
 
 - `promotions.csv`: Organizations and their meta-data. Stage2 generated from the `PROMOTIONS` literal in `scripts/generate_promotions.py`. Do not hand-edit the CSV.
 - `events.csv`: Tournament and event details. `event_id` is the primary key. Canonical.
-- `bouts.csv`: Individual matches. Reference fighters by name/ID. Canonical.
+- `bouts.csv`: Individual matches (bout-level facts only). Fighters are not stored here; they live in `bout_participants.csv`. Canonical.
 - `bout_participants.csv`: Bout-to-fighter participant rows and participant-level results. Canonical.
 - `fighters.csv`: Fighter profiles and IDs. Canonical.
 - `videos.csv`: Metadata for YouTube and other video sources. Canonical. Channel name, upload date and link status are not stored here; `build_json.py` takes them from `archives/youtube.csv` and the link tables.
@@ -63,4 +63,5 @@ Hand edits are lost on regeneration: the factual data for `promotions.csv` and `
 ## Workflow for New Data
 1. Check `../review/` for existing candidates (`unknown_bout_note_results.csv`, `known_bout_note_methods.csv`, `source_mention_result_candidates.csv`, `source_event_reference_candidates.csv`, `source_bout_reference_candidates.csv`, `source_video_reference_candidates.csv`).
 2. Add new rows to the relevant canonical CSV (for generated CSVs, edit the generator instead).
-3. Run `make check` from the project root to validate.
+3. From the project root, run `make generate-stage2` (regenerates derived CSVs and review candidates), then `make check` to validate.
+4. After committing, `make check-generated` must pass on a clean tree (CI runs it). `make clean-generated` is optional cleanup.
