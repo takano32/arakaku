@@ -630,6 +630,9 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 - `scripts/test_filters.mjs`: viewer のフィルタ中核 `itemPassesFilters`（`docs/assets/js/data/filters.js`）の Node ユニットテスト（`node:test`、依存なし）。
 - `scripts/test_markdown.mjs`: 公式ニュース本文の Markdown 変換（`docs/assets/js/ui/markdown.js`）の Node ユニットテスト。リンクや iframe から属性・スクリプトを注入できないことを確かめます。
 - `make validate` がこの 4 つを順に実行します。
+- CSV の列は `scripts/arakaku/schema.py`（`CSV_HEADERS`）が正本です。`arakaku.utils.read_csv` は `data-src` の CSV を読むたびにヘッダを照合し、無いファイル・列名の違いはエラーにします（列を足す・改名するときは schema.py も直します）。
+- `validate_json.py` は列挙値（`arakaku/validation.py`）の範囲外、表をまたぐ矛盾（試合と大会の団体、別名の参照先、出典言及の出典、王座の喪失大会と次の獲得大会）、壊れた・欠けた生成 JSON をすべてエラーにします。JSON の行についてのエラーには `[data-src/bouts.csv:27, bout_id=…]` のように CSV の行と主キーを付けます。
+- CSV と JSON は一時ファイルに書いてから置き換えるので、並行して走る検証が書きかけのファイルを読むことはありません。
 
 ---
 
