@@ -422,6 +422,9 @@ button { font-family: inherit; font-size: inherit; color: inherit; }
   min-height: 32px;
 }
 
+/* 見出しとチップの入れ物。読み込み件数と分けて描き直すためだけのものなので、並びには関わらせない */
+.toolbar-main { display: contents; }
+
 .section-title {
   margin: 0;
   font-size: 1.3rem;

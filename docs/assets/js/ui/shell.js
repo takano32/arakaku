@@ -142,6 +142,13 @@ export class Shell {
     this.#state.patch({ tab: tabId });
     this.#loader.loadForTab(tabId);
     window.scrollTo({ top: 0, behavior: "instant" });
+    this.#focusHeading();
+  }
+
+  // タブ切り替え・飛び先への移動のあと、押したボタンが描き直しで消えてフォーカスが body に落ちるので、
+  // 見出しへ移して新しい表示を支援技術に伝える (T.102)。
+  #focusHeading() {
+    document.querySelector("#toolbar .section-title")?.focus({ preventScroll: true });
   }
 
   #jump(patch) {
@@ -153,6 +160,7 @@ export class Shell {
     if (clearButton) clearButton.hidden = true;
     this.#loader.loadForTab(this.#state.tab);
     window.scrollTo({ top: 0, behavior: "instant" });
+    this.#focusHeading();
   }
 
   jumpToFighter(fighterId) { this.#jump({ tab: "fighters", focusFighterId: fighterId || "" }); }
@@ -379,14 +387,24 @@ export class Shell {
     // 分母は取得済み + 取得中 (DATA_FILES 全体ではない: タブ専用データや viewer が読まないファイルがある)。
     const total = loadedCount + loading;
     const count = this.#lastCount;
-    const html = `
-      <h1 class="section-title">${escapeHtml(section?.label ?? "")}<span class="section-count">${count >= 0 ? `${escapeHtml(count)} 件` : ""}</span></h1>
+    // 見出しと絞り込みチップは中身が変わったときだけ描き直し、読み込み件数は別の要素の文字だけ更新する
+    // (件数が変わるたびに全体を描き直すと、チップの ✕ にあるキーボードフォーカスが消えていた。T.102)。
+    const main = `
+      <h1 class="section-title" tabindex="-1">${escapeHtml(section?.label ?? "")}<span class="section-count">${count >= 0 ? `${escapeHtml(count)} 件` : ""}</span></h1>
       ${this.#focusChip()}
-      ${loading ? `<span class="loading-indicator">読み込み中 ${loadedCount}/${total}</span>` : ""}
     `;
-    if (el.innerHTML !== html) el.innerHTML = html;
-    // 表示は描き直すたびに作り直すので aria-live では読み上げられない。一覧側に aria-busy で読み込み中を伝える。
-    document.querySelector("#list-host")?.setAttribute("aria-busy", loading ? "true" : "false");
+    let mainEl = el.querySelector(".toolbar-main");
+    let indicator = el.querySelector(".loading-indicator");
+    if (!mainEl) {
+      el.innerHTML = `<div class="toolbar-main"></div><span class="loading-indicator" hidden></span>`;
+      mainEl = el.querySelector(".toolbar-main");
+      indicator = el.querySelector(".loading-indicator");
+    }
+    if (mainEl.innerHTML !== main) mainEl.innerHTML = main;
+    indicator.hidden = !loading;
+    indicator.textContent = loading ? `読み込み中 ${loadedCount}/${total}` : "";
+    // 一覧がまだ描けていない間だけ aria-busy (描けた後の補完データの読み込み中は busy にしない)。
+    document.querySelector("#list-host")?.setAttribute("aria-busy", loading && count < 0 ? "true" : "false");
     const searchInput = document.querySelector("#search");
     if (searchInput && section?.placeholder && searchInput.placeholder !== section.placeholder) {
       searchInput.placeholder = section.placeholder;

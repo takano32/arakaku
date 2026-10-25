@@ -115,7 +115,7 @@ export class KeyboardNav {
         break;
       case " ":
         e.preventDefault();
-        window.scrollBy({ top: e.shiftKey ? -window.innerHeight * 0.6 : window.innerHeight * 0.6, behavior: "smooth" });
+        window.scrollBy({ top: e.shiftKey ? -window.innerHeight * 0.6 : window.innerHeight * 0.6, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
         break;
       case "r":
         e.preventDefault();

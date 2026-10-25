@@ -290,7 +290,9 @@ export class RecordList {
     bodyEl.hidden = !open;
     row.el.classList.toggle("rec-open", open);
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    toggle.setAttribute("aria-label", open ? "詳細を閉じる" : "詳細を開く");
+    // どの行の開閉かが分かるよう、ラベルに行の見出しを含める (T.102)。
+    const title = row.el.querySelector(".rec-title")?.textContent.trim();
+    toggle.setAttribute("aria-label", `${open ? "詳細を閉じる" : "詳細を開く"}${title ? `: ${title}` : ""}`);
   }
 
   // 行の見出し部 (rec-head) のクリックで開閉する。リンク・ボタン等の操作要素や本体部のクリック、
