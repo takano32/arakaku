@@ -616,7 +616,8 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 - `scripts/make_structured_result_patch_candidates.py`: 構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
 - `scripts/make_source_mention_result_candidates.py`: `source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
 - `scripts/make_source_reference_candidates.py`: note本文と YouTube概要欄から、`review/source_event_reference_candidates.csv`・`review/source_bout_reference_candidates.csv`・`review/source_video_reference_candidates.csv` を作ります。確認支援用の候補です。
-- `scripts/apply_structured_result_patches.py`: レビュー済みの structured result patch を `bouts.csv` に反映します。反映前に必ず候補CSVを確認してください。
+- `scripts/match_unknown_bouts_to_note_results.py`: 試合側から結果 note を探します。結果不明の試合は両選手の名前の直前の ○/◯/● で勝者を決め、`review/unknown_bout_note_results.csv` に書きます（Numbers の勝者と一致した行だけ `apply=true`）。結果が分かっている試合は、空の決着欄（決着方法・技・判定スコアなど）を同じ note の行から埋める候補を `review/known_bout_note_methods.csv` に書きます。
+- `scripts/apply_structured_result_patches.py`: レビュー済みの structured result patch を `bouts.csv` に反映します。既定は `review/structured_result_patch_candidates.csv` で、同じ列の CSV を引数で渡せます（例: `python3 scripts/apply_structured_result_patches.py review/unknown_bout_note_results.csv`）。反映前に必ず候補CSVを確認してください。
 
 ### YouTube 取り込み（補助）
 
