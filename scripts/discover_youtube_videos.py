@@ -36,7 +36,7 @@ def slugify(value: str) -> str:
 def classify_video_type(title: str) -> str:
     lowered = title.lower()
 
-    if "full fight" in lowered or "full fight！" in title:
+    if "full fight" in lowered or "full fight！" in title or "フルファイト" in title:
         return "full_fight"
 
     if "ダイジェスト" in title or "digest" in lowered:
