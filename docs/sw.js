@@ -23,6 +23,14 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+function sameBytes(a, b) {
+  if (a.byteLength !== b.byteLength) return false;
+  const x = new Uint8Array(a);
+  const y = new Uint8Array(b);
+  for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+  return true;
+}
+
 async function revalidate(cache, request, cached) {
   const headers = {};
   const etag = cached.headers.get("ETag");
@@ -45,7 +53,14 @@ async function revalidate(cache, request, cached) {
   const newEtag = response.headers.get("ETag");
   if (etag && newEtag && etag === newEtag) return;
 
-  await cache.put(request, response.clone());
+  // GitHub Pages の ETag は「更新時刻-サイズ」で、Pages の CI は push のたびに docs/data を作り直すため、
+  // 中身が同じでも ETag と Last-Modified が変わる。本文を比べ、違うときだけ通知する
+  // (同じでも新しい検証子を残すためキャッシュは差し替える)。cached の本文はページへ返して読まれているので、
+  // 比べる本文はキャッシュから取り直す。
+  const stored = await cache.match(request);
+  const [oldBody, newBody] = await Promise.all([stored ? stored.arrayBuffer() : null, response.clone().arrayBuffer()]);
+  await cache.put(request, response);
+  if (oldBody && sameBytes(oldBody, newBody)) return;
 
   const clients = await self.clients.matchAll({ type: "window" });
   for (const client of clients) {
