@@ -100,10 +100,32 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.83](tasks/T.83.md) | TASKS.md の整理 | 完了 | 2026-10-25 |
 | [T.84](tasks/T.84.md) | 使われていないコードとスクリプト | 完了 | 2026-10-25 |
 | [T.85](tasks/T.85.md) | テストの重複と性能の小改善 | 完了 | 2026-10-25 |
-
 | [T.86](tasks/T.86.md) | アラカク通信のーとの記事が 49 件取り込まれていない | 完了 | 2026-10-25 |
 | [T.87](tasks/T.87.md) | YouTube の新しい動画（2026-05-10 以降）が取り込まれていない | 完了 | 2026-10-25 |
-| T.88 | 新しいタスクを限界まで洗い出す（2 回目） | 進行中 | 2026-10-25 |
+| T.88 | 新しいタスクを限界まで洗い出す（2 回目） | 完了 | 2026-10-25 |
+| T.89 | ビューアが誤った事実を表示する | 未着手 | 2026-10-25 |
+| T.90 | Numbers だけの試合の並び・試合順・ID が不安定 | 未着手 | 2026-10-25 |
+| T.91 | make rebuild が壊れている | 未着手 | 2026-10-25 |
+| T.92 | make refresh-sources と check-generated の抜け | 未着手 | 2026-10-25 |
+| T.93 | note 解析の不具合とテスト不足 | 未着手 | 2026-10-25 |
+| T.94 | 結果不明の試合をさらに埋める | 未着手 | 2026-10-25 |
+| T.95 | 決着欄の残りと書式 | 未着手 | 2026-10-25 |
+| T.96 | 動画の紐づけの残り | 未着手 | 2026-10-25 |
+| T.97 | 対戦カードの note が記事種別 note_article になり大会に結ばれない | 未着手 | 2026-10-25 |
+| T.98 | 王座データの補完 | 未着手 | 2026-10-25 |
+| T.99 | 選手のプロフィール・概要が古い | 未着手 | 2026-10-25 |
+| T.100 | Numbers にある 14 大会を CSV に入れるか | 保留 | 2026-10-25 |
+| T.101 | 対戦カードの選手情報を時点情報にするか | 保留 | 2026-10-25 |
+| T.102 | ビューアの表示の改善 | 未着手 | 2026-10-25 |
+| T.103 | 取得スクリプトが失敗しても成功を返す | 未着手 | 2026-10-25 |
+| T.104 | YouTube の公開日が UTC | 保留 | 2026-10-25 |
+| T.105 | CI と実行環境の細部 | 未着手 | 2026-10-25 |
+| T.106 | 外部リンクの URL スキームを確かめていない | 未着手 | 2026-10-25 |
+| T.107 | ドキュメントとスキルを今の手順に合わせる | 未着手 | 2026-10-25 |
+| T.108 | TASKS.md の表示崩れと記録の欠け | 未着手 | 2026-10-25 |
+| T.109 | #10 に追記できる Numbers の食い違い | 未着手 | 2026-10-25 |
+| T.110 | 範囲の判断が要るもの（マイナー団体・ライブ・白グローブ・ランナーアップ） | 保留 | 2026-10-25 |
+
 ---
 
 ## T.42 公式タブを「公式ページ」と「公式ニュース」に分割
@@ -143,9 +165,313 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 
 ## T.88 新しいタスクを限界まで洗い出す（2 回目）
 
-- 状態: 進行中
+- 状態: 完了
 - 期間: 2026-10-25
 
 2026-10-25 にユーザーが依頼:「限界までタスクを徹底的に探して台帳に追記しよう」。T.62（1 回目）以降の T.63〜T.87 の変更を踏まえて、もう一度観点ごとに調べる。
 
-- [ ] T.88.1 データ・スクリプトと CI・ビューア・ドキュメント・取り込みパイプラインを観点ごとに調べ、見つけた問題を新しい親タスクとして登録する
+- [x] T.88.1 データ・スクリプトと CI・ビューア・ドキュメント・取り込みパイプラインを観点ごとに調べ、見つけた問題を新しい親タスクとして登録する（T.89〜T.110 の 22 件、2026-10-25）
+  - 方法: 5 観点（データの整合性・出典と CSV の網羅性・スクリプトと CI・ビューア・ドキュメントと台帳）を並行に調査。スクリプトの調査は作業用コピーで make check・check-generated・regenerate-csvs・rebuild を実行して確かめた
+
+## T.89 ビューアが誤った事実を表示する
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- `data/enricher.js` の Numbers による勝敗の上書きが、Numbers の 2 行が矛盾する試合でも効く。target-87-wdwtmtyvh_y が「センサー・ファッジ def. センサー・ファッジ」、target-95-m3upkoczyo4・emperor-115-cx_ge_lrruq・target-93-xchkwjueaku は両者「勝ち」と表示される（T.40.4・T.86.6 で決めた note の勝者が消える）
+- `repository.js` の Numbers だけの試合は最初の「勝ち」を勝者にする。numbers-emperor-105-2（さかえだ vs チャールス・ブランディン、Numbers は両者勝ち）がさかえだの勝ちと出る（note はブランディンの勝ち）
+- 王座タブが返上（vacated）の最後の王者を「現王者」と出す（target-middleweight のギタミン・アーロン）
+- `richTitles` が空の won_at_event_id を source_video_id の大会で埋めるが、4 本は防衛戦の動画なので獲得・喪失の大会が誤る: emperor-lightweight-10（マルコ、実際の獲得は No.107）、mh-lightweight-4（ランダーデビル、mh-30 は防衛②）、mh-middleweight-1（テール・ジャンク、mh-29 は防衛）、target-middleweight-8（ルージュド、target-87 は防衛3）。前の王者の喪失大会も連動して誤る
+
+- [ ] T.89.1 Numbers の行が矛盾する試合は勝敗の上書きと numbers_verified をしない（CSV の勝者を残す）
+- [ ] T.89.2 Numbers だけの試合で両者が同じ結果なら unknown にする
+- [ ] T.89.3 王座タブで最後の王者が vacated なら「空位」と出す
+- [ ] T.89.4 won_at の推定に防衛戦の動画を使わない（reign 行に明示されたときだけ）
+
+## T.90 Numbers だけの試合の並び・試合順・ID が不安定
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+`repository.js` の numbersOnlyBouts が Numbers の記録の順のまま。試合タブの末尾 68 行が大会をまたいで混ざり、`bout_order` を「第N試合」と表示する（根拠のない事実）。ID（numbers-…-N）も記録順なので Numbers が変わると共有リンクがずれる。
+
+- [ ] T.90.1 大会・選手名で並べ、Numbers だけの試合では試合順を出さない。ID を選手の組から作る
+
+## T.91 make rebuild が壊れている
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- `reorder_data.py` が T.77 から article_links.csv を読むが、`generate-stage1` の中で動くので stage2 を消した直後に FileNotFoundError で止まり、CSV が消えたまま残る（作業用コピーで再現）
+- `extract_numbers.py` が使う `numbers_parser` が pyproject・README・Makefile のどこにも無く、`check-stage1-inputs` も確かめない（system python で ModuleNotFoundError、CSV が消えたまま）
+- `regenerate-csvs`・`rebuild-stage2` は stage2 の後に reorder しない
+- `clean-stage1-csvs` が archives/*.csv と source_documents.csv を消すので、archived_at・fetched_at と取得できなくなった行の履歴が失われる
+
+- [ ] T.91.1 reorder_data を stage2 の後に 1 回だけ動かす
+- [ ] T.91.2 numbers_parser を依存として宣言し、入力チェックで import を確かめる
+- [ ] T.91.3 rebuild で archives と source_documents を消すのをやめるかをユーザーに確認する
+
+## T.92 make refresh-sources と check-generated の抜け
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- `refresh-sources` が review の候補 CSV（make_source_mention_result_candidates・make_source_reference_candidates）と generate_official_csvs.py を動かさない。次の CI の check-generated が落ち、viewer の出典候補も古いまま
+- `check-generated` に、オフラインで動く generate_articles.py と match_unknown_bouts_to_note_results.py（docs/data を読むので build の後）が入っていない
+
+- [ ] T.92.1 候補 CSV の生成を generate-stage2 に、generate_official_csvs を refresh-sources に入れる
+- [ ] T.92.2 generate_articles と match_unknown_bouts_to_note_results を check-generated に入れる
+
+## T.93 note 解析の不具合とテスト不足
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- 「1R終了時TKO」が time=終了・method「時TKO …」に分かれる（target-89-aczznfws9eg、emperor-119-wae2pl4rfdw）
+- 勝ち記号に 〇（U+3007）が無く、`generate_article_links.py` は ◯・〇・「🟦 ①名前」を拾わない。max-bout-special-1 の 5 試合など 19 試合に結果 note のリンクが無い
+- 試合側の照合が 3 行以内しか見ないので、名前・年齢・戦績・🆚・名前の形（4 行離れる）を取りこぼす（mh-38 の 3 試合、emperor-118-u6 など）
+- 決着の行が「（」で始まる行しか見ないので、「3R終了 判定3-0」「1R 2分10秒KO（…）」を取りこぼす（既知 22 試合の決着が空）
+- 名前を部分一致で探す（「ロン」がアイス・トロン・フロントチョークに当たる）。今は誤判定 0
+- 大会に Numbers の記録が無いとき組み合わせ全体にフォールバックして apply=true になりうる（T.86 の修正と矛盾）
+- スコア「29-28」を「9-2」と読む、KO が先頭以外だと分類しない、最初の括弧を決着と取る
+- match・discover・crawl・generate_articles・reorder・build_json の新しい処理にテストが無い
+
+- [ ] T.93.1 「終了時」と 〇・① を扱い、記号の集合を 2 スクリプトで共有する
+- [ ] T.93.2 照合の窓をカード形式（4〜5 行）に広げ、決着の行の取り方を直す
+- [ ] T.93.3 名前の境界判定、フォールバックは apply=false、スコア・KO・括弧の解析を直す
+- [ ] T.93.4 新しいスクリプトの単体テストを足す
+
+## T.94 結果不明の試合をさらに埋める
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+T.93 の解析で取れるもの・判断が要るもの。
+- T.40 の条件（note と Numbers が一致）で埋まる: mh-38-nm0ig9mdpi（ゼット）、mh-38-htdjihj6z_q（ラドフ）、mh-38-3jbgtu_pkeu（ぱいそんはやし）、emperor-118-u6_s5feulqm（ダイス・ヴォルケード）
+- 判断が要る: mh-37-e8wdonlgqdm（note に ○● が無く戦績からきくちぴあのせんの勝ちと読める）、mh-29-7su1lyzlexi（Numbers だけ）、エリートスピリッツミドル級GP 7 試合（公式の選手紹介の優勝・準優勝と勝敗数から組み合わせで決まる。決着は不明）
+
+- [ ] T.94.1 T.40 の条件で 4 試合を反映する
+- [ ] T.94.2 mh-37・mh-29・エリートスピリッツの扱いをユーザーに確認する
+
+## T.95 決着欄の残りと書式
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- 既知 22 試合で決着が空（ターゲットNo.87 6・エンペラーNo.109 4・ターゲットNo.88 3・第6回MAXバウトライト級 1回戦 8・第5回ミドル級決勝）。T.70.4 の mzffdb97ygw も 16 行目に「1R3分51秒KO（飛びヒザ蹴り）」がある
+- 時間のゼロ詰め漏れ（3分8秒・3分4秒）、method_raw の全角「ＫＯ」約 25 件と全角空白
+- 判定で round が空の試合（emperor-112-xogycqouw_e など。判断が要る）
+
+- [ ] T.95.1 T.93 の解析で決着を補い、書式を揃える。検証にゼロ詰めを足す
+
+## T.96 動画の紐づけの残り
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- 判断不要: target-103-01 のフルファイト youtube_zwgjiqqhttg、第6回MAXバウトミドル級GP 1回戦のフルファイト 8 本（-01〜-08 がどれも動画なし）、target-103-02 の見どころ youtube_ofy3tcobh3m、大会リンク 5 本（mh-41・emperor-122・target-104 のカード NEWS、第6回 MW GP の 16 名発表・スーパーダイジェスト）。スペシャルワンマッチ No.2 のフルファイト 5 本の video_type が reference
+- 判断が要る: 「MAXバウトスペシャルワンマッチ大会煽り映像集」（公開日と概要欄からスペシャル No.1）、タイトルが「第7回MAXバウトミドル級GP」の 3 本（第6回の誤記らしい）、概要欄にだけ大会名がある約 15 本を大会に結ぶか
+
+- [ ] T.96.1 判断不要の紐づけを入れる
+- [ ] T.96.2 判断が要る 3 件をユーザーに確認する
+
+## T.97 対戦カードの note が記事種別 note_article になり大会に結ばれない
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+タイトルに「対戦カード」が無いカード記事 13 本（第6回ライト級・第5回ミドル級のブロック別、合同大会 nb7b4be41c85c、mh-27・mh-37・スペシャル No.1・第6回 MW GP 16 名など）。`generate_articles.py` の分類がタイトルだけを見る。`crawl_note_articles.py` にも別の分類があり使われていない。
+
+- [ ] T.97.1 分類を本文（🟥🟦・☆…級）も見るように直し、使われていない分類を消す
+
+## T.98 王座データの補完
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- won_at_event_id が空: max-bout-lightweight-6・-7、max-bout-middleweight-5（大会は CSV にある）
+- title_note が空の王座決定戦（target-96・mh-38）と、note が数えている防衛（target-87 防衛3 ×2、mh-30 防衛②、emperor-112 防衛①、target-100 2度目、target-101 防衛）
+- トーナメントの bout_order で決勝が準決勝より前（第6回ライト級・第5回ミドル級・エリートスピリッツ）
+- わく（target-lightweight-9）がまだ現王者（ターゲットNo.105 が王座決定戦。判断が要る）
+
+- [ ] T.98.1 won_at・title_note・トーナメントの試合順を直す
+- [ ] T.98.2 わくの王座をユーザーに確認する
+
+## T.99 選手のプロフィール・概要が古い
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- 年齢などが最新の対戦カードより古い（つくりはら・きんとき・おとさわ・かべい・ザモン・オーロラデビルなど）
+- 30 人の概要が「王座・トーナメント履歴のための最小登録」のまま（試合がある選手も含む）。ギタミン・アーロンの引退が無い
+- タイプ・ジーだけ main_promotion_id が max_bout（公式は「メジャー各団体1マッチ契約」。判断が要る）
+
+- [ ] T.99.1 プロフィールの更新方針（最新カードで上書きか時点情報に任せるか）をユーザーに確認して直す
+
+## T.100 Numbers にある 14 大会を CSV に入れるか
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+ターゲットNo.83〜86、エンペラーNo.105〜108・121、マウンテン・ヒーローズNo.22〜26 は note の対戦カード・結果があり、Numbers にもある（T.44 の方針でビューアが実行時に補っている）。CSV に入れないと、エンペラーNo.121・MH No.26 のフルファイト 9 本を結べず、Numbers に無い 4 試合（T83 ビル・ジャガー vs ゴスティーノ、まとりだ vs ランド・クラークス、T85 かぶと vs いたみ、T86 パス・フィーリー vs ビル・ジャガー）と約 18 人の選手が見えない。表記ゆれ（ファビオ・パピール／パーピル、レイダー・バルチャコル／バチャコル）あり。
+
+- [ ] T.100.1 T.44 の方針を変えて入れるかをユーザーに確認する
+
+## T.101 対戦カードの選手情報を時点情報にするか
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+fighter_snapshots.csv は 26 行（2 大会）だけ。CSV の大会の対戦カード 67 本に約 447 組の選手情報（年齢・身長・ジム・戦績）がある。
+
+- [ ] T.101.1 時点情報として取り込むかをユーザーに確認する
+
+## T.102 ビューアの表示の改善
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- 王座戦: 「王座戦: 」の後が空、title_id が生の ID、王座の変遷へのリンクが無い
+- 試合の詳細で win/loss/unknown・corner が生のまま、種別が英語と日本語で混ざる、method_raw の改行
+- 選手の時点情報が event_id の文字列順、動画タブが新しい順になっていない（`reorder_data.py` が T.75 で消えた published_at で並べている。upload_date で並べる）
+- 団体タブで日付の無い大会（ターゲットNo.105）が「ほか N 件」に隠れる。T.105 の日付は card note から出せる（build_json が並び替えと同じ代替日付を出していない）
+- 日付に「結果」の説明が無い
+- Ctrl/Cmd クリックがナビ・件数リンクで新しいタブにならない
+- 選手タブのヘビー絞り込みが 1 人（公式の「ヘビー級118kg」で上書き。最小登録の扱いは判断が要る）
+- Esc が絞り込みを解除して履歴を積む、戻ったときスクロール位置が戻らない
+- アクセシビリティ: タブ切り替え後のフォーカス、aria-busy が Phase 2 中ずっと true、ツールバーの再描画でフォーカスが消える、開閉ボタンのラベルが全行同じ、prefers-reduced-motion
+- VIEWER_FEATURES.md の件数と T.77・T.78・T.85・T.86 の変更
+
+- [ ] T.102.1 事実の表示に関わるもの（王座戦・種別・並び順・日付）
+- [ ] T.102.2 操作（Ctrl クリック・Esc・スクロール復元）
+- [ ] T.102.3 アクセシビリティ
+- [ ] T.102.4 VIEWER_FEATURES.md を更新
+
+## T.103 取得スクリプトが失敗しても成功を返す
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+`crawl_note_articles.py` は API の取得失敗・不正な JSON で終端扱いにして 0 を返す。`cache_note_html.py` は常に 0。新しい記事の取得に失敗すると generate_articles が articles.csv から黙って落とす。逆に `cache_youtube_api.py` は削除された動画が 1 本でもあると 1 を返し refresh-sources が止まり続ける。
+
+- [ ] T.103.1 失敗を終了コードで返し、YouTube は削除済みを許す選択肢を足す
+
+## T.104 YouTube の公開日が UTC
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+`arakaku/youtube.py` が publishedAt の UTC 日付を使う。445 本中 55 本が日本時間の公開日の前日になる。note の日付は日本時間。
+
+- [ ] T.104.1 日本時間に揃えるかをユーザーに確認する
+
+## T.105 CI と実行環境の細部
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+ワークフローに timeout-minutes が無い（既定 6 時間）、pip のキャッシュと pytest の固定が無い、CI は Python 3.12・手元は 3.14 で pyproject に requires-python が無い。
+
+- [ ] T.105.1 timeout・キャッシュ・Python の範囲を設定する
+
+## T.106 外部リンクの URL スキームを確かめていない
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+viewer の `externalLink()` は URL をエスケープするがスキームを見ない。validate_json.py は videos とアーカイブの URL は見るが articles・source_documents は見ない。今のデータに問題は無い（多層防御）。
+
+- [ ] T.106.1 externalLink を http(s) に限り、検証に URL スキームを足す
+
+## T.107 ドキュメントとスキルを今の手順に合わせる
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+2 回目のドキュメント調査で見つかったもの。
+- CI の説明が古い（maintainer スキル: test.yml・pages.yml とも make check + check-generated）
+- CSV を直したあとの手順に generate-stage2・check-generated が無い（data-curator・review-workflow スキル、OPERATIONS_CHECKLIST、CODEX、GEMINI、data-src/GEMINI、PR テンプレート、AGENTS.md の push 条件）
+- 取り込みの手順が refresh-sources の新しい流れ（discover・generate-articles・stage2）になっていない（README・HANDOFF・OPERATIONS_CHECKLIST・GEMINI・CODEX・各スキル）
+- source-pipeline・review-workflow スキルに discover・match_unknown・apply の流れが無い、data-curator スキルに video_event_links が無い
+- viewer-ui スキルが replaceState のみ・画像の base64 埋め込み・読み込み n/31 のまま、sorting スキルが event_date・videos の published_at のまま
+- setup-node@v5 が 4 文書の action 一覧に無い、mention_type に match_result が無い、SCHEMA_NOTES の video_event_links の外部キー、README の events.published_at と archives/note.csv の published_at の説明、check-stage1/2-inputs、data-src/GEMINI の誤り 2 か所、docs-handoff スキルの同期対象、scripts/GEMINI の主なスクリプト、HANDOFF・CODEX・OPERATIONS_CHECKLIST の小さな古さ、PR テンプレートの団体・王座
+
+- [ ] T.107.1 CI・CSV 編集後の手順・取り込みの手順を全文書で揃える
+- [ ] T.107.2 スキル（source-pipeline・review-workflow・data-curator・viewer-ui・sorting・maintainer・actions-ops・docs-handoff）を更新
+- [ ] T.107.3 README・SCHEMA_NOTES・GEMINI 系・HANDOFF・CODEX・OPERATIONS_CHECKLIST・PR テンプレートの小さな修正
+
+## T.108 TASKS.md の表示崩れと記録の欠け
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+一覧の表の崩れ（T.85 と T.86 の間の空行、表の直後の `---`）は登録時に直した。残り: T.52・T.53 の一覧のタイトルが tasks/ の見出しと違う。T.62.1 にコミット 92b34db が無い。T.57 で T.57.4 が T.57.3 より上。
+
+- [ ] T.108.1 一覧と記録を直す
+
+## T.109 #10 に追記できる Numbers の食い違い
+
+- 状態: 未着手
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- マウンテン・ヒーローズNo.36 のオーシューワイルドの相手が Numbers ではヘル・ラッサー（note・CSV はトルー・パルドレス）
+- note と Numbers の表記ゆれ（MH No.25 ファビオ・パピール／パーピル、レイダー・バルチャコル／バチャコル）
+- Numbers に無い試合（T83・T85・T86 の 4 試合。T.100 参照）
+
+- [ ] T.109.1 確かめて #10 に追記する
+
+## T.110 範囲の判断が要るもの（マイナー団体・ライブ・白グローブ・ランナーアップ）
+
+- 状態: 保留
+- 期間: 2026-10-25
+
+T.88 の洗い出しで登録。
+
+- 選手の肩書きに出るマイナー団体 約 20（ネオ・マーキーズ、ジャパンファイト、キングプロレスなど）が promotions.csv に無い
+- アラカクライブ No.12〜19・試合だけライブ・超アラカク（約 25 回、日付と会場が概要欄にある）が大会に無い（arakaku_live 団体はある）
+- MAXバウトの準優勝者（公式のトーナメント 15）を持っていない
+- 選手 1 人の振り返り動画（youtube_tv_q8xyq_x8）を選手に結ぶ表が無い
+
+- [ ] T.110.1 どこまで扱うかをユーザーに確認する
