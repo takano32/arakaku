@@ -85,7 +85,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.68](tasks/T.68.md) | デプロイ前に pytest が走らない・生成 CSV のずれを検出しない | 完了 | 2026-10-25 |
 | [T.69](tasks/T.69.md) | 検証の穴をふさぐ | 完了 | 2026-10-25 |
 | T.70 | note に結果があるのに unknown の 32 試合を取り込む | 完了 | 2026-10-25 |
-| T.71 | 煽り動画から作られた重複試合 3 件と架空の大会 3 件 | 未着手 | 2026-10-25 |
+| [T.71](tasks/T.71.md) | 煽り動画から作られた重複試合 3 件と架空の大会 3 件 | 完了 | 2026-10-25 |
 | [T.72](tasks/T.72.md) | 試合の種別の誤り | 完了 | 2026-10-25 |
 | [T.73](tasks/T.73.md) | 決着方法・技・判定スコアを note から補う | 完了 | 2026-10-25 |
 | T.74 | 選手の主な団体・階級が Numbers・公式サイトと食い違う | 未着手 | 2026-10-25 |
@@ -151,17 +151,6 @@ note の結果記事の書式（◯ U+25EF、1 行の `○A vs ●B`、片側だ
 - [x] T.70.4 note だけにある 1 試合の扱いをユーザーに確認する（fb70f51、2026-10-25）。2026-10-25 にユーザーが決定: 入れる。勝敗だけを反映し（note の行に決着の記載なし）、notes に「Numbers に記録なし」と書いた
   - `max-bout-6-lightweight-tournament-mzffdb97ygw` コルト・アプロー vs センサー・ファッジ: note-n96b3975ccdad 15 行目「○コルト・アプローvs●センサー・ファッジ」。Numbers に記録なし。`review/unknown_bout_note_results.csv` では apply=false
 - [x] T.70.5 T.40.5 の「note も Numbers も無い 21 試合」の一覧を見直す（2026-10-25）。T.40.5 の 21 試合のうち、スペシャルワンマッチ大会の 10 試合は反映済み。残りは エリートスピリッツ 7 試合（note も Numbers も無し）、`max-bout-6-lightweight-tournament-mzffdb97ygw`（T.70.4）、`target-14-d6tuqnfvmhy` と video-catalog 2 試合（T.71）
-
-## T.71 煽り動画から作られた重複試合 3 件と架空の大会 3 件
-
-- 状態: 未着手
-- 期間: 2026-10-25
-
-T.62 の洗い出しで登録。
-
-T.50 で拾い漏れたもの。`target-14-d6tuqnfvmhy`（ライブNo.14 の見どころ動画、実際は mh-35-qx9qzizzru8）、`video-catalog-54kwdqyjoa8-*`（= emperor-115-qwxsvgtscqe）、`video-catalog-f93bk3gibcq-*`（= emperor-115-5zxi7yo4qzm）。
-
-- [ ] T.71.1 3 試合の動画を本来の試合の `video_bout_links` に移し、重複試合と空の大会 `target-14`・`video-catalog-54kwdqyjoa8`・`video-catalog-f93bk3gibcq` を消す（削除なのでユーザーに確認）
 
 ## T.74 選手の主な団体・階級が Numbers・公式サイトと食い違う
 
