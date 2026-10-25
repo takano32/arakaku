@@ -83,13 +83,14 @@ def build_json_files(builders: dict[str, Callable[[], Any]], done_message: str) 
     print(done_message)
 
 def load_json(filename: str, default: Any = None) -> Any:
+    # 無いファイルは default (存在の検査は呼び出し側)。壊れた JSON は握りつぶさずにエラーにする。
     p = DOCS_DATA / filename
     if not p.exists():
         return default
     try:
         return json.loads(p.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return default
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{p}: invalid JSON: {error}") from error
 
 # 空文字/空白のみ -> None に畳む正規化の基点。bool_from_text・split_list 等もこれ経由で
 # 「未入力」を一貫して None 扱いにする。JSON 上で null と空文字を区別したい意図。
