@@ -30,9 +30,8 @@ Do not bulk-apply extracted candidates directly to canonical CSVs without review
 ## Common review files
 
 ```text
-review/note_structured_results.csv
-review/structured_result_patch_candidates.csv
-review/youtube_description_candidates.csv
+review/unknown_bout_note_results.csv
+review/known_bout_note_methods.csv
 review/source_mention_result_candidates.csv
 review/source_event_reference_candidates.csv
 review/source_bout_reference_candidates.csv

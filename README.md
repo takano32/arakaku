@@ -562,9 +562,8 @@ viewer や抽出処理での検索・照合改善に使います。
 
 現在ある候補CSV:
 
-- `review/note_structured_results.csv`
-- `review/structured_result_patch_candidates.csv`
-- `review/youtube_description_candidates.csv`
+- `review/unknown_bout_note_results.csv`
+- `review/known_bout_note_methods.csv`
 - `review/source_mention_result_candidates.csv`
 - `review/source_event_reference_candidates.csv`
 - `review/source_bout_reference_candidates.csv`
@@ -610,7 +609,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 - `scripts/cache_note_html.py`: `articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。404・削除済みは警告扱いで止めません。
 - `scripts/cache_youtube_api.py`: `videos.csv` の YouTube 動画を YouTube Data API v3（`videos.list`）で取得し、API が返した動画リソースをそのまま `tmp/youtube-api/<platform_video_id>.json` にキャッシュします。環境変数 `YOUTUBE_API_KEY` が必要です。API が返さなかった動画（削除・非公開など）は `[missing]` として表示し、終了コード 1 にします。
-- `scripts/arakaku/youtube.py`: `tmp/youtube-api/*.json` を読み、`archive_metadata.py`・`build_source_documents.py`・`import_youtube_descriptions.py` 向けのメタデータに正規化します（`upload_date` は `publishedAt` の UTC 日付を `YYYYMMDD`、`duration_string` は `H:MM:SS` / `M:SS` / 秒）。
+- `scripts/arakaku/youtube.py`: `tmp/youtube-api/*.json` を読み、`archive_metadata.py`・`build_source_documents.py` 向けのメタデータに正規化します（`upload_date` は `publishedAt` の UTC 日付を `YYYYMMDD`、`duration_string` は `H:MM:SS` / `M:SS` / 秒）。
 - `scripts/download_official_data.sh`: 団体公式サイト（`kobayashi856/arakaku-site`）のデータを `tmp/arakaku-site/` に取得します。
 
 ### アーカイブメタデータ
@@ -632,17 +631,11 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### 結果候補の抽出・反映
 
-- `scripts/extract_note_structured_results.py`: note 本文から構造化された試合結果候補を抽出します。
-- `scripts/make_structured_result_patch_candidates.py`: 構造化結果候補と `bouts.csv` を照合し、反映候補CSVを作ります。
 - `scripts/make_source_mention_result_candidates.py`: `source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
 - `scripts/make_source_reference_candidates.py`: note本文と YouTube概要欄から、`review/source_event_reference_candidates.csv`・`review/source_bout_reference_candidates.csv`・`review/source_video_reference_candidates.csv` を作ります。確認支援用の候補です。
 - `scripts/match_unknown_bouts_to_note_results.py`: 試合側から結果 note を探します。結果不明の試合は両選手の名前の直前の ○/◯/● で勝者を決め、`review/unknown_bout_note_results.csv` に書きます（Numbers の勝者と一致した行だけ `apply=true`）。結果が分かっている試合は、空の決着欄（決着方法・技・判定スコアなど）を同じ note の行から埋める候補を `review/known_bout_note_methods.csv` に書きます。
-- `scripts/apply_structured_result_patches.py`: レビュー済みの structured result patch を `bouts.csv` に反映します。既定は `review/structured_result_patch_candidates.csv` で、同じ列の CSV を引数で渡せます（例: `python3 scripts/apply_structured_result_patches.py review/unknown_bout_note_results.csv`）。反映前に必ず候補CSVを確認してください。
+- `scripts/apply_structured_result_patches.py`: レビュー済みの結果候補（`apply=true` の行）を `bouts.csv` / `bout_participants.csv` に反映します。既定は `review/unknown_bout_note_results.csv` で、同じ列の CSV を引数で渡せます（例: `python3 scripts/apply_structured_result_patches.py review/known_bout_note_methods.csv`）。反映前に必ず候補CSVを確認してください。
 
-### YouTube 取り込み（補助）
-
-- `scripts/import_youtube_videos.py`: YouTube動画情報を `videos.csv` へ取り込みます。
-- `scripts/import_youtube_descriptions.py`: YouTube概要欄を解析します。現在の本文DB化の中心は `build_source_documents.py` です。
 
 ### 検証
 

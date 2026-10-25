@@ -279,12 +279,11 @@ the script safe to re-run after schema changes to `bouts.csv`.
 
 ### review/ directory
 
-The review directory holds exactly seven generated candidate CSVs:
+The review directory holds exactly six generated candidate CSVs:
 
 ```text
-review/note_structured_results.csv
-review/structured_result_patch_candidates.csv
-review/youtube_description_candidates.csv
+review/unknown_bout_note_results.csv
+review/known_bout_note_methods.csv
 review/source_mention_result_candidates.csv
 review/source_event_reference_candidates.csv
 review/source_bout_reference_candidates.csv
