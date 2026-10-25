@@ -13,6 +13,7 @@ validate:
 	python3 scripts/validate_json.py
 	node scripts/validate_json.js
 	node scripts/test_filters.mjs
+	node scripts/test_markdown.mjs
 
 test:
 	python3 -m pytest -q
