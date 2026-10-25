@@ -106,3 +106,16 @@ def test_alias_keys_are_unique(repo_root):
     _, rows = read_csv(repo_root, "aliases.csv")
     keys = [(row["alias_type"], row["alias"]) for row in rows]
     assert len(keys) == len(set(keys)), "aliases.csv has duplicate (alias_type, alias)"
+
+
+def test_video_event_links_reference_existing_rows(repo_root):
+    _, links = read_csv(repo_root, "video_event_links.csv")
+    _, videos = read_csv(repo_root, "videos.csv")
+    _, events = read_csv(repo_root, "events.csv")
+    video_ids = {row["video_id"] for row in videos}
+    event_ids = {row["event_id"] for row in events}
+    keys = [(row["video_id"], row["event_id"]) for row in links]
+    assert len(keys) == len(set(keys)), "video_event_links.csv has duplicate (video_id, event_id)"
+    for video_id, event_id in keys:
+        assert video_id in video_ids, f"video_event_links.csv: unknown video_id {video_id}"
+        assert event_id in event_ids, f"video_event_links.csv: unknown event_id {event_id}"
