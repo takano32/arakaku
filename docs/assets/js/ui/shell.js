@@ -127,6 +127,7 @@ export class Shell {
     });
 
     document.querySelector("#theme-toggle")?.addEventListener("click", () => this.#toggleTheme());
+    this.#syncThemeButton();
 
     this.#state.subscribe(() => this.render());
   }
@@ -199,6 +200,18 @@ export class Shell {
     const next = current === "dark" ? "light" : "dark";
     root.dataset.theme = next;
     try { localStorage.setItem("arakaku-theme", next); } catch { /* 保存できなくても動作に支障なし */ }
+    this.#syncThemeButton();
+  }
+
+  // 配色ボタンのラベルで、押すとどちらの配色になるかを伝える (アイコンだけでは状態が分からないため)。
+  #syncThemeButton() {
+    const button = document.querySelector("#theme-toggle");
+    if (!button) return;
+    const root = document.documentElement;
+    const dark = (root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark";
+    const label = dark ? "ライト配色に切り替える" : "ダーク配色に切り替える";
+    button.setAttribute("aria-label", label);
+    button.title = label;
   }
 
   // ── 描画 ───────────────────────────────────────────────────────────
@@ -367,9 +380,11 @@ export class Shell {
     const html = `
       <h1 class="section-title">${escapeHtml(section?.label ?? "")}<span class="section-count">${count >= 0 ? `${escapeHtml(count)} 件` : ""}</span></h1>
       ${this.#focusChip()}
-      ${loading ? `<span class="loading-indicator" aria-live="polite">読み込み中 ${loadedCount}/${total}</span>` : ""}
+      ${loading ? `<span class="loading-indicator">読み込み中 ${loadedCount}/${total}</span>` : ""}
     `;
     if (el.innerHTML !== html) el.innerHTML = html;
+    // 表示は描き直すたびに作り直すので aria-live では読み上げられない。一覧側に aria-busy で読み込み中を伝える。
+    document.querySelector("#list-host")?.setAttribute("aria-busy", loading ? "true" : "false");
     const searchInput = document.querySelector("#search");
     if (searchInput && section?.placeholder && searchInput.placeholder !== section.placeholder) {
       searchInput.placeholder = section.placeholder;

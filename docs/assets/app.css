@@ -14,7 +14,7 @@
   --line-2: #cbc6bc;
   --accent: #d7141a;
   --accent-ink: #ffffff;
-  --accent-soft: #fbe3e3;
+  --accent-soft: #fcebeb; /* --accent との比が 4.5:1 以上 (選択中のナビ文字) */
   --link: #0b57d0;
   --link-hover: #083f9a;
   --numbers: #1d4ed8;
@@ -23,7 +23,7 @@
   --official-bg: #dcf5e4;
   --note: #7c3aed;
   --note-bg: #ece4ff;
-  --gold: #a16207;
+  --gold: #975a06; /* --gold-bg との比が 4.5:1 以上 (王座戦バッジ) */
   --gold-bg: #fdf0c7;
   --soft: #e8e5df;
   --soft-ink: #4b4842;
