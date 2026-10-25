@@ -55,3 +55,15 @@ def test_validate_fighter_snapshots_checks_source_id(validate_json_module):
     assert 'fighter_snapshots.json[0]' not in errors and 'fighter_snapshots.json[1]' not in errors
     assert 'fighter_snapshots.json[2]: unknown official news reference in source_id: missing' in errors
     assert 'fighter_snapshots.json[3]: source_id must be note:<article_id> or official_news:<slug>' in errors
+
+def test_validate_official_pages_rejects_unsafe_html(validate_json_module):
+    pages=[
+        {'slug':'ok','title':'ok','body_html':'<p>a</p><img src="/logos/a.jpeg"><iframe src="https://www.youtube.com/embed/x"></iframe>'},
+        {'slug':'bad','title':'bad','body_html':'<p onclick="x">a</p><a href="javascript:alert(1)">b</a><iframe src="https://evil.example/"></iframe><script>1</script>'},
+    ]
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_official_pages(pages)
+    errors='\n'.join(validate_json_module.ERRORS)
+    assert '(ok)' not in errors
+    for problem in ('contains <script>','event handler attribute','script URL','unexpected host (evil.example)'):
+        assert problem in errors
