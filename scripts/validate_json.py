@@ -473,7 +473,7 @@ YYYYMMDD = re.compile(r'^\d{8}$')
 def validate_dates(articles: list[Any], events: list[Any], source_documents: list[Any]) -> None:
     for filename, items, id_field, fields in (
         ('articles.json', articles, 'article_id', ('published_at',)),
-        ('events.json', events, 'event_id', ('published_at', 'result_published_at')),
+        ('events.json', events, 'event_id', ('published_at', 'result_published_at', 'note_published_at')),
     ):
         for i, x in enumerate(items):
             for field in fields:
