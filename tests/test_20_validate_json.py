@@ -112,3 +112,15 @@ def test_validate_bout_titles(validate_json_module):
     errors = '\n'.join(validate_json_module.ERRORS)
     assert '(ok)' not in errors
     assert '(missing): title bout has no title_id' in errors and '(unknown): unknown title_id: nope' in errors and '(mismatch)' in errors
+
+def test_validate_dates(validate_json_module):
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_dates(
+        [{'article_id': 'a1', 'published_at': '2026-07-31'}, {'article_id': 'a2', 'published_at': '20260731'}],
+        [{'event_id': 'e1', 'result_published_at': '2026/07/31'}],
+        [{'source_id': 'y1', 'source_type': 'youtube_description', 'published_at': '20260731'},
+         {'source_id': 'n1', 'source_type': 'note_article', 'published_at': '20260731'}],
+    )
+    errors = '\n'.join(validate_json_module.ERRORS)
+    assert '(a2)' in errors and '(e1)' in errors and '(n1)' in errors
+    assert '(a1)' not in errors and '(y1)' not in errors
