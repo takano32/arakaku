@@ -459,7 +459,6 @@ export class DataRepository {
   // ── Rich finders ──────────────────────────────────────────────────
 
   findRichEvent(id) { return this.index("richEvents:event_id", this.richEvents, e => e.event_id).get(id); }
-  findRichPromotion(id) { return this.index("richPromotions:promotion_id", this.richPromotions, p => p.promotion_id).get(id); }
   findRichBout(id) { return this.index("richBouts:bout_id", this.richBouts, b => b.bout_id).get(id); }
   findRichFighter(id) {
     if (!id) return undefined;
@@ -569,11 +568,6 @@ export class DataRepository {
   videoIdsLinkedToEventBouts(eventId) {
     const boutIds = new Set(this.richBouts.filter(b => b.event_id === eventId).map(b => b.bout_id));
     return new Set(this.videoLinks.filter(l => l.entity_type === "bout" && boutIds.has(l.entity_id)).map(l => l.video_id));
-  }
-
-  eventSourceVideoIdsWithoutBoutCoverage(event) {
-    const covered = this.videoIdsLinkedToEventBouts(event.event_id);
-    return (event.source_video_ids ?? []).filter(vid => vid && !covered.has(vid));
   }
 
   sourceReferencesForBout(bout) { return this.findManyByField("sourceBoutReferences", "bout_id", bout.bout_id); }

@@ -70,9 +70,6 @@ export class RecordList {
   }
 
   get el() { return this.#el; }
-  get count() { return this.#items.length; }
-  get renderedCount() { return this.#rendered; }
-  get cursorIndex() { return this.#cursor; }
 
   setStatus({ loading = this.#loading, emptyMessage = this.#emptyMessage } = {}) {
     this.#loading = loading;
@@ -192,11 +189,6 @@ export class RecordList {
       el.focus({ preventScroll: true });
       el.scrollIntoView({ block: "nearest" });
     }
-  }
-
-  resetCursor() {
-    this.#cursor = -1;
-    for (const row of this.#rows) row.el.classList.remove("rec-cursor");
   }
 
   getCursorEl() {
