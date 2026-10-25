@@ -115,13 +115,28 @@ def parse_result(text: str) -> dict[str, str]:
     return out
 
 
-def numbers_winners() -> dict[frozenset[str], set[str]]:
-    winners: dict[frozenset[str], set[str]] = collections.defaultdict(set)
+def numbers_key(r: dict) -> tuple[frozenset[str], str, str] | None:
+    a = r.get("matched_fighter_id") or r.get("candidate_fighter_id")
+    o = r.get("opponent_matched_fighter_id") or r.get("opponent_candidate_fighter_id")
+    if not (a and o):
+        return None
+    return frozenset((a, o)), r.get("promotion_id") or "", str(r.get("event_number_normalized") or "")
+
+
+def numbers_winners() -> dict[tuple, set[str]]:
+    """Winners per (pair, promotion, event number) and per pair alone (key with two empty strings).
+
+    再戦があるので、同じ 2 人の記録は大会ごとに分けて比べる (T.86: 組み合わせだけで比べると
+    別の大会の再戦の勝者が混ざり、食い違いに見えていた)。"""
+    winners: dict[tuple, set[str]] = collections.defaultdict(set)
     for r in json.loads((DOCS_DATA / "numbers_fight_records.json").read_text(encoding="utf-8")):
-        a = r.get("matched_fighter_id") or r.get("candidate_fighter_id")
-        o = r.get("opponent_matched_fighter_id") or r.get("opponent_candidate_fighter_id")
-        if a and o and r.get("result") in ("win", "loss"):
-            winners[frozenset((a, o))].add(a if r["result"] == "win" else o)
+        key = numbers_key(r)
+        if key and r.get("result") in ("win", "loss"):
+            a = r.get("matched_fighter_id") or r.get("candidate_fighter_id")
+            o = r.get("opponent_matched_fighter_id") or r.get("opponent_candidate_fighter_id")
+            winner = a if r["result"] == "win" else o
+            winners[key].add(winner)
+            winners[(key[0], "", "")].add(winner)
     return winners
 
 
@@ -131,14 +146,20 @@ def same_value(value: str) -> str:
     return f"{int(m.group(1))}:{int(m.group(2)):02d}" if m else norm(value).strip()
 
 
-def numbers_detail_by_pair() -> dict[frozenset[str], set[str]]:
-    details: dict[frozenset[str], set[str]] = collections.defaultdict(set)
+def numbers_detail_by_pair() -> dict[tuple, set[str]]:
+    details: dict[tuple, set[str]] = collections.defaultdict(set)
     for r in json.loads((DOCS_DATA / "numbers_fight_records.json").read_text(encoding="utf-8")):
-        a = r.get("matched_fighter_id") or r.get("candidate_fighter_id")
-        o = r.get("opponent_matched_fighter_id") or r.get("opponent_candidate_fighter_id")
-        if a and o and r.get("detail_raw"):
-            details[frozenset((a, o))].add(r["detail_raw"].strip())
+        key = numbers_key(r)
+        if key and r.get("detail_raw"):
+            details[key].add(r["detail_raw"].strip())
+            details[(key[0], "", "")].add(r["detail_raw"].strip())
     return details
+
+
+def for_event(table: dict[tuple, set[str]], pair: frozenset[str], event: dict[str, str]) -> set[str]:
+    """The event's own Numbers records when they exist, otherwise every record of the pair."""
+    number = event.get("numbers_event_number") or event.get("event_number") or ""
+    return table.get((pair, event.get("promotion_id", ""), number)) or table.get((pair, "", ""), set())
 
 
 def main() -> int:
@@ -157,6 +178,7 @@ def main() -> int:
         if d["source_id"].startswith("note:")
     }
     names = names_by_fighter()
+    events = {e["event_id"]: e for e in read_csv(DATA_SRC / "events.csv")}
     numbers = numbers_winners()
     numbers_details = numbers_detail_by_pair()
 
@@ -205,11 +227,12 @@ def main() -> int:
         winner_id, article_id, first, last = found
         source = source_fields(article_id, first, last)
         parsed = parse_result(source["result_text"])
-        key = frozenset((a["fighter_id"], b["fighter_id"]))
+        fighter_ids = frozenset((a["fighter_id"], b["fighter_id"]))
+        event = events.get(bout["event_id"], {})
         if bout["result_status"] == "unknown":
             winner = a if a["fighter_id"] == winner_id else b
             loser = b if winner is a else a
-            number_winners = numbers.get(key, set())
+            number_winners = for_event(numbers, fighter_ids, event)
             agreement = "agree" if number_winners == {winner_id} else ("note_only" if not number_winners else "conflict")
             rows.append({
                 "apply": "true" if agreement == "agree" else "false",
@@ -243,7 +266,7 @@ def main() -> int:
             **{k: fills.get(k, "") for k in parsed},
             "existing": " / ".join(f"{k}={bout[k]}" for k in parsed if bout.get(k)),
             "clashes": " / ".join(clashes),
-            "numbers_detail": " / ".join(sorted(numbers_details.get(key, set()))),
+            "numbers_detail": " / ".join(sorted(for_event(numbers_details, fighter_ids, event))),
             **source,
         })
     write_csv(OUTPUT, FIELDS, rows)
