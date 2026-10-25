@@ -303,7 +303,7 @@ JSON は viewer の配信 API です。`database.json` のような全テーブ�
 
 大会データです。
 
-大会ID、団体ID、大会名、概要、参照記事などを管理します。架空の団体で開催日はどこにも書かれていないので、日付列は持ちません。`events.json` の `result_published_at` は、その大会の結果 note のうち最も早い投稿日を `build_json.py` が入れます（T.77）。
+大会ID、団体ID、大会名、概要、参照記事などを管理します。架空の団体で開催日はどこにも書かれていないので、開催日の列は持ちません。`published_at` 列はほとんど空で、並べ替えの最後の手がかりにだけ使います。`events.json` の `result_published_at`（その大会の結果 note のうち最も早い投稿日、T.77）と `note_published_at`（その大会に結ばれた note のうち最も早い投稿日）は、`articles.csv` と `article_links.csv` から `build_json.py` が導きます。
 
 `event_id` は、試合・動画リンク・出典言及との結合キーになります。
 
@@ -468,7 +468,7 @@ YouTube などの動画 URL、動画タイトル、動画種別、重複候補�
 
 `tmp/note-html/*.html` から抽出した note メタデータのアーカイブです。
 
-`articles.csv` は `archives/note.csv` から `generate_articles.py` が作る記事台帳（stage1 の生成物なので手で直しても再生成で消えます）、`archives/note.csv` は取得済みHTMLから保存した外部メタデータです。canonical URL、HTML title、description を保存し、viewer の補助表示や記事確認に使います。
+`articles.csv` は `archives/note.csv` から `generate_articles.py` が作る記事台帳（stage1 の生成物なので手で直しても再生成で消えます）、`archives/note.csv` は取得済みHTMLから保存した外部メタデータです。canonical URL、HTML title、description、`published_at`（HTML の JSON-LD `datePublished` の日付）を保存し、viewer の補助表示や記事確認に使います。`published_at` は `generate_articles.py` が `articles.csv` の `published_at` に写します。
 
 再生成時は `filename` で既存 `archived_at` を維持し、`filename` 順に並べます。
 
@@ -511,6 +511,7 @@ note 本文や YouTube 概要欄そのものを保存する本文DBです。
 
 - `event`
 - `matchup`
+- `match_result`（同じ行に対戦と結果がある）
 - `result`
 - `note_url`
 - `youtube_url`
@@ -716,22 +717,23 @@ make source-reference-candidates       # 出典参照候補CSVを作る
 
 ## 通常の開発手順
 
-通常の変更後:
+正本 CSV（bouts / fighters / events / bout_participants / videos / video_bout_links / video_event_links / title_reigns / fighter_snapshots）を変更した後:
 
 ```bash
+make generate-stage2   # 派生 CSV と review の候補 CSV を再生成
 make check
-make clean-generated
+# コミット後、変更のない作業ツリーで（CI でも実行）:
+make check-generated
+make clean-generated   # 任意の後片付け
 ```
 
 本文DBを更新する場合:
 
 ```bash
-make cache-sources
-make archive-metadata
-make build-sources
-make check
-make clean-generated
+make refresh-sources
 ```
+
+`refresh-sources` は cache-sources（`discover-note-articles` と `discover-youtube-videos` を含む）→ archive-metadata → generate-articles → build-sources → generate-official-csvs → generate-stage2 → reorder-data → check を順に実行します。
 
 push 後:
 
@@ -842,9 +844,12 @@ JSON は生成物です。
 変更後は必ず以下を実行してください。
 
 ```bash
+make generate-stage2   # 正本 CSV を変更したとき
 make check
 make clean-generated
 ```
+
+コミット後は、変更のない作業ツリーで `make check-generated` が通ることを確認します（CI でも実行）。
 
 ### 6. viewer の更新対象
 
