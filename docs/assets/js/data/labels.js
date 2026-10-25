@@ -42,6 +42,18 @@ const MENTION_TYPES = {
   match_result: "試合結果",
 };
 
+const BOUT_TYPES = {
+  one_match: "ワンマッチ",
+  title_match: "タイトルマッチ",
+  special_one_match: "スペシャルワンマッチ",
+  tournament_bout: "トーナメント",
+  video_catalog_bout: "動画カタログ",
+  preview_card: "煽り動画",
+};
+
+const FIGHTER_RESULTS = { win: "勝ち", loss: "負け", draw: "引き分け", unknown: "不明" };
+const SIDES = { red: "赤コーナー", blue: "青コーナー" };
+
 const ARTICLE_TYPES = {
   event_result: "試合結果",
   event_card: "対戦カード",
@@ -58,4 +70,8 @@ export const labels = {
   sourceType: (v) => SOURCE_TYPES[v] ?? v ?? "出典",
   mentionType: (v) => MENTION_TYPES[v] ?? v ?? "言及",
   articleType: (v) => ARTICLE_TYPES[v] ?? v ?? "",
+  // 種別は CSV の英語コードと名鑑の日本語 (ワンマッチ等) が混在するので、英語コードだけ訳す (T.102)。
+  boutType: (v) => BOUT_TYPES[v] ?? v ?? "",
+  fighterResult: (v) => FIGHTER_RESULTS[v] ?? v ?? "不明",
+  side: (v) => SIDES[v] ?? v ?? "",
 };

@@ -26,7 +26,7 @@ export const eventsSection = {
         const bouts = repo.boutsForEvent(e.event_id).length;
         return `<div class="rec-text">
           <p class="rec-title">${escapeHtml(e.name)}</p>
-          <p class="rec-sub">${escapeHtml(joinPresent([repo.promotionName(e.promotion_id), e.result_published_at || e.published_at, EVENT_TYPE_LABELS[e.event_type] ?? e.event_type]))}</p>
+          <p class="rec-sub">${escapeHtml(joinPresent([repo.promotionName(e.promotion_id), repo.eventDateLabel(e), EVENT_TYPE_LABELS[e.event_type] ?? e.event_type]))}</p>
           ${parts.badges([
             od ? parts.badge("公式", "official") : "",
             e.numbers_only ? parts.badge("名鑑のみ", "numbers") : "",
@@ -51,6 +51,7 @@ export const eventsSection = {
             ["名鑑の興行番号", escapeHtml(e.numbers_event_number ?? "")],
             ["大会種別", escapeHtml(e.event_type ?? "")],
             ["結果発表日", escapeHtml(e.result_published_at ?? "")],
+            ["note の最初の投稿日", escapeHtml(e.note_published_at ?? "")],
             ["公開日", escapeHtml(e.published_at ?? "")],
             ["推定元", escapeHtml(e.inferred_from ?? "")],
             ["推定信頼度", escapeHtml(e.inferred_confidence ?? "")],
