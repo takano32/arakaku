@@ -51,7 +51,7 @@ def bout_title(row: dict[str, str], is_title_bout_func) -> dict[str, Any]:
     }
 
 # これだけは build_json ではなく review 候補生成スクリプト
-# (make_source_reference_candidates.py / make_structured_result_patch_candidates.py) が利用する。
+# (make_source_reference_candidates.py) が利用する。
 def build_bout_fighter_names(participants: list[dict[str, str]]) -> dict[str, tuple[str, str]]:
     """Return mapping of bout_id -> (red_name, blue_name) from bout_participants."""
     by_bout: dict[str, dict[str, str]] = {}

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-# 役割: review/structured_result_patch_candidates.csv のうち apply 列が真の行
-#   だけを bouts.csv / bout_participants.csv へ書き戻す適用ステップ。
-# アーキ上の位置: パイプラインの後半。入力 CSV は
-#   make_structured_result_patch_candidates.py が生成し、人間が apply=true を
-#   付けた行のみが対象。winner/loser/fighter_a/fighter_b 列は上流が解決済みの
-#   値であることを前提とする。
+# 役割: レビュー CSV のうち apply 列が真の行だけを bouts.csv / bout_participants.csv へ
+#   書き戻す適用ステップ。
+# アーキ上の位置: パイプラインの後半。入力 CSV は match_unknown_bouts_to_note_results.py が
+#   生成する review/unknown_bout_note_results.csv (既定) か review/known_bout_note_methods.csv。
+#   apply=true の行のみが対象。winner/loser/fighter_a/fighter_b 列は上流が解決済みの値であることを前提とする。
 # 不変条件 / 注意: 元データ (bouts.csv / bout_participants.csv) を破壊的に上書き
 #   するため、レビュー済みの apply 行のみ処理すること。csv は arakaku/utils の
 #   ラッパを使わず標準 csv を直接使い、書き戻し時に extrasaction="ignore" と
@@ -21,7 +20,7 @@ from arakaku.utils import ROOT
 
 BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
 PARTICIPANTS_CSV = ROOT / "data-src" / "bout_participants.csv"
-PATCH_CSV = ROOT / "review" / "structured_result_patch_candidates.csv"
+PATCH_CSV = ROOT / "review" / "unknown_bout_note_results.csv"
 
 
 def is_true(value: str) -> bool:
@@ -39,8 +38,8 @@ def main() -> int:
         participants = list(reader)
         participant_fieldnames = reader.fieldnames or []
 
-    # 既定は review/structured_result_patch_candidates.csv。同じ列を持つ別の CSV
-    # (例: review/unknown_bout_note_results.csv) を引数で渡せる。
+    # 既定は review/unknown_bout_note_results.csv。同じ列を持つ別の CSV
+    # (例: review/known_bout_note_methods.csv) を引数で渡せる。
     patch_csv = Path(sys.argv[1]) if len(sys.argv) > 1 else PATCH_CSV
     with patch_csv.open("r", encoding="utf-8-sig", newline="") as f:
         patches = [

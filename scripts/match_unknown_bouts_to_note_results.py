@@ -9,7 +9,7 @@ from __future__ import annotations
 #       `python3 scripts/apply_structured_result_patches.py review/unknown_bout_note_results.csv`。
 #       結果が known の試合は、note の勝者が同じときだけ、空の決着欄を埋める候補を
 #       review/known_bout_note_methods.csv に書く (既存値と食い違う行は apply=false)。
-# なぜ別スクリプトか: extract_note_structured_results.py は note 側から試合を組み立てるので、
+# なぜ試合側から探すか: 以前の extract_note_structured_results.py (T.84 で削除) は note 側から試合を組み立てたので、
 #       合同大会の記事・片側だけの記号・「🟦ザモン」のようなコーナー記号付きの行を取りこぼし、
 #       別の試合の記号を混ぜることもあった (T.70)。こちらは試合の 2 人を先に決めて探す。
 # 不変条件: 勝者は記号だけで決める (記号が無い・両者に勝ちの記号があるなどの行は勝者なし)。
