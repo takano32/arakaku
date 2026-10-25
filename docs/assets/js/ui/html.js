@@ -40,7 +40,8 @@ export function textList(values) {
 }
 
 export function externalLink(url, label, className = "") {
-  if (!url) return `<code>${escapeHtml(label)}</code>`;
+  // http(s) 以外 (javascript: など) はリンクにしない。データは検証済みだが多層防御として (T.106)。
+  if (!url || !/^https?:\/\//i.test(String(url))) return `<code>${escapeHtml(label)}</code>`;
   const cls = className ? ` class="${escapeHtml(className)}"` : "";
   return `<a${cls} href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
 }
