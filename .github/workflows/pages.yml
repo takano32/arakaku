@@ -28,12 +28,23 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build JSON
-        run: make build
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
 
-      - name: Validate JSON
+      - name: Install test dependencies
         run: |
-          make validate
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+
+      # Deploy only what passes the same checks as the Test workflow (build, validate, pytest)
+      # and whose derived CSVs match a fresh offline regeneration.
+      - name: Build, validate, and test
+        run: make check
+
+      - name: Check generated CSVs are up to date
+        run: make check-generated
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
