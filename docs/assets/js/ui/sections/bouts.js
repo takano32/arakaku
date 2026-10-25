@@ -18,7 +18,7 @@ export const boutsSection = {
     );
     const eventDate = (b) => {
       const e = repo.findEvent(b.event_id);
-      return e?.event_date || e?.published_at || "";
+      return e?.result_published_at || e?.published_at || "";
     };
     return {
       items,

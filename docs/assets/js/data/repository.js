@@ -600,7 +600,7 @@ export class DataRepository {
   eventsForPromotion(promotionId) {
     return this.#memoized(`eventsForPromotion:${promotionId}`, () =>
       [...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]
-        .sort((a, b) => String(b.published_at ?? b.event_date ?? "").localeCompare(String(a.published_at ?? a.event_date ?? ""), "ja")));
+        .sort((a, b) => String(b.result_published_at ?? b.published_at ?? "").localeCompare(String(a.result_published_at ?? a.published_at ?? ""), "ja")));
   }
 
   titlesForPromotion(promotionId) { return this.richTitles.filter(t => t.promotion_id === promotionId); }

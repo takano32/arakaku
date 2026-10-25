@@ -7,7 +7,7 @@
 //   バージョンを上げると activate 時に旧キャッシュが一掃される。上げるのは、新しい viewer JS が古い JSON を
 //   読むと壊れる変更 (フィールドの改名・削除・型の変更) のとき。フィールドの追加や値の更新では上げなくてよい
 //   (stale-while-revalidate が次の読み込みで新しい JSON に差し替え、DATA_UPDATED で再読み込みを促す)。
-const CACHE = "arakaku-data-v1";
+const CACHE = "arakaku-data-v2"; // v2: events.json の event_date を result_published_at に置き換え (T.77)
 
 self.addEventListener("install", () => self.skipWaiting());
 
