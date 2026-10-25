@@ -98,3 +98,9 @@ def test_validate_cross_tables(validate_json_module):
     for expected in ('differs from its event e1', 'unknown canonical_id: nobody', 'known method: GIVEUP', 'unknown source_id: gone', 'reign 1 ended at e2 but reign 2 began at e3'):
         assert expected in errors
     assert 'ターゲット' not in errors and "[KO]" not in errors
+
+def test_locate_error_names_the_csv_row(validate_json_module, docs_data, json_file):
+    bouts = json_file(docs_data/'bouts.json')
+    located = validate_json_module.locate_error('bouts.json[0]: something is wrong')
+    assert located.endswith(f"[data-src/bouts.csv:2, bout_id={bouts[0]['bout_id']}]")
+    assert validate_json_module.locate_error('aliases.json[fighters]: x') == 'aliases.json[fighters]: x'
