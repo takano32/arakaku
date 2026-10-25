@@ -119,6 +119,24 @@ def validate_fighters(fighters: list[Any], promotion_ids: set[str], article_ids:
                 add_error(f"fighters.json[{i}]: unknown article reference: {aid}")
     return ids
 
+# bouts.csv: round is "<n>R" (built as an int); time is "<m>分<s>秒" within a 5-minute round,
+# or "終了" for a stop or decision at the end of the round. A time without a round is a mistake
+# (T.65 found note posting timestamps such as 07分51秒 stored as fight times).
+BOUT_TIME = re.compile(r'^(\d{1,2})分(\d{1,2})秒$')
+
+def round_time_problems(round_value: Any, time_value: Any) -> list[str]:
+    problems = []
+    if round_value not in (None, '') and not (isinstance(round_value, int) and 1 <= round_value <= 5):
+        problems.append(f"result.round must be an integer from 1 to 5: {round_value!r}")
+    if time_value in (None, ''):
+        return problems
+    m = BOUT_TIME.match(time_value) if isinstance(time_value, str) else None
+    if time_value != '終了' and not (m and int(m.group(2)) < 60 and int(m.group(1)) * 60 + int(m.group(2)) <= 300):
+        problems.append(f"result.time must be like 3分04秒 (5:00 or less) or 終了: {time_value!r}")
+    if round_value in (None, ''):
+        problems.append(f"result.time without result.round: {time_value!r}")
+    return problems
+
 def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str], fighter_ids: set[str], article_ids: set[str]) -> set[str]:
     ids = collect_ids(bouts, 'bouts.json', 'bout_id')
     for i, x in enumerate(bouts):
@@ -169,6 +187,9 @@ def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str
         method = result.get('method_normalized') if isinstance(result, dict) else None
         if method and method not in VALID_METHODS:
             add_warning(f"bouts.json[{i}]: unusual method_normalized: {method}")
+        if isinstance(result, dict):
+            for problem in round_time_problems(result.get('round'), result.get('time')):
+                add_error(f"bouts.json[{i}] ({x.get('bout_id')}): {problem}")
         aid = x.get('source_article_id')
         if aid and aid not in article_ids:
             add_error(f"bouts.json[{i}]: unknown article reference: {aid}")
