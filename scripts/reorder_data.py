@@ -73,7 +73,9 @@ def reorder_csvs():
     # 4. Videos
     videos = read_csv(DATA_SRC / "videos.csv")
     if videos:
-        videos.sort(key=lambda x: sort_key_date(x, "published_at"))
+        # 公開日は videos.csv に無い (T.75) ので archives/youtube.csv の upload_date で並べる (T.102)。
+        uploaded = {r["display_id"]: r.get("upload_date", "") for r in read_csv(DATA_SRC / "archives/youtube.csv")}
+        videos.sort(key=lambda x: (uploaded.get(x["platform_video_id"]) or "00000000", x["video_id"]))
         write_csv(DATA_SRC / "videos.csv", list(videos[0].keys()), videos)
 
     # 5. Source Documents
