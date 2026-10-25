@@ -43,6 +43,8 @@ def main() -> int:
     parser.add_argument("--videos", type=Path, default=VIDEOS_CSV)
     parser.add_argument("--out-dir", type=Path, default=YOUTUBE_CACHE_DIR)
     parser.add_argument("--force", action="store_true", help="Refetch even if the cache file already exists.")
+    parser.add_argument("--allow-missing", action="store_true",
+                        help="Exit 0 even if the API does not return some videos (deleted or private); they are still listed (T.103).")
     args = parser.parse_args()
 
     api_key = os.environ.get("YOUTUBE_API_KEY", "")
@@ -90,7 +92,7 @@ def main() -> int:
     print(f"[missing] {len(missing)}")
     print(f"[out] {args.out_dir}")
 
-    return 1 if missing else 0
+    return 1 if missing and not args.allow_missing else 0
 
 
 if __name__ == "__main__":

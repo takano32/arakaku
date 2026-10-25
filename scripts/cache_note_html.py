@@ -12,6 +12,7 @@ from __future__ import annotations
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import argparse
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -53,6 +54,7 @@ def main() -> int:
     fetched = 0
     skipped = 0
     failed = 0
+    gone = 0
 
     for row in rows:
         url = row.get("url", "")
@@ -78,18 +80,27 @@ def main() -> int:
             if args.sleep > 0:
                 time.sleep(args.sleep)
 
+        except urllib.error.HTTPError as exc:
+            if exc.code in (404, 410):
+                # 削除・非公開の記事。止めずに数えるだけ (build_source_documents は無いキャッシュを飛ばす)。
+                print(f"[gone] {article_id} {url}: HTTP {exc.code}")
+                gone += 1
+            else:
+                print(f"[error] {article_id} {url}: {exc}")
+                failed += 1
         except Exception as exc:
             print(f"[error] {article_id} {url}: {exc}")
             failed += 1
 
     print(f"[fetched] {fetched}")
     print(f"[skipped] {skipped}")
+    print(f"[gone] {gone}")
     print(f"[failed] {failed}")
     print(f"[out] {args.out_dir}")
 
-    # 404/deleted/private note articles should not stop the whole cache pipeline.
-    # The source document builder will simply skip missing cache files.
-    return 0
+    # 404/410 (deleted or private articles) do not stop the pipeline; the source document
+    # builder skips missing cache files. Any other failure (network, 5xx) is an error (T.103).
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

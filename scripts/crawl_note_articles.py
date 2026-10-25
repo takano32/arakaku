@@ -232,11 +232,16 @@ def row_from_note_object(obj: dict[str, Any]) -> dict[str, str] | None:
     )
 
 
+class FetchFailed(Exception):
+    """An API page could not be read; the listing is incomplete (T.103)."""
+
+
 def parse_json_notes(json_text: str) -> list[dict[str, str]]:
     try:
         data = json.loads(json_text)
-    except json.JSONDecodeError:
-        return []
+    except json.JSONDecodeError as exc:
+        # レート制限のエラーページなどを「記事なし (一覧の終わり)」と取り違えないよう失敗にする (T.103)。
+        raise FetchFailed(f"invalid JSON: {exc}") from exc
 
     rows: list[dict[str, str]] = []
     seen_urls: set[str] = set()
@@ -273,11 +278,9 @@ def crawl_note_api_pages(creator: str, page_limit: int, sleep: float) -> list[di
 
             try:
                 text = fetch_text(url, sleep=sleep)
+                page_rows = parse_json_notes(text)
             except Exception as exc:
-                print(f"[warn] api fetch failed: {url}: {exc}", file=sys.stderr)
-                break
-
-            page_rows = parse_json_notes(text)
+                raise FetchFailed(f"api fetch failed: {url}: {exc}") from exc
 
             if not page_rows:
                 print(f"[api rows] page={page} rows=0; stop", file=sys.stderr)
@@ -378,8 +381,14 @@ def main() -> int:
         discovered.extend(html_rows)
         print(f"[html rows] {len(html_rows)}", file=sys.stderr)
 
+    failed = False
     if args.use_api:
-        api_rows = crawl_note_api_pages(args.creator, args.page_limit, args.sleep)
+        try:
+            api_rows = crawl_note_api_pages(args.creator, args.page_limit, args.sleep)
+        except FetchFailed as exc:
+            # 途中までの一覧でも追記はしてよい (既存行は変えない) が、取りこぼしがありうるので失敗で終わる。
+            print(f"[error] {exc}", file=sys.stderr)
+            failed, api_rows = True, []
         discovered.extend(api_rows)
         print(f"[api total rows] {len(api_rows)}", file=sys.stderr)
 
@@ -392,10 +401,10 @@ def main() -> int:
     for row in added:
         print(f"{row['article_id']}\t{row['title']}\t{row['url']}")
 
-    if not args.dry_run:
+    if not args.dry_run and added:
         write_csv(args.articles, fieldnames, merged)
 
-    return 0
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
