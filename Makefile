@@ -106,10 +106,10 @@ extract-numbers:
 # Reproducibility: regenerate all generated CSVs from local sources,
 # then rebuild JSON and run full check.
 #
-# Prerequisites (must exist locally, not in git):
-#   tmp/note-html/       — cached note article HTML files
-#   tmp/youtube-api/     — YouTube Data API video JSON files (needs YOUTUBE_API_KEY)
-#   data-raw/アラカク選手名鑑.numbers
+# Prerequisites:
+#   tmp/note-html/       — cached note article HTML files (local only, not in git)
+#   tmp/youtube-api/     — YouTube Data API video JSON files (local only; needs YOUTUBE_API_KEY)
+#   data-raw/アラカク選手名鑑.numbers (tracked in git; updated by hand)
 #
 # Canonical CSVs (fighters, events, bouts, …) are restored from git.
 #
