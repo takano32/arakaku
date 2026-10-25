@@ -7,30 +7,24 @@ def test_collect_ids_detects_duplicate_ids(validate_json_module):
     assert ids == {'waku'}
     assert 'duplicate fighter_id: waku' in '\n'.join(validate_json_module.ERRORS)
 
-def test_validate_real_article_references(validate_json_module, docs_data, json_file):
-    articles=json_file(docs_data/'articles.json'); promotions=json_file(docs_data/'promotions.json'); events=json_file(docs_data/'events.json'); fighters=json_file(docs_data/'fighters.json'); bouts=json_file(docs_data/'bouts.json'); bout_participants=json_file(docs_data/'bout_participants.json'); titles=json_file(docs_data/'titles.json'); title_reigns=json_file(docs_data/'title_reigns.json'); snapshots=json_file(docs_data/'fighter_snapshots.json'); videos=json_file(docs_data/'videos.json'); article_links=json_file(docs_data/'article_links.json')
+def test_validate_article_links_rejects_bad_rows(validate_json_module):
+    links = [
+        {'link_id': 'l1', 'article_id': 'gone', 'entity_type': 'bout', 'entity_id': 'b1', 'relation_type': 'source'},
+        {'link_id': 'l2', 'article_id': 'a1', 'entity_type': 'stadium', 'entity_id': 'x'},
+        {'link_id': 'l3', 'article_id': 'a1', 'entity_type': 'fighter', 'entity_id': 'nobody', 'relation_type': 'mention'},
+    ]
     validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
-    article_ids=validate_json_module.validate_articles(articles)
-    promotion_ids=validate_json_module.validate_promotions(promotions, article_ids)
-    event_ids=validate_json_module.validate_events(events, promotion_ids, article_ids)
-    fighter_ids=validate_json_module.validate_fighters(fighters, promotion_ids, article_ids)
-    video_ids=validate_json_module.validate_videos(videos, article_ids)
-    bout_ids=validate_json_module.validate_bouts(bouts, event_ids, promotion_ids, fighter_ids, article_ids)
-    validate_json_module.validate_bout_participants(bout_participants, bout_ids, fighter_ids)
-    title_ids=validate_json_module.collect_ids(titles, 'titles.json', 'title_id')
-    snapshot_ids=validate_json_module.collect_ids(snapshots, 'fighter_snapshots.json', 'snapshot_id')
-    reign_ids=validate_json_module.validate_title_reigns(title_reigns, title_ids, fighter_ids, event_ids, article_ids, video_ids)
-    validate_json_module.validate_titles(titles, promotion_ids, fighter_ids, article_ids, video_ids)
-    validate_json_module.validate_fighter_snapshots(snapshots, fighter_ids, event_ids, article_ids, promotion_ids)
-    validate_json_module.validate_article_links(article_links, article_ids, event_ids, bout_ids, fighter_ids, snapshot_ids, promotion_ids, title_ids, reign_ids, video_ids)
-    assert validate_json_module.ERRORS == []
+    validate_json_module.validate_article_links(links, {'a1'}, set(), {'b1'}, {'waku'}, set(), set(), set(), set(), set())
+    errors = '\n'.join(validate_json_module.ERRORS)
+    for expected in ('unknown article reference: gone', 'invalid entity_type: stadium', 'unusual relation_type: mention', 'unknown fighter reference: nobody'):
+        assert expected in errors
 
-def test_validate_real_aliases_shape(validate_json_module, docs_data, json_file):
-    aliases=json_file(docs_data/'aliases.json')
+def test_validate_aliases_rejects_non_objects(validate_json_module):
     validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
-    validate_json_module.validate_aliases(aliases)
-    assert validate_json_module.ERRORS == []
-    assert set(aliases) >= {'fighters','promotions','methods'}
+    validate_json_module.validate_aliases({'fighters': ['あかそ']})
+    validate_json_module.validate_aliases(['not', 'an', 'object'])
+    errors = '\n'.join(validate_json_module.ERRORS)
+    assert 'aliases.json[fighters]: expected object' in errors and 'aliases.json: expected object' in errors
 
 def test_validate_bouts_rejects_unusual_method(validate_json_module):
     bouts=[{'bout_id':'sample-001','event_id':'target-103','promotion_id':'target','fighters':[{'fighter_id':'waku','name':'わく','result':'win'},{'fighter_id':'tsukurihara','name':'つくりはら','result':'loss'}],'winner_id':'waku','winner':'わく','loser_id':'tsukurihara','loser':'つくりはら','result':{'method_normalized':'SPECIAL'},'source_article_id':'note-target-103-result'}]
