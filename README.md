@@ -623,6 +623,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### 記事クロール
 
+- `scripts/discover_youtube_videos.py`: YouTube Data API でチャンネルの全動画を列挙し、`videos.csv` に無い動画の行を追記します（Shorts は既存の行と同じく入れない。`--include-shorts` で入れる）。試合や大会への紐づけはしません。
 - `scripts/crawl_note_articles.py`: note の RSS / API / HTML から記事一覧を探索し、`articles.csv` に無い記事の行を追記します。`make discover-note-articles`（`make cache-note-html` の前段）が `--use-api` で全ページを読みます。
 
 ### Numbers 取り込み
@@ -706,7 +707,7 @@ make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2
 
 ```bash
 make cache-note-html         # note 本文 HTML を tmp/note-html/ に取得
-make cache-youtube-api       # YouTube Data API で動画 JSON を tmp/youtube-api/ に取得（YOUTUBE_API_KEY が必要）
+make cache-youtube-api       # YouTube Data API で動画 JSON を tmp/youtube-api/ に取得（YOUTUBE_API_KEY が必要）。前段の discover-youtube-videos がチャンネルの新しい動画（Shorts を除く）を videos.csv に追記
 make download-official-data  # 公式サイトデータを tmp/arakaku-site/ に取得
 make cache-sources           # 上記キャッシュ取得をまとめて実行
 make archive-metadata        # キャッシュから data-src/archives/*.csv を再生成
