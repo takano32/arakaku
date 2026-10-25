@@ -98,3 +98,17 @@ def test_locate_error_names_the_csv_row(validate_json_module, docs_data, json_fi
     located = validate_json_module.locate_error('bouts.json[0]: something is wrong')
     assert located.endswith(f"[data-src/bouts.csv:2, bout_id={bouts[0]['bout_id']}]")
     assert validate_json_module.locate_error('aliases.json[fighters]: x') == 'aliases.json[fighters]: x'
+
+def test_validate_bout_titles(validate_json_module):
+    titles = [{'title_id': 'target-middleweight', 'promotion_id': 'target', 'division': 'ミドル級'}]
+    bouts = [
+        {'bout_id': 'ok', 'promotion_id': 'target', 'division': 'ミドル級', 'title': {'is_title_bout': True, 'title_id': 'target-middleweight'}},
+        {'bout_id': 'missing', 'promotion_id': 'target', 'division': 'ミドル級', 'title': {'is_title_bout': True, 'title_id': ''}},
+        {'bout_id': 'unknown', 'promotion_id': 'target', 'division': 'ミドル級', 'title': {'is_title_bout': True, 'title_id': 'nope'}},
+        {'bout_id': 'mismatch', 'promotion_id': 'emperor', 'division': 'ミドル級', 'title': {'is_title_bout': True, 'title_id': 'target-middleweight'}},
+    ]
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_bout_titles(bouts, titles)
+    errors = '\n'.join(validate_json_module.ERRORS)
+    assert '(ok)' not in errors
+    assert '(missing): title bout has no title_id' in errors and '(unknown): unknown title_id: nope' in errors and '(mismatch)' in errors
