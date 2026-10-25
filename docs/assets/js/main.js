@@ -1,4 +1,4 @@
-import { Store, readFromURL, writeToURL } from "./app/state.js";
+import { Store, readFromURL, stateFromHistory, writeToURL } from "./app/state.js";
 import { DataLoader } from "./data/loader.js";
 import { QueryMatcher } from "./data/query.js";
 import { Parts } from "./ui/parts.js";
@@ -38,6 +38,17 @@ new KeyboardNav({
   clearSearch: () => shell.clearSearch(),
   toast: (message) => shell.toast(message),
 }).bind();
+
+// ブラウザの「戻る」「進む」: URL の状態に戻し、検索欄と遅延データも合わせる。
+window.addEventListener("popstate", () => {
+  const patch = stateFromHistory();
+  state.patch(patch);
+  const searchInput = document.querySelector("#search");
+  if (searchInput) searchInput.value = patch.query;
+  const clearButton = document.querySelector("#search-clear");
+  if (clearButton) clearButton.hidden = !patch.query;
+  loader.loadForTab(state.tab);
+});
 
 loader
   .load()
