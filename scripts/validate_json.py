@@ -446,6 +446,25 @@ def validate_cross_tables(bouts: list[Any], events: list[Any], aliases: Any, fig
             if lost and won and lost != won:
                 add_error(f"title_reigns.json ({title_id}): reign {prev['reign_order']} ended at {lost} but reign {nxt['reign_order']} began at {won}")
 
+def validate_bout_titles(bouts: list[Any], titles: list[Any]) -> None:
+    # A title bout names the title it was for (T.76); the title must exist and match the bout's
+    # promotion and division. title_result is not stored: title_reigns.csv holds the lineage.
+    by_id = {t.get('title_id'): t for t in titles if isinstance(t, dict)}
+    for i, b in enumerate(bouts):
+        if not isinstance(b, dict):
+            continue
+        title = b.get('title') or {}
+        title_id = title.get('title_id') if isinstance(title, dict) else None
+        if title.get('is_title_bout') and not title_id:
+            add_error(f"bouts.json[{i}] ({b.get('bout_id')}): title bout has no title_id")
+        if not title_id:
+            continue
+        t = by_id.get(title_id)
+        if t is None:
+            add_error(f"bouts.json[{i}] ({b.get('bout_id')}): unknown title_id: {title_id}")
+        elif t.get('promotion_id') != b.get('promotion_id') or t.get('division') != b.get('division'):
+            add_error(f"bouts.json[{i}] ({b.get('bout_id')}): title {title_id} is {t.get('promotion_id')} {t.get('division')}, bout is {b.get('promotion_id')} {b.get('division')}")
+
 def validate_source_documents(data: list[Any]) -> None:
     seen = set()
     for index, row in enumerate(data):
@@ -741,6 +760,7 @@ def main() -> int:
     validate_source_references(load_json('source_bout_references.json', []), 'source_bout_references.json', 'bout_id', bout_ids)
     validate_source_references(load_json('source_video_references.json', []), 'source_video_references.json', 'video_id', video_ids)
     validate_aliases(aliases)
+    validate_bout_titles(bouts, titles)
     validate_cross_tables(bouts, events, aliases, fighter_ids, promotion_ids, title_reigns,
                           load_json('source_mentions.json', []), load_json('source_documents.json', []))
     validate_enums({
