@@ -39,9 +39,9 @@ make clean-generated
 
 ```text
 make check: PASS
+make check-generated: PASS
 json validation passed: 0 warning(s)
-pytest: 18 passed
-make clean-generated: DONE
+pytest: passed
 ```
 
 GitHub Pages viewer で以下を確認済みです。
