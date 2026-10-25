@@ -6,8 +6,8 @@ from __future__ import annotations
 # アーキ上の位置: build_json.py 等が出力した JSON を入力にする。許容値の集合
 #   (VALID_METHODS など) は arakaku/validation.py から、JSON ロードと DOCS_DATA は
 #   arakaku/utils.py から取得。viewer 側の整合は validate_json.js が別途検証する。
-# 不変条件 / 注意: 致命的不整合は add_error (return 1)、許容範囲外だが致命的でない
-#   ものは add_warning。REQUIRED_JSON_FILES は欠けると error、その他の生成 JSON は
+# 不変条件 / 注意: 致命的不整合は add_error (return 1)。列挙値の範囲外も error
+#   (arakaku/validation.py に無い値。T.69 で warning から変更)。REQUIRED_JSON_FILES は欠けると error、その他の生成 JSON は
 #   存在チェックのみ warning。main() の検証順序は依存順 (article→promotion→event→
 #   fighter→bout…) で、先に集めた *_ids 集合を後段の参照チェックに渡す前提なので
 #   並べ替え時は ID 集合の生成タイミングを崩さないこと。
@@ -26,6 +26,13 @@ from arakaku.validation import (
     VALID_VIDEO_ENTITY_TYPES,
     VALID_ARTICLE_ENTITY_TYPES,
     VALID_ARTICLE_RELATION_TYPES,
+    VALID_ARTICLE_STATUSES,
+    VALID_BOUT_TYPES,
+    VALID_EVENT_TYPES,
+    VALID_INFERRED_CONFIDENCES,
+    VALID_MENTION_TYPES,
+    VALID_NAME_MATCH_METHODS,
+    VALID_SIDES,
 )
 
 ERRORS: list[str] = []
@@ -137,6 +144,26 @@ def round_time_problems(round_value: Any, time_value: Any) -> list[str]:
         problems.append(f"result.time without result.round: {time_value!r}")
     return problems
 
+def check_enum(items: list[Any], filename: str, field: str, allowed: set[str], id_field: str) -> None:
+    # Empty values are allowed; a value outside the vocabulary is an error (a typo must not ship).
+    for i, x in enumerate(items):
+        if not isinstance(x, dict):
+            continue
+        value = x.get(field)
+        if value not in (None, '') and value not in allowed:
+            add_error(f"{filename}[{i}] ({x.get(id_field)}): unknown {field}: {value}")
+
+def validate_enums(data: dict[str, list[Any]]) -> None:
+    check_enum(data['bouts'], 'bouts.json', 'bout_type', VALID_BOUT_TYPES, 'bout_id')
+    check_enum(data['bouts'], 'bouts.json', 'inferred_confidence', VALID_INFERRED_CONFIDENCES, 'bout_id')
+    check_enum(data['events'], 'events.json', 'event_type', VALID_EVENT_TYPES, 'event_id')
+    check_enum(data['events'], 'events.json', 'inferred_confidence', VALID_INFERRED_CONFIDENCES, 'event_id')
+    check_enum(data['fighters'], 'fighters.json', 'inferred_confidence', VALID_INFERRED_CONFIDENCES, 'fighter_id')
+    check_enum(data['bout_participants'], 'bout_participants.json', 'side', VALID_SIDES, 'participant_id')
+    check_enum(data['source_mentions'], 'source_mentions.json', 'mention_type', VALID_MENTION_TYPES, 'mention_id')
+    check_enum(data['numbers_name_matches'], 'numbers_name_matches.json', 'match_method', VALID_NAME_MATCH_METHODS, 'numbers_fighter_id')
+    check_enum(data['articles'], 'articles.json', 'status', VALID_ARTICLE_STATUSES, 'article_id')
+
 def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str], fighter_ids: set[str], article_ids: set[str]) -> set[str]:
     ids = collect_ids(bouts, 'bouts.json', 'bout_id')
     for i, x in enumerate(bouts):
@@ -178,7 +205,7 @@ def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str
                 add_error(f"bouts.json[{i}]: unknown fighter reference in {key}: {fid}")
         result_status = x.get('result_status') or ('known' if x.get('winner_id') or x.get('winner') else 'unknown')
         if result_status not in {'known', 'unknown'}:
-            add_warning(f"bouts.json[{i}]: unusual result_status: {result_status}")
+            add_error(f"bouts.json[{i}]: unusual result_status: {result_status}")
         if result_status == 'known' and not (x.get('winner_id') or x.get('winner')):
             add_error(f"bouts.json[{i}]: known-result bout is missing winner")
         if x.get('winner') and x.get('winner') == x.get('loser'):
@@ -186,7 +213,7 @@ def validate_bouts(bouts: list[Any], event_ids: set[str], promotion_ids: set[str
         result = x.get('result') or {}
         method = result.get('method_normalized') if isinstance(result, dict) else None
         if method and method not in VALID_METHODS:
-            add_warning(f"bouts.json[{i}]: unusual method_normalized: {method}")
+            add_error(f"bouts.json[{i}]: unusual method_normalized: {method}")
         if isinstance(result, dict):
             for problem in round_time_problems(result.get('round'), result.get('time')):
                 add_error(f"bouts.json[{i}] ({x.get('bout_id')}): {problem}")
@@ -210,7 +237,7 @@ def validate_bout_participants(participants: list[Any], bout_ids: set[str], figh
         require_field(x, 'bout_participants.json', i, 'fighter_name')
         result = x.get('result')
         if result and result not in {'win', 'loss', 'draw', 'nc', 'unknown'}:
-            add_warning(f"bout_participants.json[{i}]: unusual result: {result}")
+            add_error(f"bout_participants.json[{i}]: unusual result: {result}")
         if bout_id:
             by_bout.setdefault(bout_id, []).append(x)
     for bout_id, rows in by_bout.items():
@@ -310,10 +337,10 @@ def validate_videos(videos: list[Any], article_ids: set[str]) -> set[str]:
             seen_platform_ids.add(key)
         video_type = x.get('video_type')
         if video_type and video_type not in VALID_VIDEO_TYPES:
-            add_warning(f"videos.json[{i}]: unusual video_type: {video_type}")
+            add_error(f"videos.json[{i}]: unusual video_type: {video_type}")
         link_status = x.get('link_status')
         if link_status and link_status not in VALID_VIDEO_LINK_STATUSES:
-            add_warning(f"videos.json[{i}]: unusual link_status: {link_status}")
+            add_error(f"videos.json[{i}]: unusual link_status: {link_status}")
         for aid in x.get('source_article_ids') or []:
             if aid not in article_ids:
                 add_error(f"videos.json[{i}]: unknown article reference: {aid}")
@@ -340,7 +367,7 @@ def validate_video_links(video_links: list[Any], video_ids: set[str], event_ids:
             add_error(f"video_links.json[{i}]: invalid entity_type: {entity_type}")
             continue
         if relation_type and relation_type not in VALID_VIDEO_RELATION_TYPES:
-            add_warning(f"video_links.json[{i}]: unusual relation_type: {relation_type}")
+            add_error(f"video_links.json[{i}]: unusual relation_type: {relation_type}")
         if entity_id and entity_type in entity_sets and entity_id not in entity_sets[entity_type]:
             add_error(f"video_links.json[{i}]: unknown {entity_type} reference: {entity_id}")
 
@@ -375,7 +402,7 @@ def validate_article_links(article_links: list[Any], article_ids: set[str], even
             add_error(f"article_links.json[{i}]: invalid entity_type: {entity_type}")
             continue
         if relation_type and relation_type not in VALID_ARTICLE_RELATION_TYPES:
-            add_warning(f"article_links.json[{i}]: unusual relation_type: {relation_type}")
+            add_error(f"article_links.json[{i}]: unusual relation_type: {relation_type}")
         if entity_id and entity_type in entity_sets and entity_id not in entity_sets[entity_type]:
             add_error(f"article_links.json[{i}]: unknown {entity_type} reference: {entity_id}")
 
@@ -481,7 +508,7 @@ def validate_numbers_data(numbers_fighters: list[Any], matches: list[Any], recor
                 add_error(f"numbers_fight_records.json[{index}]: unknown {field}: {fighter_id}")
         result = row.get('result')
         if result and result not in {'win', 'loss'}:
-            add_warning(f"numbers_fight_records.json[{index}]: unusual result: {result}")
+            add_error(f"numbers_fight_records.json[{index}]: unusual result: {result}")
 
 def validate_archive_data(youtube_archives: list[Any], note_archives: list[Any]) -> None:
     collect_ids(youtube_archives, 'youtube_archives.json', 'display_id')
@@ -652,6 +679,11 @@ def main() -> int:
     validate_source_references(load_json('source_bout_references.json', []), 'source_bout_references.json', 'bout_id', bout_ids)
     validate_source_references(load_json('source_video_references.json', []), 'source_video_references.json', 'video_id', video_ids)
     validate_aliases(aliases)
+    validate_enums({
+        'bouts': bouts, 'events': events, 'fighters': fighters, 'bout_participants': bout_participants,
+        'source_mentions': load_json('source_mentions.json', []), 'numbers_name_matches': numbers_name_matches,
+        'articles': articles,
+    })
     validate_numbers_data(numbers_fighters, numbers_name_matches, numbers_fight_records, fighter_ids)
     validate_archive_data(youtube_archives, note_archives)
     validate_official_players(official_players)
