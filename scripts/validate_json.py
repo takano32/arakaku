@@ -465,6 +465,29 @@ def validate_bout_titles(bouts: list[Any], titles: list[Any]) -> None:
         elif t.get('promotion_id') != b.get('promotion_id') or t.get('division') != b.get('division'):
             add_error(f"bouts.json[{i}] ({b.get('bout_id')}): title {title_id} is {t.get('promotion_id')} {t.get('division')}, bout is {b.get('promotion_id')} {b.get('division')}")
 
+# Date formats per field (T.77): note dates and derived event dates are YYYY-MM-DD; YouTube
+# upload dates keep the API archive's YYYYMMDD. Anything else is a mistake, not a variant.
+ISO_DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+YYYYMMDD = re.compile(r'^\d{8}$')
+
+def validate_dates(articles: list[Any], events: list[Any], source_documents: list[Any]) -> None:
+    for filename, items, id_field, fields in (
+        ('articles.json', articles, 'article_id', ('published_at',)),
+        ('events.json', events, 'event_id', ('published_at', 'result_published_at')),
+    ):
+        for i, x in enumerate(items):
+            for field in fields:
+                value = x.get(field) if isinstance(x, dict) else None
+                if value and not ISO_DATE.match(str(value)):
+                    add_error(f"{filename}[{i}] ({x.get(id_field)}): {field} must be YYYY-MM-DD: {value}")
+    for i, d in enumerate(source_documents):
+        value = d.get('published_at') if isinstance(d, dict) else None
+        if not value:
+            continue
+        pattern = YYYYMMDD if d.get('source_type') == 'youtube_description' else ISO_DATE
+        if not pattern.match(str(value)):
+            add_error(f"source_documents.json[{i}] ({d.get('source_id')}): published_at has the wrong format for {d.get('source_type')}: {value}")
+
 def validate_source_documents(data: list[Any]) -> None:
     seen = set()
     for index, row in enumerate(data):
@@ -761,6 +784,7 @@ def main() -> int:
     validate_source_references(load_json('source_video_references.json', []), 'source_video_references.json', 'video_id', video_ids)
     validate_aliases(aliases)
     validate_bout_titles(bouts, titles)
+    validate_dates(articles, events, load_json('source_documents.json', []))
     validate_cross_tables(bouts, events, aliases, fighter_ids, promotion_ids, title_reigns,
                           load_json('source_mentions.json', []), load_json('source_documents.json', []))
     validate_enums({
