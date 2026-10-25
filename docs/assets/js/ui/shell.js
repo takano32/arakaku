@@ -59,15 +59,20 @@ export class Shell {
     const searchInput = document.querySelector("#search");
     const clearButton = document.querySelector("#search-clear");
 
-    searchInput?.addEventListener("input", (event) => {
-      const value = event.target.value;
+    const scheduleSearch = (value) => {
       if (clearButton) clearButton.hidden = !value;
       clearTimeout(this.#searchTimer);
       this.#searchTimer = setTimeout(() => {
         this.#state.clearFocus();
         this.#state.patch({ query: value });
       }, 150);
+    };
+    // 日本語入力の変換中は検索せず、確定 (compositionend) で検索する。
+    searchInput?.addEventListener("input", (event) => {
+      if (event.isComposing) return;
+      scheduleSearch(event.target.value);
     });
+    searchInput?.addEventListener("compositionend", (event) => scheduleSearch(event.target.value));
     searchInput?.addEventListener("keydown", (event) => {
       if (event.key === "Escape") this.clearSearch();
     });
