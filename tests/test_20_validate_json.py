@@ -82,3 +82,19 @@ def test_validate_enums_rejects_unknown_values(validate_json_module):
     errors = '\n'.join(validate_json_module.ERRORS)
     assert 'unknown bout_type: one_matc' in errors and 'unknown side: green' in errors
     assert '(b2)' not in errors
+
+def test_validate_cross_tables(validate_json_module):
+    validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
+    validate_json_module.validate_cross_tables(
+        bouts=[{'bout_id': 'b1', 'event_id': 'e1', 'promotion_id': 'emperor'}],
+        events=[{'event_id': 'e1', 'promotion_id': 'target'}],
+        aliases={'fighters': {'x': 'nobody'}, 'promotions': {'ターゲット': 'target'}, 'methods': {'KO': 'KO', 'まいった': 'GIVEUP'}},
+        fighter_ids={'waku'}, promotion_ids={'target'},
+        title_reigns=[{'title_id': 't', 'reign_order': '1', 'lost_at_event_id': 'e2'}, {'title_id': 't', 'reign_order': '2', 'won_at_event_id': 'e3'}],
+        source_mentions=[{'mention_id': 'm1', 'source_id': 'gone'}],
+        source_documents=[{'source_id': 'kept'}],
+    )
+    errors = '\n'.join(validate_json_module.ERRORS)
+    for expected in ('differs from its event e1', 'unknown canonical_id: nobody', 'known method: GIVEUP', 'unknown source_id: gone', 'reign 1 ended at e2 but reign 2 began at e3'):
+        assert expected in errors
+    assert 'ターゲット' not in errors and "[KO]" not in errors
