@@ -14,6 +14,8 @@ from __future__ import annotations
 # 関連 skill: .agents/skills/arakaku-review-workflow。
 
 import csv
+import sys
+from pathlib import Path
 
 from arakaku.utils import ROOT
 
@@ -37,7 +39,10 @@ def main() -> int:
         participants = list(reader)
         participant_fieldnames = reader.fieldnames or []
 
-    with PATCH_CSV.open("r", encoding="utf-8-sig", newline="") as f:
+    # 既定は review/structured_result_patch_candidates.csv。同じ列を持つ別の CSV
+    # (例: review/unknown_bout_note_results.csv) を引数で渡せる。
+    patch_csv = Path(sys.argv[1]) if len(sys.argv) > 1 else PATCH_CSV
+    with patch_csv.open("r", encoding="utf-8-sig", newline="") as f:
         patches = [
             row for row in csv.DictReader(f)
             if is_true(row.get("apply", ""))
