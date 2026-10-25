@@ -80,8 +80,9 @@ cache-note-html: discover-note-articles
 discover-youtube-videos:
 	python3 scripts/discover_youtube_videos.py
 
+# --allow-missing: a deleted or private video is listed but does not stop refresh-sources (T.103).
 cache-youtube-api: discover-youtube-videos
-	python3 scripts/cache_youtube_api.py
+	python3 scripts/cache_youtube_api.py --allow-missing
 
 download-official-data:
 	bash scripts/download_official_data.sh
