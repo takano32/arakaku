@@ -17,7 +17,7 @@ import re
 import sys
 import urllib.parse
 from typing import Any
-from arakaku.utils import DOCS_DATA, load_json
+from arakaku.utils import DATA_SRC, DOCS_DATA, load_json, read_csv
 from arakaku.validation import (
     VALID_METHODS,
     VALID_VIDEO_TYPES,
@@ -642,6 +642,36 @@ def unsafe_official_html(body: str) -> list[str]:
                 problems.append(f"has an iframe from an unexpected host ({host}): {tag[:80]}")
     return problems
 
+# JSON row -> source CSV row, so an error like "bouts.json[12]: ..." also names the CSV file, line and
+# primary key (AGENTS.md: report file, row, field and ID). These JSON lists keep the CSV row order;
+# the line is only added when the IDs at that index agree, so a reordered build never points at the wrong row.
+ROW_SOURCES = {
+    'bouts.json': ('bouts.csv', 'bout_id'), 'events.json': ('events.csv', 'event_id'),
+    'fighters.json': ('fighters.csv', 'fighter_id'), 'bout_participants.json': ('bout_participants.csv', 'participant_id'),
+    'videos.json': ('videos.csv', 'video_id'), 'title_reigns.json': ('title_reigns.csv', 'reign_id'),
+    'articles.json': ('articles.csv', 'article_id'), 'titles.json': ('titles.csv', 'title_id'),
+    'promotions.json': ('promotions.csv', 'promotion_id'), 'fighter_snapshots.json': ('fighter_snapshots.csv', 'snapshot_id'),
+    'source_documents.json': ('source_documents.csv', 'source_id'), 'source_mentions.json': ('source_mentions.csv', 'mention_id'),
+    'article_links.json': ('article_links.csv', 'link_id'), 'official_players.json': ('official_players.csv', 'id'),
+}
+ERROR_ROW = re.compile(r'^([a-z_]+\.json)\[(\d+)\]')
+
+def locate_error(message: str) -> str:
+    m = ERROR_ROW.match(message)
+    if not m or m.group(1) not in ROW_SOURCES:
+        return message
+    csv_name, id_field = ROW_SOURCES[m.group(1)]
+    items = load_json(m.group(1), [])
+    index = int(m.group(2))
+    if not isinstance(items, list) or index >= len(items) or not isinstance(items[index], dict):
+        return message
+    record_id = items[index].get(id_field)
+    rows = read_csv(DATA_SRC / csv_name, missing_ok=True)
+    where = f"{id_field}={record_id}"
+    if index < len(rows) and rows[index].get(id_field) == record_id:
+        where = f"data-src/{csv_name}:{index + 2}, {where}"
+    return f"{message}  [{where}]"
+
 def main() -> int:
     ERRORS.clear()
     WARNINGS.clear()
@@ -730,7 +760,7 @@ def main() -> int:
     for w in WARNINGS:
         print(f"WARNING: {w}", file=sys.stderr)
     for e in ERRORS:
-        print(f"ERROR: {e}", file=sys.stderr)
+        print(f"ERROR: {locate_error(e)}", file=sys.stderr)
         
     if ERRORS:
         print(f"json validation failed: {len(ERRORS)} error(s), {len(WARNINGS)} warning(s)", file=sys.stderr)
