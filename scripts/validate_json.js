@@ -169,6 +169,17 @@ function validateViewerSearchPaths(state) {
     assert(ctx.query.includes(ctx.query.boutSearchText(firstBout)), `bout id query must match bout: ${firstBout.bout_id}`);
     assert(ctx.query.boutMatches(firstBout), `bout id query must match bout via boutMatches: ${firstBout.bout_id}`);
   }
+  // 全角半角・ひらがなカタカナ・大文字小文字の違いは同じ結果になり、空白区切りは AND で効くこと
+  const countBouts = (query) => { state.query = query; return repo.richBouts.filter((b) => ctx.query.boutMatches(b)).length; };
+  const katakana = countBouts("ターゲット");
+  assert(katakana > 0, "query ターゲット must match some bouts");
+  for (const variant of ["ﾀｰｹﾞｯﾄ", "たーげっと", " ターゲット　"]) assert(countBouts(variant) === katakana, `query ${variant} must match the same bouts as ターゲット`);
+  assert(countBouts("ＴＡＲＧＥＴ") === countBouts("target"), "full-width TARGET must match the same bouts as target");
+  assert(countBouts("ターゲット ミドル級") > 0 && countBouts("ターゲット ミドル級") < katakana, "space-separated terms must narrow the bouts (AND)");
+  // 選手は団体名でも引けること
+  state.query = "ターゲット";
+  const targetFighters = repo.richFighters.filter((f) => f.main_promotion_id === "target");
+  assert(targetFighters.every((f) => ctx.query.fighterMatches(f)), "query ターゲット must match every fighter whose main promotion is target");
   state.query = "";
 }
 
