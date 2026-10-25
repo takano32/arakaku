@@ -16,10 +16,8 @@ export const boutsSection = {
       repo.richBouts,
       (b) => query.boutMatches(b) && itemPassesFilters(b, TAB_FILTERS.bouts, state)
     );
-    const eventDate = (b) => {
-      const e = repo.findEvent(b.event_id);
-      return e?.result_published_at || e?.published_at || "";
-    };
+    const eventDate = (b) => repo.eventDateLabel(repo.findEvent(b.event_id));
+    const titleOf = (b) => repo.titles.find((t) => t.title_id === b.title?.title_id);
     return {
       items,
       keyOf: (b) => b.bout_id,
@@ -42,7 +40,7 @@ export const boutsSection = {
         const decision = parts.boutDecisionLine(b);
         return `
           ${summary ? `<p class="result">${summary}${decision ? ` <span class="muted">${escapeHtml(decision)}</span>` : ""}</p>` : ""}
-          ${b.title?.is_title_bout ? `<p class="small">王座戦: ${escapeHtml(b.title.note ?? "")}</p>` : ""}
+          ${b.title?.is_title_bout ? `<p class="small">王座戦: ${titleOf(b) ? `<a href="?tab=titles&title_promo=${encodeURIComponent(b.promotion_id)}">${escapeHtml(repo.titleDisplayName(titleOf(b)))}</a>` : ""}${b.title.note ? ` <span class="muted">${escapeHtml(b.title.note)}</span>` : ""}</p>` : ""}
           ${b.notes ? `<p class="small muted">${escapeHtml(b.notes)}</p>` : ""}
           ${parts.videoLinks("bout", b.bout_id)}
           ${parts.sourceReferences(repo.sourceReferencesForBout(b), "出典候補")}
@@ -52,12 +50,12 @@ export const boutsSection = {
             ["団体", escapeHtml(repo.promotionName(b.promotion_id))],
             ["試合順", b.bout_order ? `第${escapeHtml(b.bout_order)}試合` : ""],
             ["階級", escapeHtml(joinPresent([b.division, b.weight_class_id]))],
-            ["種別", escapeHtml(b.bout_type ?? "")],
+            ["種別", escapeHtml(labels.boutType(b.bout_type))],
             ["形式 (名鑑)", escapeHtml(b.numbers_records?.[0]?.bout_format ?? "")],
             ["結果状態", escapeHtml(labels.resultStatus(b.result_status))],
             ["選手", `<ul class="plain-list">${parts.fighterRows(b)}</ul>`],
             ["決着", escapeHtml(decision)],
-            ["王座", b.title?.is_title_bout ? escapeHtml(joinPresent([b.title.title_id, b.title.title_result])) : ""],
+            ["王座", b.title?.is_title_bout ? escapeHtml(titleOf(b) ? repo.titleDisplayName(titleOf(b)) : b.title.title_id ?? "") : ""],
             ["推定元動画", codeList([b.inferred_from_video_id])],
             ["推定信頼度", escapeHtml(b.inferred_confidence ?? "")],
             ["メモ", escapeHtml(b.notes ?? "")],

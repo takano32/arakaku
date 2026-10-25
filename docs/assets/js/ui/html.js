@@ -49,7 +49,8 @@ export function externalLink(url, label, className = "") {
 // 名鑑由来の method_raw (detail_raw) は「1R 1:37 KO(大外刈り)」のようにラウンドと時間を含むので、
 // その場合は round / time を重ねて表示しない。
 export function boutResultText(bout) {
-  const method = bout.result?.method_raw ?? "";
+  // 名鑑の detail_raw は「1R 1:37 KO(大外刈り)\nメジャーデビュー戦」のように改行で注記が続くので 1 行にする (T.102)。
+  const method = (bout.result?.method_raw ?? "").replace(/\s*\n\s*/g, " / ");
   if (/^\d+R\b/.test(method.trim())) return method.trim();
   return [
     bout.result?.round ? `${bout.result.round}R` : "",

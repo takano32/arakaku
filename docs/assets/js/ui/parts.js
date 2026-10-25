@@ -153,7 +153,7 @@ export class Parts {
 
   fighterRows(bout) {
     return (bout.fighters ?? []).map((f) => `
-      <li>${this.fighterLink(f.fighter_id, f.name)} <span class="muted">${escapeHtml(joinPresent([f.corner, f.result || "unknown"]))}</span></li>
+      <li>${this.fighterLink(f.fighter_id, f.name)} <span class="muted">${escapeHtml(joinPresent([labels.side(f.side), labels.fighterResult(f.result)]))}</span></li>
     `).join("");
   }
 
