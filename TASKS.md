@@ -88,7 +88,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 | [T.71](tasks/T.71.md) | 煽り動画から作られた重複試合 3 件と架空の大会 3 件 | 完了 | 2026-10-25 |
 | [T.72](tasks/T.72.md) | 試合の種別の誤り | 完了 | 2026-10-25 |
 | [T.73](tasks/T.73.md) | 決着方法・技・判定スコアを note から補う | 完了 | 2026-10-25 |
-| T.74 | 選手の主な団体・階級が Numbers・公式サイトと食い違う | 未着手 | 2026-10-25 |
+| [T.74](tasks/T.74.md) | 選手の主な団体・階級が Numbers・公式サイトと食い違う | 完了 | 2026-10-25 |
 | [T.75](tasks/T.75.md) | 動画データの古い列と未リンク動画 | 完了 | 2026-10-25 |
 | T.76 | 王座戦の title_id・title_result が全件空 | 保留 | 2026-10-25 |
 | T.77 | 日付の欠落と書式の不統一 | 保留 | 2026-10-25 |
@@ -151,17 +151,6 @@ note の結果記事の書式（◯ U+25EF、1 行の `○A vs ●B`、片側だ
 - [x] T.70.4 note だけにある 1 試合の扱いをユーザーに確認する（fb70f51、2026-10-25）。2026-10-25 にユーザーが決定: 入れる。勝敗だけを反映し（note の行に決着の記載なし）、notes に「Numbers に記録なし」と書いた
   - `max-bout-6-lightweight-tournament-mzffdb97ygw` コルト・アプロー vs センサー・ファッジ: note-n96b3975ccdad 15 行目「○コルト・アプローvs●センサー・ファッジ」。Numbers に記録なし。`review/unknown_bout_note_results.csv` では apply=false
 - [x] T.70.5 T.40.5 の「note も Numbers も無い 21 試合」の一覧を見直す（2026-10-25）。T.40.5 の 21 試合のうち、スペシャルワンマッチ大会の 10 試合は反映済み。残りは エリートスピリッツ 7 試合（note も Numbers も無し）、`max-bout-6-lightweight-tournament-mzffdb97ygw`（T.70.4）、`target-14-d6tuqnfvmhy` と video-catalog 2 試合（T.71）
-
-## T.74 選手の主な団体・階級が Numbers・公式サイトと食い違う
-
-- 状態: 未着手
-- 期間: 2026-10-25
-
-T.62 の洗い出しで登録。
-
-22 人の `main_promotion_id` が Numbers・公式サイトの両方と違う。18 人は大会である `max_bout`、あかそ（target → mh）、ルージュド・スターリー（target → emperor）、アンディ・ザメス・ぎんのすけ（elite_spirits → target）。8 人は試合がすべてミドル級なのに `main_division` が空。ぎんのすけは公式サイトだけヘビー級101kg。
-
-- [ ] T.74.1 2 つの出典が一致すれば直してよいかをユーザーに確認し、T.59 と同じように直す
 
 ## T.76 王座戦の title_id・title_result が全件空
 
