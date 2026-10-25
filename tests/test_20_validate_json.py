@@ -63,8 +63,8 @@ def test_validate_official_pages_rejects_unsafe_html(validate_json_module):
 
 def test_round_time_problems(validate_json_module):
     ok=validate_json_module.round_time_problems
-    assert ok(3,'終了') == [] and ok(1,'3分04秒') == [] and ok(None,None) == [] and ok(2,'5分0秒') == []
-    assert ok('3終了','') and ok(6,'') and ok(3,'07分51秒') and ok(None,'1分00秒') and ok(1,'1分60秒')
+    assert ok(3,'終了') == [] and ok(1,'3分04秒') == [] and ok(None,None) == [] and ok(2,'5分00秒') == []
+    assert ok('3終了','') and ok(6,'') and ok(3,'07分51秒') and ok(None,'1分00秒') and ok(1,'1分60秒') and ok(1,'3分4秒')
 
 def test_validate_enums_rejects_unknown_values(validate_json_module):
     validate_json_module.ERRORS.clear(); validate_json_module.WARNINGS.clear()
