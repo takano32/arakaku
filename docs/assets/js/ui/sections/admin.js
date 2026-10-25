@@ -231,6 +231,10 @@ export const officialPlayersSection = {
   },
 };
 
+// 公式サイトの試合 (matches) と沿革 (history) は、note・公式の大会一覧・CSV のどれとも合わず、登場する選手も
+// ほかに出てこない (例: 1995 荒木好之 vs デーモンキング)。公式サイトの仮のデータとみられるので、消さずに注記する (T.78)。
+const UNVERIFIED_NOTE = `<p class="muted small">公式サイトのデータ。note・公式の大会一覧・このデータベースの記録と合わず、仮のデータの可能性があります。</p>`;
+
 export const officialMiscSection = {
   id: "officialMisc",
   label: "公式",
@@ -259,22 +263,22 @@ export const officialMiscSection = {
             <p class="rec-title">${escapeHtml(item.fighter1 ?? "")} <span class="vs">vs</span> ${escapeHtml(item.fighter2 ?? "")}</p>
             <p class="rec-sub">${escapeHtml(joinPresent([item.event, item.date, item.weight_class]))}</p>
           </div>
-          <div class="rec-aside">${parts.badge("試合", "official")}${item.result ? `<span class="result-line">${escapeHtml(item.result)}</span>` : ""}</div>`;
+          <div class="rec-aside">${parts.badge("試合", "official")}${parts.badge("note と合わない", "soft")}${item.result ? `<span class="result-line">${escapeHtml(item.result)}</span>` : ""}</div>`;
         }
         return `<div class="rec-text">
           <p class="rec-title">${escapeHtml(item.title)}</p>
           <p class="rec-sub">${escapeHtml(joinPresent([item.year, item.era, item.month ? `${item.month}月` : ""]))}</p>
         </div>
-        <div class="rec-aside">${parts.badge("沿革", "official")}</div>`;
+        <div class="rec-aside">${parts.badge("沿革", "official")}${parts.badge("note と合わない", "soft")}</div>`;
       },
       renderBody: (item) => {
         if (item._type === "tournament") {
           return parts.details([["id", code(item.id)], ["video_id", code(item.video_id)]], "詳細", { open: true }) || `<p class="muted">詳細はありません。</p>`;
         }
         if (item._type === "match") {
-          return parts.details([["id", code(item.id)], ["決着", escapeHtml(item.method ?? "")], ["ラウンド", escapeHtml(item.round ?? "")], ["メモ", escapeHtml(item.notes ?? "")]], "詳細", { open: true });
+          return UNVERIFIED_NOTE + parts.details([["id", code(item.id)], ["決着", escapeHtml(item.method ?? "")], ["ラウンド", escapeHtml(item.round ?? "")], ["メモ", escapeHtml(item.notes ?? "")]], "詳細", { open: true });
         }
-        return item.description ? `<p>${escapeHtml(item.description)}</p>` : `<p class="muted">説明はありません。</p>`;
+        return UNVERIFIED_NOTE + (item.description ? `<p>${escapeHtml(item.description)}</p>` : `<p class="muted">説明はありません。</p>`);
       },
     };
   },
