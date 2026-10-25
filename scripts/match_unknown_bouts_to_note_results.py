@@ -22,6 +22,8 @@ import json
 import re
 import unicodedata
 
+from arakaku.textparse import WIN_MARKS
+
 from arakaku.utils import DATA_SRC, DOCS_DATA, REVIEW, read_csv, write_csv
 
 OUTPUT = REVIEW / "unknown_bout_note_results.csv"
@@ -37,9 +39,14 @@ METHOD_FIELDS = [
     "technique", "decision_score", "existing", "clashes", "numbers_detail",
     "source_article_id", "source_line_start", "source_line_end", "source_text", "result_text",
 ]
-WIN_MARKS = "○◯"
-MARK_BEFORE_NAME = re.compile(r"([○◯●])[\s🟥🟦①-⑩]*$")
-NEAR_LINES = 3
+# 勝敗記号は arakaku/textparse.py と共有 (〇 U+3007 も勝ち)。NFKC 後は ① が "1" になるので数字を読み飛ばす。
+MARK_BEFORE_NAME = re.compile(r"([○◯〇●])[\s🟥🟦\d]*$")
+# カード形式の結果 note は「名前 / 年齢 / 戦績 / 🆚 / 名前」と 4 行離れるので 5 行まで見る。
+# ただし間に ☆ (試合の見出し) があれば別の試合 (T.93)。
+NEAR_LINES = 5
+# 名前の前後にこれらの文字が続けば、より長い別の語の一部 (例:「ロン」と「アイス・トロン」「フロントチョーク」)。
+NAME_CHAR = re.compile(r"[\u3041-\u30ffA-Za-z\u30fc・]")
+RESULT_HINT = re.compile(r"\dR|判定|KO|一本|チョーク|ストップ|タオル|反則")
 SUB_WORDS = ("チョーク", "RNC", "アームバー", "アームロック", "肩固め", "ギロチン", "三角", "ネックロック", "一本", "腕十字",
              "腕ひしぎ", "十字固め", "ヒールホールド")
 
@@ -69,20 +76,31 @@ def occurrences(lines: list[str], name: str) -> list[tuple[int, str]]:
         text = norm(line)
         start = text.find(target)
         while start >= 0:
-            m = MARK_BEFORE_NAME.search(text[:start])
-            found.append((i, m.group(1) if m else ""))
+            before, after = text[:start], text[start + len(target):]
+            inside_word = (before and NAME_CHAR.match(before[-1]) and not re.search(r"(?i)vs$", before)) or (
+                after and NAME_CHAR.match(after[0]) and not re.match(r"(?i)vs", after))
+            if not inside_word:
+                m = MARK_BEFORE_NAME.search(before)
+                found.append((i, m.group(1) if m else ""))
             start = text.find(target, start + 1)
     return found
 
 
 def result_text(lines: list[str], first: int, last: int) -> str:
-    inline = re.search(r"\(([^)]*)\)", norm(lines[last])) if first == last else None  # NFKC で（）は () になる
-    if inline:
-        return inline.group(1).strip()
-    for k in range(last + 1, min(last + 1 + NEAR_LINES, len(lines))):
-        line = lines[k].strip()
-        if line.startswith(("（", "(")):
-            return norm(line).strip("()（） ").split(")")[0].strip()
+    """The result text of the bout: a parenthesis on the same line, or the next result-looking line
+    such as '(1R2分39秒 アームバー)', '3R終了 判定3-0' or '1R 2分10秒KO(…)'. NFKC で（）は () になる。"""
+    if first == last:
+        for inner in re.findall(r"\(([^)]*)\)", norm(lines[last])):
+            if RESULT_HINT.search(inner):
+                return inner.strip()
+    for k in range(last + 1, min(last + 4, len(lines))):
+        line = norm(lines[k]).strip()
+        if "☆" in line or (line and line[0] in "○◯〇●🟥🟦"):
+            break
+        if line.startswith("(") and RESULT_HINT.search(line):
+            return line.strip("() ").split(")")[0].strip()
+        if re.match(r"\d\s*R", line):
+            return line
     return ""
 
 
@@ -91,27 +109,32 @@ def parse_result(text: str) -> dict[str, str]:
     out = {"round": "", "time": "", "method_raw": "", "method_normalized": "", "technique": "", "decision_score": ""}
     if not text:
         return out
-    m = re.match(r"\s*(\d)R\s*(?:(終了)|(\d{1,2})分(\d{1,2})秒)?\s*", text)
+    m = re.match(r"\s*(\d)\s*R\s*(?:(終了)時?|(\d{1,2})\s*分\s*(\d{1,2})\s*秒)?\s*", text)
     rest = text
     if m:
         out["round"] = f"{m.group(1)}R"
         out["time"] = "終了" if m.group(2) else (f"{int(m.group(3))}分{int(m.group(4)):02d}秒" if m.group(3) else "")
         rest = text[m.end():]
     rest = rest.strip()
+    if rest.startswith("(") and rest.endswith(")"):  # "(アームバー)" のように決着全体が括弧のとき
+        rest = rest[1:-1].strip()
     out["method_raw"] = rest
+    # 技名は「KO」「TKO」を除き、括弧は外す (例: "KO(飛びヒザ蹴り)" → "飛びヒザ蹴り")。
+    def technique(text: str) -> str:
+        return re.sub(r"\s+", " ", re.sub(r"[()]", " ", re.sub(r"T?KO", " ", text, count=1))).strip()
     if "判定" in rest:
         out["method_normalized"] = "DEC"
-        score = re.search(r"(\d-\d)", rest)
+        score = re.search(r"(\d+-\d+)", rest)
         out["decision_score"] = score.group(1) if score else ""
-    elif re.search(r"TKO|コーナーストップ|タオル", rest):
+    elif re.search(r"TKO|コーナーストップ|タオル|ドクターストップ|レフェリーストップ", rest):
         out["method_normalized"] = "TKO"
-        out["technique"] = re.sub(r"^TKO\s*", "", rest)
-    elif re.match(r"KO", rest):
+        out["technique"] = technique(rest)
+    elif re.search(r"KO", rest):
         out["method_normalized"] = "KO"
-        out["technique"] = re.sub(r"^KO\s*", "", rest)
+        out["technique"] = technique(rest)
     elif any(w in rest for w in SUB_WORDS):
         out["method_normalized"] = "SUB"
-        out["technique"] = rest
+        out["technique"] = technique(rest)
     return out
 
 
@@ -158,8 +181,14 @@ def numbers_detail_by_pair() -> dict[tuple, set[str]]:
 
 def for_event(table: dict[tuple, set[str]], pair: frozenset[str], event: dict[str, str]) -> set[str]:
     """The event's own Numbers records when they exist, otherwise every record of the pair."""
+    return for_event_exact(table, pair, event)[0]
+
+
+def for_event_exact(table: dict[tuple, set[str]], pair: frozenset[str], event: dict[str, str]) -> tuple[set[str], bool]:
+    """(values, True) from the event's own Numbers records, or (values of every event of the pair, False)."""
     number = event.get("numbers_event_number") or event.get("event_number") or ""
-    return table.get((pair, event.get("promotion_id", ""), number)) or table.get((pair, "", ""), set())
+    own = table.get((pair, event.get("promotion_id", ""), number))
+    return (own, True) if own else (table.get((pair, "", ""), set()), False)
 
 
 def main() -> int:
@@ -192,6 +221,9 @@ def main() -> int:
             for line_a, mark_a in occ_a:
                 for line_b, mark_b in occ_b:
                     if abs(line_a - line_b) > NEAR_LINES:
+                        continue
+                    between = lines[min(line_a, line_b) + 1:max(line_a, line_b)]
+                    if any("☆" in ln for ln in between) or sum("🆚" in ln for ln in between) > 1:
                         continue
                     a_wins = mark_a in WIN_MARKS and mark_a or mark_b == "●"
                     b_wins = mark_b in WIN_MARKS and mark_b or mark_a == "●"
@@ -232,8 +264,10 @@ def main() -> int:
         if bout["result_status"] == "unknown":
             winner = a if a["fighter_id"] == winner_id else b
             loser = b if winner is a else a
-            number_winners = for_event(numbers, fighter_ids, event)
-            agreement = "agree" if number_winners == {winner_id} else ("note_only" if not number_winners else "conflict")
+            number_winners, same_event = for_event_exact(numbers, fighter_ids, event)
+            # 同じ大会の Numbers 記録が無く、再戦など別の大会の記録とだけ一致するものは反映しない (T.93)。
+            agreement = ("agree" if same_event else "agree_other_event") if number_winners == {winner_id} else (
+                "note_only" if not number_winners else "conflict")
             rows.append({
                 "apply": "true" if agreement == "agree" else "false",
                 "agreement": agreement,
