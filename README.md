@@ -623,7 +623,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### 記事クロール
 
-- `scripts/crawl_note_articles.py`: note の RSS / API / HTML から記事一覧を探索し、`articles.csv` 追加候補を探します。
+- `scripts/crawl_note_articles.py`: note の RSS / API / HTML から記事一覧を探索し、`articles.csv` に無い記事の行を追記します。`make discover-note-articles`（`make cache-note-html` の前段）が `--use-api` で全ページを読みます。
 
 ### Numbers 取り込み
 
@@ -712,7 +712,7 @@ make cache-sources           # 上記キャッシュ取得をまとめて実行
 make archive-metadata        # キャッシュから data-src/archives/*.csv を再生成
 make build-sources           # 本文DB（source_documents/source_mentions）を生成
 make reorder-data            # data-src/*.csv を安定行順に並べ直す
-make refresh-sources         # cache-sources → archive-metadata → build-sources → reorder-data → check
+make refresh-sources         # cache-sources（新しい note 記事の発見を含む）→ archive-metadata → generate-articles → build-sources → generate-stage2 → reorder-data → check
 make extract-numbers         # Numbers から numbers_*.csv を生成
 make source-mention-result-candidates  # 言及から結果候補CSVを作る
 make source-reference-candidates       # 出典参照候補CSVを作る
