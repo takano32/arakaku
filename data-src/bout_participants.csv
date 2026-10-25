@@ -59,9 +59,9 @@ emperor-119-wae2pl4rfdw-red,emperor-119-wae2pl4rfdw,red,sakaeda,さかえだ,,lo
 emperor-119-wae2pl4rfdw-blue,emperor-119-wae2pl4rfdw,blue,rouged_starry,ルージュド・スターリー,,win
 emperor-120-gencjoexft8-red,emperor-120-gencjoexft8,red,fighter_3c507e2d6d,エス・ガリオン,,win
 emperor-120-gencjoexft8-blue,emperor-120-gencjoexft8,blue,fighter_1eccfcf027,ロン,,loss
-mh-40-bujuelt6hfo-red,mh-40-bujuelt6hfo,red,rolling_jr,ローリングジュニア,,loss
+mh-40-bujuelt6hfo-red,mh-40-bujuelt6hfo,red,rolling_jr,ローリングJr.,,loss
 mh-40-bujuelt6hfo-blue,mh-40-bujuelt6hfo,blue,fighter_0f7f08df67,トワックデビル,,win
-mh-38-3jbgtu_pkeu-red,mh-38-3jbgtu_pkeu,red,rolling_jr,ローリングジュニア,,unknown
+mh-38-3jbgtu_pkeu-red,mh-38-3jbgtu_pkeu,red,rolling_jr,ローリングJr.,,unknown
 mh-38-3jbgtu_pkeu-blue,mh-38-3jbgtu_pkeu,blue,python_hayashi,ぱいそんはやし,,unknown
 mh-38-htdjihj6z_q-red,mh-38-htdjihj6z_q,red,fighter_169d4ecfe8,ラドフ,,unknown
 mh-38-htdjihj6z_q-blue,mh-38-htdjihj6z_q,blue,fighter_5f53eea569,オーシューワイルド,,unknown
@@ -110,7 +110,7 @@ max-bout-6-lightweight-tournament-xxhhyfb8kq-blue,max-bout-6-lightweight-tournam
 max-bout-6-lightweight-tournament-41mou0pvo8w-red,max-bout-6-lightweight-tournament-41mou0pvo8w,red,blue_one,ブルーワン,,loss
 max-bout-6-lightweight-tournament-41mou0pvo8w-blue,max-bout-6-lightweight-tournament-41mou0pvo8w,blue,colt_apro,コルト・アプロー,,win
 max-bout-6-lightweight-tournament-9hosl10mklo-red,max-bout-6-lightweight-tournament-9hosl10mklo,red,lander_devil,ランダーデビル,,unknown
-max-bout-6-lightweight-tournament-9hosl10mklo-blue,max-bout-6-lightweight-tournament-9hosl10mklo,blue,rolling_jr,ローリングジュニア,,unknown
+max-bout-6-lightweight-tournament-9hosl10mklo-blue,max-bout-6-lightweight-tournament-9hosl10mklo,blue,rolling_jr,ローリングjr,,unknown
 max-bout-6-lightweight-tournament-b3mm_ebk_my-red,max-bout-6-lightweight-tournament-b3mm_ebk_my,red,blue_one,ブルーワン,,unknown
 max-bout-6-lightweight-tournament-b3mm_ebk_my-blue,max-bout-6-lightweight-tournament-b3mm_ebk_my,blue,kitamura,きたむら,,unknown
 max-bout-6-lightweight-tournament-eis5offdwks-red,max-bout-6-lightweight-tournament-eis5offdwks,red,frahm_gran,フラーム・グラン,,unknown
@@ -156,7 +156,7 @@ max-bout-5-middleweight-tournament-fynnomuod1i-blue,max-bout-5-middleweight-tour
 max-bout-5-middleweight-tournament-lj_cbs1xmiq-red,max-bout-5-middleweight-tournament-lj_cbs1xmiq,red,otosawa,おとさわ,,loss
 max-bout-5-middleweight-tournament-lj_cbs1xmiq-blue,max-bout-5-middleweight-tournament-lj_cbs1xmiq,blue,fighter_e15b590179,ゼット,,win
 max-bout-7-lightweight-gp-irt8ikcjj4i-red,max-bout-7-lightweight-gp-irt8ikcjj4i,red,fighter_25fddbaacc,ダブド・ガブリシャン,,win
-max-bout-7-lightweight-gp-irt8ikcjj4i-blue,max-bout-7-lightweight-gp-irt8ikcjj4i,blue,rolling_jr,ローリングジュニア,,loss
+max-bout-7-lightweight-gp-irt8ikcjj4i-blue,max-bout-7-lightweight-gp-irt8ikcjj4i,blue,rolling_jr,ローリングJr.,,loss
 max-bout-7-lightweight-gp-ysyzts9p7uo-red,max-bout-7-lightweight-gp-ysyzts9p7uo,red,colt_apro,コルト・アプロー,,loss
 max-bout-7-lightweight-gp-ysyzts9p7uo-blue,max-bout-7-lightweight-gp-ysyzts9p7uo,blue,blue_one,ブルーワン,,win
 max-bout-7-lightweight-gp-mzsxwh_pvtq-red,max-bout-7-lightweight-gp-mzsxwh_pvtq,red,fighter_82d519db98,イスカン・アステ,,win
@@ -166,7 +166,7 @@ max-bout-7-lightweight-gp-x1t1w3rqpb0-blue,max-bout-7-lightweight-gp-x1t1w3rqpb0
 max-bout-7-lightweight-gp-6cc4iyh_ejy-red,max-bout-7-lightweight-gp-6cc4iyh_ejy,red,marco_fraser,マルコ・フレイザー,,win
 max-bout-7-lightweight-gp-6cc4iyh_ejy-blue,max-bout-7-lightweight-gp-6cc4iyh_ejy,blue,fighter_cdb8d47163,ワインセル,,loss
 max-bout-7-lightweight-gp-u8b1_0fnkx8-red,max-bout-7-lightweight-gp-u8b1_0fnkx8,red,waku,わく,,loss
-max-bout-7-lightweight-gp-u8b1_0fnkx8-blue,max-bout-7-lightweight-gp-u8b1_0fnkx8,blue,rolling_jr,ローリングジュニア,,win
+max-bout-7-lightweight-gp-u8b1_0fnkx8-blue,max-bout-7-lightweight-gp-u8b1_0fnkx8,blue,rolling_jr,ローリングJr.,,win
 max-bout-7-lightweight-gp-us8ne3rhqsq-red,max-bout-7-lightweight-gp-us8ne3rhqsq,red,sangoku,さんごく,,loss
 max-bout-7-lightweight-gp-us8ne3rhqsq-blue,max-bout-7-lightweight-gp-us8ne3rhqsq,blue,fighter_25fddbaacc,ダブド・ガブリシャン,,win
 max-bout-7-lightweight-gp-gj_hwkw33s-red,max-bout-7-lightweight-gp-gj_hwkw33s,red,fighter_82d519db98,イスカン・アステ,,win
@@ -195,9 +195,9 @@ target-100-cnizik34mxe-red,target-100-cnizik34mxe,red,fighter_cdb8d47163,ワイ�
 target-100-cnizik34mxe-blue,target-100-cnizik34mxe,blue,daina,だいな,,loss
 target-98-13ob38c7t_8-red,target-98-13ob38c7t_8,red,fighter_cdb8d47163,ワインセル,,win
 target-98-13ob38c7t_8-blue,target-98-13ob38c7t_8,blue,kyonai,きょうない,,loss
-mh-28-ohxh8yuitfy-red,mh-28-ohxh8yuitfy,red,rolling_jr,ローリングジュニア,,unknown
+mh-28-ohxh8yuitfy-red,mh-28-ohxh8yuitfy,red,rolling_jr,ローリングjr,,unknown
 mh-28-ohxh8yuitfy-blue,mh-28-ohxh8yuitfy,blue,kuwashio,くわしお,,unknown
-mh-33-e0it_vkslzc-red,mh-33-e0it_vkslzc,red,rolling_jr,ローリングジュニア,,win
+mh-33-e0it_vkslzc-red,mh-33-e0it_vkslzc,red,rolling_jr,ローリングJr.,,win
 mh-33-e0it_vkslzc-blue,mh-33-e0it_vkslzc,blue,fighter_25fddbaacc,ダブド・ガブリシャン,,loss
 emperor-111-kb7j3t8t8zs-red,emperor-111-kb7j3t8t8zs,red,fighter_2fdaa958ad,ロコール・アラニン,,unknown
 emperor-111-kb7j3t8t8zs-blue,emperor-111-kb7j3t8t8zs,blue,fighter_b9115f2d71,チャールス・ブランディン,,unknown
@@ -252,7 +252,7 @@ emperor-113-1ap2i0us_bu-blue,emperor-113-1ap2i0us_bu,blue,napalm,ナパーム,,l
 target-87-iawju8_v9bm-red,target-87-iawju8_v9bm,red,fighter_0d592ec5c6,パス・フィーリー,,unknown
 target-87-iawju8_v9bm-blue,target-87-iawju8_v9bm,blue,kintoki,きんとき,,unknown
 mh-30-3knn6p1e6uu-red,mh-30-3knn6p1e6uu,red,fighter_6cc24375aa,バンドルフ・ガルブンタ,,unknown
-mh-30-3knn6p1e6uu-blue,mh-30-3knn6p1e6uu,blue,rolling_jr,ローリングジュニア,,unknown
+mh-30-3knn6p1e6uu-blue,mh-30-3knn6p1e6uu,blue,rolling_jr,ローリングJr.,,unknown
 target-88-ik8_4qwygxs-red,target-88-ik8_4qwygxs,red,fighter_c6720136f7,バイソンデビル,,loss
 target-88-ik8_4qwygxs-blue,target-88-ik8_4qwygxs,blue,fighter_c333ddf234,センサー・ファッジ,,win
 target-87-h5bbdqgpdb0-red,target-87-h5bbdqgpdb0,red,fighter_c6720136f7,バイソンデビル,,unknown
@@ -304,7 +304,7 @@ emperor-116-r_scebsyoxg-blue,emperor-116-r_scebsyoxg,blue,fighter_4282deeb57,ワ
 emperor-113-5nkfum9czqg-red,emperor-113-5nkfum9czqg,red,fighter_30b7a4a468,ステシエン・チェット,,win
 emperor-113-5nkfum9czqg-blue,emperor-113-5nkfum9czqg,blue,fighter_4d6356d021,ゆめろう,,loss
 mh-31-atvp_2lwnno-red,mh-31-atvp_2lwnno,red,fighter_eddb8db316,ジョン・バレー,,loss
-mh-31-atvp_2lwnno-blue,mh-31-atvp_2lwnno,blue,rolling_jr,ローリングジュニア,,win
+mh-31-atvp_2lwnno-blue,mh-31-atvp_2lwnno,blue,rolling_jr,ローリングJr.,,win
 emperor-110-1tjfo_ln_zy-red,emperor-110-1tjfo_ln_zy,red,fighter_4b95bfe573,シャパール・アミア,,loss
 emperor-110-1tjfo_ln_zy-blue,emperor-110-1tjfo_ln_zy,blue,fighter_2fdaa958ad,ロコール・アラニン,,win
 target-90-gmfpy9x6hec-red,target-90-gmfpy9x6hec,red,fighter_31e0efe5d2,シガー・ユーナイム,,win
@@ -434,7 +434,7 @@ target-100-lezep1guura-blue,target-100-lezep1guura,blue,tsuoshi,つおし,,loss
 target-94-k74fho1c9oa-red,target-94-k74fho1c9oa,red,kitamura,きたむら,,win
 target-94-k74fho1c9oa-blue,target-94-k74fho1c9oa,blue,daina,だいな,,loss
 mh-29-xv2i76qlrti-red,mh-29-xv2i76qlrti,red,kawakami,かわかみ,,loss
-mh-29-xv2i76qlrti-blue,mh-29-xv2i76qlrti,blue,rolling_jr,ローリングジュニア,,win
+mh-29-xv2i76qlrti-blue,mh-29-xv2i76qlrti,blue,rolling_jr,ローリングjr,,win
 mh-31-gapmkahkaca-red,mh-31-gapmkahkaca,red,kawakami,かわかみ,,loss
 mh-31-gapmkahkaca-blue,mh-31-gapmkahkaca,blue,fighter_4315a5de6a,ヨルセン・バクダリア,,win
 mh-28-k73xvvbyvdq-red,mh-28-k73xvvbyvdq,red,kawakami,かわかみ,,unknown
