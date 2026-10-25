@@ -147,7 +147,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | H17 | 共通部品（出典記事参照、動画参照、出典候補サマリ、関連試合、定義リスト、折りたたみ） | `services/source-renderers.js`, `services/related-renderers.js`, `ui/component-builder.js` | `ui/parts.js` | 検証済 | ブラウザ・Node（全行描画）。候補の重複排除・確度順・上位 5 件・「上位5件 / N件」は同じ |
 | H18 | YouTube 埋め込みファサードとサムネイル 404 回避 | `services/source-renderers.js renderVideoEmbed`, `main.js (lite-youtube-embed)` | `ui/parts.js videoFacade`, `ui/shell.js #activateVideo` | 変更 | 自前のファサード（画像 + 再生ボタン → クリックで `youtube-nocookie` の iframe）。`thumbnail_sizes` から存在が確実なサイズ（maxres → sd → hq）を選ぶので 404 が出ない。ブラウザで確認 |
 | H19 | 空・未入力の定型文 | `tab-renderers.js`, `services/*.js` | `ui/parts.js`, `ui/sections/*.js` | 検証済 | 文言はそのまま（grep で確認） |
-| H20 | HTML エスケープと信頼済み HTML の扱い | `ui/html-utils.js`, `ui/markdown.js` | `ui/html.js escapeHtml / externalLink`, `ui/markdown.js`, `ui/sections/official.js officialBodyHtml` | 検証済 | コード。validate_json.js が全行描画で `undefined` 混入も検査 |
+| H20 | HTML エスケープと信頼済み HTML の扱い | `ui/html-utils.js`, `ui/markdown.js` | `ui/html.js escapeHtml / externalLink`, `ui/markdown.js`, `ui/sections/official.js officialBodyHtml` | 検証済 | コード。validate_json.js が全行描画で `undefined` 混入も検査。T.63 で Markdown のリンクを http(s) だけにし（`javascript:` や `"` による属性注入を防ぐ）、`scripts/test_markdown.mjs` で検査。公式ページ本文 HTML は validate_json.py が `<script>`・イベント属性・スクリプト URL・YouTube 以外の iframe を失敗にする |
 
 ## I. キーボード操作・その他の操作
 
