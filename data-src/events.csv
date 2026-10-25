@@ -38,7 +38,6 @@ target-101,ターゲットNo.101,target,101,,numbered_event,,,ターゲットNo.
 target-102,ターゲットNo.102,target,102,,numbered_event,,,ターゲットNo.102。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-104,ターゲットNo.104,target,104,,numbered_event,,,,note,high
 target-105,ターゲットNo.105,target,105,,numbered_event,,,,note,high
-target-14,ターゲットNo.14,target,14,,numbered_event,,,ターゲットNo.14。公式YouTube動画タイトルから抽出。,official_youtube_title,medium
 target-87,ターゲットNo.87,target,87,,numbered_event,,,ターゲットNo.87。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-88,ターゲットNo.88,target,88,,numbered_event,,,ターゲットNo.88。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-89,ターゲットNo.89,target,89,,numbered_event,,,ターゲットNo.89。公式YouTube動画タイトルから抽出。,official_youtube_title,high
@@ -52,7 +51,5 @@ target-96,ターゲットNo.96,target,96,,numbered_event,,,ターゲットNo.96�
 target-97,ターゲットNo.97,target,97,,numbered_event,,,ターゲットNo.97。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-98,ターゲットNo.98,target,98,,numbered_event,,,ターゲットNo.98。公式YouTube動画タイトルから抽出。,official_youtube_title,high
 target-99,ターゲットNo.99,target,99,,numbered_event,,,ターゲットNo.99。公式YouTube動画タイトルから抽出。,official_youtube_title,high
-video-catalog-54kwdqyjoa8,動画カタログ未分類イベント,video_catalog,,,video_catalog,,,動画カタログ未分類イベント。公式YouTube動画タイトルから抽出。,official_youtube_title,low
-video-catalog-f93bk3gibcq,動画カタログ未分類イベント,video_catalog,,,video_catalog,,,動画カタログ未分類イベント。公式YouTube動画タイトルから抽出。,official_youtube_title,low
 target-103,ターゲットNo.103,target,103,,numbered_event,,2026-05-02,わくがつくりはらをKOしライト級王座3度目の防衛に成功した大会。,official_youtube_title,high
 max-bout-6-middleweight-gp,第6回MAXバウトミドル級GP,max_bout,6,,tournament,,2026-09-06,第6回MAXバウトミドル級GP。1回戦 8 試合は 2026年9月5〜6日の「アラカクの日」に公開された。対戦カードと結果は公式サイトのニュースによる。,official_site_news,high
