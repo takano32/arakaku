@@ -273,7 +273,20 @@ export class DataEnricher {
 
     if (records.length === 0) return rich;
 
-    for (const p of participants) {
+    // Numbers の 2 行が矛盾する (両者勝ち・両者負け) 試合は勝敗を上書きしない。CSV には note の勝者を
+    // 入れてあり (T.40.4・T.86.6)、上書きすると「A def. A」や両者勝ちの表示になる (T.89)。
+    const numbersResults = participants.map((p) => {
+      if (!p.fighter_id) return p.result;
+      const own = records.find(rec => rec.matched_fighter_id === p.fighter_id || rec.candidate_fighter_id === p.fighter_id);
+      if (own?.result) return own.result;
+      const other = records.find(rec => rec.opponent_matched_fighter_id === p.fighter_id || rec.opponent_candidate_fighter_id === p.fighter_id);
+      if (other?.result === "win") return "loss";
+      if (other?.result === "loss") return "win";
+      return p.result;
+    });
+    const consistent = [...numbersResults].sort().join() === "loss,win";
+
+    for (const p of consistent ? participants : []) {
       if (!p.fighter_id) continue;
 
       let r = records.find(rec => rec.matched_fighter_id === p.fighter_id || rec.candidate_fighter_id === p.fighter_id);
@@ -315,7 +328,7 @@ export class DataEnricher {
       if (recordWithMeta.bout_format) {
         rich.bout_type = recordWithMeta.bout_format;
       }
-      rich.result_status = "numbers_verified";
+      if (consistent) rich.result_status = "numbers_verified";
     }
 
     rich.numbers_records = records;
