@@ -559,8 +559,7 @@ export class DataRepository {
   // ── 関係ヘルパ ─────────────────────────────────────────────────────
 
   videosForEntity(type, id) {
-    return this.videoLinks
-      .filter(l => l.entity_type === type && l.entity_id === id)
+    return (this.groupIndex("videoLinks:entity", this.videoLinks, l => `${l.entity_type}\0${l.entity_id}`).get(`${type}\0${id}`) ?? [])
       .map(l => ({ link: l, video: this.richVideoById(l.video_id) }))
       .filter(i => i.video);
   }
@@ -573,7 +572,7 @@ export class DataRepository {
   sourceReferencesForBout(bout) { return this.findManyByField("sourceBoutReferences", "bout_id", bout.bout_id); }
   sourceReferencesForEvent(event) { return this.findManyByField("sourceEventReferences", "event_id", event.event_id); }
   sourceReferenceForVideo(video) {
-    return this.sourceVideoReferences.find(r => r.video_id === video.video_id);
+    return this.findManyByField("sourceVideoReferences", "video_id", video.video_id)[0];
   }
 
   sourceContextForVideo(video) {
@@ -636,8 +635,8 @@ export class DataRepository {
 
   // 大会内の試合は試合順の昇順 (第1試合 → メインイベント) のまま返す
   boutsForEvent(eventId) {
-    return this.richBouts
-      .filter(b => b.event_id === eventId)
+    // 大会の行ごとに呼ばれるので、全試合の走査ではなく event_id の索引から引く (T.85)。
+    return [...(this.groupIndex("richBouts:event_id", this.richBouts, b => b.event_id).get(eventId) ?? [])]
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
   }
 
