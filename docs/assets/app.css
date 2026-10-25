@@ -953,7 +953,7 @@ button { font-family: inherit; font-size: inherit; color: inherit; }
 .official-doc { line-height: 1.75; }
 .official-doc img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
 .official-doc iframe { max-width: 100%; aspect-ratio: 16 / 9; height: auto; width: 560px; border: 0; }
-.official-doc table { border-collapse: collapse; margin: 8px 0; }
+.official-doc table { border-collapse: collapse; margin: 8px 0; display: block; max-width: 100%; overflow-x: auto; } /* 幅の広い表は表の中で横スクロール */
 .official-doc td, .official-doc th { padding: 4px 10px; border: 1px solid var(--line); }
 .official-doc h1, .official-doc h2, .official-doc h3 { margin: 14px 0 6px; line-height: 1.35; }
 .official-doc h1 { font-size: 1.2rem; }
