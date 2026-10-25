@@ -275,7 +275,7 @@ PRIMARY ストリーミング（Phase 1）中の無駄な再描画を削減し�
   - Astro 固有構文除去：Tailwind class, frontmatter, JSX map 式展開, `{base}` 補間
 - **`scripts/build_official_pages_json.py`** (`make build`):
   - CSV → `docs/data/official_news.json` / `docs/data/official_pages.json`
-  - `tmp/arakaku-site/public/` の画像を Base64 データ URI として埋め込む
+  - `tmp/arakaku-site/public/` の画像を Base64 データ URI として埋め込む（T.79 で廃止。今は埋め込まず、viewer が `/` 始まりのパスを公式サイトへ書き換える）
 - **`scripts/download_official_data.sh`**: `public/` ディレクトリも取得するよう拡張
 - `maxbout.astro`（データ駆動）と `index.astro`（ナビ専用）は対象外
 
@@ -520,7 +520,7 @@ scripts/archive_metadata.py
 また、アーカイブのデータ突合ロジックを変更する際は、クライアントサイドでの null チェック（`this.data?.sourceDocuments ?? []` 等）と `sourceVideoReferences` / archive getter の維持を必ず確認してください。
 
 
-ただし `docs/data/*.json` は生成物なのでコミットしません。
+なお、`docs/data/*.json` は生成物なのでコミットしません（`make build` で再生成します）。
 
 ### relational-style CSV schema
 
@@ -669,11 +669,19 @@ grep -RIn "uses: actions/" .github/workflows
 本文DBを更新する場合:
 
 ```bash
-make cache-sources
-make archive-metadata
-make build-sources
+make refresh-sources
+```
+
+`refresh-sources` は cache-sources（`discover-note-articles` と `discover-youtube-videos` を含む）→ archive-metadata → generate-articles → build-sources → generate-official-csvs → generate-stage2 → reorder-data → check を順に実行します。
+
+正本 CSV（bouts / fighters / events / bout_participants / videos / video_bout_links / video_event_links / title_reigns / fighter_snapshots）を直した場合:
+
+```bash
+make generate-stage2   # 派生 CSV と review の候補 CSV を再生成
 make check
-make clean-generated
+# コミット後、変更のない作業ツリーで（CI でも実行）:
+make check-generated
+make clean-generated   # 任意の後片付け
 ```
 
 ---

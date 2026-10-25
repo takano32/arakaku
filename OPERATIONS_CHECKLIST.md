@@ -6,9 +6,14 @@
 
 ## 通常の変更後
 
+正本 CSV（bouts / fighters / events / bout_participants / videos / video_bout_links / video_event_links / title_reigns / fighter_snapshots）を直したとき:
+
 ```bash
+make generate-stage2   # 派生 CSV と review の候補 CSV を再生成
 make check
-make clean-generated
+# コミット後、変更のない作業ツリーで（CI でも実行）:
+make check-generated
+make clean-generated   # 任意の後片付け
 ```
 
 成功条件:
@@ -27,12 +32,10 @@ docs/data/.gitkeep exists
 note本文やYouTube概要欄を再取得し、アーカイブする場合:
 
 ```bash
-make cache-sources
-make archive-metadata
-make build-sources
-make check
-make clean-generated
+make refresh-sources
 ```
+
+`refresh-sources` は cache-sources（`discover-note-articles` と `discover-youtube-videos` を含む）→ archive-metadata → generate-articles → build-sources → generate-official-csvs → generate-stage2 → reorder-data → check を順に実行します。
 
 確認:
 
@@ -116,6 +119,7 @@ review/source_video_reference_candidates.csv
 
 ```bash
 python scripts/extract_numbers.py
+make generate-stage2   # generate_aliases.py が numbers_name_matches.csv を読む
 make check
 make clean-generated
 ```
@@ -158,6 +162,7 @@ grep -RIn "uses: actions/" .github/workflows
 ```text
 actions/checkout@v5
 actions/setup-python@v6
+actions/setup-node@v5  # Node 24
 actions/configure-pages@v6
 actions/upload-pages-artifact@v5
 actions/deploy-pages@v5
@@ -272,10 +277,13 @@ zip -r arakaku-working-tree.zip .   -x '.git/*'   -x 'docs/data/*.json'   -x '__
 
 ```bash
 git status
+make generate-stage2   # 正本 CSV を直したとき
 make check
 make clean-generated
 git status
 ```
+
+コミット後、変更のない作業ツリーで `make check-generated` が通ることも確認します（CI と同じ）。
 
 確認すること:
 
@@ -350,4 +358,4 @@ CSV の列名、参照ID、空欄、Path/str の扱いを確認してくださ�
 ### make check が validate_json.py で落ちる
 
 unknown reference / duplicate id / missing required field の可能性があります。  
-エラーメッセージに出る JSON と index を確認してください。
+エラーメッセージに出る JSON と index、そのあとの `[data-src/<file>.csv:<行>, <主キー>=<ID>]`（元 CSV のファイル・行と主キー）を確認してください。
