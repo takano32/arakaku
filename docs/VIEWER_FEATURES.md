@@ -128,7 +128,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
-| H1 | 公式タブ（固定ページは折りたたみ、ニュースは日付降順で Markdown） | `tab-renderers.js official / renderOfficialPageDocCard / renderOfficialNewsDocCard`, `ui/markdown.js` | `ui/sections/official.js`（固定ページは閉じた行、ニュースは開いた行）, `ui/markdown.js`（無変更） | 変更 | 本文 HTML の「/」始まりの画像・リンクを公式サイトの URL に直す（旧実装では 404 / 行き先なし）、リンクは別タブ、`web-share` を外す（Console 警告の原因）。本文の文面は不変 |
+| H1 | 公式タブ（固定ページは折りたたみ、ニュースは日付降順で Markdown） | `tab-renderers.js official / renderOfficialPageDocCard / renderOfficialNewsDocCard`, `ui/markdown.js` | `ui/sections/official.js`（固定ページは閉じた行、ニュースは開いた行）, `ui/markdown.js` | 変更 | 本文 HTML の「/」始まりの画像・リンクを公式サイトの URL に直す（旧実装では 404 / 行き先なし）、リンクは別タブ、`web-share` を外す（Console 警告の原因）。本文の文面は不変。T.61 でニュース本文の 1 行だけの `<iframe>` を、tiget.net なら埋め込み＋リンク、ほかのホストならリンクとして表示（旧実装はタグが文字で出ていた） |
 | H2 | 通信タブ（記事種別バッジ、整形本文、フォールバック） | `tab-renderers.js tsushin / renderNoteArticleCard / #cleanNoteBody` | `ui/sections/tsushin.js`（`cleanNoteBody` 同一。行の見出しに日付・団体・階級・2 行プレビュー、本文は開いたとき） | 検証済 | ブラウザ（120 件、本文の遅延ロード） |
 | H3 | 試合カードの内容一式 | `tab-renderers.js renderBoutCard`, `ui/html-utils.js boutResultText` | `ui/sections/bouts.js`, `ui/html.js boutResultText`, `ui/parts.js` | 変更 | 内容は同じ（対戦カード・大会 / 階級・名鑑バッジ・結果・王座戦・動画・出典候補・詳細）。見出し右に決着を出し、「勝敗未入力」バッジを追加。名鑑由来の `method_raw` がラウンド・時間を含むとき旧実装は「1R 1分37秒 1R 1:37 KO(…)」と二重に出ていたのを 1 回にした |
 | H4 | 選手カードの内容一式 | `tab-renderers.js renderFighterCard / renderProfileBlock / renderOfficialBio / renderFighterSnapshots / renderSnapshotSource` | `ui/sections/fighters.js`, `ui/parts.js profileBlock / officialBio / fighterSnapshots / snapshotSource / relatedBouts / articleRefList` | 検証済 | ブラウザ（かべい: 名鑑・公式・白グローブ、通算 19戦 14勝 5敗、関連試合 14、出典別プロフィール、詳細）。見出し右に通算戦績、統合した ID を詳細に追加 |
