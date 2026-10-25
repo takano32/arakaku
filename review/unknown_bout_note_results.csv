@@ -1,34 +1,3 @@
 apply,agreement,bout_id,event_id,fighter_a,fighter_b,winner,loser,numbers_winner,round,time,method_raw,method_normalized,technique,decision_score,source_article_id,source_line_start,source_line_end,source_text,result_text
-true,agree,emperor-111-xyil3ugc6bq,emperor-111,ブレード・アロー,ダイス・ヴォルケード,ダイス・ヴォルケード,ブレード・アロー,fighter_5d7998006d,1R,1分50秒,KO 左ボディブロー,KO,左ボディブロー,,note-n1dad6c53911a,15,15,●ブレード・アロー🆚○ダイス・ヴォルケード,1R1分50秒KO 左ボディブロー
-true,agree,emperor-111-kb7j3t8t8zs,emperor-111,ロコール・アラニン,チャールス・ブランディン,チャールス・ブランディン,ロコール・アラニン,fighter_b9115f2d71,1R,1分45秒,TKO タップアウト 肘脱臼,TKO,タップアウト 肘脱臼,,note-n1dad6c53911a,12,12,○チャールス・ブランディン🆚●ロコール・アラニン,1R1分45秒TKO タップアウト 肘脱臼
-true,agree,emperor-112-xogycqouw_e,emperor-112,コルト・アプロー,マルコ・フレイザー,マルコ・フレイザー,コルト・アプロー,marco_fraser,,,判定3-0,DEC,,3-0,note-n6f402a63952c,20,20,○マルコ・フレイザー🆚●コルト・アプロー,判定3-0
-true,agree,emperor-117-yfqxrut1c7m,emperor-117,コルト・アプロー,ゆめろう,コルト・アプロー,ゆめろう,colt_apro,2R,3分48秒,アームバー,SUB,アームバー,,note-n3ff7523758ca,10,12,○コルト・アプロー【20勝12敗】 / 🆚 / ●ゆめろう【6勝5敗】,2R3分48秒 アームバー
-true,agree,emperor-117-vpw0enyucay,emperor-117,マルコ・フレイザー,パット・バミューダ,マルコ・フレイザー,パット・バミューダ,marco_fraser,2R,1分52秒,KO 左フック→パウンド,KO,左フック→パウンド,,note-n3ff7523758ca,5,7,○マルコ・フレイザー【8勝2敗】 / 🆚 / ●パット・バミューダ【1勝3敗】,2R1分52秒KO 左フック→パウンド
-true,agree,emperor-117-qf4ikb9ib_c,emperor-117,レイ・ガシーオ,ルージュド・スターリー,ルージュド・スターリー,レイ・ガシーオ,rouged_starry,1R,2分47秒,アナコンダチョーク,SUB,アナコンダチョーク,,note-n3ff7523758ca,15,17,●レイ・ガシーオ【2勝4敗】 / 🆚 / ○ルージュド・スターリー【11勝2敗】,1R2分47秒 アナコンダチョーク
-true,agree,max-bout-5-middleweight-tournament-szekaoaieb8,max-bout-5-middleweight-tournament,ダイス・ヴォルケード,ミサ・ウィル・ジョー,ミサ・ウィル・ジョー,ダイス・ヴォルケード,misa_will_joe,3R,3分48秒,ノースサウスチョーク,SUB,ノースサウスチョーク,,note-nd7936059d9ed,8,8,○ミサ・ウィル・ジョー🆚●ダイス・ヴォルケード（3R3分48秒 ノースサウスチョーク）,3R3分48秒 ノースサウスチョーク
-true,agree,max-bout-6-lightweight-tournament-lrsezu2mkwi,max-bout-6-lightweight-tournament,さんごく,マルコ・フレイザー,マルコ・フレイザー,さんごく,marco_fraser,,,,,,,note-n96b3975ccdad,9,9,●さんごくvs○マルコ・フレイザー,
 false,note_only,max-bout-6-lightweight-tournament-mzffdb97ygw,max-bout-6-lightweight-tournament,コルト・アプロー,センサー・ファッジ,コルト・アプロー,センサー・ファッジ,,,,,,,,note-n96b3975ccdad,15,15,○コルト・アプローvs●センサー・ファッジ,
-true,agree,max-bout-6-lightweight-tournament-gerbahnq_po,max-bout-6-lightweight-tournament,ジョン・バレー,わく,わく,ジョン・バレー,waku,,,,,,,note-n96b3975ccdad,12,12,●ジョン・バレーvs○わく,
-true,agree,max-bout-6-lightweight-tournament-3k_jsttv5wi,max-bout-6-lightweight-tournament,パット・バミューダ,アイス・トロン,アイス・トロン,パット・バミューダ,ice_tron,,,,,,,note-n96b3975ccdad,6,6,●パット・バミューダvs○アイス・トロン,
-true,agree,max-bout-6-lightweight-tournament-zp7rkliamr4,max-bout-6-lightweight-tournament,バン・ベルソーザ,ゆめろう,ゆめろう,バン・ベルソーザ,fighter_4d6356d021,,,,,,,note-n32f248989390,12,12,●バン・ベルソーザvs○ゆめろう,
-true,agree,max-bout-6-lightweight-tournament-eis5offdwks,max-bout-6-lightweight-tournament,フラーム・グラン,ワインセル,フラーム・グラン,ワインセル,frahm_gran,,,,,,,note-n32f248989390,9,9,○フラーム・グランvs●ワインセル,
-true,agree,max-bout-6-lightweight-tournament-b3mm_ebk_my,max-bout-6-lightweight-tournament,ブルーワン,きたむら,ブルーワン,きたむら,blue_one,,,,,,,note-n32f248989390,15,15,○ブルーワンvs●きたむら,
-true,agree,max-bout-6-lightweight-tournament-9hosl10mklo,max-bout-6-lightweight-tournament,ランダーデビル,ローリングjr,ランダーデビル,ローリングjr,lander_devil,,,,,,,note-n32f248989390,6,6,○ランダーデビルvs●ローリングjr,
-true,agree,max-bout-special-1-opylhps0jq0,max-bout-special-1,おとさわ,らんちゃーすがや,おとさわ,らんちゃーすがや,otosawa,3R,3分05秒,RNC,SUB,RNC,,note-n168697057b95,20,22,◯おとさわ【23勝15敗】 / 🆚 / ●らんちゃーすがや【6勝2敗】,3R3分05秒 RNC
-true,agree,max-bout-special-1-siibzv70fww,max-bout-special-1,かべい,さかえだ,かべい,さかえだ,kabei,1R,2分52秒,KO 左フック→パウンド,KO,左フック→パウンド,,note-n168697057b95,15,17,◯かべい【12勝4敗】 / 🆚 / ●さかえだ【20勝9敗】,1R2分52秒 KO 左フック→パウンド
-true,agree,max-bout-special-1-4cbcymly7ma,max-bout-special-1,ダイス・ヴォルケード,ライン・デュオ,ダイス・ヴォルケード,ライン・デュオ,fighter_5d7998006d,1R,1分13秒,KO 左ストレート,KO,左ストレート,,note-n168697057b95,25,27,◯ダイス・ヴォルケード【6勝3敗】 / 🆚 / ●ライン・デュオ【1勝2敗】,1R1分13秒KO 左ストレート
-true,agree,max-bout-special-1-tuog5suk_fo,max-bout-special-1,テール・ジャンク,タイプ・ジー,タイプ・ジー,テール・ジャンク,fighter_cc477f9dcf,3R,終了,判定3-0,DEC,,3-0,note-n168697057b95,5,7,●テール・ジャンク【27勝3敗】 / 🆚 / ◯タイプ・ジー【1勝0敗】,3R終了 判定3-0
-true,agree,max-bout-special-1-bompcnznx34,max-bout-special-1,ミサ・ウィル・ジョー,ルージュド・スターリー,ミサ・ウィル・ジョー,ルージュド・スターリー,misa_will_joe,3R,終了,判定3-0,DEC,,3-0,note-n168697057b95,10,12,◯ミサ・ウィル・ジョー【13勝2敗】 / 🆚 / 🟦 ①ルージュド・スターリー【11勝3敗】,3R終了 判定3-0
-true,agree,max-bout-special-2-qtswvquloji,max-bout-special-2,ブルーワン,イスカン・アステ,イスカン・アステ,ブルーワン,fighter_82d519db98,3R,1分57秒,KO 左フック→パウンド,KO,左フック→パウンド,,note-n6e32a2c78e47,5,7,●ブルーワン【20勝6敗】 / 🆚 / ○イスカン・アステ【7勝2敗】,3R1分57秒KO 左フック→パウンド
-true,agree,max-bout-special-2-bacmlios1i8,max-bout-special-2,コルト・アプロー,つくりはら,つくりはら,コルト・アプロー,tsukurihara,1R,3分56秒,KO パウンド,KO,パウンド,,note-n6e32a2c78e47,26,28,●コルト・アプロー【21勝14敗】 / 🆚 / ○つくりはら【6勝2敗】,1R3分56秒KO パウンド
-true,agree,max-bout-special-2-ooihz_c01e0,max-bout-special-2,きたむら,さんごく,きたむら,さんごく,kitamura,3R,0分10秒,KO 左フック→パウンド,KO,左フック→パウンド,,note-n6e32a2c78e47,21,23,○きたむら【20勝6敗】 / 🆚 / ●さんごく【8勝4敗】,3R0分10秒KO 左フック→パウンド
-true,agree,max-bout-special-2-f1u0bfqhu9o,max-bout-special-2,ランダーデビル,わく,ランダーデビル,わく,lander_devil,1R,3分00秒,RNC,SUB,RNC,,note-n6e32a2c78e47,10,12,○ランダーデビル【30勝6敗】 / 🆚 / ●わく,1R3分00秒 RNC
-true,agree,max-bout-special-2-574ikyazfj4,max-bout-special-2,マルコ・フレイザー,ダブド・ガブリシャン,マルコ・フレイザー,ダブド・ガブリシャン,marco_fraser,3R,終了,判定2-1,DEC,,2-1,note-n6e32a2c78e47,16,18,○マルコ・フレイザー【11勝3敗】 / 🆚 / ●ダブド・ガブリシャン【6勝3敗】,3R終了 判定2-1
-true,agree,mh-28-k73xvvbyvdq,mh-28,かわかみ,キマイラ,キマイラ,かわかみ,fighter_a5b1c7ad26,1R,2分39秒,KO 左フック→パウンド,KO,左フック→パウンド,,note-n6f402a63952c,12,12,○キマイラ🆚●かわかみ,1R2分39秒KO 左フック→パウンド
-true,agree,mh-28-ylkt9wt9zwk,mh-28,アイス・トロン,ストライン・カーン,アイス・トロン,ストライン・カーン,ice_tron,1R,3分35秒,KO 左ハイキック→パウンド,KO,左ハイキック→パウンド,,note-n6f402a63952c,6,6,●ストライン・カーン🆚 ○アイス・トロン,1R3分35秒KO 左ハイキック→パウンド
-true,agree,mh-28-ohxh8yuitfy,mh-28,ローリングjr,くわしお,くわしお,ローリングjr,kuwashio,2R,2分05秒,ギロチンチョーク,SUB,ギロチンチョーク,,note-n6f402a63952c,9,9,○くわしお🆚●ローリングjr,2R2分05秒 ギロチンチョーク
-true,agree,mh-30-3knn6p1e6uu,mh-30,バンドルフ・ガルブンタ,ローリングJr.,ローリングJr.,バンドルフ・ガルブンタ,rolling_jr,1R,2分05秒,KO 膝蹴り,KO,膝蹴り,,note-n3b4b0b6ed3c8,10,12,●バンドルフ・ガルブンタ【4勝5敗】 / 🆚 / ○ローリングjr27歳【2勝2敗】,1R2分05秒KO 膝蹴り
-true,agree,mh-30-4d8cgcsgpki,mh-30,ランダーデビル,さんごく,ランダーデビル,さんごく,lander_devil,3R,3分07秒,肩固め,SUB,肩固め,,note-n3b4b0b6ed3c8,5,7,○ランダーデビル【25勝5敗】防衛② / 🆚 / ●さんごく【6勝2敗】,3R3分07秒 肩固め
 false,conflict,target-101-0nt8ufrwimc,target-101,かぶと,イベルト・キューミ,かぶと,イベルト・キューミ,fighter_020b361a38,3R,2分11秒,KO パウンド,KO,パウンド,,note-n15885dea4393,21,23,○かぶと【11勝13敗】 / 🆚 / ●イベルト・キューミ【3勝4敗】,3R2分11秒KO パウンド
-true,agree,target-102-ephgtzg6nfs,target-102,ミハエル・ボタルニカ,オーロラデビル,オーロラデビル,ミハエル・ボタルニカ,aurora_devil,2R,0分59秒,ダースチョーク,SUB,ダースチョーク,,note-nbc9d3618e052,15,17,🟥ミハエル・ボタルニカ【4勝5敗】 / 🆚 / ○オーロラデビル【2勝0敗】,2R0分59秒 ダースチョーク
-true,agree,target-102-rqenv8yfeci,target-102,シガー・ユーナイム,ザモン,ザモン,シガー・ユーナイム,zamon,3R,3分10秒,KO 下からの蹴り上げ→パウンド,KO,下からの蹴り上げ→パウンド,,note-nbc9d3618e052,10,12,●シガー・ユーナイム【3勝3敗】 / 🆚 / 🟦ザモン【2勝2敗】,3R3分10秒KO 下からの蹴り上げ→パウンド
