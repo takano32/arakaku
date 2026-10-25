@@ -18,6 +18,7 @@ import re
 import unicodedata
 from collections import defaultdict
 
+from arakaku.textparse import RESULT_MARKS, strip_name_prefix
 from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 # 役割: 記事→各エンティティ（promotion / title_reign / fighter_snapshot / event / bout /
@@ -39,7 +40,8 @@ from arakaku.utils import DATA_SRC, read_csv, write_csv
 OUTPUT = DATA_SRC / "article_links.csv"
 FIELDS = ["link_id", "article_id", "entity_type", "entity_id", "relation_type", "notes"]
 
-FIGHTER_NAME_STARTERS = ("🟥", "🟦", "●", "○")
+# 選手名の行の先頭に付くコーナー・勝敗記号 (◯・〇 を含む。T.93)。
+FIGHTER_NAME_STARTERS = ("🟥", "🟦", *RESULT_MARKS)
 
 
 def make_link_id(article_id: str, entity_type: str, entity_id: str) -> str:
@@ -53,11 +55,8 @@ def norm(s: str) -> str:
 
 def clean_fighter_name(raw: str) -> str:
     """Strip win/loss markers, records, role suffixes from a fighter name line."""
-    s = raw.strip()
-    for prefix in FIGHTER_NAME_STARTERS:
-        if s.startswith(prefix):
-            s = s[len(prefix):].strip()
-            break
+    _, s = strip_name_prefix(raw.strip())
+    s = s.strip()
     s = re.sub(r"【[^】]*】", "", s).strip()   # strip win-loss records
     s = re.sub(r"（[^）]*）", "", s).strip()   # strip role suffixes
     return s
@@ -69,9 +68,10 @@ def extract_matchups(content_text: str) -> list[tuple[str, str]]:
     matchups: list[tuple[str, str]] = []
 
     for i, line in enumerate(lines):
-        if "🆚" in line and line != "🆚":
-            # Inline: "●FighterA🆚○FighterB" or "FighterA🆚FighterB"
-            parts = line.split("🆚", 1)
+        inline_vs = line.startswith(FIGHTER_NAME_STARTERS) and re.search(r"(?i)vs", line) and "🆚" not in line
+        if ("🆚" in line and line != "🆚") or inline_vs:
+            # Inline: "●FighterA🆚○FighterB", "FighterA🆚FighterB" or "○FighterAvs●FighterB" (T.93)
+            parts = line.split("🆚", 1) if "🆚" in line else re.split(r"(?i)vs", line, maxsplit=1)
             f1 = clean_fighter_name(parts[0])
             f2 = clean_fighter_name(parts[1])
             if f1 and f2:
