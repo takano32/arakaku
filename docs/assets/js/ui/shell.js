@@ -360,8 +360,9 @@ export class Shell {
     if (!el) return;
     const section = SECTIONS[this.#state.tab];
     const loading = this.#state.loadingDataKeys.size;
-    const total = Object.keys(DATA_FILES).length;
     const loadedCount = this.#state.loadedDataKeys.size;
+    // 分母は取得済み + 取得中 (DATA_FILES 全体ではない: タブ専用データや viewer が読まないファイルがある)。
+    const total = loadedCount + loading;
     const count = this.#lastCount;
     const html = `
       <h1 class="section-title">${escapeHtml(section?.label ?? "")}<span class="section-count">${count >= 0 ? `${escapeHtml(count)} 件` : ""}</span></h1>
