@@ -145,6 +145,22 @@ generate-stage2:
 
 regenerate-csvs: generate-stage1 generate-stage2
 
+# check-generated: rerun the offline derivations (no tmp/ or data-raw/ needed) and fail if
+# the committed CSVs differ, e.g. bouts.csv was edited without `make generate-stage2`.
+# Run it on a clean working tree: it compares against git.
+# generate_official_pages_csv.py is left out because it reads tmp/arakaku-site.
+.PHONY: check-generated
+check-generated:
+	python3 scripts/generate_promotions.py
+	python3 scripts/generate_titles.py
+	python3 scripts/generate_aliases.py
+	python3 scripts/generate_video_links.py
+	python3 scripts/generate_article_links.py
+	python3 scripts/reorder_data.py
+	python3 scripts/make_source_mention_result_candidates.py
+	python3 scripts/make_source_reference_candidates.py
+	git diff --exit-code --stat -- data-src review
+
 rebuild: clean-generated-csvs clean-generated regenerate-csvs check
 
 rebuild-stage2: clean-stage2-csvs clean-generated generate-stage2 check
