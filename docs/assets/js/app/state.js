@@ -1,5 +1,5 @@
-import { ADMIN_TAB_IDS, DEFAULT_TAB } from "../config.js";
-import { FILTER_STATE_KEYS } from "../data/filters.js";
+import { ADMIN_TAB_IDS, ADMIN_TABS, DEFAULT_TAB, PUBLIC_TABS } from "../config.js";
+import { FILTER_STATE_KEYS, TAB_FILTERS, filterButtons } from "../data/filters.js";
 
 /**
  * ビューア全体の UI 状態 (タブ・検索語・各タブの絞り込み・フォーカス対象・ロード進捗) と、
@@ -87,13 +87,25 @@ export class Store {
   }
 }
 
-/** URL クエリ文字列から状態の初期値を返す */
+// URL から受け付ける値。tab はタブ id、フィルタは各グループのボタンの値だけ (それ以外は捨てて未選択にする)。
+const VALID_TABS = new Set([...PUBLIC_TABS, ...ADMIN_TABS].map(([id]) => id));
+const VALID_FILTER_VALUES = new Map(
+  Object.values(TAB_FILTERS).flat().map((group) => [group.stateKey, new Set(filterButtons(group).map((b) => b.value))])
+);
+
+function isValidParam(stateKey, value) {
+  if (stateKey === "tab") return VALID_TABS.has(value);
+  const allowed = VALID_FILTER_VALUES.get(stateKey);
+  return !allowed || allowed.has(value);
+}
+
+/** URL クエリ文字列から状態の初期値を返す (知らないタブ・絞り込みの値は捨てる) */
 export function readFromURL(search = location.search) {
   const params = new URLSearchParams(search);
   const patch = {};
   for (const [param, stateKey] of Object.entries(PARAM_MAP)) {
     const value = params.get(param);
-    if (value !== null) patch[stateKey] = value;
+    if (value !== null && isValidParam(stateKey, value)) patch[stateKey] = value;
   }
   return patch;
 }
