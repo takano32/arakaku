@@ -71,6 +71,14 @@ function validateParserFallbacks() {
 }
 
 function validateLoadedData(data, repository) {
+  // 表示用の試合 (CSV + Numbers の補完 + Numbers だけの試合) は、結果がある限り勝ち 1・負け 1。
+  // Numbers の矛盾した 2 行で「A def. A」や両者勝ちになっていた (T.89)。
+  for (const bout of repository.richBouts) {
+    const results = (bout.fighters ?? []).map((f) => f.result).filter((r) => r === "win" || r === "loss").sort().join();
+    assert(results === "" || results === "loss,win", `bout ${bout.bout_id} must have one win and one loss, got ${results}`);
+    assert(!bout.winner_id || bout.winner_id !== bout.loser_id, `bout ${bout.bout_id} has the same winner and loser`);
+  }
+
   assert(Array.isArray(data.bouts), "bouts must be an array");
   assert(Array.isArray(data.events), "events must be an array");
   assert(Array.isArray(data.fighters), "fighters must be an array");
