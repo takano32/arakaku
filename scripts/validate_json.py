@@ -7,8 +7,8 @@ from __future__ import annotations
 #   (VALID_METHODS など) は arakaku/validation.py から、JSON ロードと DOCS_DATA は
 #   arakaku/utils.py から取得。viewer 側の整合は validate_json.js が別途検証する。
 # 不変条件 / 注意: 致命的不整合は add_error (return 1)。列挙値の範囲外も error
-#   (arakaku/validation.py に無い値。T.69 で warning から変更)。REQUIRED_JSON_FILES は欠けると error、その他の生成 JSON は
-#   存在チェックのみ warning。main() の検証順序は依存順 (article→promotion→event→
+#   (arakaku/validation.py に無い値。T.69 で warning から変更)。生成 JSON は make build が
+#   必ず全部書くので、欠けていれば error、壊れていれば例外 (arakaku/utils.py load_json)。main() の検証順序は依存順 (article→promotion→event→
 #   fighter→bout…) で、先に集めた *_ids 集合を後段の参照チェックに渡す前提なので
 #   並べ替え時は ID 集合の生成タイミングを崩さないこと。
 # 関連 skill: .agents/skills/arakaku-maintainer (make validate)。
@@ -50,9 +50,9 @@ def add_warning(m: str) -> None:
     WARNINGS.append(m)
 
 def validate_json_exists(filename: str) -> bool:
+    # make build always writes every file below, so a missing one is an error, not a warning.
     if not (DOCS_DATA / filename).exists():
-        msg = f"{'missing required json file' if filename in REQUIRED_JSON_FILES else 'optional json file not found'}: {filename}"
-        (add_error if filename in REQUIRED_JSON_FILES else add_warning)(msg)
+        add_error(f"missing json file: {filename}")
         return False
     return True
 

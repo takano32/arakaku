@@ -3,7 +3,7 @@
 // 生成 JSON をビューアの実モジュール (パーサ / ローダ / リポジトリ / 検索 / セクション描画) に通して
 // 検証する。ブラウザを使わず Node で、実データに対して「読める・引ける・検索できる・描ける」を確かめる。
 
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -244,6 +244,10 @@ async function main() {
   validateParserFallbacks();
 
   const files = localDataFiles();
+  // make build はすべての DATA_FILES を生成する。無いファイルを fallback で黙って通さない。
+  for (const [key, path] of Object.entries(files)) {
+    await access(path).catch(() => { throw new Error(`generated JSON is missing for ${key}: ${path}`); });
+  }
   const parserEntries = await Promise.all(
     Object.entries(files).map(async ([key, path]) => [
       key,
@@ -290,6 +294,7 @@ async function main() {
   const state = makeTestState();
   await new DataLoader(state, { dataFiles: files, fetchText: readTextWithFallback }).loadAll();
 
+  assert(Object.keys(state.dataLoadErrors).length === 0, `real data must load without errors: ${JSON.stringify(state.dataLoadErrors)}`);
   assert(JSON.stringify(parsedData) === JSON.stringify(state.data), "parser and loader must produce identical data");
   validateLoadedData(state.data, state.repository);
   validateViewerSearchPaths(state);
