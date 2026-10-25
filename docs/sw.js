@@ -4,7 +4,9 @@
 //   「再読み込み」バナーを表示する (メッセージ型名は main.js と同期必須)。GitHub Pages 静的配信が前提。
 // 不変条件: fetch をフックするのは pathname に "/data/" を含み ".json" で終わる要求のみ — HTML/JS/CSS は
 //   素通しさせる (古い viewer コードがキャッシュに固定されるのを防ぐ)。スキーマ非互換な変更時は CACHE 名の
-//   バージョンを上げると activate 時に旧キャッシュが一掃される。
+//   バージョンを上げると activate 時に旧キャッシュが一掃される。上げるのは、新しい viewer JS が古い JSON を
+//   読むと壊れる変更 (フィールドの改名・削除・型の変更) のとき。フィールドの追加や値の更新では上げなくてよい
+//   (stale-while-revalidate が次の読み込みで新しい JSON に差し替え、DATA_UPDATED で再読み込みを促す)。
 const CACHE = "arakaku-data-v1";
 
 self.addEventListener("install", () => self.skipWaiting());
@@ -77,20 +79,20 @@ self.addEventListener("fetch", (event) => {
     cache.match(request).then((cached) => ({ cache, cached }))
   );
 
-  event.respondWith(
-    cacheOp.then(({ cache, cached }) => {
-      if (cached) return cached;
-      return fetch(request).then((res) => {
-        if (res.ok) cache.put(request, res.clone());
-        return res;
-      });
-    })
-  );
+  // キャッシュに無いときはネットワークの応答を返し、その複製を保存する。保存も waitUntil に入れて、
+  // 応答を返した直後に Service Worker が止められても書き込みが途中で失われないようにする。
+  const op = cacheOp.then(async ({ cache, cached }) => {
+    if (cached) return { cache, cached, response: cached };
+    const response = await fetch(request);
+    return { cache, cached: null, response, copy: response.ok ? response.clone() : null };
+  });
+
+  event.respondWith(op.then(({ response }) => response));
 
   event.waitUntil(
-    cacheOp.then(({ cache, cached }) => {
-      if (!cached) return;
-      return revalidate(cache, request, cached);
-    })
+    op.then(({ cache, cached, copy }) => {
+      if (cached) return revalidate(cache, request, cached);
+      return copy ? cache.put(request, copy) : undefined;
+    }).catch(() => {})
   );
 });
