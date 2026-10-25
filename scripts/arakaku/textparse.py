@@ -45,3 +45,18 @@ def infer_time(text: str) -> str:
     if match.group(3) and match.group(4):
         return f"{normalize_digits(match.group(3))}分{normalize_digits(match.group(4))}秒"
     return ""
+
+
+# note の試合結果の勝敗記号。勝ちは ○ (U+25CB)・◯ (U+25EF)・〇 (U+3007) の 3 種が混在し、負けは ●。
+# 名前の前には 🟥/🟦 のコーナーや ① などの番号が付くことがある (NFKC 後は ① が "1" になる)。
+# generate_article_links.py と match_unknown_bouts_to_note_results.py が共有する (T.93)。
+WIN_MARKS = "○◯〇"
+LOSS_MARKS = "●"
+RESULT_MARKS = WIN_MARKS + LOSS_MARKS
+NAME_PREFIX_RE = re.compile(r"^[\s🟥🟦]*(?P<mark>[○◯〇●])?[\s🟥🟦]*(?:[①-⑩]|\d(?=\D))?\s*")
+
+
+def strip_name_prefix(text: str) -> tuple[str, str]:
+    """Remove the corner/mark/number prefix of a fighter line; return (mark or '', rest)."""
+    m = NAME_PREFIX_RE.match(text)
+    return (m.group("mark") or "", text[m.end():]) if m else ("", text)
