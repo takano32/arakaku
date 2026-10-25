@@ -62,11 +62,14 @@ function mdToHtmlCompile(md) {
     .replace(/^## (.+)$/gm,  "<h2>$1</h2>")
     .replace(/^# (.+)$/gm,   "<h1>$1</h1>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    // http(s) 以外 (javascript: など) は文字のまま残す。" は & < > と違い先頭でエスケープしていないのでここで消す。
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, text, href) =>
+      /^https?:\/\//i.test(href) ? `<a href="${href.replace(/"/g, "&quot;")}" target="_blank" rel="noopener">${text}</a>` : m)
     .replace(/^- (.+)$/gm, "<li>$1</li>")
     .replace(/  \n/g, "<br>");
 
-  s = s.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+  // 末尾の改行は ul の外に戻す (飲み込むと直後の空行が段落区切りとして効かない)。
+  s = s.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m.replace(/\n$/, "")}</ul>\n`);
 
   s = s.split(/\n\n+/).map(p => {
     p = p.trim();
