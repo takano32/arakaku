@@ -628,7 +628,8 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 - `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
 - `scripts/validate_json.js`: Node 側から生成 JSON を viewer の実モジュールに通して検証します（段階ロードで CORE キーが揃うこと、失敗ファイルの fallback、`loadForTab`、Repository の ID 解決、空クエリの検索一致、全セクションの全行を実際に描画して例外や `undefined` の混入が無いこと）。
 - `scripts/test_filters.mjs`: viewer のフィルタ中核 `itemPassesFilters`（`docs/assets/js/data/filters.js`）の Node ユニットテスト（`node:test`、依存なし）。
-- `make validate` がこの 3 つを順に実行します。
+- `scripts/test_markdown.mjs`: 公式ニュース本文の Markdown 変換（`docs/assets/js/ui/markdown.js`）の Node ユニットテスト。リンクや iframe から属性・スクリプトを注入できないことを確かめます。
+- `make validate` がこの 4 つを順に実行します。
 
 ---
 
@@ -638,15 +639,17 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ```bash
 make build      # build_json + build_numbers_json + build_official_json + build_official_pages_json
-make validate   # validate_json.py + validate_json.js + test_filters.mjs
+make validate   # validate_json.py + validate_json.js + test_filters.mjs + test_markdown.mjs
 make test       # pytest -q
 make check      # build → validate → test
+make check-generated  # 生成 CSV をオフラインで再生成し、git と差分があれば失敗
 ```
 
 - `make build`: 4 本の build スクリプトで CSV から `docs/data/*.json` を生成します。
 - `make validate`: Python・Node の JSON 検証に加え、`itemPassesFilters` の Node ユニットテストを実行します。
 - `make test`: pytest を実行します。
 - `make check`: build → validate → test を順に実行します。
+- `make check-generated`: stage2 の生成 CSV（promotions・titles・aliases・video_links・article_links）、`reorder_data.py`、review の候補 CSV を再生成し、`git diff --exit-code -- data-src review` で差分があれば失敗します。`bouts.csv` などを直したのに `make generate-stage2` を忘れた場合に気づけます。git と比べるので、コミット前の変更がない状態で実行します（`tmp/` が要る `generate_official_pages_csv.py` は含めません）。
 
 ### クリーン
 
@@ -729,14 +732,15 @@ CI は `master` への push / pull request で実行します。
 
 - `actions/checkout@v5`
 - `actions/setup-python@v6`
+- `actions/setup-node@v5`（Node 24）
 - `actions/configure-pages@v6`
 - `actions/upload-pages-artifact@v5`
 - `actions/deploy-pages@v5`
 
 workflow:
 
-- `.github/workflows/test.yml`
-- `.github/workflows/pages.yml`
+- `.github/workflows/test.yml`: `make check` と `make check-generated`。
+- `.github/workflows/pages.yml`: 同じく `make check` と `make check-generated` が通ったときだけ `docs/` をデプロイします（以前は build と validate だけで、pytest が落ちてもデプロイされた）。
 
 Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v5 系へ更新しています。
 
