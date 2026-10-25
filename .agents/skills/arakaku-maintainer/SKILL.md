@@ -39,7 +39,7 @@ Four build scripts, all run by `make build`:
 scripts/build_json.py                ← core entities (bouts, fighters, events, etc.)
 scripts/build_numbers_json.py        ← numbers_*.csv → numbers_*.json
 scripts/build_official_json.py       ← official_players/tournaments/matches/history
-scripts/build_official_pages_json.py ← official_news/pages (images Base64-embedded)
+scripts/build_official_pages_json.py ← official_news/pages
 ```
 
 There is no separate `make build-official`. All four run under `make build`.
@@ -74,7 +74,7 @@ data-src/official_pages.csv   ← pages/about.astro + history.astro
 
 Astro syntax stripped: Tailwind classes, frontmatter, JSX `.map()`, `{base}` interpolations. `maxbout.astro` and `index.astro` excluded.
 
-`scripts/build_official_pages_json.py` embeds images from `tmp/arakaku-site/public/` as Base64 data URIs.
+`scripts/build_official_pages_json.py` no longer embeds images (no Base64). Image and link paths starting with `/` are kept as-is, and the viewer rewrites them to the official site at render time.
 
 **Client-side enrichment only.** Never add official data to `scripts/build_json.py`. All enrichment lives in `docs/assets/js/data/enricher.js` (and the synthesis in `docs/assets/js/data/repository.js`).
 
@@ -101,13 +101,29 @@ make reorder-data    # normalize CSV sort order
 ```
 
 `make validate` runs `validate_json.py` (schema/referential), `validate_json.js` (viewer
-parser/loader + render-path coverage), and `test_filters.mjs` (Node unit test for the viewer's
-`itemPassesFilters` filtering engine — built-in `node:test`, no deps).
+parser/loader + render-path coverage), `test_filters.mjs` (Node unit test for the viewer's
+`itemPassesFilters` filtering engine — built-in `node:test`, no deps), and `test_markdown.mjs`
+(Node unit test for the viewer's Markdown renderer).
 
 For source refresh:
 
 ```bash
-make cache-sources && make archive-metadata && make build-sources && make check && make clean-generated
+make refresh-sources
+```
+
+`refresh-sources` = `cache-sources` (including `discover-note-articles` and
+`discover-youtube-videos`) → `archive-metadata` → `generate-articles` → `build-sources` →
+`generate-official-csvs` → `generate-stage2` → `reorder-data` → `check`.
+
+After editing canonical CSVs (bouts / fighters / events / bout_participants / videos /
+video_bout_links / video_event_links / title_reigns / fighter_snapshots):
+
+```bash
+make generate-stage2   # regenerate derived CSVs and review candidates
+make check
+# after committing, on a clean tree (CI runs this too):
+make check-generated
+make clean-generated   # optional cleanup
 ```
 
 ---
@@ -147,8 +163,10 @@ source-tier enrichment, sorting, and the duplicate-fighter merge.
 
 ## GitHub Actions
 
-`test.yml` runs a single `make check` step (build → validate → test).
-`pages.yml` runs `make build` then `make validate` before uploading `docs/`.
+`test.yml` and `pages.yml` both run `make check` (build → validate → test) and then
+`make check-generated`; `pages.yml` uploads and deploys `docs/` only if both pass.
+Python 3.12 (pip cache keyed on `requirements-ci.txt`, pytest 9.0.2), Node 24 via
+`actions/setup-node@v5`, `timeout-minutes: 15`.
 Default branch: `master`. See `arakaku-actions-ops` for action versions and deployment.
 
 ---

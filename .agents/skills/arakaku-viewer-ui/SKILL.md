@@ -119,7 +119,7 @@ on demand loadForTab(tab) → TAB_DATA_KEYS[tab]         sourceDocumentBodies (t
 ```
 
 - Failure semantics are per key: fallback value (`data/parser.js` `fallbackForDataKey`) + `dataLoadErrors[key]` + `loadedDataKeys.add(key)`; `load()` never rejects because of one file. `Shell #renderAlerts` shows the failed file names (`role="alert"`).
-- `loadingDataKeys` tracks every in-flight key (toolbar shows 読み込み中 n/31).
+- `loadingDataKeys` tracks every in-flight key. The toolbar shows 読み込み中 n/m, where m = files already loaded + files still loading (only the files requested so far, not a fixed total).
 - `CORE_DATA_KEYS = INITIAL + PRIMARY + ENRICHMENT` is what `validate_json.js` asserts after `load()`.
 - Object-shaped JSON (`aliases`, `metadata`) is listed in `DATA_FILES` but not in any phase (nothing reads it); array keys that parse to a non-array are treated as broken files.
 - `DataLoader` constructor injection `{ dataFiles, fetchText }` is used by `scripts/validate_json.js`; keep `fetchText(path, fallback)`.
@@ -134,7 +134,7 @@ One `DataRepository` per page (`state.repository`), created by `ensureStateData(
 
 - Filters: `data/filters.js` `TAB_FILTERS` (see the **arakaku-filters** skill). `Shell #renderFilters` draws chips (`.chip`, `data-filter-type` / `data-filter-val`), clicks toggle `state[group.stateKey]`.
 - Search: `data/query.js` `QueryMatcher(state, () => repo)`; each section calls the matching `*Matches` method. The cache is keyed by `repo.revision`.
-- URL: `app/state.js` `PARAM_MAP` (unchanged short names plus `bout`). `writeToURL` uses `replaceState`, omits defaults, skips identical URLs.
+- URL: `app/state.js` `PARAM_MAP` (unchanged short names plus `bout`). `writeToURL` uses `pushState` when the tab or the focus target (fighter / event / bout) changes and `replaceState` for search and filter changes; it omits defaults and skips identical URLs. `main.js`'s `popstate` handler restores the previous view via `stateFromHistory`, so browser Back/Forward work (see `docs/VIEWER_FEATURES.md` row C3).
 
 ---
 

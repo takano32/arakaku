@@ -1,6 +1,6 @@
 ---
 name: arakaku-review-workflow
-description: Use this skill when generating, inspecting, or applying review CSVs, especially result candidates, source mention candidates, structured result patches, or inferred bouts/events/fighters.
+description: Use this skill when generating, inspecting, or applying review CSVs, especially note result matches for unknown bouts, source mention result candidates, source reference candidates, or inferred bouts/events/fighters.
 ---
 
 # Unofficial ARAKAKU Database Review Workflow Skill
@@ -58,8 +58,11 @@ Note: `source_*_reference_candidates.csv` are also direct build inputs for
 Commands:
 
 ```bash
+make generate-stage2   # regenerate derived CSVs and review candidates
 make check
-make clean-generated
+# after committing, on a clean tree (CI runs this too):
+make check-generated
+make clean-generated   # optional cleanup
 ```
 
 ---
@@ -118,6 +121,7 @@ matchup_hint
 winner_hint
 loser_hint
 method_hint
+method_raw_hint
 round_hint
 time_hint
 confidence
@@ -127,6 +131,19 @@ notes
 ---
 
 ## Applying patches
+
+`scripts/match_unknown_bouts_to_note_results.py` writes two review CSVs:
+
+- `review/unknown_bout_note_results.csv`: note results for `result_status=unknown` bouts;
+  `apply=true` only when the note winner agrees with the Numbers winner.
+- `review/known_bout_note_methods.csv`: empty method / round / time fields of known bouts
+  that the result note can fill (rows that clash with existing values stay `apply=false`).
+
+Rows with `apply=true` are written back to `bouts.csv` / `bout_participants.csv` by:
+
+```bash
+python3 scripts/apply_structured_result_patches.py [csv]   # default: review/unknown_bout_note_results.csv
+```
 
 Before using any apply script:
 
@@ -139,9 +156,11 @@ Before using any apply script:
 After applying:
 
 ```bash
+make generate-stage2
 make check
-make clean-generated
 git diff data-src review scripts
+# after committing, on a clean tree:
+make check-generated
 ```
 
 ---

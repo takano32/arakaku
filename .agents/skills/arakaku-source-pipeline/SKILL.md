@@ -72,21 +72,40 @@ Archive cache metadata:
 make archive-metadata
 ```
 
-Full source refresh:
+Full source refresh (the standard flow):
 
 ```bash
 make refresh-sources
 ```
 
-Safe full flow:
+`refresh-sources` = `cache-sources` (including `discover-note-articles` and
+`discover-youtube-videos`) → `archive-metadata` → `generate-articles` → `build-sources` →
+`generate-official-csvs` → `generate-stage2` → `reorder-data` → `check`. After committing,
+`make check-generated` must pass on a clean tree (CI runs it); `make clean-generated` is
+optional cleanup.
 
-```bash
-make cache-sources
-make archive-metadata
-make build-sources
-make check
-make clean-generated
-```
+---
+
+## Discovery
+
+Both discovery steps are append-only: they add rows for sources that are not registered yet
+and never change or delete existing rows. They run automatically as the first step of
+`cache-note-html` / `cache-youtube-api` (and so of `cache-sources` / `refresh-sources`).
+
+### crawl_note_articles.py
+
+Target: `make discover-note-articles` (runs `crawl_note_articles.py --use-api`).
+
+Lists every article of the official note creator and appends rows for URLs missing from
+`data-src/articles.csv` (`status=unparsed`), so `cache_note_html.py` fetches them.
+
+### discover_youtube_videos.py
+
+Target: `make discover-youtube-videos`.
+
+Lists every upload of the official channel through the YouTube Data API and appends rows for
+non-Shorts videos missing from `data-src/videos.csv` (matched by `platform_video_id`). It does
+not link videos to bouts, events, or fighters. Requires `YOUTUBE_API_KEY`.
 
 ---
 
@@ -139,6 +158,16 @@ data-src/source_mentions.csv
 For note articles, the body is only the article title (`h1`), the post time (`time`), and `#note-body`; page chrome and the "あなたへのおすすめ" list are excluded. A page without `#note-body` (the creator top page) uses its meta description.
 
 `fetched_at` is carried over from the previous `source_documents.csv` when `content_hash` is unchanged, so a rerun without content changes produces no diff.
+
+### generate_articles.py
+
+Target: `make generate-articles`. Runs after `archive_metadata.py` and before
+`build_source_documents.py`.
+
+Generates `data-src/articles.csv` from `data-src/archives/note.csv` and classifies each article
+(`article_type`: `promotion_profile` / `event_card` / `event_result` / `note_article` /
+`youtube_description_source`). `published_at` comes from `archives/note.csv` (JSON-LD
+`datePublished`). Stage1 generated: hand edits are lost.
 
 ### archive_metadata.py
 
@@ -196,6 +225,7 @@ Common `mention_type`:
 ```text
 event
 matchup
+match_result
 result
 note_url
 youtube_url
@@ -224,10 +254,13 @@ Mentions are candidates. They are not automatically confirmed data.
 
 ## Review candidate pipeline
 
-`source_mentions.csv` and `source_documents.csv` feed two review-candidate
-generators. Their outputs land in `review/` and are **review-only**: they never
-confirm bout winners, participants, methods, fighter identities, or title
-lineage.
+Three scripts write review candidates: `make_source_mention_result_candidates.py`
+and `make_source_reference_candidates.py` (both read `source_mentions.csv` /
+`source_documents.csv` and run in `make generate-stage2`), and
+`match_unknown_bouts_to_note_results.py` (reads result-note bodies; run by
+`make check-generated`). Their outputs land in `review/` and are **review-only**:
+they never confirm bout winners, participants, methods, fighter identities, or
+title lineage on their own.
 
 Text-parsing helpers shared verbatim across the source-pipeline scripts (URL
 regexes, `VS_RE`, `normalize_digits`, `find_method`, `infer_time`) live in
@@ -276,6 +309,29 @@ Red/blue fighter names come from `bout_participants.csv` (via `side` +
 `fighter_name`), and note source links come from `article_links.csv` rows where
 `entity_type == "bout"` (mapped to `note:<article_id>` source ids). This makes
 the script safe to re-run after schema changes to `bouts.csv`.
+
+### match_unknown_bouts_to_note_results.py
+
+Run directly (after `make build`, since it reads `docs/data/numbers_fight_records.json`):
+
+```bash
+python3 scripts/match_unknown_bouts_to_note_results.py
+```
+
+Searches from the bout side: for each bout, it looks in its event's result note
+(`article_type=event_result`) for both fighters' names and decides the winner only from
+the ○/◯/● mark before a name. Writes:
+
+```text
+review/unknown_bout_note_results.csv   ← result_status=unknown bouts; apply=true only when the Numbers winner agrees
+review/known_bout_note_methods.csv     ← empty method/round/time of known bouts (clashing rows stay apply=false)
+```
+
+Rows with `apply=true` are written back to `bouts.csv` / `bout_participants.csv` by:
+
+```bash
+python3 scripts/apply_structured_result_patches.py [csv]   # default: review/unknown_bout_note_results.csv
+```
 
 ### review/ directory
 
@@ -333,11 +389,10 @@ YouTube API `[missing]` videos:
 After changing source pipeline scripts:
 
 ```bash
-make cache-sources
-make archive-metadata
-make build-sources
-make check
-make clean-generated
+make refresh-sources
+# after committing, on a clean tree:
+make check-generated
+make clean-generated   # optional cleanup
 ```
 
 For quick validation of counts:

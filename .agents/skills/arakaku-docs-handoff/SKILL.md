@@ -29,6 +29,12 @@ OPERATIONS_CHECKLIST.md
 CODEX.md
 CHRONICLE.md
 SCHEMA_NOTES.md
+CLAUDE.md
+GEMINI.md
+data-src/GEMINI.md
+scripts/GEMINI.md
+docs/VIEWER_FEATURES.md
+.github/pull_request_template.md
 ```
 
 ---
@@ -97,7 +103,7 @@ When editing docs:
 - Prefer Markdown files over chat-only text.
 - Avoid placing generated JSON in docs.
 - Keep branch name as `master`.
-- Mention `make check` and `make clean-generated`.
+- Mention `make check` (after canonical CSV edits, `make generate-stage2` first), `make check-generated` on a clean tree after committing, and `make clean-generated` as optional cleanup.
 - Mention that `docs/data/*.json` is generated.
 - Mention that `tmp/` caches are not committed.
 - Warn not to infer unknown results.
@@ -172,6 +178,7 @@ Current actions:
 ```text
 actions/checkout@v5
 actions/setup-python@v6
+actions/setup-node@v5  # Node 24
 actions/configure-pages@v6
 actions/upload-pages-artifact@v5
 actions/deploy-pages@v5
