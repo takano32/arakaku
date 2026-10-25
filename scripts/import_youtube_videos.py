@@ -26,8 +26,6 @@ FIELDS = [
     "url",
     "title",
     "original_title",
-    "channel_name",
-    "published_at",
     "official_status",
     "video_type",
     "duplicate_group_id",
@@ -38,15 +36,6 @@ FIELDS = [
 
 def slugify(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "_", value).strip("_").lower()
-
-
-def normalize_date(value: str) -> str:
-    value = value.strip()
-
-    if re.fullmatch(r"\d{8}", value):
-        return f"{value[:4]}-{value[4:6]}-{value[6:]}"
-
-    return ""
 
 
 def classify_video_type(title: str) -> str:
@@ -96,7 +85,7 @@ def parse_tsv(path: Path) -> list[dict[str, str]]:
             print(f"[warn] line {line_number}: expected 6 TSV fields")
             continue
 
-        platform_video_id, url, title, channel_name, upload_date, duration = parts[:6]
+        platform_video_id, url, title, _channel_name, _upload_date, duration = parts[:6]
 
         platform_video_id = platform_video_id.strip()
         url = url.strip()
@@ -114,8 +103,6 @@ def parse_tsv(path: Path) -> list[dict[str, str]]:
                 "url": url,
                 "title": title,
                 "original_title": title,
-                "channel_name": channel_name.strip() or "アラカク通信",
-                "published_at": normalize_date(upload_date),
                 "official_status": "official",
                 "video_type": classify_video_type(title),
                 "duplicate_group_id": "",
@@ -153,7 +140,6 @@ def merge_rows(
     return sorted(
         merged.values(),
         key=lambda row: (
-            row.get("published_at", ""),
             row.get("video_type", ""),
             row.get("title", ""),
         ),

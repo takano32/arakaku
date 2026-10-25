@@ -29,5 +29,5 @@ CSV_HEADERS: dict[str, list[str]] = {
     "titles.csv": ["title_id", "promotion_id", "division"],
     "video_bout_links.csv": ["video_id", "bout_id", "notes"],
     "video_links.csv": ["video_id", "entity_type", "entity_id", "relation_type", "start_time", "end_time", "notes"],
-    "videos.csv": ["video_id", "platform", "platform_video_id", "url", "title", "original_title", "channel_name", "published_at", "official_status", "video_type", "duplicate_group_id", "duplicate_note", "notes"],
+    "videos.csv": ["video_id", "platform", "platform_video_id", "url", "title", "original_title", "official_status", "video_type", "duplicate_group_id", "duplicate_note", "notes"],
 }
