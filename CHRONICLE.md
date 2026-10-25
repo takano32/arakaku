@@ -2,6 +2,8 @@
 
 This file tracks the evolution of the Unofficial ARAKAKU Database project based on its commit history.
 
+> **2026-10-25 note:** this chronicle stops at Phase 24 (2026-06-15). Later work is recorded in `TASKS.md` and `tasks/T.N.md`. In T.56 (2026-10-24) the viewer was rebuilt in plain JavaScript without CDN libraries, so file names below such as `data-enricher.js` and `url-sync.js` refer to the old viewer (now `docs/assets/js/data/enricher.js` and `docs/assets/js/app/state.js`; see README "viewer の構成").
+
 ## Project Timeline
 
 ### Phase 1: Foundations (2026-05-21)
@@ -168,6 +170,6 @@ This file tracks the evolution of the Unofficial ARAKAKU Database project based 
 - **Numbers Data as Absolute Truth:** Decided to treat human-curated Apple Numbers data as the absolute source of truth for the viewer, allowing it to unconditionally overwrite canonical CSV data when matches are confirmed.
 - **Archives as External Metadata:** Treats archive CSVs as committed source metadata for display and review. Archive rows can enrich labels/search but do not confirm winners, fighter identities, methods, or title lineage.
 - **Service Worker as Transparent Cache Layer:** GitHub Pages does not support custom `Cache-Control` headers, so a Service Worker was chosen to implement stale-while-revalidate for JSON data files. Clients always get a fast cached response; the SW revalidates in the background and notifies clients when data changes without blocking the page.
-- **CDN Libraries with Quality Gate:** CDN dependencies are adopted only when actively maintained (recent release within ~12 months) and addressing a genuinely complex problem. Preference for high-star-count, widely-used libraries. Rejected mark.js (unmaintained since 2022). Surveyed and confirmed no better alternatives for the three adopted libraries.
+- **CDN Libraries with Quality Gate (superseded in T.56: the viewer now has no CDN dependencies):** CDN dependencies are adopted only when actively maintained (recent release within ~12 months) and addressing a genuinely complex problem. Preference for high-star-count, widely-used libraries. Rejected mark.js (unmaintained since 2022). Surveyed and confirmed no better alternatives for the three adopted libraries.
 - **Official Data Enrichment is Client-Side Only:** Official site data from `kobayashi856/arakaku-site` is integrated as a second enrichment layer (alongside Numbers data) entirely in `data-enricher.js`. `build_json.py` is never modified for enrichment — it outputs canonical CSV facts only. This keeps the Python build pipeline decoupled from the client data model.
 - **Keyboard Navigation as Core Feature:** Added vim-style keyboard navigation (j/k cursor, h/l tabs, Enter activate, etc.) with a virtual list cursor and a `?` help dialog. URL permalink sync (`url-sync.js`) allows state sharing and deep linking without server-side routing.
