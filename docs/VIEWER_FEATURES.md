@@ -96,7 +96,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | F5 | 読み込み中は「読み込み中…」、完了後の 0 件は空欄 | `ui/virtual-list.js setLoading` | `ui/list.js setStatus`（0 件時は「該当する○○がありません。」と文言を出す） | 変更 | 空欄ではなくセクションごとの空文言を出す（分かりやすさのため） |
 | F6 | 行の描画エラーをカードにして続行 | `ui/virtual-list.js #paint`, `tab-registry.js` | `ui/list.js #safe`（`.render-error`）、`ui/shell.js #renderList`（build 失敗のアラート） | 検証済 | コード。validate_json.js で全行が例外なく描けることも確認 |
 | F7 | データ更新はスクロール位置を保ち、タブ切替・フォーカスは先頭へ | `tab-registry.js`, `keyboard-nav.js` | `ui/list.js refresh`, `ui/shell.js switchTab / #jump / #renderList` | 検証済 | ブラウザ |
-| F8 | 行カーソル（j/k、g/G、Enter、o） | `ui/virtual-list.js`, `ui/keyboard-nav.js` | `ui/list.js`（`moveCursor / setCursorToEdge / toggleCursor`）, `ui/keyboard.js` | 変更 | Enter は「行を開く / 閉じる」、`o` は行内の「詳細」の開閉（旧: Enter = 行内の最初のリンクを実行、o = 詳細）。行が開閉式になったため。ブラウザで確認 |
+| F8 | 行カーソル（j/k、g/G、Enter、o） | `ui/virtual-list.js`, `ui/keyboard-nav.js` | `ui/list.js`（`moveCursor / setCursorToEdge / toggleCursor`）, `ui/keyboard.js` | 変更 | Enter は「行を開く / 閉じる」、`o` は行内の「詳細」の開閉（旧: Enter = 行内の最初のリンクを実行、o = 詳細）。行が開閉式になったため。ブラウザで確認。T.64 でカーソル移動時に行へフォーカスを移し、フォーカス中のボタン・リンク・チップ・summary では Enter / Space をブラウザの既定動作（押下）に任せる（以前はキーボードだけでは押せなかった） |
 
 ## G. データ合成（データ層の規則）
 
