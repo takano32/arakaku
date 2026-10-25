@@ -62,7 +62,7 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
 # ──────────────────────────────────────────────────────────────────
 .PHONY: discover-note-articles discover-youtube-videos cache-note-html cache-youtube-api cache-sources \
         download-official-data \
-        archive-metadata generate-articles build-sources refresh-sources \
+        archive-metadata generate-articles build-sources generate-official-csvs refresh-sources \
         source-mention-result-candidates source-reference-candidates \
         reorder-data
 
@@ -97,12 +97,15 @@ generate-articles:
 build-sources:
 	python3 scripts/build_source_documents.py
 
+generate-official-csvs:
+	python3 scripts/generate_official_csvs.py
+
 reorder-data:
 	python3 scripts/reorder_data.py
 
 # Order matters: new articles are discovered and cached, archived, turned into articles.csv,
 # their bodies extracted, and the derived link tables regenerated before the check.
-refresh-sources: cache-sources archive-metadata generate-articles build-sources generate-stage2 reorder-data check
+refresh-sources: cache-sources archive-metadata generate-articles build-sources generate-official-csvs generate-stage2 reorder-data check
 
 source-mention-result-candidates:
 	python3 scripts/make_source_mention_result_candidates.py
@@ -134,7 +137,7 @@ extract-numbers:
 #   archive_metadata  → archives/youtube.csv, archives/note.csv
 #   generate_articles → articles.csv  (must precede build_source_documents)
 #   build_source_documents → source_documents.csv, source_mentions.csv
-#   reorder_data      → stable row order for all CSVs
+#   (reorder_data runs after stage 2 in regenerate-csvs: it reads article_links.csv)
 #
 # generate-stage2: derivation (stage1 CSVs → derived CSVs)
 #   generate_promotions   → promotions.csv
@@ -151,7 +154,6 @@ generate-stage1:
 	python3 scripts/generate_articles.py
 	python3 scripts/build_source_documents.py
 	python3 scripts/generate_official_csvs.py
-	python3 scripts/reorder_data.py
 
 generate-stage2:
 	python3 scripts/generate_promotions.py
@@ -160,15 +162,20 @@ generate-stage2:
 	python3 scripts/generate_video_links.py
 	python3 scripts/generate_article_links.py
 	python3 scripts/generate_official_pages_csv.py
+	python3 scripts/make_source_mention_result_candidates.py
+	python3 scripts/make_source_reference_candidates.py
 
-regenerate-csvs: generate-stage1 generate-stage2
+# reorder_data reads article_links.csv (stage 2) to order events, so it runs once after stage 2 (T.91).
+regenerate-csvs: generate-stage1 generate-stage2 reorder-data
 
 # check-generated: rerun the offline derivations (no tmp/ or data-raw/ needed) and fail if
 # the committed CSVs differ, e.g. bouts.csv was edited without `make generate-stage2`.
 # Run it on a clean working tree: it compares against git.
 # generate_official_pages_csv.py is left out because it reads tmp/arakaku-site.
+# match_unknown_bouts_to_note_results.py reads docs/data, so this target builds first.
 .PHONY: check-generated
-check-generated:
+check-generated: build
+	python3 scripts/generate_articles.py
 	python3 scripts/generate_promotions.py
 	python3 scripts/generate_titles.py
 	python3 scripts/generate_aliases.py
@@ -177,6 +184,7 @@ check-generated:
 	python3 scripts/reorder_data.py
 	python3 scripts/make_source_mention_result_candidates.py
 	python3 scripts/make_source_reference_candidates.py
+	python3 scripts/match_unknown_bouts_to_note_results.py
 	git diff --exit-code --stat -- data-src review
 
 # Inputs that are not in git. Check them before the clean-* targets delete committed CSVs,
@@ -187,10 +195,11 @@ STAGE2_INPUTS = tmp/arakaku-site/content/news tmp/arakaku-site/pages
 .PHONY: check-stage1-inputs check-stage2-inputs
 check-stage1-inputs:
 	@for p in $(STAGE1_INPUTS); do [ -e "$$p" ] || { echo "missing input: $$p (nothing was deleted)"; exit 1; }; done
+	@python3 -c "import numbers_parser" 2>/dev/null || { echo "missing python package numbers_parser (pip install -r requirements-dev.txt; nothing was deleted)"; exit 1; }
 
 check-stage2-inputs:
 	@for p in $(STAGE2_INPUTS); do [ -e "$$p" ] || { echo "missing input: $$p (nothing was deleted)"; exit 1; }; done
 
 rebuild: check-stage1-inputs check-stage2-inputs clean-generated-csvs clean-generated regenerate-csvs check
 
-rebuild-stage2: check-stage2-inputs clean-stage2-csvs clean-generated generate-stage2 check
+rebuild-stage2: check-stage2-inputs clean-stage2-csvs clean-generated generate-stage2 reorder-data check
