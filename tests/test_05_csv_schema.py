@@ -99,3 +99,10 @@ def test_each_bout_has_two_participants(repo_root):
     for row in participants:
         counts[row["bout_id"]] = counts.get(row["bout_id"], 0) + 1
     assert all(count == 2 for count in counts.values())
+
+
+def test_alias_keys_are_unique(repo_root):
+    # aliases.json は {alias_type: {alias: canonical_id}} なので、重複行は黙って 1 つに潰れてしまう。
+    _, rows = read_csv(repo_root, "aliases.csv")
+    keys = [(row["alias_type"], row["alias"]) for row in rows]
+    assert len(keys) == len(set(keys)), "aliases.csv has duplicate (alias_type, alias)"
