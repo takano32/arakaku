@@ -3,7 +3,7 @@
 T.56「ビューアを今の見た目にとらわれずに作り直す（機能は残す）」で、リビルド前のビューア（`docs/assets/js/core/` `services/` `tabs/` `ui/` と `style.css`、約 6,400 行）が持っていた利用者から見える機能とデータ側の振る舞いをすべて洗い出し、新しいビューア（`docs/assets/js/app/` `data/` `ui/` と `app.css`）のどこで実現しているかを対応づけた表です。
 
 - 「旧実装」はリビルド前にその機能が置かれていた場所（削除済みのファイル名）です。
-- 「新実装」は 2026-10-24 時点の場所です（その後の変更は各行の備考に T 番号付きで書いています。2026-10-25 時点）。
+- 「新実装」は 2026-10-24 時点の場所です（その後の変更は各行の備考に T 番号付きで書いています。最終更新 2026-10-25、T.102 まで）。
 - 「状態」は次のいずれかです。
   - `検証済`: 新ビューアで同じ振る舞いを確認した。確認方法は備考に書く（ブラウザ = Chrome で実データを表示して確認、Node = `scripts/validate_json.js` または旧新比較スクリプトで確認）。
   - `変更`: 意図して形を変えた。何をどう変えたかと理由を備考に書く。機能そのものは残っている。
@@ -20,7 +20,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
 | A1 | ヘッダ（タイトル、ロゴ画像 `header.webp`、GitHub リンク） | `index.html`, `style.css` | `index.html` `.brand` / `.side-links`、`app.css` | 変更 | ロゴとタイトルは左ナビの先頭に置き、GitHub は斜めリボンではなくナビ下部のリンク群に入れた。スマートフォンでは上部の 1 行になる。ブラウザで確認。T.67 でロゴリンクのアクセシブル名を表示文字列に合わせ、配色ボタンのラベルを「ダーク / ライト配色に切り替える」にし、選択中ナビと王座戦バッジのコントラストを 4.5:1 以上にした。スマートフォンの読み込み中のレイアウトのずれ（CLS 0.777）を 0 にした（Lighthouse モバイルでアクセシビリティ 100） |
-| A2 | サマリー件数 8 項目（団体・大会・試合・選手・王座・動画・出典・出典候補）と未ロード時 `...`、選手は関係キーが揃ってから `richFighters.length`、大会・試合は名鑑のみ分を加算 | `view-controller.js renderSummary` | `ui/shell.js #counts / #renderStats`（ナビ下の「データ件数」。未ロードは `…`） | 変更 | 同じ規則。ブラウザで 7 / 67 / 315 / 131 / 16 / 360 / 479 / 1448 を確認。T.60 で各件数を該当タブへのリンクにした（出典・出典候補は出典本文へ） |
+| A2 | サマリー件数 8 項目（団体・大会・試合・選手・王座・動画・出典・出典候補）と未ロード時 `...`、選手は関係キーが揃ってから `richFighters.length`、大会・試合は名鑑のみ分を加算 | `view-controller.js renderSummary` | `ui/shell.js #counts / #renderStats`（ナビ下の「データ件数」。未ロードは `…`） | 変更 | 同じ規則。ブラウザで 7 / 67 / 315 / 131 / 16 / 360 / 479 / 1448 を確認。T.60 で各件数を該当タブへのリンクにした（出典・出典候補は出典本文へ）。2026-10-25 時点の件数は 7 / 68 / 330 / 132 / 16 / 445 / 611 / 1745（T.86・T.87 で note・動画を取り込み、大会 4 つを追加） |
 | A3 | 通常ビューのタブ 8 個（公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画、順 = キーボード 1〜8） | `config.js PUBLIC_TABS`, `view-controller.js renderTabs` | `config.js PUBLIC_TABS`, `ui/shell.js #renderNav`（`<a href="?tab=…">` のリスト） | 検証済 | ブラウザで全タブを巡回 |
 | A4 | 管理ビューのタブ 7 個 | `config.js ADMIN_TABS` | `config.js ADMIN_TABS`, `ui/shell.js #renderNav`（`<details class="nav-admin">` 内） | 検証済 | ブラウザで全 7 タブを巡回 |
 | A5 | 通常 / 管理ビューの切替と、各ビューの最後のタブの記憶・復元 | `event-controller.js #prevPublicTab / #prevAdminTab`, `view-controller.js renderViewModeSwitch` | `ui/shell.js bind()` の `toggle` ハンドラと `#prevPublicTab / #prevAdminTab`。`viewMode` は `app/state.js` でタブから導出 | 変更 | 切替ボタンではなく、ナビの「管理ビュー」グループの開閉がビュー切替。閉じると直前の通常タブ、開くと直前の管理タブへ戻る（ブラウザで確認: 閉じる → `?nr_promo=…`（公式）、開く → `?tab=sources`）。`?tab=sources` のような管理タブの共有リンクがそのまま管理ビューを開けるようになった |
@@ -43,7 +43,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | B15 | 配列フィールドはいずれか一致で通過 | `filters.js` | `data/filters.js` | 検証済 | `test_filters.mjs` |
 | B16 | 派生フィルタ項目（動画の団体/階級、通信の団体/階級、公式選手の団体） | `data-enricher.js enrichVideo`, `tab-renderers.js #withNoteFilterFields / officialPlayers` | `data/enricher.js enrichVideo`, `ui/sections/tsushin.js withFilterFields`, `ui/sections/admin.js officialPlayersSection` | 検証済 | ブラウザ（通信・動画・公式選手で絞り込み） |
 | B17 | 同じボタンの再クリックで解除 | `event-controller.js` | `ui/shell.js bind()` | 検証済 | ブラウザ |
-| B18 | 出典言及の種別セレクト（`MENTION_TYPE_ORDER` → ja 順、「日本語 / コード」） | `view-controller.js renderMentionFilters` | `ui/shell.js #renderFilters / #sortedMentionTypes`（`#mention-type`） | 検証済 | ブラウザ（`?tab=mentions&mention=result` → 315 件） |
+| B18 | 出典言及の種別セレクト（`MENTION_TYPE_ORDER` → ja 順、「日本語 / コード」） | `view-controller.js renderMentionFilters` | `ui/shell.js #renderFilters / #sortedMentionTypes`（`#mention-type`） | 検証済 | ブラウザ（`?tab=mentions&mention=result` → 315 件）。T.86 で `match_result`（vs と結果のある行）を並び順に追加 |
 | B19 | `itemPassesFilters` の Node ユニットテスト | `scripts/test_filters.mjs` | `scripts/test_filters.mjs`（import 先を `data/filters.js` に） | 検証済 | `make check` |
 
 ## C. URL 同期・共有リンク
@@ -105,7 +105,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | G1 | 信頼性ティアと `lowReliabilityLast` | `core/reliability.js` | `data/reliability.js` | 検証済 | Node 旧新比較（全ティア一致） |
 | G2 | 各エンティティのティア判定 | `core/reliability.js` | `data/reliability.js` | 検証済 | 同上 |
 | G3 | `isMinimalFighter` | `core/reliability.js` | `data/reliability.js` | 検証済 | 同上 |
-| G4 | 一覧の降順化、大会内の試合は昇順 | `core/data-repository.js` | `data/repository.js` | 検証済 | 同上（`richBouts` / `boutsForEvent` 一致） |
+| G4 | 一覧の降順化、大会内の試合は昇順 | `core/data-repository.js` | `data/repository.js` | 変更 | 同上（`richBouts` / `boutsForEvent` 一致）。大会は CSV の並び（T.77・T.102 で結果 note の投稿日、無ければ大会の note の最初の投稿日の順）を反転、動画は T.102 でアーカイブの公開日順に並べ直した。名鑑だけの試合は T.90 で大会ごとにまとめた（試合順は持たない） |
 | G5 | `richFighters`（発掘・名鑑順・統合・低信頼末尾） | `core/data-repository.js` | `data/repository.js` | 検証済 | 同上（131 件一致） |
 | G6 | `enrichFighter` | `core/data-enricher.js` | `data/enricher.js` | 検証済 | 同上 |
 | G7 | 公式選手名の突合（正規化キー） | `core/data-enricher.js` | `data/enricher.js normalizeFighterName` | 検証済 | 同上 |
@@ -129,15 +129,15 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
 | H1 | 公式タブ（固定ページは折りたたみ、ニュースは日付降順で Markdown） | `tab-renderers.js official / renderOfficialPageDocCard / renderOfficialNewsDocCard`, `ui/markdown.js` | `ui/sections/official.js`（固定ページは閉じた行、ニュースは開いた行）, `ui/markdown.js` | 変更 | 本文 HTML の「/」始まりの画像・リンクを公式サイトの URL に直す（旧実装では 404 / 行き先なし）、リンクは別タブ、`web-share` を外す（Console 警告の原因）。本文の文面は不変。T.61 でニュース本文の 1 行だけの `<iframe>` を、tiget.net なら埋め込み＋リンク、ほかのホストならリンクとして表示（旧実装はタグが文字で出ていた） |
-| H2 | 通信タブ（記事種別バッジ、整形本文、フォールバック） | `tab-renderers.js tsushin / renderNoteArticleCard / #cleanNoteBody` | `ui/sections/tsushin.js`（`cleanNoteBody` 同一。行の見出しに日付・団体・階級・2 行プレビュー、本文は開いたとき） | 検証済 | ブラウザ（120 件、本文の遅延ロード） |
-| H3 | 試合カードの内容一式 | `tab-renderers.js renderBoutCard`, `ui/html-utils.js boutResultText` | `ui/sections/bouts.js`, `ui/html.js boutResultText`, `ui/parts.js` | 変更 | 内容は同じ（対戦カード・大会 / 階級・名鑑バッジ・結果・王座戦・動画・出典候補・詳細）。見出し右に決着を出し、「勝敗未入力」バッジを追加。名鑑由来の `method_raw` がラウンド・時間を含むとき旧実装は「1R 1分37秒 1R 1:37 KO(…)」と二重に出ていたのを 1 回にした |
+| H2 | 通信タブ（記事種別バッジ、整形本文、フォールバック） | `tab-renderers.js tsushin / renderNoteArticleCard / #cleanNoteBody` | `ui/sections/tsushin.js`（`cleanNoteBody` 同一。行の見出しに日付・団体・階級・2 行プレビュー、本文は開いたとき） | 検証済 | ブラウザ（120 件、本文の遅延ロード）。T.86 で 168 件に（note の新しい記事 48 件） |
+| H3 | 試合カードの内容一式 | `tab-renderers.js renderBoutCard`, `ui/html-utils.js boutResultText` | `ui/sections/bouts.js`, `ui/html.js boutResultText`, `ui/parts.js` | 変更 | 内容は同じ（対戦カード・大会 / 階級・名鑑バッジ・結果・王座戦・動画・出典候補・詳細）。見出し右に決着を出し、「勝敗未入力」バッジを追加。名鑑由来の `method_raw` がラウンド・時間を含むとき旧実装は「1R 1分37秒 1R 1:37 KO(…)」と二重に出ていたのを 1 回にした。T.89 で名鑑の 2 行が矛盾する試合は勝敗を上書きしない（「A def. A」を防ぐ）。T.102 で日付に「結果」「カード」、王座戦に王座名（王座タブへのリンク）と note の引用、選手の赤青・勝敗・種別を日本語に、決着の改行を 1 行に |
 | H4 | 選手カードの内容一式 | `tab-renderers.js renderFighterCard / renderProfileBlock / renderOfficialBio / renderFighterSnapshots / renderSnapshotSource` | `ui/sections/fighters.js`, `ui/parts.js profileBlock / officialBio / fighterSnapshots / snapshotSource / relatedBouts / articleRefList` | 検証済 | ブラウザ（かべい: 名鑑・公式・白グローブ、通算 19戦 14勝 5敗、関連試合 14、出典別プロフィール、詳細）。見出し右に通算戦績、統合した ID を詳細に追加 |
-| H5 | 大会カードの内容一式 | `tab-renderers.js renderEventCard`, `services/related-renderers.js renderEventBouts` | `ui/sections/events.js`, `ui/parts.js eventBouts / videoLinks / sourceReferences` | 検証済 | ブラウザ（MAXバウトスペシャルワンマッチ大会: 5 試合、動画、名鑑バッジ）。見出し右に試合数、詳細に名鑑の興行番号を追加 |
+| H5 | 大会カードの内容一式 | `tab-renderers.js renderEventCard`, `services/related-renderers.js renderEventBouts` | `ui/sections/events.js`, `ui/parts.js eventBouts / videoLinks / sourceReferences` | 変更 | ブラウザ（MAXバウトスペシャルワンマッチ大会: 5 試合、動画、名鑑バッジ）。見出し右に試合数、詳細に名鑑の興行番号を追加。T.77・T.102 で見出しに「結果 日付」（結果 note が無ければ「カード 日付」）、詳細に結果発表日と note の最初の投稿日 |
 | H6 | 団体カードの内容一式 | `tab-renderers.js renderPromotionCard / promotionRuleRows / renderPromotionEvents / renderPromotionTitles` | `ui/sections/promotions.js` | 検証済 | ブラウザ。ルールは詳細ではなく本体の定義リストに出す |
-| H7 | 動画カードの内容一式 | `tab-renderers.js renderVideoCard / renderVideoLinkedEntities`, `services/source-renderers.js renderVideoSourceBlock / renderVideoDescriptionPreview` | `ui/sections/videos.js`, `ui/parts.js videoBlock / videoDescriptionPreview / videoFacade` | 検証済 | ブラウザ（360 件、サムネイル、概要欄、紐づけ先、埋め込み再生）。見出しにサムネイルと再生時間、詳細に再生数 / 高評価を追加 |
-| H8 | 王座タブ（団体 / 階級の見出し、歴代、獲得 / 喪失、返上（空位）、出典） | `tab-renderers.js titles / renderTitleCard / renderLineageCard` | `ui/sections/titles.js` | 変更 | 歴代は番号付きリストで見せ、王座の行は既定で開く。詳細（title_id 等）は旧実装では既定で開いていたが閉じた状態にした。見出し右に現王者 / 最新優勝 |
+| H7 | 動画カードの内容一式 | `tab-renderers.js renderVideoCard / renderVideoLinkedEntities`, `services/source-renderers.js renderVideoSourceBlock / renderVideoDescriptionPreview` | `ui/sections/videos.js`, `ui/parts.js videoBlock / videoDescriptionPreview / videoFacade` | 検証済 | ブラウザ（360 件、サムネイル、概要欄、紐づけ先、埋め込み再生）。見出しにサムネイルと再生時間、詳細に再生数 / 高評価を追加。T.87 で 445 件、T.96 で試合・大会への紐づけを追加 |
+| H8 | 王座タブ（団体 / 階級の見出し、歴代、獲得 / 喪失、返上（空位）、出典） | `tab-renderers.js titles / renderTitleCard / renderLineageCard` | `ui/sections/titles.js` | 変更 | 歴代は番号付きリストで見せ、王座の行は既定で開く。詳細（title_id 等）は旧実装では既定で開いていたが閉じた状態にした。見出し右に現王者 / 最新優勝。T.89 で最後の王者が返上・喪失していれば「空位」と出し、出典動画（防衛戦のこともある）から獲得大会を推定しないようにした |
 | H9 | 出典本文カード | `tab-renderers.js renderSourceCard` | `ui/sections/admin.js sourcesSection` | 検証済 | ブラウザ（479 件、種別フィルタ、候補件数バッジ、本文） |
-| H10 | 出典言及カード | `tab-renderers.js renderMentionCard` | `ui/sections/admin.js mentionsSection` | 検証済 | ブラウザ（1683 件） |
+| H10 | 出典言及カード | `tab-renderers.js renderMentionCard` | `ui/sections/admin.js mentionsSection` | 検証済 | ブラウザ（1683 件）。T.86 で 2527 件 |
 | H11 | 名鑑選手カード | `tab-renderers.js renderNumbersFighterCard` | `ui/sections/admin.js numbersFightersSection` | 検証済 | ブラウザ（106 件） |
 | H12 | 名前対応カード | `tab-renderers.js renderNumbersNameMatchCard` | `ui/sections/admin.js numbersNameMatchesSection`（対応先を選手リンクに） | 検証済 | ブラウザ（106 件） |
 | H13 | 名鑑記録カード | `tab-renderers.js renderNumbersFightRecordCard` | `ui/sections/admin.js numbersFightRecordsSection` | 検証済 | ブラウザ（561 件、MAXバウト絞り込みで 107 件） |
@@ -147,7 +147,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | H17 | 共通部品（出典記事参照、動画参照、出典候補サマリ、関連試合、定義リスト、折りたたみ） | `services/source-renderers.js`, `services/related-renderers.js`, `ui/component-builder.js` | `ui/parts.js` | 検証済 | ブラウザ・Node（全行描画）。候補の重複排除・確度順・上位 5 件・「上位5件 / N件」は同じ |
 | H18 | YouTube 埋め込みファサードとサムネイル 404 回避 | `services/source-renderers.js renderVideoEmbed`, `main.js (lite-youtube-embed)` | `ui/parts.js videoFacade`, `ui/shell.js #activateVideo` | 変更 | 自前のファサード（画像 + 再生ボタン → クリックで `youtube-nocookie` の iframe）。`thumbnail_sizes` から存在が確実なサイズ（maxres → sd → hq）を選ぶので 404 が出ない。ブラウザで確認 |
 | H19 | 空・未入力の定型文 | `tab-renderers.js`, `services/*.js` | `ui/parts.js`, `ui/sections/*.js` | 検証済 | 文言はそのまま（grep で確認） |
-| H20 | HTML エスケープと信頼済み HTML の扱い | `ui/html-utils.js`, `ui/markdown.js` | `ui/html.js escapeHtml / externalLink`, `ui/markdown.js`, `ui/sections/official.js officialBodyHtml` | 検証済 | コード。validate_json.js が全行描画で `undefined` 混入も検査。T.63 で Markdown のリンクを http(s) だけにし（`javascript:` や `"` による属性注入を防ぐ）、`scripts/test_markdown.mjs` で検査。公式ページ本文 HTML は validate_json.py が `<script>`・イベント属性・スクリプト URL・YouTube 以外の iframe を失敗にする |
+| H20 | HTML エスケープと信頼済み HTML の扱い | `ui/html-utils.js`, `ui/markdown.js` | `ui/html.js escapeHtml / externalLink`, `ui/markdown.js`, `ui/sections/official.js officialBodyHtml` | 検証済 | コード。validate_json.js が全行描画で `undefined` 混入も検査。T.63 で Markdown のリンクを http(s) だけにし（`javascript:` や `"` による属性注入を防ぐ）、`scripts/test_markdown.mjs` で検査。公式ページ本文 HTML は validate_json.py が `<script>`・イベント属性・スクリプト URL・許可したホスト（YouTube）以外の iframe を失敗にする |
 
 ## I. キーボード操作・その他の操作
 
@@ -170,6 +170,6 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 表の行は 101（B3〜B10 の 8 機能を 1 行にまとめているので機能数は 108）。
 
-- 検証済: 80 行（機能数 87）
-- 変更: 21 行（A1, A2, A5, B1, C3, D1, D2, E3, E12, E13, F1, F5, F8, H1, H3, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
+- 検証済: 78 行（機能数 85）
+- 変更: 23 行（A1, A2, A5, B1, C3, D1, D2, E3, E12, E13, F1, F5, F8, G4, H1, H3, H5, H8, H18, I1, I4, J1, J2。いずれも機能は残し、形を変えた）
 - 廃止: 0
