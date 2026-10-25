@@ -17,3 +17,13 @@ VALID_ARTICLE_ENTITY_TYPES = {
     'event', 'bout', 'fighter', 'fighter_snapshot', 'promotion', 'title', 'title_reign', 'video'
 }
 VALID_ARTICLE_RELATION_TYPES = {'source', 'reference'}
+# 以下は T.69 で追加 (当時の実データの値域そのもの)。
+VALID_BOUT_TYPES = {
+    'one_match', 'title_match', 'tournament_bout', 'special_one_match', 'video_catalog_bout', 'preview_card'
+}
+VALID_EVENT_TYPES = {'numbered_event', 'tournament', 'special_event', 'video_catalog'}
+VALID_SIDES = {'red', 'blue'}
+VALID_INFERRED_CONFIDENCES = {'high', 'medium', 'low'}
+VALID_MENTION_TYPES = {'event', 'matchup', 'result', 'note_url', 'youtube_url'}
+VALID_NAME_MATCH_METHODS = {'exact_display_name', 'normalized_display_name', 'generated_candidate'}
+VALID_ARTICLE_STATUSES = {'unparsed'}
