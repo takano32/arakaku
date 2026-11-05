@@ -42,7 +42,8 @@ function applyOfficialPlayer(rich, op) {
   if (op.nationality) rich.profile.nationality = op.nationality;
   if (op.name_kana) rich.profile.name_kana = op.name_kana;
   // 戦績 (wins/losses/draws) は mergeRecord で名鑑と統合し profile.record に集約するため、ここでは profile に展開しない。
-  if (op.bio && !rich.summary) rich.summary = op.bio;
+  // 公式の bio は official_data 経由でカードの専用ブロックに出す。summary には流用しない (summary はあとで
+  // 名鑑か base から決め直すので、以前ここで bio を入れていた行は効いていなかった。T.112.4.18)。
   rich.official_data = op;
 }
 
