@@ -6,7 +6,7 @@ import { QueryMatcher } from "./data/query.js";
 import { Shell } from "./ui/shell.js";
 import { KeyboardNav } from "./ui/keyboard.js";
 import { SearchBox } from "./ui/search_box.js";
-import { escapeHtml } from "./ui/html.js";
+import { showFatalError } from "./ui/render/alerts.js";
 
 /**
  * ビューアの起動シーケンス (docs/index.html から module として読み込まれる)。
@@ -58,10 +58,7 @@ loader
   .then(() => loader.loadForTab(state.tab))
   .catch((error) => {
     console.error("viewer: data load failed", error);
-    const host = document.querySelector("#list-host");
-    if (host) {
-      host.innerHTML = `<div class="alert" role="alert"><p class="alert-title">読み込みに失敗しました</p><p>${escapeHtml(error.message)}</p></div>`;
-    }
+    showFatalError(document.querySelector("#list-host"), error);
   });
 
 if ("serviceWorker" in navigator) {
