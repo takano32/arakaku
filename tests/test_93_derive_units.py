@@ -150,5 +150,6 @@ def test_ordering_keys():
     assert event_sort_date(event, {}, {}) == "2020-01-01"
     assert bout_sort_key({"event_id": "e1", "bout_order": "10"}, {"e1": "2021-01-01"}) == ("2021-01-01", "e1", 10)
     assert bout_sort_key({"event_id": "e9", "bout_order": "x"}, {}) == ("0000-00-00", "e9", 0)
-    reigns = [{"title_id": "t", "reign_order": "10"}, {"title_id": "t", "reign_order": "2"}, {"title_id": "t", "reign_order": ""}]
-    assert [r["reign_order"] for r in sorted(reigns, key=reign_sort_key)] == ["", "2", "10"]
+    reigns = [{"title_id": "t", "reign_order": o} for o in ("x", "10", "2", "")]
+    # 数字でない値は build/titles.py の lineage と同じく末尾 (T.112.6.12)。
+    assert [r["reign_order"] for r in sorted(reigns, key=reign_sort_key)] == ["", "2", "10", "x"]
