@@ -13,18 +13,26 @@ from arakaku.schema import CsvRow
 from arakaku.text import none_if_empty
 
 
+def _youtube_archive(row: CsvRow, rel: Relations) -> CsvRow:
+    """YouTube の動画の archives/youtube.csv の行。YouTube でない動画と未アーカイブの動画は空。
+
+    アーカイブは platform_video_id で引くので、ほかの platform の同じ ID に当たらないようにする
+    (以前はサムネイルだけが platform を確かめていた。T.112.6.22)。
+    """
+    if (row.get("platform") or "youtube") != "youtube":
+        return {}
+    return rel.youtube_archive.get(row["platform_video_id"], {})
+
+
 def _thumbnail_sizes(row: CsvRow, rel: Relations) -> str:
     # videos.json は viewer の最初の描画で使うため、後から読み込まれる youtube_archives.json を
     # 待たずに済むようサムネイルの種類だけここで写す。未アーカイブの動画は空文字。
-    if (row.get("platform") or "youtube") != "youtube":
-        return ""
-    archive = rel.youtube_archive.get(row["platform_video_id"])
-    return archive["thumbnail_sizes"] if archive else ""
+    return _youtube_archive(row, rel).get("thumbnail_sizes", "")
 
 
 def build_videos(videos: list[CsvRow], rel: Relations) -> list[dict[str, Any]]:
     def archive_value(row: CsvRow, column: str) -> str | None:
-        return none_if_empty(rel.youtube_archive.get(row["platform_video_id"], {}).get(column))
+        return none_if_empty(_youtube_archive(row, rel).get(column))
 
     return map_rows(
         videos,
