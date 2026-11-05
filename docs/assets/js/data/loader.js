@@ -7,7 +7,7 @@ import {
   TAB_DATA_KEYS,
 } from "../config.js";
 import { DataRepository } from "./repository.js";
-import { fallbackForDataKey, parseDataFileEntries, parseJsonText } from "./parser.js";
+import { fallbackForDataKey, parseJsonText } from "./parser.js";
 
 /**
  * docs/data/*.json を段階的に取得して state.data に流し込み、DataRepository を組み立てる。
@@ -119,7 +119,14 @@ export class DataLoader {
           }
         })
       );
-      Object.assign(this.state.data, parseDataFileEntries(entries));
+      // 解析と形の検査は #loadKeyProgressive と同じ applyLoadedText で行う。以前はここに「配列 JSON か」の
+      // 検査が無く、公式ページが {} だと読み込みエラーではなく描画エラーになった (T.112.4.16)。
+      for (const [key, text] of entries) {
+        const result = applyLoadedText(key, text);
+        if (result.error !== null && required) throw new Error(`${this.dataFiles[key]}: ${result.error}`);
+        if (result.error !== null) failed[key] ??= result.error;
+        this.state.data[key] = result.value;
+      }
       for (const key of nextKeys) {
         this.state.loadedDataKeys.add(key);
         if (failed[key]) this.state.dataLoadErrors[key] = failed[key];
