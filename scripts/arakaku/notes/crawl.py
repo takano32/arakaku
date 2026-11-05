@@ -1,7 +1,8 @@
 # 役割: 公式 note クリエイターの記事一覧 (RSS / HTML のリンク / 非公式 API の JSON) を解析して
 #   articles.csv の行にし、既存行へ「未登録 URL の行だけ」追記する規則 (merge_articles)。
 # アーキ上の位置: scripts/crawl_note_articles.py が取得 (fetch_text) と CSV の読み書きを担い、
-#   ここは文字列と行だけを扱う。crawl_note_api_pages は fetch 関数を引数で受け取る (テストで差し替え可能)。
+#   ここは文字列と行だけを扱う。crawl_note_api_pages は fetch 関数と進捗の出し先 log を引数で受け取る
+#   (テストで差し替え可能。log の既定は何も出さない)。
 # 不変条件:
 #   - 既存行は URL 正規化キー (normalize_url) で重複判定し、絶対に上書き/削除しない (事実保護)。
 #     normalize_url の規則が緩むと重複行や取りこぼしの原因になる。
@@ -16,7 +17,6 @@ from __future__ import annotations
 import html
 import json
 import re
-import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
@@ -215,15 +215,21 @@ def parse_json_notes(json_text: str) -> list[dict[str, str]]:
     return rows
 
 
-def crawl_note_api_pages(creator: str, page_limit: int, sleep: float, fetch: Callable[..., str]) -> list[dict[str, str]]:
-    """API の一覧を空ページか新規 0 件のページまでたどる。fetch(url, sleep=...) は呼び出し側が渡す。"""
+def _no_log(message: str) -> None:
+    pass
+
+
+def crawl_note_api_pages(
+    creator: str, page_limit: int, sleep: float, fetch: Callable[..., str], log: Callable[[str], None] = _no_log
+) -> list[dict[str, str]]:
+    """API の一覧を空ページか新規 0 件のページまでたどる。fetch(url, sleep=...) と進捗の出し先 log は呼び出し側が渡す。"""
     rows: list[dict[str, str]] = []
     seen_urls: set[str] = set()
 
     for template in API_URL_TEMPLATES:
         for page in range(1, page_limit + 1):
             url = template.format(creator=urllib.parse.quote(creator), page=page)
-            print(f"[fetch api] {url}", file=sys.stderr)
+            log(f"[fetch api] {url}")
 
             try:
                 text = fetch(url, sleep=sleep)
@@ -232,7 +238,7 @@ def crawl_note_api_pages(creator: str, page_limit: int, sleep: float, fetch: Cal
                 raise FetchFailed(f"api fetch failed: {url}: {exc}") from exc
 
             if not page_rows:
-                print(f"[api rows] page={page} rows=0; stop", file=sys.stderr)
+                log(f"[api rows] page={page} rows=0; stop")
                 break
 
             added_this_page = 0
@@ -246,7 +252,7 @@ def crawl_note_api_pages(creator: str, page_limit: int, sleep: float, fetch: Cal
                 seen_urls.add(normalized)
                 added_this_page += 1
 
-            print(f"[api rows] page={page} rows={len(page_rows)} added={added_this_page}", file=sys.stderr)
+            log(f"[api rows] page={page} rows={len(page_rows)} added={added_this_page}")
 
             if added_this_page == 0:
                 break
