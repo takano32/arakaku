@@ -15,10 +15,10 @@ import json
 #       dict キーは write_csv の DictWriter で厳密一致させること。
 # 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.io import write_csv
-from arakaku.paths import DATA_SRC, ROOT
+from arakaku.paths import DATA_SRC, OFFICIAL_SITE_DIR
 
 # 公式サイトの JSON エクスポート置き場（git 管理外、要事前取得）。
-SRC = ROOT / "tmp" / "arakaku-site" / "data"
+SRC = OFFICIAL_SITE_DIR / "data"
 
 
 def load(filename: str) -> list:

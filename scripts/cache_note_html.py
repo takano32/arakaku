@@ -17,11 +17,11 @@ import urllib.request
 from pathlib import Path
 
 from arakaku.io import read_csv
-from arakaku.paths import DATA_SRC, ROOT, note_cache_name
+from arakaku.paths import DATA_SRC, NOTE_HTML_DIR, note_cache_name
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"
-OUT_DIR = ROOT / "tmp" / "note-html"
+OUT_DIR = NOTE_HTML_DIR
 
 USER_AGENT = "Mozilla/5.0 arakaku-note-cache/1.0"
 
