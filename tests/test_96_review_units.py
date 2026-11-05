@@ -123,3 +123,15 @@ def test_apply_patches_without_both_names_only_fills_fields():
     parts = [{"bout_id": "b1", "side": "red", "fighter_name": "かぶと", "result": ""}]
     result = apply_patches(bouts, parts, [{"apply": "true", "bout_id": "b1", "winner": "かぶと", "loser": "", "time": "1分00秒"}])
     assert (result.bouts[0]["result_status"], result.bouts[0]["time"], result.participants[0]["result"]) == ("unknown", "1分00秒", "")
+
+
+def test_apply_patches_does_not_guess_the_winner_from_the_corner():
+    # fighter_a は bout_participants.csv の最初の行で赤とは限らないので、名前が合わない行は当てない (T.112.4.4)。
+    bouts = [{"bout_id": "b1", "result_status": "unknown", "round": "", "notes": ""}]
+    parts = [{"bout_id": "b1", "side": "blue", "fighter_name": "かぶと", "result": ""},
+             {"bout_id": "b1", "side": "red", "fighter_name": "イベルト", "result": ""}]
+    patch = {"apply": "true", "bout_id": "b1", "winner": "かぶとX", "loser": "イベルト", "fighter_a": "かぶとX", "fighter_b": "イベルト", "round": "2R"}
+    result = apply_patches(bouts, parts, [patch])
+    assert (result.applied, result.unmatched_bout_ids) == (0, ["b1"])
+    assert (result.bouts[0]["result_status"], result.bouts[0]["round"]) == ("unknown", "")
+    assert [p["result"] for p in result.participants] == ["", ""]
