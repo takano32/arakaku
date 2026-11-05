@@ -4,7 +4,7 @@
  * 整数でない大会 (MAXバウトの SP / SP2) は events.csv の numbers_event_number を使う。
  */
 
-export function fightRecordKey(promotionId, eventNumber) {
+function fightRecordKey(promotionId, eventNumber) {
   return `${promotionId}:${eventNumber}`;
 }
 
