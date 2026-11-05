@@ -57,7 +57,7 @@ test("両選手の側の 2 行は 1 試合にまとまり、勝者・敗者・�
   assert.equal(out.boutById.get(bout.bout_id), bout);
 });
 
-test("両側の勝敗が食い違う (両者勝ち) 試合は不明にする (T.89)", () => {
+test("両側の勝敗が食い違う (両者勝ち) 試合は不明にする (T89)", () => {
   const out = buildNumbersOnly({
     events,
     fightRecords: [
@@ -86,7 +86,7 @@ test("選手 ID が無い記録は名前で組を作り、結果が無ければ 
   assert.equal(bout.result_status, "unknown");
 });
 
-test("大会は団体 → 興行番号、試合は大会 → 対戦名の順に並ぶ (T.90)", () => {
+test("大会は団体 → 興行番号、試合は大会 → 対戦名の順に並ぶ (T90)", () => {
   const out = buildNumbersOnly({
     events,
     fightRecords: [

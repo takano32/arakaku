@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 # make validate がすでに実データで validate_videos / validate_video_links を通しているので、
-# ここでは壊れた入力が確実にエラーになることだけを確かめる (T.85)。
+# ここでは壊れた入力が確実にエラーになることだけを確かめる (T85)。
 
 from arakaku.validation.entities import validate_videos
 from arakaku.validation.links import validate_video_links

@@ -60,7 +60,7 @@ test("矛盾しない記録は勝敗・決まり手・階級・形式を重ね�
   assert.equal(base.result_status, "unknown");
 });
 
-test("両側の記録が矛盾する (両者勝ち) ときは勝敗を上書きせず、名鑑確認済みにもしない (T.89)", () => {
+test("両側の記録が矛盾する (両者勝ち) ときは勝敗を上書きせず、名鑑確認済みにもしない (T89)", () => {
   const records = [rec({ detail_raw: "判定" }), rec({ matched_fighter_id: "b", opponent_matched_fighter_id: "a", result: "win" })];
   const rich = applyFightRecords(bout, records);
   assert.deepEqual(rich.fighters.map((f) => f.result), ["win", "loss"]); // CSV の勝敗のまま

@@ -105,7 +105,7 @@ def test_archive_row_shapes():
 
 
 def test_new_archive_rows_get_a_utc_timestamp_with_offset():
-    # fetched_at と同じ形 (T.112.4.13)。既存の行の値は archived_at_for が引き継ぐ。
+    # fetched_at と同じ形 (T112.4.13)。既存の行の値は archived_at_for が引き継ぐ。
     from arakaku.sources.archives import archived_at_for, current_archive_time
     now = current_archive_time()
     assert now.endswith("+00:00") and len(now) == 25

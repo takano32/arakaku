@@ -44,7 +44,7 @@ def youtube():
 
 @pytest.fixture
 def discover(load_script, monkeypatch):
-    # T.112.6.7: 以前は import するだけで何も確かめていなかった。API の呼び出しを差し替えて main を通す。
+    # T112.6.7: 以前は import するだけで何も確かめていなかった。API の呼び出しを差し替えて main を通す。
     module = load_script('discover_youtube_videos')
     writes = []
     monkeypatch.setenv('YOUTUBE_API_KEY', 'test-key')

@@ -56,7 +56,7 @@ def test_every_csv_header_matches_schema(repo_root):
 
 
 # 書く側の列の一覧 (モジュール, 定数, 書く CSV)。write_csv は extrasaction="ignore" なので、一覧が
-# schema.CSV_HEADERS とずれると列が黙って空になる (T.112.6.9)。generate_*.py は scripts/ の入口。
+# schema.CSV_HEADERS とずれると列が黙って空になる (T112.6.9)。generate_*.py は scripts/ の入口。
 WRITER_FIELDS = [
     ("arakaku.notes.articles", "FIELDS", "articles.csv"),
     ("arakaku.derive.aliases", "FIELDS", "aliases.csv"),
@@ -84,7 +84,7 @@ def test_writer_fields_match_schema(module_name, constant, filename):
 
 
 def test_read_csv_rejects_renamed_columns_and_missing_files(io_module, tmp_path, monkeypatch):
-    # read_csv は path.resolve() を DATA_SRC と比べるので、tmp_path が symlink の下でも合うようにする (T.112.6.8)。
+    # read_csv は path.resolve() を DATA_SRC と比べるので、tmp_path が symlink の下でも合うようにする (T112.6.8)。
     tmp_path = tmp_path.resolve()
     monkeypatch.setattr(io_module, "DATA_SRC", tmp_path)
     (tmp_path / "events.csv").write_text("date\n2026-01-01\n", encoding="utf-8")

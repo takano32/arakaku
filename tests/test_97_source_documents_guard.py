@@ -19,7 +19,7 @@ def doc(source_type):
 
 
 def test_refuses_to_overwrite_when_note_cache_is_missing(script, monkeypatch):
-    # tmp/ が空の clone で走らせても、本文 DB を空で上書きしない (T.112.4.1)。
+    # tmp/ が空の clone で走らせても、本文 DB を空で上書きしない (T112.4.1)。
     monkeypatch.setattr(script, 'note_documents', lambda *a: [])
     monkeypatch.setattr(script, 'youtube_documents', lambda *a: [doc('youtube_description')])
     with pytest.raises(SystemExit, match='no cached note sources'):

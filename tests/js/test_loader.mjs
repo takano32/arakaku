@@ -47,7 +47,7 @@ test("段階読み込みでは、壊れたファイル・取得の失敗をキ�
   assert.equal(state.loadingDataKeys.size, 0);
 });
 
-test("loadKeys は配列のはずのファイルが配列でなければ読み込みエラーにする (T.112.4.16)", async () => {
+test("loadKeys は配列のはずのファイルが配列でなければ読み込みエラーにする (T112.4.16)", async () => {
   const state = { patch() {} };
   const files = { officialPages: "official_pages.json", officialNews: "official_news.json" };
   const texts = { "official_pages.json": "{}", "official_news.json": "[]" };
@@ -64,7 +64,7 @@ test("loadKeys(required) は形の壊れたファイルで throw する", async 
   await assert.rejects(loader.loadKeys(["officialPages"], { required: true }), /official_pages\.json: 配列 JSON ではありません/);
 });
 
-test("loadKeys(required) はすべてを検査してから書くので、壊れたファイルがあれば何も書かない (T.112.6.17)", async () => {
+test("loadKeys(required) はすべてを検査してから書くので、壊れたファイルがあれば何も書かない (T112.6.17)", async () => {
   const state = { patch() {} };
   const files = { officialNews: "official_news.json", officialPages: "official_pages.json" };
   const texts = { "official_news.json": '[{"slug":"a"}]', "official_pages.json": "{}" };

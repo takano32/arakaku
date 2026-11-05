@@ -126,7 +126,7 @@ def test_apply_patches_without_both_names_only_fills_fields():
 
 
 def test_apply_patches_does_not_guess_the_winner_from_the_corner():
-    # fighter_a は bout_participants.csv の最初の行で赤とは限らないので、名前が合わない行は当てない (T.112.4.4)。
+    # fighter_a は bout_participants.csv の最初の行で赤とは限らないので、名前が合わない行は当てない (T112.4.4)。
     bouts = [{"bout_id": "b1", "result_status": "unknown", "round": "", "notes": ""}]
     parts = [{"bout_id": "b1", "side": "blue", "fighter_name": "かぶと", "result": ""},
              {"bout_id": "b1", "side": "red", "fighter_name": "イベルト", "result": ""}]

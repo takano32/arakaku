@@ -135,7 +135,7 @@ def test_sheet_table_rows_reads_the_first_table_as_text():
 
 
 def test_sheet_table_rows_stops_on_a_missing_sheet():
-    # T.112.6.1: 「個人成績」のシートが無いのに見出しだけの numbers_fight_records.csv を書かない。
+    # T112.6.1: 「個人成績」のシートが無いのに見出しだけの numbers_fight_records.csv を書かない。
     sheets = [FakeSheet([["title"]])]
     with pytest.raises(NumbersSchemaError, match=r"Numbers sheet 個人成績 \(index 1\) is missing"):
         sheet_table_rows(sheets, 1, "個人成績")

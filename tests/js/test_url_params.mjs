@@ -51,7 +51,7 @@ test("stateFromSearch はすべての状態キーを既定値で埋めてから 
   for (const stateKey of Object.values(PARAM_MAP)) assert.ok(stateKey in store, stateKey);
 });
 
-test("知らない言及の種別は捨てる (T.112.4.21)", () => {
+test("知らない言及の種別は捨てる (T112.4.21)", () => {
   assert.deepEqual(readFromURL("?tab=mentions&mention=bogus"), { tab: "mentions" });
   assert.deepEqual(readFromURL("?tab=mentions&mention=result"), { tab: "mentions", mentionType: "result" });
 });

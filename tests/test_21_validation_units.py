@@ -45,7 +45,7 @@ def test_validate_docs_data_reports_every_missing_file_in_sorted_order(tmp_path:
 
 
 def test_all_json_files_are_exactly_what_the_builders_write():
-    # 以前の REQUIRED_JSON_FILES <= ALL_JSON_FILES は作り方から常に真だった (T.112.6.7)。
+    # 以前の REQUIRED_JSON_FILES <= ALL_JSON_FILES は作り方から常に真だった (T112.6.7)。
     # make build の 4 つの入口が書くファイルと、検証が「欠けたら error」とする一覧を突き合わせる。
     from arakaku.build import canonical, numbers, official
     from arakaku.build.relations import Tables
@@ -195,7 +195,7 @@ def test_source_and_numbers_and_archive_checks(report: Report):
 
 
 def test_duplicate_title_and_snapshot_ids_are_reported_once(report):
-    # 以前は runner と各バリデータの両方が collect_ids を呼び、同じ ERROR が 2 行出た (T.112.4.7)。
+    # 以前は runner と各バリデータの両方が collect_ids を呼び、同じ ERROR が 2 行出た (T112.4.7)。
     titles = [{"title_id": "t", "promotion_id": "p"}, {"title_id": "t", "promotion_id": "p"}]
     assert validate_titles(report, titles, {"p"}, set(), set(), set()) == {"t"}
     snapshots = [{"snapshot_id": "s"}, {"snapshot_id": "s"}]
@@ -213,7 +213,7 @@ def test_non_numeric_reign_order_is_an_error(report):
 
 
 def test_unknown_article_type_is_an_error(report):
-    # ほかの語彙と同じ check_enum で、ID つきの形 (T.112.6.18)。
+    # ほかの語彙と同じ check_enum で、ID つきの形 (T112.6.18)。
     from arakaku.validation.rules import validate_enums
     articles = [{"article_id": "a", "article_type": "title_history"}, {"article_id": "b", "article_type": "event_card"}]
     validate_enums(report, {"bouts": [], "events": [], "fighters": [], "bout_participants": [], "source_mentions": [],

@@ -41,7 +41,7 @@ test("文書が無い・空のときは undefined", () => {
   assert.equal(new SourceDocumentLookup(undefined).forVideo({ video_id: "v1" }), undefined);
 });
 
-test("url が無い動画は url 欄が無い文書に当たらない (T.112.4.20)", () => {
+test("url が無い動画は url 欄が無い文書に当たらない (T112.4.20)", () => {
   // 空のキーは登録も検索もしない。以前は undefined 同士が一致して、無関係の文書を返していた。
   const lookup = new SourceDocumentLookup([{ source_id: "youtube_description:x", source_type: "youtube_description", source_ref_id: "x" }]);
   assert.equal(lookup.forVideo({ video_id: "y" }), undefined);

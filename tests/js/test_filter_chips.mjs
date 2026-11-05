@@ -13,7 +13,7 @@ function fakeRepo(revision, mentions, counter) {
   };
 }
 
-test("言及の種別の一覧は revision が変わったときだけ作り直す (T.112.4.22)", () => {
+test("言及の種別の一覧は revision が変わったときだけ作り直す (T112.4.22)", () => {
   const el = { hidden: false, innerHTML: "" };
   const renderer = new FiltersRenderer(el);
   const counter = { reads: 0 };

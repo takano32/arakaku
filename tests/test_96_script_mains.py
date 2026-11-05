@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-# 入口スクリプトの main を、入出力先を tmp_path に差し替えて通す (T.112.6.22・T.112.6.24)。
+# 入口スクリプトの main を、入出力先を tmp_path に差し替えて通す (T112.6.22・T112.6.24)。
 # 規則そのものは arakaku/ の単体テストが見るので、ここでは読み書きのつなぎ方と、入力が欠けたときに
 # 何も書かずに止まることを見る。
 
@@ -97,7 +97,7 @@ def test_generate_official_csvs_writes_the_four_csvs(official_script):
 
 
 def test_generate_official_csvs_writes_nothing_when_an_input_is_missing(official_script):
-    # 以前は 1 つ読んでは 1 つ書いたので、matches.json が無いと players・tournaments だけが書き換わった (T.112.6.24)。
+    # 以前は 1 つ読んでは 1 つ書いたので、matches.json が無いと players・tournaments だけが書き換わった (T112.6.24)。
     (official_script.SRC / "matches.json").unlink()
     with pytest.raises(SystemExit, match="matches.json not found"):
         official_script.main()

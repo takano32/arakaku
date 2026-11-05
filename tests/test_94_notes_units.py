@@ -32,7 +32,7 @@ def test_extract_matchups_standalone_versus_stops_at_a_bout_heading():
 
 def test_clean_fighter_name():
     assert clean_fighter_name(" 🟦○①かぶと【11勝13敗】（王者） ") == "かぶと"
-    assert clean_fighter_name("🟥わく(ターゲットライト級王者)") == "わく"  # 半角の括弧も取る (T.112.6.11)
+    assert clean_fighter_name("🟥わく(ターゲットライト級王者)") == "わく"  # 半角の括弧も取る (T112.6.11)
 
 
 def test_title_to_event_ids_returns_every_event_of_a_joint_event():
@@ -184,7 +184,7 @@ def test_infer_time():
 
 
 def test_crawled_rows_are_classified_like_generated_articles():
-    # crawl 側の 2 つ目の分類器をやめ、classify_article を使う (T.112.6.13)。
+    # crawl 側の 2 つ目の分類器をやめ、classify_article を使う (T112.6.13)。
     from arakaku.notes.crawl import make_article_row
 
     def row(title, key="n0123456789ab"):
@@ -198,7 +198,7 @@ def test_crawled_rows_are_classified_like_generated_articles():
 
 
 def test_promotion_profile_fighters_handle_full_width_brackets():
-    # NFKC で「（）」は「()」になる。以前は全角のまま照合していて、注記が残り MAXバウトの形式も一致しなかった (T.112.4.23)。
+    # NFKC で「（）」は「()」になる。以前は全角のまま照合していて、注記が残り MAXバウトの形式も一致しなかった (T112.4.23)。
     from arakaku.notes.matchups import extract_promotion_profile_fighters
     text = "２代目 むらき（ターゲットライト級王座統一）\n第1回アイス・トロン（エンペラー）\n第７回ブルーワン（エンペラー）"
     assert extract_promotion_profile_fighters(text) == ["むらき", "アイス・トロン", "ブルーワン"]

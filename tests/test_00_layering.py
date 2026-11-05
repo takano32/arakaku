@@ -4,7 +4,7 @@
 scripts/*.py の入口と、下の IO_MODULES (arakaku.io・arakaku.paths・build/io.py の load_tables・
 validation の runner と locate) が決める。
 
-T.112.6.2: 1 段の import だけを見ると、純粋なモジュールが別の arakaku のモジュールを経由して
+T112.6.2: 1 段の import だけを見ると、純粋なモジュールが別の arakaku のモジュールを経由して
 paths を読む場合 (以前の sources/documents.py -> youtube.py -> paths) を見逃す。そのため arakaku.* の
 import を推移的にたどり、I/O のモジュールに着いたら失敗にする。あわせて、すべての arakaku/*.py が
 純粋か I/O のどちらか一方に分類されていることも確かめる (新しいモジュールは分類しないと落ちる)。
@@ -170,6 +170,6 @@ def test_io_chain_follows_imports_transitively(monkeypatch):
 
 
 def test_load_tables_moved_out_of_relations():
-    # build/relations.py はもう I/O をせず、build/io.py の load_tables だけが読む (T.112.6.19)。
+    # build/relations.py はもう I/O をせず、build/io.py の load_tables だけが読む (T112.6.19)。
     assert io_chain("build/relations.py") is None
     assert io_chain("build/io.py") == ["build/io.py", "io.py"]

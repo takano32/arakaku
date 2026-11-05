@@ -109,8 +109,8 @@ def test_build_bouts_derives_matchup_winner_and_loser_from_participants():
     assert [f["side"] for f in decided["fighters"]] == ["red", "blue"]
     assert decided["fighters"][0]["fighter_id"] is None and decided["fighters"][0]["corner"] == "赤"
     assert (decided["winner"], decided["winner_id"], decided["loser"], decided["loser_id"]) == ("赤井", None, "青木", "b")
-    assert decided["result_status"] == "unknown"  # 空の result_status は build/bouts.py が "unknown" にする (T.112.6.23)
-    assert decided["result"]["round"] == 2 and decided["result"]["time"] is None  # 空は null (T.112.4.8)
+    assert decided["result_status"] == "unknown"  # 空の result_status は build/bouts.py が "unknown" にする (T112.6.23)
+    assert decided["result"]["round"] == 2 and decided["result"]["time"] is None  # 空は null (T112.4.8)
     assert decided["source_article_id"] == "result"
     assert unknown["winner"] is None and unknown["loser_id"] is None
     assert unknown["fighters"][0]["result"] == "unknown"
@@ -151,14 +151,14 @@ def test_build_videos_takes_archive_metadata_and_link_status():
     assert full["link_status"] == "linked" and none["link_status"] == "unlinked"
     assert none["channel_name"] is None and none["thumbnail_sizes"] == ""
     assert other["thumbnail_sizes"] == ""  # only YouTube videos have archive thumbnails
-    # チャンネル名と公開日も、同じ ID の YouTube のアーカイブから写さない (T.112.6.22)。
+    # チャンネル名と公開日も、同じ ID の YouTube のアーカイブから写さない (T112.6.22)。
     assert (other["channel_name"], other["published_at"]) == (None, None)
 
 
 # --- build/articles ---
 
 def test_build_articles_keeps_the_status_cell():
-    # 空の status を、検証の vocab に無い "parsed" に書き換えない (T.112.6.10)。
+    # 空の status を、検証の vocab に無い "parsed" に書き換えない (T112.6.10)。
     rows = articles.build_articles([{"article_id": "a", "status": "unparsed"}, {"article_id": "b", "status": ""}])
     assert [row["status"] for row in rows] == ["unparsed", None]
 
@@ -199,17 +199,17 @@ def test_numbers_and_official_builders_parse_integers():
 
 
 def test_build_titles_does_not_crash_on_a_non_numeric_reign_order():
-    # 以前は int と str を比べて TypeError で build ごと止まった。数字の順のあとに文字列の順で並べる (T.112.4.6)。
+    # 以前は int と str を比べて TypeError で build ごと止まった。数字の順のあとに文字列の順で並べる (T112.4.6)。
     reigns = [{"reign_id": f"r{order}", "title_id": "t", "reign_order": order} for order in ("x", "10", "2", "")]
     [title] = titles.build_titles([{"title_id": "t", "promotion_id": "target", "division": "ライト級"}], reigns)
     assert [r["reign_id"] for r in title["lineage"]] == ["r", "r2", "r10", "rx"]
 
 
 def test_empty_bout_result_and_title_cells_become_null():
-    # 以前は time・method_*・technique・decision_score・title_id・title_result だけ空を "" で出していた (T.112.4.8)。
+    # 以前は time・method_*・technique・decision_score・title_id・title_result だけ空を "" で出していた (T112.4.8)。
     from arakaku.build.bouts import _bout_result, _bout_title
     row = {"round": "", "time": "", "method_raw": "", "method_normalized": "", "technique": "", "decision_score": "",
            "is_title_bout": "", "title_id": "", "title_result": "", "title_note": ""}
     assert set(_bout_result(row).values()) == {None}
     title = _bout_title(row)
-    assert (title["title_id"], title["title_result"], title["note"]) == (None, None, None)  # note は T.112.6.15
+    assert (title["title_id"], title["title_result"], title["note"]) == (None, None, None)  # note は T112.6.15

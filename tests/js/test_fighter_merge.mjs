@@ -33,7 +33,7 @@ test("団体が矛盾する組は統合せず、それぞれ merged_fighter_ids 
   assert.deepEqual(survivors.map((f) => f.fighter_id), ["a", "b"]);
   assert.deepEqual(survivors[0].merged_fighter_ids, ["a"]);
   assert.equal(aliasIndex.get("b"), survivors[1]);
-  // 入力 (生の行のことがある) は変更しない (T.112.4.19)
+  // 入力 (生の行のことがある) は変更しない (T112.4.19)
   assert.equal("merged_fighter_ids" in a, false);
   assert.equal("merged_fighter_ids" in b, false);
 });

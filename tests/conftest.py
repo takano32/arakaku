@@ -16,7 +16,7 @@ if str(SCRIPTS) not in sys.path:
 
 @pytest.fixture
 def repo_root() -> Path:
-    # pytest をどのディレクトリから起動しても同じリポジトリを指す (T.112.6.8)。
+    # pytest をどのディレクトリから起動しても同じリポジトリを指す (T112.6.8)。
     return Path(__file__).resolve().parents[1]
 
 
@@ -33,7 +33,7 @@ def load_module(module_name: str, script_path: Path):
 
 @pytest.fixture
 def load_script(repo_root: Path):
-    """scripts/<name>.py を読む関数。テストは conftest を import せず、このフィクスチャを使う (T.112.6.26)。"""
+    """scripts/<name>.py を読む関数。テストは conftest を import せず、このフィクスチャを使う (T112.6.26)。"""
 
     def _load(name: str):
         return load_module(name, repo_root / "scripts" / f"{name}.py")

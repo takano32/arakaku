@@ -36,7 +36,7 @@ def test_result_text_finds_the_result_line():
 
 
 def test_locate_winner_passes_name_variants_in_sorted_order(monkeypatch):
-    # 名前の表記は set なので、そのまま回すと実行ごとに順番が変わり、引用する行が揺れうる (T.112.4.2)。
+    # 名前の表記は set なので、そのまま回すと実行ごとに順番が変わり、引用する行が揺れうる (T112.4.2)。
     from arakaku.review import note_results
     seen = []
     monkeypatch.setattr(note_results, 'pair_verdicts', lambda lines, names_a, names_b: seen.append((names_a, names_b)) or [(True, 1, 1)])
@@ -46,7 +46,7 @@ def test_locate_winner_passes_name_variants_in_sorted_order(monkeypatch):
     assert result == ('waku', 'n1', 1, 1)
 
 
-# --- review/note_results の Numbers の表 (T.112.6.22) ---
+# --- review/note_results の Numbers の表 (T112.6.22) ---
 
 def test_numbers_key_prefers_matched_ids_and_needs_both_fighters():
     from arakaku.review.note_results import numbers_key

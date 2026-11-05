@@ -36,7 +36,7 @@ test("最初の書き込みと検索語・絞り込みの変更は replaceState�
   assert.deepEqual(first.calls, [["replace", null, "/arakaku/"]]);
 });
 
-test("タブ・飛び先が変わるとスクロール位置を残してから pushState する (T.80 / T.102)", () => {
+test("タブ・飛び先が変わるとスクロール位置を残してから pushState する (T80 / T102)", () => {
   const { calls, history, sync, setScroll } = fakeBrowser();
   sync.write(state({ tab: "fighters" }));
   setScroll(320);

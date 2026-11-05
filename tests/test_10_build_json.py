@@ -40,7 +40,7 @@ def test_load_json_raises_on_invalid_json(io_module, tmp_path):
 
 
 def test_read_json_raises_on_missing_file(io_module, tmp_path):
-    # 必須の入力が無いのに空として扱うと、review の CSV を見出しだけで上書きしてしまう (T.112.1.11)。
+    # 必須の入力が無いのに空として扱うと、review の CSV を見出しだけで上書きしてしまう (T112.1.11)。
     with pytest.raises(FileNotFoundError, match="run make build"):
         io_module.read_json(tmp_path / "absent.json")
     (tmp_path / "ok.json").write_text("[1]", encoding="utf-8")
@@ -48,14 +48,14 @@ def test_read_json_raises_on_missing_file(io_module, tmp_path):
 
 
 def test_read_csv_required_raises_outside_data_src(io_module, tmp_path):
-    # data-src の外 (review/) の CSV は既定では [warn] と空だが、required=True ならエラー (T.112.4.5)。
+    # data-src の外 (review/) の CSV は既定では [warn] と空だが、required=True ならエラー (T112.4.5)。
     assert io_module.read_csv(tmp_path / "absent.csv") == []
     with pytest.raises(FileNotFoundError):
         io_module.read_csv(tmp_path / "absent.csv", required=True)
 
 
 def test_atomic_open_leaves_the_original_file_on_failure(io_module, tmp_path):
-    # 書いている途中で落ちても、元のファイルは変わらず、一時ファイルも残らない (T.112.6.22)。
+    # 書いている途中で落ちても、元のファイルは変わらず、一時ファイルも残らない (T112.6.22)。
     target = tmp_path / "bouts.csv"
     target.write_text("original\n", encoding="utf-8")
     with pytest.raises(RuntimeError, match="boom"):

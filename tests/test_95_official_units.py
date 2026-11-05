@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-# arakaku/official (公式サイトのソース -> official_*.csv の行) の単体テスト (T.112.6.22)。
+# arakaku/official (公式サイトのソース -> official_*.csv の行) の単体テスト (T112.6.22)。
 # 実データの CSV は make build と validate が通すので、ここでは写し方の規則だけを小さな入力で見る。
 
 from arakaku.official.csvs import history_rows, match_rows, player_rows, tournament_rows
@@ -16,7 +16,7 @@ def test_player_rows_map_camel_case_keys_and_stringify_numbers():
 
 
 def test_json_null_becomes_an_empty_cell_not_none():
-    # 以前は str(None) で "None" と書いていた (T.112.6.22)。
+    # 以前は str(None) で "None" と書いていた (T112.6.22)。
     [row] = player_rows([{"id": "p1", "age": None, "height": None, "wins": None, "losses": None, "draws": None}])
     assert [row[k] for k in ("age", "height", "wins", "losses", "draws")] == ["", "", "", "", ""]
     [entry] = history_rows([{"year": None, "era": "黎明期", "events": [{"title": "旗揚げ"}]}])

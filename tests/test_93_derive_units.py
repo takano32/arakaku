@@ -134,7 +134,7 @@ def test_alias_rows_from_numbers_matches_display_names_and_static_tables():
     rows = alias_rows(matches, fighters)
     fighter_rows = [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "fighters"]
     assert fighter_rows == [("カブト", "kabuto"), ("ザモン", "zamon"), ("ローリングJr.", "rolling_jr"), ("ローリングjr", "rolling_jr")]
-    # モジュール自身の定数と比べると常に真なので、行をそのまま書く (T.112.6.7)。
+    # モジュール自身の定数と比べると常に真なので、行をそのまま書く (T112.6.7)。
     assert [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "promotions"] == [
         ("ターゲット", "target"), ("エンペラー", "emperor"), ("マウンテン・ヒーローズ", "mh"), ("M・H", "mh"), ("MAXバウト", "max_bout")]
     assert [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "methods"] == [
@@ -151,5 +151,5 @@ def test_ordering_keys():
     assert bout_sort_key({"event_id": "e1", "bout_order": "10"}, {"e1": "2021-01-01"}) == ("2021-01-01", "e1", 10)
     assert bout_sort_key({"event_id": "e9", "bout_order": "x"}, {}) == ("0000-00-00", "e9", 0)
     reigns = [{"title_id": "t", "reign_order": o} for o in ("x", "10", "2", "")]
-    # 数字でない値は build/titles.py の lineage と同じく末尾 (T.112.6.12)。
+    # 数字でない値は build/titles.py の lineage と同じく末尾 (T112.6.12)。
     assert [r["reign_order"] for r in sorted(reigns, key=reign_sort_key)] == ["", "2", "10", "x"]

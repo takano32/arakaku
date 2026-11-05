@@ -56,7 +56,7 @@ def test_thumbnail_sizes_orders_known_sizes_and_keeps_unknown(youtube_module):
 
 
 def test_iter_cached_videos_raises_on_invalid_json(youtube_module, tmp_path):
-    # 以前は [warn] を出して飛ばしていたので、その動画の本文とアーカイブ行が黙って消えた (T.112.4.12)。
+    # 以前は [warn] を出して飛ばしていたので、その動画の本文とアーカイブ行が黙って消えた (T112.4.12)。
     (tmp_path / "broken.json").write_text("{", encoding="utf-8")
     with pytest.raises(ValueError, match="invalid YouTube cache JSON"):
         list(youtube_module.iter_cached_videos(tmp_path))
