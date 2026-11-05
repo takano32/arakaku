@@ -49,8 +49,8 @@ def report():
 
 
 @pytest.fixture
-def source_result_candidates_module(repo_root: Path):
-    return load_module("source_result_candidates", repo_root / "scripts" / "make_source_mention_result_candidates.py")
+def source_result_candidates_module():
+    return importlib.import_module("arakaku.review.mention_result_candidates")
 
 
 @pytest.fixture

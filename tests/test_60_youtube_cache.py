@@ -1,15 +1,11 @@
 import importlib
 import json
-import sys
 
 import pytest
 
 
 @pytest.fixture
-def youtube_module(repo_root):
-    # arakaku.youtube は arakaku.utils を絶対 import するので scripts/ をパスに載せて package として読む。
-    if str(repo_root / "scripts") not in sys.path:
-        sys.path.insert(0, str(repo_root / "scripts"))
+def youtube_module():
     return importlib.import_module("arakaku.youtube")
 
 
