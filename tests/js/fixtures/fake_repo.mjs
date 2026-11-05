@@ -119,7 +119,7 @@ export function fakeData() {
       { video_id: "youtube_a", entity_type: "bout", entity_id: "target-1-01", relation_type: "full_fight" },
       { video_id: "youtube_a", entity_type: "fighter", entity_id: "kabei", relation_type: "full_fight" },
       { video_id: "youtube_b", entity_type: "event", entity_id: "emperor-lightweight-gp", relation_type: "highlight", start_time: "0:00", end_time: "5:00" },
-      { video_id: "youtube_c", entity_type: "promotion", entity_id: "target", relation_type: "reference" },
+      { video_id: "youtube_c", entity_type: "event", entity_id: "target-1", relation_type: "reference" },
     ],
     youtubeArchives: [
       { display_id: "AAA", webpage_url: "https://www.youtube.com/watch?v=AAA", fulltitle: "ターゲットNo.1 かべい vs コルト・アプロー", duration_string: "10:00", view_count: "100", like_count: "5", description: "かべいの KO 勝ち" },

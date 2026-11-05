@@ -36,5 +36,6 @@ test("body に試合・動画・出典候補", () => {
   const body = desc.renderBody(desc.items[0]);
   assert.match(body, /試合（2）/);
   assert.match(body, /data-yt-id="AAA"/); // 大会の試合に紐づく動画
+  assert.match(body, /data-yt-id="CCC"/); // 大会に直接紐づく動画
   assert.match(body, /出典候補/);
 });
