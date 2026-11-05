@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from arakaku.csvmap import field_or_empty, int_field, map_rows
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 
 
 def build_numbers_fighters(numbers_fighters: list[CsvRow]) -> list[dict[str, Any]]:

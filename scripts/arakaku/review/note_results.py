@@ -17,8 +17,8 @@ import collections
 import re
 from dataclasses import dataclass, field
 
-from arakaku.io import CsvRow
 from arakaku.notes.results import pair_verdicts, parse_result, result_text
+from arakaku.schema import CsvRow
 from arakaku.text import nfkc
 
 FIELDS = [

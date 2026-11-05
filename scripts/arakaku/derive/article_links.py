@@ -9,7 +9,7 @@
 #   - 同一 (記事, エンティティ種別, エンティティID) の重複リンクは 1 本に畳む。
 #   - article_type の値（event_card/event_result/promotion_profile）は arakaku/notes/articles.py の
 #     分類と同期していること。
-#   - 動画リンクはここで作らない（note HTML に YouTube ID が無いため）。それは scripts/generate_video_links.py。
+#   - 動画リンクはここで作らない（note HTML に YouTube ID が無いため）。それは derive/video_links.py。
 # 関連スキル: .agents/skills/arakaku-source-pipeline
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Callable
 
-from arakaku.io import CsvRow
 from arakaku.notes.matchups import extract_matchups, extract_promotion_profile_fighters, title_to_event_ids
+from arakaku.schema import CsvRow
 
 FIELDS = ["link_id", "article_id", "entity_type", "entity_id", "relation_type", "notes"]
 

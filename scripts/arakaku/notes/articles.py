@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 
 FIELDS = [
     "article_id", "title", "url", "source_type", "article_type",

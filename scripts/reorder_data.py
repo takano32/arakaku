@@ -2,21 +2,18 @@ from __future__ import annotations
 # 役割: 主要な data-src CSV（articles / events / bouts / videos / source_documents /
 #       title_reigns）を時系列＋安定タイ・ブレイクで並べ替え、その場で上書き保存する。
 #       決定的な行順を保証し、再生成時の git diff を小さく保つための整列パス。
-# アーキ上の位置: generate-stage1 の最後で実行（Makefile の reorder-data ターゲット）。
+#       並べ替えキーは arakaku/derive/ordering.py にあり、ここは読み書きだけをする。
+# アーキ上の位置: generate-stage2 のあとに 1 回実行（Makefile の reorder-data ターゲット。article_links.csv を読むため）。
 #       事実データは一切変更せず行の並びだけを変える。bouts は events の日付に依存するため、
 #       events を整列して作る event_date_map を使う＝events より後に並べる必要がある。
 # 不変条件: 列順は read_csv 直後の既存ヘッダ（list(rows[0].keys())）を再利用し、列の
 #       追加・削除・改名は行わない。空日付は "0000-00-00" 扱いで先頭（最古）に寄せる。
 #       タイ・ブレイクに主キー/順序列を足して並びを決定的にしている（同点でも順序が揺れない）。
 # 関連スキル: .agents/skills/arakaku-sorting-strategy
+from arakaku.derive.ordering import bout_sort_key, event_sort_date, reign_sort_key, sort_key_date
+from arakaku.event_dates import event_note_dates
 from arakaku.io import read_csv, write_csv
 from arakaku.paths import DATA_SRC
-
-def sort_key_date(row: dict[str, str], field: str) -> str:
-    val = row.get(field, "")
-    if not val:
-        return "0000-00-00" # Put empty dates at the beginning (oldest)
-    return val
 
 def reorder_csvs():
     # 1. Articles
@@ -26,25 +23,12 @@ def reorder_csvs():
         write_csv(DATA_SRC / "articles.csv", list(articles[0].keys()), articles)
 
     # 2. Events
-    # 大会の日付は CSV に無いので、結果 note の投稿日 (build_json.py の result_published_at と同じ)、
+    # 大会の日付は CSV に無いので、結果 note の投稿日 (events.json の result_published_at と同じ規則)、
     # 無ければその大会の note のいちばん早い投稿日 (対戦カードだけの大会)、それも無ければ published_at で並べる (T.77)。
-    article_dates = {a["article_id"]: (a.get("article_type", ""), a.get("published_at", "")) for a in articles}
-    result_dates: dict[str, str] = {}
-    any_note_dates: dict[str, str] = {}
-    for link in read_csv(DATA_SRC / "article_links.csv"):
-        if link["entity_type"] != "event":
-            continue
-        article_type, date = article_dates.get(link["article_id"], ("", ""))
-        if not date:
-            continue
-        event_id = link["entity_id"]
-        if article_type == "event_result" and date < result_dates.get(event_id, "9999"):
-            result_dates[event_id] = date
-        if date < any_note_dates.get(event_id, "9999"):
-            any_note_dates[event_id] = date
+    result_dates, note_dates = event_note_dates(articles, read_csv(DATA_SRC / "article_links.csv"))
 
     def event_date(e: dict[str, str]) -> str:
-        return result_dates.get(e["event_id"]) or any_note_dates.get(e["event_id"]) or sort_key_date(e, "published_at")
+        return event_sort_date(e, result_dates, note_dates)
 
     events = read_csv(DATA_SRC / "events.csv")
     if events:
@@ -59,16 +43,7 @@ def reorder_csvs():
     bouts = read_csv(DATA_SRC / "bouts.csv")
     if bouts:
         # (イベント日付, event_id, bout_order) の三段ソートで同一イベント内の試合順も安定させる。
-        def bout_sort_key(b):
-            event_date = event_date_map.get(b["event_id"], "0000-00-00")
-            order = b.get("bout_order", "0")
-            try:
-                order_int = int(order)
-            except ValueError:
-                order_int = 0
-            return (event_date, b["event_id"], order_int)
-        
-        bouts.sort(key=bout_sort_key)
+        bouts.sort(key=lambda b: bout_sort_key(b, event_date_map))
         write_csv(DATA_SRC / "bouts.csv", list(bouts[0].keys()), bouts)
 
     # 4. Videos
@@ -88,17 +63,14 @@ def reorder_csvs():
     # 6. Title Reigns
     reigns = read_csv(DATA_SRC / "title_reigns.csv")
     if reigns:
-        def reign_sort_key(r):
-            tid = r["title_id"]
-            order = r.get("reign_order", "0")
-            try:
-                order_int = int(order)
-            except ValueError:
-                order_int = 0
-            return (tid, order_int)
-        
         reigns.sort(key=reign_sort_key)
         write_csv(DATA_SRC / "title_reigns.csv", list(reigns[0].keys()), reigns)
 
-if __name__ == "__main__":
+
+def main() -> int:
     reorder_csvs()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

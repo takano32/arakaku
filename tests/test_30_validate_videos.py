@@ -3,7 +3,9 @@ from __future__ import annotations
 # make validate がすでに実データで validate_videos / validate_video_links を通しているので、
 # ここでは壊れた入力が確実にエラーになることだけを確かめる (T.85)。
 
-from arakaku.validation import Report, validate_video_links, validate_videos
+from arakaku.validation.entities import validate_videos
+from arakaku.validation.links import validate_video_links
+from arakaku.validation.report import Report
 
 
 def test_validate_videos_rejects_bad_rows(report: Report):

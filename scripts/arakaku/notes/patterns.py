@@ -1,4 +1,4 @@
-# 役割: 複数スクリプト間で挙動を完全一致させたいテキスト解析の正規表現/関数を共有する。
+# 役割: 複数スクリプト間で挙動を完全一致させたい note のテキスト解析の正規表現/関数を共有する。
 #   (下の docstring がモジュールの方針を述べているので必ず合わせて読むこと)
 # アーキ上の位置: sources/mentions.py が NOTE_URL_RE / YOUTUBE_URL_RE / VS_RE を、
 #   review/mention_result_candidates.py が infer_time / find_method / normalize_digits を、

@@ -4,7 +4,7 @@
 #   mentions.py で言及を起こして write_csv する。note 本文の抽出は arakaku/notes/html.py。
 # 不変条件:
 #   - キャッシュ (tmp/) はコミットしない。本文ハッシュ (content_hash) で内容同一性を表す。
-#   - note キャッシュのファイル名は arakaku.paths.note_cache_name (writer=cache_note_html.py と契約)。
+#   - note キャッシュのファイル名は arakaku.notes.cache の is_note_article_url・note_cache_name (writer=cache_note_html.py と契約)。
 #   - videos.csv に登録済みなら正規の値 (video_id / title / url) を優先し、未登録分は API キャッシュから補う
 #     (CSV を事実源として尊重しつつ取りこぼさない)。
 #   - fetched_at は本文 (content_hash) が前回と同じ行では前回の値を引き継ぐ
@@ -17,9 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from arakaku.io import CsvRow
+from arakaku.notes.cache import is_note_article_url, note_cache_name
 from arakaku.notes.html import note_content_text
-from arakaku.paths import note_cache_name
+from arakaku.schema import CsvRow
 from arakaku.text import normalize_text
 
 DOCUMENT_FIELDS = [
@@ -70,7 +70,7 @@ def note_documents(articles: list[CsvRow], html_dir: Path, fetched_at: str) -> l
     for article in articles:
         url = article.get("url", "")
         article_id = article.get("article_id", "")
-        if "note.com" not in url:
+        if not is_note_article_url(url):
             continue
         html_path = html_dir / note_cache_name(article_id, url)
         if not html_path.exists():

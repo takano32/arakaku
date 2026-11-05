@@ -1,6 +1,9 @@
 # 役割: data-src/*.csv の列の定義 (ヘッダの正本)。arakaku.io.read_csv が読み込み時に照合し、
 #   tests/test_05_csv_schema.py も同じ表を使う。列を足す・消す・改名するときはここも変える。
+#   CsvRow (CSV の 1 行の型) もここに置く。読み書きをしない純粋なモジュールが io を import せずに使えるように。
 # 不変条件: キーは DATA_SRC からの相対パス、値は CSV の 1 行目と同じ並びの列名。
+
+CsvRow = dict[str, str]
 
 CSV_HEADERS: dict[str, list[str]] = {
     "aliases.csv": ["alias_type", "alias", "canonical_id"],

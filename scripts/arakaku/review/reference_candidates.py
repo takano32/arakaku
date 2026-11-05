@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 from arakaku.text import compact_join, compact_text
 
 EVENT_FIELDS = [

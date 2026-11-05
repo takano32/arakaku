@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from arakaku.csvmap import int_field, map_rows
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 
 
 def build_official_players(players: list[CsvRow]) -> list[dict[str, Any]]:

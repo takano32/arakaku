@@ -35,6 +35,10 @@ DEFAULT_HTML_URL = f"https://note.com/{DEFAULT_CREATOR}"
 USER_AGENT = "arakaku-note-crawler/1.0 (+https://github.com/takano32/arakaku)"
 
 
+def log_stderr(message: str) -> None:
+    print(message, file=sys.stderr)
+
+
 def fetch_text(url: str, *, sleep: float = 0.5) -> str:
     req = urllib.request.Request(
         url,
@@ -89,7 +93,7 @@ def main() -> int:
     failed = False
     if args.use_api:
         try:
-            api_rows = crawl_note_api_pages(args.creator, args.page_limit, args.sleep, fetch_text)
+            api_rows = crawl_note_api_pages(args.creator, args.page_limit, args.sleep, fetch_text, log=log_stderr)
         except FetchFailed as exc:
             print(f"[error] {exc}", file=sys.stderr)
             failed, api_rows = True, []

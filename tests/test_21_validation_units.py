@@ -5,26 +5,25 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from arakaku.validation import (
-    ALL_JSON_FILES,
-    REQUIRED_JSON_FILES,
-    Report,
-    locate_error,
-    run,
-    validate_archive_data,
+from arakaku.validation.archives import validate_archive_data
+from arakaku.validation.entities import (
     validate_bout_participants,
     validate_bouts,
-    validate_docs_data,
     validate_events,
     validate_fighter_snapshots,
     validate_fighters,
-    validate_numbers_data,
-    validate_official_history,
     validate_promotions,
+    validate_titles,
+)
+from arakaku.validation.locate import locate_error
+from arakaku.validation.numbers import validate_numbers_data
+from arakaku.validation.official import validate_official_history
+from arakaku.validation.report import Report
+from arakaku.validation.runner import ALL_JSON_FILES, REQUIRED_JSON_FILES, run, validate_docs_data
+from arakaku.validation.sources import (
     validate_source_document_bodies,
     validate_source_mentions,
     validate_source_references,
-    validate_titles,
 )
 
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 from arakaku.text import none_if_empty, parse_int
 
 SchemaSpec = Any

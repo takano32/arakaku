@@ -1,7 +1,7 @@
 # 役割: 結果 note の本文 (行のリスト) から、試合の 2 人の名前の直前の ○/◯/〇 (勝ち)・● (負け) で
 #   勝者を決め、名前と同じ行の（…）か直後の行から決着の文言を読み、ラウンド/タイム/決着方法に分解する。
 # アーキ上の位置: arakaku/review/note_results.py (match_unknown_bouts_to_note_results.py) が使う。
-#   勝敗記号の定義は arakaku/textparse.py と共有。
+#   勝敗記号の定義は arakaku/notes/patterns.py と共有。
 # なぜ試合側から探すか: 以前の extract_note_structured_results.py (T.84 で削除) は note 側から試合を
 #   組み立てたので、合同大会の記事・片側だけの記号・「🟦ザモン」のようなコーナー記号付きの行を取りこぼし、
 #   別の試合の記号を混ぜることもあった (T.70)。こちらは試合の 2 人を先に決めて探す。
@@ -17,9 +17,9 @@ import re
 from typing import Iterable
 
 from arakaku.text import nfkc
-from arakaku.textparse import WIN_MARKS
+from arakaku.notes.patterns import WIN_MARKS
 
-# 勝敗記号は arakaku/textparse.py と共有 (〇 U+3007 も勝ち)。NFKC 後は ① が "1" になるので数字を読み飛ばす。
+# 勝敗記号は arakaku/notes/patterns.py と共有 (〇 U+3007 も勝ち)。NFKC 後は ① が "1" になるので数字を読み飛ばす。
 MARK_BEFORE_NAME = re.compile(r"([○◯〇●])[\s🟥🟦\d]*$")
 # カード形式の結果 note は「名前 / 年齢 / 戦績 / 🆚 / 名前」と 4 行離れるので 5 行まで見る。
 NEAR_LINES = 5

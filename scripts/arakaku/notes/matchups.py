@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import re
 
+from arakaku.notes.patterns import RESULT_MARKS, strip_name_prefix
 from arakaku.text import nfkc
-from arakaku.textparse import RESULT_MARKS, strip_name_prefix
 
 # 選手名の行の先頭に付くコーナー・勝敗記号 (◯・〇 を含む。T.93)。
 FIGHTER_NAME_STARTERS = ("🟥", "🟦", *RESULT_MARKS)
