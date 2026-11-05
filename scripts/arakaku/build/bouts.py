@@ -44,22 +44,23 @@ def _is_title_bout(row: CsvRow) -> bool:
 
 
 def _bout_result(row: CsvRow) -> dict[str, Any]:
+    # 空のセルは、ほかの列と同じく null にする (以前はこの列と王座の列だけ "" だった。T.112.4.8)。
     return {
         # "R3" 形式から "R" を除いて数値化する。
         "round": int_field("round", strip_prefix="R")(row),
-        "time": row.get("time"),
-        "method_raw": row.get("method_raw"),
-        "method_normalized": row.get("method_normalized"),
-        "technique": row.get("technique"),
-        "decision_score": row.get("decision_score"),
+        "time": none_if_empty(row.get("time")),
+        "method_raw": none_if_empty(row.get("method_raw")),
+        "method_normalized": none_if_empty(row.get("method_normalized")),
+        "technique": none_if_empty(row.get("technique")),
+        "decision_score": none_if_empty(row.get("decision_score")),
     }
 
 
 def _bout_title(row: CsvRow) -> dict[str, Any]:
     return {
         "is_title_bout": _is_title_bout(row),
-        "title_id": row.get("title_id"),
-        "title_result": row.get("title_result"),
+        "title_id": none_if_empty(row.get("title_id")),
+        "title_result": none_if_empty(row.get("title_result")),
         "note": none_if_empty(row.get("title_note")) or "",
     }
 
