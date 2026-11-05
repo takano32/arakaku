@@ -22,12 +22,18 @@ test("events.csv に無い「団体 + 興行番号」だけを合成し、名前
 });
 
 test("No.N 大会が無い団体は団体名 + No.N、数字でない興行番号と既知の numbers_event_number は除く", () => {
+  // numbers_event_number が数字の大会: 名鑑の "5" はこの大会に当たり、event_number の "205" では当たらない
+  const withNumbersNumber = [...events, { event_id: "max-bout-5", promotion_id: "max_bout", event_number: 205, numbers_event_number: "5", name: "MAXバウト 5" }];
   const out = buildNumbersOnly({
-    events,
-    fightRecords: [record({ promotion_id: "emperor", event_number_normalized: "3" }), record({ promotion_id: "max_bout", event_number_normalized: "SP" }), record({ event_number_normalized: "" }), record({ event_number_normalized: undefined })],
+    events: withNumbersNumber,
+    fightRecords: [
+      record({ promotion_id: "emperor", event_number_normalized: "3" }), record({ promotion_id: "max_bout", event_number_normalized: "SP" }),
+      record({ event_number_normalized: "" }), record({ event_number_normalized: undefined }),
+      record({ promotion_id: "max_bout", event_number_normalized: "5" }), record({ promotion_id: "max_bout", event_number_normalized: "205" }),
+    ],
     promotionName,
   });
-  assert.deepEqual(out.events.map((e) => e.name), ["エンペラーNo.3"]);
+  assert.deepEqual(out.events.map((e) => e.name), ["エンペラーNo.3", "max_boutNo.205"]);
 });
 
 test("両選手の側の 2 行は 1 試合にまとまり、勝者・敗者・名鑑確認済みになる", () => {

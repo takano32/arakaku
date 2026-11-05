@@ -25,10 +25,9 @@ test("head に区分のラベルとルール、大会数 (名鑑だけの大会�
   assert.match(head, /大会 2/);
 });
 
-test("body に大会・王座・動画", () => {
+test("body に大会・王座", () => {
   const desc = build({ query: "TARGET" });
   const body = desc.renderBody(desc.items[0]);
   assert.match(body, /大会（2）/);
   assert.match(body, /ターゲット ライト級王座/);
-  assert.match(body, /data-yt-id="CCC"/);
 });

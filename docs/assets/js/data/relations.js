@@ -26,14 +26,14 @@ export function videoIdsLinkedToEventBouts(bouts, videoLinks, eventId) {
 /** 戦績スナップショットを大会の新しい順に並べた新しい配列 (同じ日付なら event_id の降順)。 */
 export function sortSnapshotsByEvent(snapshots, findEvent) {
   return [...snapshots]
-    .sort((a, b) => eventSortDate(findEvent(b.event_id)).localeCompare(eventSortDate(findEvent(a.event_id)))
+    .sort((a, b) => eventSortDate(findEvent(b.event_id)).localeCompare(eventSortDate(findEvent(a.event_id)), "ja")
       || String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
 }
 
 /** 大会を新しい順に並べた新しい配列 (同じ日付なら興行番号の大きい順)。 */
 export function sortEventsNewestFirst(events) {
   return [...events]
-    .sort((a, b) => eventSortDate(b).localeCompare(eventSortDate(a)) || (b.event_number ?? 0) - (a.event_number ?? 0));
+    .sort((a, b) => eventSortDate(b).localeCompare(eventSortDate(a), "ja") || (b.event_number ?? 0) - (a.event_number ?? 0));
 }
 
 /** 言及を種別ごとに数える。types に無い種別は数えない (types の種別はすべて 0 から)。 */

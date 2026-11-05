@@ -33,6 +33,21 @@ test("箇条書きの後の段落にも p が付く", () => {
   assert.equal(mdToHtml("- x\n- y\n\ntext"), "<ul><li>x</li>\n<li>y</li></ul>\n<p>text</p>");
 });
 
+test("| で始まる連続行は表になり、区切り行は捨て、セルの中も変換する", () => {
+  assert.equal(
+    mdToHtml("| 日付 | 会場 |\n|---|:-:|\n| 6/1 | **東京** |\n\n後の段落"),
+    "<table><tr><td>日付</td><td>会場</td></tr><tr><td>6/1</td><td><strong>東京</strong></td></tr></table>\n<p>後の段落</p>",
+  );
+});
+
+test("** で囲んだ部分は太字 (最短一致なので 1 行に複数あってもよい)", () => {
+  assert.equal(mdToHtml("これは **太字** と **もう一つ**"), "<p>これは <strong>太字</strong> と <strong>もう一つ</strong></p>");
+});
+
+test("行末の空白 2 つも段落内の改行も br になる", () => {
+  assert.equal(mdToHtml("1 行目  \n2 行目\n3 行目"), "<p>1 行目<br>2 行目<br>3 行目</p>");
+});
+
 test("許可ホストの iframe 行だけ埋め込み、ほかはリンクか文字", () => {
   const ok = mdToHtml('<iframe src="https://tiget.net/events/1/widgets" width="255" height="470"></iframe>');
   assert.ok(ok.includes('<iframe class="md-embed" src="https://tiget.net/events/1/widgets"'), ok);

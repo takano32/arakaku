@@ -32,6 +32,9 @@ const KEY_ACTIONS = {
  */
 export function keyToAction({ key, shiftKey, ctrlKey, metaKey, altKey, inInput, dialogOpen, onControl, hasQuery }) {
   if (inInput) return key === "Escape" ? { name: "blurInput", preventDefault: false } : null;
+  // 修飾キー付きは ? と Esc も含めて無視する (Shift は ? の入力に要るので見ない)。以前は ? と Esc を先に扱っていて、
+  // Ctrl/Meta/Alt+? でヘルプが開き、Meta+Esc で検索が消えた (T.112.6.20)。
+  if (ctrlKey || metaKey || altKey) return null;
   if (key === "Escape") {
     if (dialogOpen) return { name: "closeHelp", preventDefault: false };
     // 検索語があるときだけ消す。無いときに消すと選手などの絞り込みまで外れて履歴も積まれていた (T.102)。
@@ -39,13 +42,27 @@ export function keyToAction({ key, shiftKey, ctrlKey, metaKey, altKey, inInput, 
   }
   if (key === "?") return { name: "toggleHelp", preventDefault: true };
   if (dialogOpen) return null;
-  if (ctrlKey || metaKey || altKey) return null;
   if ((key === "Enter" || key === " ") && onControl) return null;
   if (key === " ") return { name: shiftKey ? "scrollUp" : "scrollDown", preventDefault: true };
   if (Object.hasOwn(KEY_ACTIONS, key)) return { name: KEY_ACTIONS[key], preventDefault: true };
   const num = parseInt(key, 10);
   if (num >= 1 && num <= PUBLIC_TABS.length) return { name: "tab", preventDefault: false, tabIndex: num - 1 };
   return null;
+}
+
+/**
+ * 公開タブの並びで delta (±1) だけ隣のタブの ID を返す (純関数)。端では反対側へ回る。
+ * 管理タブ表示中 (currentTab が公開タブに無い) は公開の先頭/末尾から始める。
+ * @param {string} currentTab
+ * @param {number} delta
+ * @returns {string}
+ */
+export function nextTabId(currentTab, delta) {
+  const tabs = PUBLIC_TABS.map(([id]) => id);
+  const current = tabs.indexOf(currentTab);
+  const base = current === -1 ? (delta > 0 ? -1 : 0) : current;
+  const next = (base + delta + tabs.length) % tabs.length;
+  return tabs[next];
 }
 
 /**
@@ -83,12 +100,7 @@ export class KeyboardNav {
   }
 
   #switchTabBy(delta) {
-    const tabs = PUBLIC_TABS.map(([id]) => id);
-    const current = tabs.indexOf(this.app.state.tab);
-    // 管理タブ表示中 (current === -1) は公開の先頭/末尾から始める
-    const base = current === -1 ? (delta > 0 ? -1 : 0) : current;
-    const next = (base + delta + tabs.length) % tabs.length;
-    this.app.switchTab(tabs[next]);
+    this.app.switchTab(nextTabId(this.app.state.tab, delta));
   }
 
   #onKeyDown(e) {

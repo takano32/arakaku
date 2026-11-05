@@ -5,7 +5,7 @@
  * 各 Map は配列順で最初に現れた文書を保持し、各エントリには元配列の添字 (idx) を添えておく。
  * 複数キーがヒットしても「元配列で最初の文書」を選び直せるようにするため
  * (線形 find が OR 条件全体で配列順最初の文書を返すのと同じ結果になる)。
- * キーは === と同じ照合になるよう値そのもの (undefined/"" 含む) で登録する。
+ * キーは === と同じ照合になるよう値そのもので登録する。ただし空のキー (null/undefined/"") は登録しない (remember を参照)。
  */
 export class SourceDocumentLookup {
   #tables = new Map(); // source_type → { refId, sourceId, url } (各 Map: key → { doc, idx })

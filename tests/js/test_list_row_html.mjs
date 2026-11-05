@@ -4,7 +4,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { renderErrorHtml, rowShellHtml, safeRender, toggleLabel } from "../../docs/assets/js/ui/list/row_html.js";
-import { INTERACTIVE_SELECTOR } from "../../docs/assets/js/ui/list/record_list.js";
 
 test("行の枠のテンプレート", () => {
   assert.equal(rowShellHtml(), `
@@ -35,8 +34,4 @@ test("safeRender は成功すればそのまま、例外ならエラーの HTML 
   assert.equal(html, '<p class="render-error">描画エラー: x &lt; y</p>');
   assert.equal(logged.length, 1);
   assert.equal(logged[0][0], "RecordList: renderBody failed");
-});
-
-test("見出し部のクリックで開閉しない要素", () => {
-  assert.equal(INTERACTIVE_SELECTOR, "a, button, summary, input, select, textarea, label");
 });

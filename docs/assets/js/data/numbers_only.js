@@ -82,7 +82,7 @@ export function buildNumbersOnly({ events: rawEvents, fightRecords, promotionNam
       numbers_only: true,
     });
   }
-  const byNumber = (a, b) => a.promotion_id.localeCompare(b.promotion_id) || a.event_number - b.event_number;
+  const byNumber = (a, b) => a.promotion_id.localeCompare(b.promotion_id, "ja") || a.event_number - b.event_number;
   const eventList = [...events.values()].sort(byNumber);
   // 大会 (団体・興行番号) → 対戦の名前の順に並べる。記録の並びのままだと試合タブで大会が混ざる (T.90)。
   const eventOrder = new Map(eventList.map((e, i) => [e.event_id, i]));

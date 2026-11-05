@@ -63,3 +63,64 @@ test("loadKeys(required) は形の壊れたファイルで throw する", async 
   const loader = new DataLoader({ patch() {} }, { dataFiles: { officialPages: "official_pages.json" }, fetchText: async () => "{}" });
   await assert.rejects(loader.loadKeys(["officialPages"], { required: true }), /official_pages\.json: 配列 JSON ではありません/);
 });
+
+test("loadKeys(required) はすべてを検査してから書くので、壊れたファイルがあれば何も書かない (T.112.6.17)", async () => {
+  const state = { patch() {} };
+  const files = { officialNews: "official_news.json", officialPages: "official_pages.json" };
+  const texts = { "official_news.json": '[{"slug":"a"}]', "official_pages.json": "{}" };
+  const loader = new DataLoader(state, { dataFiles: files, fetchText: async (path) => texts[path] });
+  await assert.rejects(loader.loadKeys(["officialNews", "officialPages"], { required: true }), /official_pages\.json: 配列 JSON ではありません/);
+  assert.deepEqual(state.data.officialNews, []);
+  assert.deepEqual(state.data.officialPages, []);
+  assert.equal(state.loadedDataKeys.size, 0);
+  assert.equal(state.loadingDataKeys.size, 0);
+  assert.deepEqual(state.dataLoadErrors, {});
+});
+
+test("loadKeys(required) は取得の失敗をそのまま throw し、何も書かず読み込み済みにもしない", async () => {
+  const state = { patch() {} };
+  const files = { officialNews: "official_news.json", officialPages: "official_pages.json" };
+  const fetchText = async (path) => {
+    if (path === "official_pages.json") throw new Error("HTTP 500");
+    return '[{"slug":"a"}]';
+  };
+  const loader = new DataLoader(state, { dataFiles: files, fetchText });
+  await assert.rejects(loader.loadKeys(["officialNews", "officialPages"], { required: true }), { message: "HTTP 500" });
+  assert.deepEqual(state.data.officialNews, []);
+  assert.equal(state.loadedDataKeys.size, 0);
+  assert.equal(state.loadingDataKeys.size, 0);
+  assert.deepEqual(state.dataLoadErrors, {});
+});
+
+test("required でない loadKeys は取得の失敗をキーごとに記録し、ほかのキーは読み込む", async () => {
+  const state = { patch() {} };
+  const files = { officialNews: "official_news.json", officialPages: "official_pages.json" };
+  const fetchText = async (path) => {
+    if (path === "official_pages.json") throw new Error("HTTP 404");
+    return '[{"slug":"a"}]';
+  };
+  const loader = new DataLoader(state, { dataFiles: files, fetchText });
+  await loader.loadKeys(["officialNews", "officialPages"]);
+  assert.deepEqual(state.data.officialNews, [{ slug: "a" }]);
+  assert.deepEqual(state.data.officialPages, []);
+  assert.deepEqual(state.dataLoadErrors, { officialPages: "HTTP 404" });
+  assert.deepEqual([...state.loadedDataKeys].sort(), ["officialNews", "officialPages"]);
+  assert.equal(state.loadingDataKeys.size, 0);
+});
+
+test("loadAll はすべてのキーを required で読み、1 つでも壊れていれば throw する", async () => {
+  const files = { officialNews: "official_news.json", officialPages: "official_pages.json", metadata: "metadata.json" };
+  const texts = { "official_news.json": '[{"slug":"a"}]', "official_pages.json": '[{"slug":"b"}]', "metadata.json": '{"built":"x"}' };
+  const state = { patch() {} };
+  const data = await new DataLoader(state, { dataFiles: files, fetchText: async (path) => texts[path] }).loadAll();
+  assert.equal(data, state.data);
+  assert.deepEqual(state.data, { officialNews: [{ slug: "a" }], officialPages: [{ slug: "b" }], metadata: { built: "x" } });
+  assert.deepEqual([...state.loadedDataKeys].sort(), ["metadata", "officialNews", "officialPages"]);
+  assert.deepEqual(state.dataLoadErrors, {});
+
+  const broken = { ...texts, "official_pages.json": "{}" };
+  const brokenState = { patch() {} };
+  await assert.rejects(new DataLoader(brokenState, { dataFiles: files, fetchText: async (path) => broken[path] }).loadAll(), /official_pages\.json/);
+  assert.deepEqual(brokenState.data.officialNews, []);
+  assert.equal(brokenState.loadedDataKeys.size, 0);
+});

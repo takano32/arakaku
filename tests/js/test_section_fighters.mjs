@@ -36,5 +36,5 @@ test("body に関連試合と統合した ID", () => {
   const desc = build({ focusFighterId: "ice_tron" });
   const body = desc.renderBody(desc.items[0]);
   assert.match(body, /関連試合（2）/);
-  assert.match(body, /<code>ice_tron<\/code>, <code>ice_tron_2<\/code>|<code>ice_tron<\/code>.*<code>ice_tron_2<\/code>/s);
+  assert.match(body, /<dt>統合した ID<\/dt><dd><code>ice_tron<\/code>, <code>ice_tron_2<\/code><\/dd>/);
 });

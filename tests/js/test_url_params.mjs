@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 
 import { PARAM_MAP, placeOf, readFromURL, searchStringFor, stateFromSearch } from "../../docs/assets/js/app/url_params.js";
 import { FILTER_STATE_KEYS } from "../../docs/assets/js/data/filters.js";
+import { Store } from "../../docs/assets/js/app/state.js";
 
 test("readFromURL は知っているパラメータだけを状態名に写し、不正なタブ・絞り込み値は捨てる", () => {
   assert.deepEqual(readFromURL(""), {});
@@ -44,8 +45,10 @@ test("stateFromSearch はすべての状態キーを既定値で埋めてから 
   }
   assert.equal(patch.boutDivision, "");
   assert.equal(stateFromSearch("").tab, "official");
-  // PARAM_MAP の値 (状態名) はすべて Store に存在する名前
-  for (const stateKey of Object.values(PARAM_MAP)) assert.ok(stateKey in patch, stateKey);
+  // 既定値は Store の初期値と同じで、PARAM_MAP の値 (状態名) はすべて Store に存在する名前
+  const store = new Store();
+  for (const [key, value] of Object.entries(stateFromSearch(""))) assert.equal(value, store[key], key);
+  for (const stateKey of Object.values(PARAM_MAP)) assert.ok(stateKey in store, stateKey);
 });
 
 test("知らない言及の種別は捨てる (T.112.4.21)", () => {

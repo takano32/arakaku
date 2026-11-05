@@ -84,7 +84,7 @@ test("matchPrefix のグループは前方一致で照合し、「その他」�
   const prefixGroup = { ...divisionGroup, options: [...divisionGroup.options, { value: "heavyweight", match: "ヘビー級" }], matchPrefix: true };
   assert.equal(pass({ division: "ヘビー級101kg" }, { div: "heavyweight" }, [prefixGroup]), true);
   assert.equal(pass({ division: "ヘビー級101kg" }, { div: OTHER_VALUE }, [prefixGroup]), false);
-  assert.equal(pass({ division: "ヘビー級101kg" }, { div: "heavyweight" }), false);
+  assert.equal(pass({ division: "ヘビー級101kg" }, { div: "heavyweight" }, [{ ...prefixGroup, matchPrefix: false }]), false);
 });
 
 test("大会の種別・団体の区分の表示ラベルは絞り込みの選択肢と同じ", () => {
