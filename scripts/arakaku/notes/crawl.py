@@ -99,9 +99,9 @@ def infer_article_type(title: str) -> str:
         return "event_result"
     if "対戦カード" in title or "見どころ" in title:
         return "event_card"
-    if "歴代王者" in title or "王座" in title:
-        return "title_history"
-    if "ルール" in title or "団体" in title:
+    # 歴代王者・団体紹介は notes/articles.py と同じく promotion_profile (以前は誰も扱わない title_history
+    # を出していた。T.112.4.10)。
+    if "歴代王者" in title or "王座" in title or "ルール" in title or "団体" in title:
         return "promotion_profile"
     return "note_article"
 
