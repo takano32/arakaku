@@ -1,4 +1,4 @@
-import { ADMIN_TABS, DEFAULT_TAB, PUBLIC_TABS } from "../config.js";
+import { ADMIN_TABS, DEFAULT_TAB, MENTION_TYPE_ORDER, PUBLIC_TABS } from "../config.js";
 import { FILTER_STATE_KEYS, TAB_FILTERS, filterButtons } from "../data/filters.js";
 
 /**
@@ -40,9 +40,12 @@ export const PARAM_MAP = {
 
 // URL から受け付ける値。tab はタブ id、フィルタは各グループのボタンの値だけ (それ以外は捨てて未選択にする)。
 const VALID_TABS = new Set([...PUBLIC_TABS, ...ADMIN_TABS].map(([id]) => id));
-const VALID_FILTER_VALUES = new Map(
-  Object.values(TAB_FILTERS).flat().map((group) => [group.stateKey, new Set(filterButtons(group).map((b) => b.value))])
-);
+const VALID_FILTER_VALUES = new Map([
+  ...Object.values(TAB_FILTERS).flat().map((group) => [group.stateKey, new Set(filterButtons(group).map((b) => b.value))]),
+  // 言及の種別は select で選ぶ (filters.js のボタンではない)。知らない値を受け付けると 0 件なのに select は
+  // 「すべての言及」と表示して食い違うので、ほかの絞り込みと同じく捨てる (T.112.4.21)。
+  ["mentionType", new Set(MENTION_TYPE_ORDER)],
+]);
 
 function isValidParam(stateKey, value) {
   if (stateKey === "tab") return VALID_TABS.has(value);
