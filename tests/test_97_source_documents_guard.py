@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from conftest import load_module
-
 
 @pytest.fixture
-def script(repo_root, monkeypatch):
-    module = load_module('build_source_documents', repo_root / 'scripts' / 'build_source_documents.py')
+def script(load_script, monkeypatch):
+    module = load_script('build_source_documents')
     writes = []
     monkeypatch.setattr(module, 'read_csv', lambda *a, **k: [])
     monkeypatch.setattr(module, 'iter_cached_videos', lambda cache_dir: [])

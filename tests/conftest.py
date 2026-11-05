@@ -32,6 +32,16 @@ def load_module(module_name: str, script_path: Path):
 
 
 @pytest.fixture
+def load_script(repo_root: Path):
+    """scripts/<name>.py を読む関数。テストは conftest を import せず、このフィクスチャを使う (T.112.6.26)。"""
+
+    def _load(name: str):
+        return load_module(name, repo_root / "scripts" / f"{name}.py")
+
+    return _load
+
+
+@pytest.fixture
 def io_module():
     return importlib.import_module("arakaku.io")
 

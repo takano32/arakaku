@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from conftest import load_module
-
 
 @pytest.fixture
 def crawler():
@@ -44,8 +42,8 @@ def youtube():
     return arakaku.youtube
 
 
-def test_discover_script_imports(repo_root):
-    load_module('discover_youtube_videos', repo_root / 'scripts' / 'discover_youtube_videos.py')
+def test_discover_script_imports(load_script):
+    load_script('discover_youtube_videos')
 
 
 def test_shorts_and_types(youtube):
