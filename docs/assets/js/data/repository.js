@@ -3,6 +3,7 @@ import { discoverFighters, numbersOrder, sortByNumbersOrder } from "./fighter_ca
 import { mergeDuplicateFighters } from "./fighter_merge.js";
 import { IndexCache } from "./indexes.js";
 import { buildNumbersOnly } from "./numbers_only.js";
+import { RawRepository } from "./raw_repository.js";
 import {
   boutsForFighterIds,
   boutsInOrder,
@@ -24,8 +25,10 @@ import {
 } from "./reliability.js";
 
 /**
- * DataRepository — ビューアのデータアクセス中枢。生 JSON (state.data) への素のアクセサの上に
- * 「Rich 変換 (enrich) + 信頼性ソート + 関係解決 + 重複選手統合」を載せた読み取り専用ファサード。
+ * DataRepository — ビューアのデータアクセス中枢。生 JSON (state.data) への素のアクセサ (RawRepository、
+ * raw_repository.js) を継承し、その上に「Rich 変換 (enrich) + 信頼性ソート + 関係解決 + 重複選手統合」を
+ * 載せた読み取り専用ファサード。関係の解決と並べ替えの規則は relations.js、出典本文と本文の結合は
+ * source_documents.js の純関数にある。
  *
  * - data/loader.js が state.data を共有しつつ 1 インスタンスを生成し、ロードのたびに invalidate() を呼ぶ。
  * - rich* ゲッターは遅延構築 + キャッシュ。data 差し替え後は必ず invalidate() を通すこと
@@ -36,25 +39,13 @@ import {
  *   #fighterAliasIndex に依存する。
  */
 
-// findById が使う「コレクション名 → 主キー列名」対応表。
-const COLLECTION_FIELDS = {
-  events: "event_id",
-  promotions: "promotion_id",
-  bouts: "bout_id",
-  fighters: "fighter_id",
-  articles: "article_id",
-  videos: "video_id",
-  sourceDocuments: "source_id",
-  numbersFighters: "numbers_fighter_id",
-};
-
 // invalidate() のたびに進む世代番号。インスタンスを作り直しても重複しないようモジュールレベルで
 // 単調増加させる。外部キャッシュ (query / 一覧) は repo の同一性ではなく revision の変化で更新を検知する。
 let nextRevision = 1;
 
-export class DataRepository {
+export class DataRepository extends RawRepository {
   constructor(data) {
-    this.data = data;
+    super(data);
     this.#enricher = new DataEnricher(this);
     this.revision = nextRevision++;
     this.#indexes = new IndexCache();
@@ -75,7 +66,7 @@ export class DataRepository {
   #richSourceMentions;
   #sourceDocLookup;
   #numbersOnly;
-  #indexes;
+  #indexes; // 加工済みの配列の索引 (生データの索引は RawRepository が別に持つ)
   #memo;
 
   #resetCaches() {
@@ -98,6 +89,7 @@ export class DataRepository {
    * 維持されるため、Repository を作り直さずに Rich 変換・インデックス・enricher のキャッシュだけを無効化できる。
    */
   invalidate() {
+    super.invalidate();
     this.revision = nextRevision++;
     this.#resetCaches();
     this.#memo.clear();
@@ -105,66 +97,13 @@ export class DataRepository {
     this.#enricher.reset();
   }
 
-  // ── 低レベル: 素のコレクションとインデックス (indexes.js の遅延キャッシュ) ──
+  // 素のコレクション・主キーの索引・1 行の find 系は RawRepository (raw_repository.js)。
+  // ここには加工済みの配列 (名鑑のみの大会・試合、本文結合済みの出典本文) を引く find 系だけを置く。
 
-  // findById / findManyByField はコレクションのゲッター (this[collectionName]) を引く。
-  // events / sourceMentions は降順、sourceDocuments は本文結合済みの配列が対象になる
-  // (sourceDocumentById が content_text 付きの文書を返す契約)。
-  findById(collectionName, id) {
-    const idField = COLLECTION_FIELDS[collectionName];
-    const records = this[collectionName];
-    if (!records) return undefined;
-    return this.#indexes.unique(`${collectionName}:${idField}`, records, (record) => record[idField]).get(id);
-  }
-
-  findManyByField(collectionName, fieldName, value) {
-    const records = this[collectionName] ?? [];
-    return this.#indexes.group(`${collectionName}:${fieldName}:many`, records, (r) => r[fieldName]).get(value) ?? [];
-  }
-
-  /** 生 JSON の配列をそのまま (整形・enrich せず) 返す */
-  raw(key) { return this.data[key] ?? []; }
-
-  get promotions() { return this.raw("promotions"); }
-  get fighters() { return this.raw("fighters"); }
-  get bouts() { return this.raw("bouts"); }
-  get videos() { return this.raw("videos"); }
-  get articles() { return this.raw("articles"); }
-  get articleLinks() { return this.raw("articleLinks"); }
-  get titles() { return this.raw("titles"); }
-  get videoLinks() { return this.raw("videoLinks"); }
-  get fighterSnapshots() { return this.raw("fighterSnapshots"); }
-  get numbersFighters() { return this.raw("numbersFighters"); }
-  get numbersNameMatches() { return this.raw("numbersNameMatches"); }
-  get numbersFightRecords() { return this.raw("numbersFightRecords"); }
-  get sourceEventReferences() { return this.raw("sourceEventReferences"); }
-  get sourceBoutReferences() { return this.raw("sourceBoutReferences"); }
-  get sourceVideoReferences() { return this.raw("sourceVideoReferences"); }
-  get youtubeArchives() { return this.raw("youtubeArchives"); }
-  get noteArchives() { return this.raw("noteArchives"); }
-  get officialPlayers() { return this.raw("officialPlayers"); }
-  get officialTournaments() { return this.raw("officialTournaments"); }
-  get officialMatches() { return this.raw("officialMatches"); }
-  get officialHistory() { return this.raw("officialHistory"); }
-  get officialPages() { return this.raw("officialPages"); }
-  get officialNews() { return this.raw("officialNews"); }
-
-  // CSV は昇順 (古い順)。ビューアは降順表示なので .reverse() で新しい順にする。
-  get events() { return [...this.raw("events")].reverse(); }
-  get sourceMentions() { return [...this.raw("sourceMentions")].reverse(); }
-
-  findPromotion(id) { return this.findById("promotions", id); }
-  findFighter(id) { return this.findById("fighters", id); }
-  findArticle(id) { return this.findById("articles", id); }
-  videoById(id) { return this.findById("videos", id); }
   sourceDocumentById(id) { return this.findById("sourceDocuments", id); }
-  numbersFighterById(id) { return this.findById("numbersFighters", id); }
   // 名鑑のみの大会・試合も ID で引けるようにする (enrichBout の大会解決やリンクが使う)
   findEvent(id) { return this.findById("events", id) ?? this.#numbersOnlyData().eventById.get(id); }
   findBout(id) { return this.findById("bouts", id) ?? this.#numbersOnlyData().boutById.get(id); }
-
-  findYoutubeArchive(displayId) { return this.#indexes.unique("youtubeArchives:display_id", this.youtubeArchives, (r) => r.display_id).get(displayId); }
-  findNoteArchive(url) { return this.#indexes.unique("noteArchives:webpage_url", this.noteArchives, (r) => r.webpage_url).get(url); }
 
   // ── Rich コレクション ───────────────────────────────────────────────
 
@@ -266,14 +205,6 @@ export class DataRepository {
   eventName(id) { return this.findEvent(id)?.name ?? id; }
   promotionName(id) { return this.findPromotion(id)?.name ?? id; }
   fighterName(id) { return this.findRichFighter(id)?.display_name ?? id; }
-
-  // 団体名 → promotion_id (中黒・空白を無視した正規化照合)
-  promotionIdByName(name) {
-    if (!name) return undefined;
-    const norm = (s) => String(s).replace(/[・·\s]/g, "");
-    const index = this.#indexes.unique("promotions:normName", this.promotions, (p) => norm(p.name));
-    return index.get(norm(name))?.promotion_id;
-  }
 
   titleDisplayName(title) { return titleDisplayName(title, this.promotionName(title.promotion_id)); }
 
