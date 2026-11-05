@@ -485,7 +485,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
     - 報告で分かっている行: arakaku-viewer-ui（18・22・23・26・135・137）、arakaku-filters（80・85・99・108・114）、arakaku-maintainer（81・104〜105）、arakaku-reliability-layering（26〜28・37。`#applyOfficialPlayer` などは data/enrich/fighter.js に移った）、arakaku-numbers-pipeline（172・220・222。入口は今も DataEnricher.enrichFighter・enrichBout だが、規則は移った）、arakaku-source-pipeline（126。`note_cache_name()` は paths.py、T.112.1.15 のあとは notes/cache.py）
     - ほかに arakaku-review-workflow・arakaku-data-curator・arakaku-sorting-strategy・arakaku-docs-handoff も見る（特にモジュールの一覧と make validate の中身）
   - [x] T.112.3.4 push して CI（Test・Deploy Pages）が通ることを確かめ、公開サイトを開いてコンソールのエラーが無いことを確かめる（07b6772、2026-11-05）。CI（Test・Deploy Pages）が通り、公開サイトで全 15 タブとフォーカスの共有リンクを開いて、件数が出てコンソールのエラー・警告が 0 件であることを確かめた
-  - [ ] T.112.3.5 Fable（effort max）がマージ後の全体を最終レビューする。指摘は新しい子として積む
+  - [x] T.112.3.5 Fable（effort max）がマージ後の全体を最終レビューする。指摘は新しい子として積む（2026-11-05。コミットなし）。26 件の修正はどれも正しく、テストが変えた行を通っている、CI だけで落ちるものも無い、という結論。指摘は T.112.6 に積んだ
   - [x] T.112.3.6 作業用の worktree とブランチを消す（`git worktree remove`・`git branch -d`）（2026-11-05。コミットなし）。最初の 2 本の worktree とブランチを消した。残りのリファクタリング用の worktree（2 本）も、それぞれのマージのあとで消す
 - [x] T.112.4 リファクタリング中に見つけたバグを、1 件ずつ別のコミットで直す。2026-11-05 に、2 本の引き継ぎの報告と 2 本のレビューから集めた。どれもリファクタリング前の master からある（マージ前のバグ T.112.1.11 は除く）。直すと出力や挙動が変わるので、データが変わるものは生成物を別のコミットにし、ビューアの挙動が変わるものは docs/VIEWER_FEATURES.md も直す（2026-11-05。子はすべて完了）
   - [x] T.112.4.1 【Python・高】`build_source_documents.py` は、`tmp/` にキャッシュが無いと終了コード 0 のまま `data-src/source_documents.csv`（27,913 行が 1 行になる）と `source_mentions.csv` を切り詰めてしまう（master で再現済み）。文書が 0 件のときは `SystemExit("[error] no cached sources under tmp/; refusing to overwrite …")` で書かないようにするか、`build-sources` を `check-stage1-inputs` に依存させる（6e92fc8・94d6f67、2026-11-05）。note と YouTube のどちらかが 0 件なら書かずに止まる。キャッシュがあるときの出力は値も件数も変わらない
@@ -519,3 +519,47 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [x] T.112.4.25 【ビューア】`ui/sections/official_misc.js:47` が、`item.month` が数字かどうかを確かめずに「月」を付ける。実際の official_history.json に `month: "春"` があり、沿革の行が「春月」になる。数字のときだけ「月」を付ける。`test_section_official_misc.mjs` は今の出力（`1995 / 創世期 / 春月`）を固定しているので、合わせて直す（2026-11-05、ビューア側の残りのリファクタリングで見つかった）（e607da3、2026-11-05）。実データの month は 春・夏・冬・通年 だけだった
   - [x] T.112.4.26 【ビューア・設計】`ui/sections/tsushin.js:46` は `repo.findManyByField("articleLinks", …)` で、getter を文字列でしか参照していない。そのため T.112.2.10 の設計で「使われていない」と誤って数えられた。名前つきのメソッド（例: `repo.articleLinksForArticle(id)`）にして、文字列での参照をなくす（test_section_tsushin.mjs が壊れたときに気づける）（0c486be・9935d3e、2026-11-05）
 - [x] T.112.5 `.claude/worktrees/` を .gitignore に入れる（47f4ec7、2026-11-05）。今は master の作業ツリーで `.claude/` が未追跡として出ていて、`git add -A` で worktree を誤ってコミットするおそれがある
+- [ ] T.112.6 Fable の最終レビュー（T.112.3.5）の指摘を直す。(a) は直さないとまずいもの、(b) は直すべきもの、(c) は任意だが、どれもユーザーの判断は要らないのですべて行う
+  - [ ] T.112.6.1 【(a)・リファクタリングでの後退】`scripts/extract_numbers.py:14-18` の `sheet_rows()` が、シートが足りないと `[]` を返し、`numbers/sheets.py:161-162` が「記録なし」として見出しだけの numbers_fight_records.csv を書く（以前は IndexError で書く前に止まった）。シートの取り出しを `numbers/sheets.py` の `sheet_table_rows(sheets, index, sheet_name)` にし、無ければ `NumbersSchemaError(f"Numbers sheet {sheet_name} (index {index}) is missing")`。test_12 に長さ 1 の偽のシート一覧の場合を足す
+  - [ ] T.112.6.2 【(b)・層】`sources/documents.py:24` が `arakaku.youtube` を import し、`youtube.py:16` は `arakaku.paths` を import してファイルを読む（`iter_cached_videos`）。test_00_layering は 1 段しか見ないので通っている。`iter_cached_videos` の既定の `YOUTUBE_CACHE_DIR` をやめて呼ぶ側（archive_metadata.py・build_source_documents.py）が渡し、youtube.py から paths の import を消す。layering テストを、`arakaku.*` の import を推移的にたどる形にする（止まってよい I/O モジュール: io.py・paths.py・build/relations.py・validation/runner.py・validation/locate.py）。すべての `arakaku/*.py` がどちらかに分類されていることも確かめる（今は validation の純粋なモジュールと schema.py が調べられていない）
+  - [ ] T.112.6.3 【(b)・ビューアのバグ】`ui/sections/official_misc.js:24-28` が、`_type`・`_key` を混ぜたあとの `Object.values(item)` で検索するので、「history」「tournament」「match」「h:」などで検索すると、表示に無い文字列で全件が当たる。元のレコードで検索し、`build({query:"tournament"}).items.length === 0` のテストを足す
+  - [ ] T.112.6.4 【(b)・文書】README.md:726 は `generate-stage1` に `reorder_data` があると書くが、Makefile では stage 2 のあと 1 回だけ。arakaku-viewer-ui SKILL:114 は名鑑だけの行を「試合／動画」に足すと書くが、stats.js は「大会／試合」に足す
+  - [ ] T.112.6.5 【(b)・文書】`docs/assets/js/data/source_lookup.js:8` の「値そのもの（undefined/"" 含む）で登録」が T.112.4.20 で古くなった
+  - [ ] T.112.6.6 【(b)・文書】README.md:644 と arakaku-source-pipeline SKILL:147 は「動画が無いと終了コード 1」と書くが、`make cache-youtube-api` は `--allow-missing` を渡す（どこにも書いていない）。arakaku-reliability-layering SKILL:50 に、numbers_only の大会は名鑑が先になること（reliability.js:53）が無い。GEMINI.md:80 と scripts/GEMINI.md:18,34 は download-official-data が `src/` だけを取ると書くが `public/` も取る。README.md:727 に stage 2 の候補スクリプト 2 本が無い。README.md:721 の `rebuild-stage2` に `check-stage2-inputs` と `reorder-data` が無い。reliability SKILL:37 の重複の例（パット・バミューダ）は fighters.csv にもう無い
+  - [ ] T.112.6.7 【(b)・失敗しようがないテスト】
+    - `tests/js/test_filters.mjs:87`: 対照に `divisionGroup` を使っていて、前方一致と関係なく偽になる。`[{ ...prefixGroup, matchPrefix: false }]` にする
+    - `tests/js/test_section_fighters.mjs:39`: 統合した ID の順と位置を確かめていない
+    - `tests/js/test_url_params.mjs:47-48`: 同じキーの一覧から作ったものを比べている。`new Store()` と比べる
+    - `tests/js/test_list_row_html.mjs:40-42`: 定数を写しと比べているだけなので消す
+    - `tests/js/test_numbers_only.mjs:24-31`: `numbers_event_number` の側を通っていない
+    - `tests/test_21_validation_units.py:44`: 作り方から常に真。4 つの json_builders を合わせたものが ALL_JSON_FILES と等しいことを確かめる
+    - `tests/test_93_derive_units.py:137-138`: モジュール自身の定数と比べている。行をそのまま書く
+    - `tests/test_91_discovery_scripts.py:20-24`: `raises(FetchFailed)` に `match` を付ける
+    - `tests/test_91_discovery_scripts.py:47-48`: 何も確かめていないテスト
+  - [ ] T.112.6.8 【(b)・テストの環境】`tests/conftest.py:17-19` の `repo_root` が `Path.cwd()` なので、別のディレクトリから pytest を起動すると 14 件失敗する。`Path(__file__).resolve().parents[1]` にする。`tests/test_05_csv_schema.py:58` は `DATA_SRC` を `tmp_path.resolve()` で差し替える
+  - [ ] T.112.6.9 【(b)・テストの抜け】書く側の FIELDS の 16 個（notes/articles・derive/aliases・derive/article_links・derive/video_links・sources/documents・sources/mentions・sources/archives の 2 つ・official/csvs の 4 つ・official/pages の 2 つ・generate_promotions・generate_titles）が `schema.CSV_HEADERS` の手写し。`write_csv` は `extrasaction="ignore"` なので、ずれると列が黙って空になる。パラメータ化したテスト 1 つで一致を確かめる
+  - [ ] T.112.6.10 【(b)・潜在のバグ】`build/articles.py:26` の `field_or_default("status", "parsed")` は、検証で許していない値（vocab は `unparsed` だけ）に空のセルを書き換える。セルをそのまま出す（空なら null）か `unparsed` を既定にし、test_11 で固定する
+  - [ ] T.112.6.11 【(c)】`notes/matchups.py:29` の `clean_fighter_name` も半角の括弧を取る（`[（(][^）)]*[）)]`）。今のデータで変わる名前は 0。test_94 に半角の場合を足す
+  - [ ] T.112.6.12 【(c)】`derive/ordering.py:39-40` の `reign_sort_key` は数字でない reign_order を先頭に置き、`build/titles.py` は末尾に置く。末尾にそろえ、test_93 に "x" を足す
+  - [ ] T.112.6.13 【(c)】`notes/crawl.py` の `infer_article_type`・`infer_promotion_id` は、`notes/articles.py` の `classify_article`・`detect_promotion` と別の 2 つ目の分類器（「アンケート結果のお知らせ」も event_result になる）。`make_article_row` から `classify_article` を呼び、crawl 側の 2 つを消す
+  - [ ] T.112.6.14 【(c)】`scripts/cache_note_html.py:32` と `scripts/cache_youtube_api.py:34` の `read_csv` に `required=True` を付ける（パスを打ち間違えると 0 行で進む）
+  - [ ] T.112.6.15 【(c)】`build/bouts.py:64` の `title.note` も空なら null にする（ビューアは null を受け付ける。描画が変わらないことを確かめる）
+  - [ ] T.112.6.16 【(c)】`scripts/validate_json.js` で、sourceMentions のすべての `mention_type` が `MENTION_TYPE_ORDER` にあることを確かめる（Python の VALID_MENTION_TYPES と JS の一覧は手で同期している）
+  - [ ] T.112.6.17 【(c)】`loadKeys` の解析エラーがキーごとに閉じ込められるようになったことを VIEWER_FEATURES に書く。required のときは、すべてを検査してから state.data に書く（途中まで書かない）。テストを足す: required で取得が失敗する場合、required でない `loadKeys` で取得が失敗する場合、`loadAll`
+  - [ ] T.112.6.18 【(c)】`validation/entities.py` の article_type の検査を、ほかの語彙と同じ `rules.check_enum` に移す（ID つきの同じ形のメッセージになる）
+  - [ ] T.112.6.19 【(c)】`build/relations.py` の `load_tables`（I/O）を `build/io.py` に移し、純粋な Tables・Relations と分ける（T.112.6.2 の推移的な層のテストで例外が要らなくなる）
+  - [ ] T.112.6.20 【(c)】`ui/keyboard.js:35-42` が `?` と Esc を修飾キーの検査より前に扱うので、Ctrl/Meta/Alt+? でヘルプが開き、Meta+Esc で検索が消える（JSDoc の「修飾キー付きは無視」と矛盾）。修飾キーの検査を前に出し（? の Shift は許す）、test_keyboard.mjs:59 を直す
+  - [ ] T.112.6.21 【(c)】ビューアのテストの抜け: `DataRepository.invalidate` が memo・numbersOnly・sourceDocLookup を捨てて revision を進めること（tests/js/test_repository.mjs）、enricher.enrichFighter のつなぎ、markdown.js の表・太字・改行、SearchBox の遅延と isComposing、`KeyboardNav.#switchTabBy`（`nextTabId` を切り出す）
+  - [ ] T.112.6.22 【(c)】Python のテストの抜け: official/pages.py・official/csvs.py（`csvs.py:35-39` は JSON の null を "None" にする。直す）、review/note_results.py の numbers_key・numbers_winners・for_event_exact、io.atomic_open の失敗時（元のファイルは変わらず一時ファイルは消える）、build/videos.py:40-41 の channel_name・published_at が platform を確かめていない件、apply_structured_result_patches.py・generate_official_pages_csv.py・archive_metadata.py の main
+  - [ ] T.112.6.23 【(c)】`tests/test_11_build_canonical.py:112` のコメント（空の result_status は検証に任せる）が誤り（build/bouts.py:88 が "unknown" を既定にする）。コメントを直す
+  - [ ] T.112.6.24 【(c)】`scripts/generate_official_csvs.py` に入力の検査が無く、4 つの CSV を 1 つずつ書くので、2 つ目の JSON が無いと途中まで更新される。書く前に 4 つの入力をすべて確かめる
+  - [ ] T.112.6.25 【(c)】`tests/js/fixtures/fake_repo.mjs:122` の動画リンクが、実データに無い `entity_type: "promotion"`。大会へのリンクにする
+  - [ ] T.112.6.26 【(c)・細かいもの】
+    - `localeCompare` に "ja" を渡す（data/relations.js:29,36、data/numbers_only.js:85、ui/sections/official.js:33）
+    - test_91:5 と test_97:5 の `from conftest import load_module` をやめ、フィクスチャを使う
+    - README.md:669 と source-pipeline SKILL:332 に 3 つ目の勝ち記号「〇」を足す
+    - README.md:675 の「invalid video link」というメッセージは実在しないので直す
+    - maintainer SKILL:75 の「除外」は、許可の一覧だけがある実装に合わせる
+    - sorting-strategy SKILL:44 の「build では並べ替えない」を直す
+    - VIEWER_FEATURES.md:36 の「フォーカス」が DOM のフォーカスと紛らわしいので言い換える
+
