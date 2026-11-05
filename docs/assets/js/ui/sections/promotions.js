@@ -1,18 +1,10 @@
-import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
+import { PROMOTION_CATEGORY_LABELS, TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
 import { eventDateLabel } from "../../data/event_dates.js";
 import { booleanJa, escapeHtml, joinPresent } from "../html.js";
 import { details, dl, section } from "../parts/basic.js";
 import { eventLink } from "../parts/links.js";
 import { articleRefList } from "../parts/sources.js";
 import { videoLinks } from "../parts/videos.js";
-
-const CATEGORY_LABELS = {
-  major: "主要",
-  special_event_series: "特別大会シリーズ",
-  minor: "マイナー",
-  event_series: "イベントシリーズ",
-  unclassified: "未分類",
-};
 
 /** 団体タブ */
 export const promotionsSection = {
@@ -50,7 +42,7 @@ export const promotionsSection = {
       rowClass: () => "rec-promotion",
       renderHead: (p) => `<div class="rec-text">
           <p class="rec-title">${escapeHtml(p.name)}${p.name_en ? ` <span class="nick">${escapeHtml(p.name_en)}</span>` : ""}</p>
-          <p class="rec-sub">${escapeHtml(joinPresent([CATEGORY_LABELS[p.category] ?? p.category, p.rules?.rounds, p.rules?.venue]))}</p>
+          <p class="rec-sub">${escapeHtml(joinPresent([PROMOTION_CATEGORY_LABELS[p.category] ?? p.category, p.rules?.rounds, p.rules?.venue]))}</p>
         </div>
         <div class="rec-aside"><span class="muted small">大会 ${repo.eventsForPromotion(p.promotion_id).length}</span></div>`,
       renderBody: (p) => `

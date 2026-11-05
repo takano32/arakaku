@@ -1,4 +1,4 @@
-import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
+import { EVENT_TYPE_LABELS, TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
 import { eventDateLabel } from "../../data/event_dates.js";
 import { escapeHtml, joinPresent } from "../html.js";
 import { badge, badges, details, section } from "../parts/basic.js";
@@ -6,8 +6,6 @@ import { eventBouts } from "../parts/bouts.js";
 import { articleRefList, sourceReferences } from "../parts/sources.js";
 import { videoLinks } from "../parts/videos.js";
 import { focusedOrFiltered } from "./common.js";
-
-const EVENT_TYPE_LABELS = { numbered_event: "通常大会", tournament: "トーナメント", special_event: "特別大会" };
 
 /** 大会タブ */
 export const eventsSection = {

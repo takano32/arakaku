@@ -37,6 +37,11 @@ const PROMOTION_CATEGORY_OPTIONS = [
   { value: "unclassified", label: "未分類" },
 ];
 
+/** 選択肢の値 → 表示ラベル (一覧の行の表記もこのラベルを使う。大会タブの種別・団体タブの区分) */
+const labelsOf = (options) => Object.fromEntries(options.map((option) => [option.value, option.label]));
+export const EVENT_TYPE_LABELS = labelsOf(EVENT_TYPE_OPTIONS);
+export const PROMOTION_CATEGORY_LABELS = labelsOf(PROMOTION_CATEGORY_OPTIONS);
+
 const SOURCE_TYPE_OPTIONS = [
   { value: "note_article", label: "ノート" },
   { value: "youtube_description", label: "YouTube概要" },
