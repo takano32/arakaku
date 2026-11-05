@@ -1,5 +1,6 @@
 import { applyFightRecords, buildFightRecordIndex, fightRecordKeyForBout, fightRecordsForBout } from "./enrich/bout.js";
 import { buildNameMatchIndex, composeFighter } from "./enrich/fighter.js";
+import { applyArticleArchive, applyVideoArchive, deriveVideoFilterFields } from "./enrich/media.js";
 import {
   buildOfficialPlayerIndexes,
   buildOfficialTournamentIndex,
@@ -49,41 +50,19 @@ export class DataEnricher {
     return this.#fightRecordIndex;
   }
 
+  // アーカイブ (youtube_archives) を重ね、関連 bout / event から絞り込み用の団体・階級を導出する
   enrichVideo(video) {
     if (!video) return video;
-    const archive = this.repo.findYoutubeArchive(video.platform_video_id);
-    const rich = {
-      ...video,
-      title: archive?.fulltitle ?? video.title,
-      channel_name: archive?.uploader ?? video.channel_name,
-      published_at: archive?.upload_date ?? video.published_at,
-      archive_description: archive?.description,
-      archive_metadata: archive,
-    };
-    // 関連 bout(階級+団体)/event(団体) から絞り込み用フィールドを導出 (動画は単一値)
-    for (const link of this.repo.findManyByField("videoLinks", "video_id", video.video_id)) {
-      if (link.entity_type === "bout") {
-        const bout = this.repo.findBout(link.entity_id);
-        if (bout) {
-          rich.promotion_id ??= bout.promotion_id;
-          rich.division ??= bout.division;
-        }
-      } else if (link.entity_type === "event") {
-        const event = this.repo.findEvent(link.entity_id);
-        if (event) rich.promotion_id ??= event.promotion_id;
-      }
-    }
-    return rich;
+    const rich = applyVideoArchive(video, this.repo.findYoutubeArchive(video.platform_video_id));
+    return deriveVideoFilterFields(rich, this.repo.findManyByField("videoLinks", "video_id", video.video_id), {
+      findBout: (id) => this.repo.findBout(id),
+      findEvent: (id) => this.repo.findEvent(id),
+    });
   }
 
   enrichArticle(article) {
     if (!article) return article;
-    const archive = this.repo.findNoteArchive(article.url);
-    return {
-      ...article,
-      title: archive?.title ?? article.title,
-      archive_description: archive?.description,
-    };
+    return applyArticleArchive(article, this.repo.findNoteArchive(article.url));
   }
 
   // 公式選手の名前索引 (完全一致 + 表記ゆれ)。規則は enrich/official.js
