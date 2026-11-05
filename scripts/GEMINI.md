@@ -17,20 +17,19 @@ Python scripts in this directory handle data processing, validation, and extract
 - Archive CSVs preserve external metadata for review/display. Do not use archive rows to confirm bout results or fighter identities without a separate review step.
 - `download_official_data.sh` downloads the full `src/` tree from `kobayashi856/arakaku-site` into `tmp/arakaku-site/`. Run via `make download-official-data` (included in `make cache-sources`).
 - `generate_official_csvs.py` reads `tmp/arakaku-site/data/*.json` and writes `data-src/official_*.csv`. This is a stage-1 script (raw ingestion from `tmp/`). Do not derive values from other CSVs here.
-- `build_official_json.py` reads `data-src/official_*.csv` and writes `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` (`build_official_pages_json.py` writes `official_news.json` / `official_pages.json`). Run via `make build`. **IMPORTANT: never add official data enrichment to `build_json.py`** — all enrichment happens client-side in `docs/assets/js/data/enricher.js`. (Copying archive display metadata such as thumbnail sizes, channel name and upload date into `videos.json` is not enrichment and is done in `build_json.py`.)
+- `build_official_json.py` reads `data-src/official_*.csv` and writes `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` (`build_official_pages_json.py` writes `official_news.json` / `official_pages.json`). Run via `make build`. **IMPORTANT: never add official data enrichment to `build_json.py`** — all enrichment happens client-side in `docs/assets/js/data/enricher.js` (rules in `docs/assets/js/data/enrich/*.js`). (Copying archive display metadata such as thumbnail sizes, channel name and upload date into `videos.json` is not enrichment and is done in `build_json.py`.)
 
 ### 3. Verification
 - All scripts contributing to the build should be compatible with `make check`.
-- Add unit tests in `../tests/` for complex logic.
+- Add unit tests in `../tests/` for complex logic (viewer Node tests live in `../tests/js/test_*.mjs`; `make validate` runs them).
 
 ## Key Scripts
 
-- `arakaku/`: Shared package — `utils.py` (CSV/JSON I/O, field transforms, `EntityMapper`), `textparse.py` (text-parsing patterns/functions shared verbatim across scripts; vocabulary-divergent patterns stay local to each script), `mapping.py` (entity schema builders), `validation.py` (enum constants), `schema.py` (the header of every `data-src` CSV; `read_csv` enforces it), `youtube.py` (YouTube Data API JSON normalization).
+- `arakaku/`: Shared package; every module opens with a 役割 / アーキ上の位置 / 不変条件 header. `paths.py` (input/output paths), `io.py` (CSV/JSON I/O, atomic writes; `read_csv` enforces the schema headers), `schema.py` (`CSV_HEADERS`, the header of every `data-src` CSV, and `CsvRow`), `text.py` (string helpers), `csvmap.py` (`EntityMapper` row-to-JSON mapping), `event_dates.py` (`event_note_dates`), `youtube.py` (YouTube Data API JSON normalization plus the video type, Shorts, new-row and id rules). Subpackages: `build/` (JSON builders; `canonical.py` keeps only `json_builders`), `validation/` (enum sets in `vocab.py`; the package exports `Report`, `run`, `validate_docs_data`, `locate_error`), `notes/` (`patterns.py` holds the text-parsing patterns shared verbatim across scripts; vocabulary-divergent patterns stay local; `cache.py` has `note_cache_name`), `sources/`, `derive/` (link tables, aliases, sort keys in `ordering.py`), `review/`, `official/`, `numbers/`.
 - `build_json.py`: The core build script. Rebuilds all JSON artifacts. **Do not add enrichment logic here.**
 - `build_official_json.py`: Builds `official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` from `data-src/official_*.csv`. Run via `make build`.
 - `validate_json.py`: Ensures structural integrity and referential correctness.
 - `validate_json.js`: Node check of the viewer's JSON parser/loader and render-path coverage (`make validate`).
-- `test_filters.mjs` / `test_markdown.mjs`: Node unit tests (`node:test`) for the viewer's `itemPassesFilters` and Markdown renderer (`make validate`).
 - `extract_numbers.py`: Exports `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv` from the Numbers file.
 - `download_official_data.sh`: Downloads `src/` tree from official site repo into `tmp/arakaku-site/`.
 - `generate_official_csvs.py`: Converts `tmp/arakaku-site/data/*.json` to `data-src/official_*.csv`.
