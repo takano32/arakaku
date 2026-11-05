@@ -1,4 +1,5 @@
 import { escapeHtml } from "../html.js";
+import { clampIndex, edgeCursor, nextCursor } from "./cursor.js";
 import { initialCount, keysUnchanged, moreLabel, nextEnd, refreshTarget, statusText } from "./paging.js";
 
 /**
@@ -163,23 +164,19 @@ export class RecordList {
   }
 
   moveCursor(delta) {
-    if (this.#items.length === 0) return;
-    let next = this.#cursor === -1 ? (delta > 0 ? 0 : this.#items.length - 1) : this.#cursor + delta;
-    while (next >= 0 && next < this.#items.length && !this.#isCursorable(next)) next += delta > 0 ? 1 : -1;
-    if (next < 0 || next >= this.#items.length) return;
+    const next = nextCursor(this.#cursor, delta, this.#items.length, (i) => this.#isCursorable(i));
+    if (next === null) return;
     this.setCursor(next);
   }
 
   setCursorToEdge(edge) {
     if (this.#items.length === 0) return;
     if (edge === "last") this.renderAll();
-    let index = edge === "first" ? 0 : this.#items.length - 1;
-    while (index >= 0 && index < this.#items.length && !this.#isCursorable(index)) index += edge === "first" ? 1 : -1;
-    this.setCursor(index);
+    this.setCursor(edgeCursor(edge, this.#items.length, (i) => this.#isCursorable(i)));
   }
 
   setCursor(index) {
-    const clamped = Math.max(0, Math.min(index, this.#items.length - 1));
+    const clamped = clampIndex(index, this.#items.length);
     while (this.#rendered <= clamped) this.renderMore();
     this.#cursor = clamped;
     this.#rows.forEach((row, i) => row.el.classList.toggle("rec-cursor", i === clamped));
