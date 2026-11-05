@@ -672,7 +672,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### 検証
 
-- `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
+- `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、unknown video reference、duplicate video link、missing required field、duplicate source/mention id など）。
 - `scripts/validate_json.js`: Node 側から生成 JSON を viewer の実モジュールに通して検証します（段階ロードで CORE キーが揃うこと、失敗ファイルの fallback、`loadForTab`、Repository の ID 解決、空クエリの検索一致、全セクションの全行を実際に描画して例外や `undefined` の混入が無いこと）。
 - `tests/js/test_*.mjs`: viewer の Node ユニットテスト（`node:test`、依存なし、DOM なし）。データ層（filters・query・relations・enrich など）、URL と履歴、一覧の純関数、部品、各セクションの `build()`、Markdown 変換（リンクや iframe から属性・スクリプトを注入できないこと）を確かめます。
 - `make validate` が `validate_json.py`・`validate_json.js` と `node --test tests/js/test_*.mjs` を順に実行します（テストファイルが 1 つも無ければ失敗します）。
