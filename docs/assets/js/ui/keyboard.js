@@ -51,6 +51,21 @@ export function keyToAction({ key, shiftKey, ctrlKey, metaKey, altKey, inInput, 
 }
 
 /**
+ * 公開タブの並びで delta (±1) だけ隣のタブの ID を返す (純関数)。端では反対側へ回る。
+ * 管理タブ表示中 (currentTab が公開タブに無い) は公開の先頭/末尾から始める。
+ * @param {string} currentTab
+ * @param {number} delta
+ * @returns {string}
+ */
+export function nextTabId(currentTab, delta) {
+  const tabs = PUBLIC_TABS.map(([id]) => id);
+  const current = tabs.indexOf(currentTab);
+  const base = current === -1 ? (delta > 0 ? -1 : 0) : current;
+  const next = (base + delta + tabs.length) % tabs.length;
+  return tabs[next];
+}
+
+/**
  * グローバルな keydown ハンドラ (Vim 風ショートカット)。
  *   j/k/↓/↑ 行カーソル、g/G 先頭/末尾、Enter 行の開閉、o 行内の「詳細」の開閉、
  *   Space/Shift+Space 半ページ、/ 検索、h/l/←/→ 前後のタブ、1〜8 タブ直接、
@@ -85,12 +100,7 @@ export class KeyboardNav {
   }
 
   #switchTabBy(delta) {
-    const tabs = PUBLIC_TABS.map(([id]) => id);
-    const current = tabs.indexOf(this.app.state.tab);
-    // 管理タブ表示中 (current === -1) は公開の先頭/末尾から始める
-    const base = current === -1 ? (delta > 0 ? -1 : 0) : current;
-    const next = (base + delta + tabs.length) % tabs.length;
-    this.app.switchTab(tabs[next]);
+    this.app.switchTab(nextTabId(this.app.state.tab, delta));
   }
 
   #onKeyDown(e) {
