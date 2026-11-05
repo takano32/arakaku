@@ -26,13 +26,15 @@ from arakaku.paths import DATA_SRC
 from arakaku.schema import CSV_HEADERS, CsvRow
 
 
-def read_csv(path: Path, missing_ok: bool = False) -> list[CsvRow]:
+def read_csv(path: Path, missing_ok: bool = False, required: bool = False) -> list[CsvRow]:
+    # data-src のスキーマにある CSV は、無ければエラー (missing_ok=True のときだけ空)。それ以外の場所の
+    # CSV は既定で [warn] と空。required=True なら場所に関係なくエラー (T.112.4.5)。
     try:
         rel = path.resolve().relative_to(DATA_SRC).as_posix()
     except ValueError:
         rel = None
     if not path.exists():
-        if missing_ok or rel not in CSV_HEADERS:
+        if not required and (missing_ok or rel not in CSV_HEADERS):
             print(f"[warn] {path} not found")
             return []
         raise FileNotFoundError(f"{path}: required CSV is missing")
