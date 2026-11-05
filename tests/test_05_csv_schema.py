@@ -55,6 +55,8 @@ def test_every_csv_header_matches_schema(repo_root):
 
 
 def test_read_csv_rejects_renamed_columns_and_missing_files(io_module, tmp_path, monkeypatch):
+    # read_csv は path.resolve() を DATA_SRC と比べるので、tmp_path が symlink の下でも合うようにする (T.112.6.8)。
+    tmp_path = tmp_path.resolve()
     monkeypatch.setattr(io_module, "DATA_SRC", tmp_path)
     (tmp_path / "events.csv").write_text("date\n2026-01-01\n", encoding="utf-8")
     with pytest.raises(ValueError, match="missing"):

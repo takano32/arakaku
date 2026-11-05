@@ -16,7 +16,8 @@ if str(SCRIPTS) not in sys.path:
 
 @pytest.fixture
 def repo_root() -> Path:
-    return Path.cwd()
+    # pytest をどのディレクトリから起動しても同じリポジトリを指す (T.112.6.8)。
+    return Path(__file__).resolve().parents[1]
 
 
 def load_module(module_name: str, script_path: Path):
