@@ -45,3 +45,21 @@ def test_read_json_raises_on_missing_file(io_module, tmp_path):
         io_module.read_json(tmp_path / "absent.json")
     (tmp_path / "ok.json").write_text("[1]", encoding="utf-8")
     assert io_module.read_json(tmp_path / "ok.json") == [1]
+
+
+def test_read_csv_required_raises_outside_data_src(io_module, tmp_path):
+    # data-src の外 (review/) の CSV は既定では [warn] と空だが、required=True ならエラー (T.112.4.5)。
+    assert io_module.read_csv(tmp_path / "absent.csv") == []
+    with pytest.raises(FileNotFoundError):
+        io_module.read_csv(tmp_path / "absent.csv", required=True)
+
+
+def test_load_tables_fails_when_a_review_candidate_csv_is_missing(repo_root, tmp_path):
+    import shutil
+    from arakaku.build.relations import load_tables
+    review = tmp_path / "review"
+    shutil.copytree(repo_root / "review", review)
+    load_tables(review=review)
+    (review / "source_bout_reference_candidates.csv").unlink()
+    with pytest.raises(FileNotFoundError, match="source_bout_reference_candidates.csv"):
+        load_tables(review=review)
