@@ -72,7 +72,7 @@ data-src/official_news.csv    ← content/news/*.md
 data-src/official_pages.csv   ← pages/about.astro + history.astro
 ```
 
-Astro syntax stripped: Tailwind classes, frontmatter, JSX `.map()`, `{base}` interpolations. `maxbout.astro` and `index.astro` excluded.
+Astro syntax stripped: Tailwind classes, frontmatter, JSX `.map()`, `{base}` interpolations. Only the pages in the `ASTRO_PAGES` allow-list (`scripts/arakaku/official/pages.py`: `about`, `history`) are converted; any other `.astro` page is not read.
 
 `scripts/build_official_pages_json.py` no longer embeds images (no Base64). Image and link paths starting with `/` are kept as-is, and the viewer rewrites them to the official site at render time.
 
