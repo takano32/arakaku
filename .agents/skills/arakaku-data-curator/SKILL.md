@@ -221,7 +221,7 @@ Stage2 generated. The facts live in the `TITLES` literal in `scripts/generate_ti
 
 Title and tournament lineage data.
 
-Use this for reign order, fighter, won/lost event references, and source article/video references.
+Use this for reign order, fighter, won/lost event references, and source article/video references. `reign_order` must be a number; `validate_json.py` reports anything else as an error.
 
 Set `end_reason=vacated` (and leave `lost_at_event_id` empty) when the champion gave up the title without losing it, e.g. the next champion was decided in a 王座決定戦. Otherwise the viewer copies the next champion's won_at event into lost_at.
 
