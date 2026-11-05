@@ -46,13 +46,14 @@ let nextRevision = 1;
 export class DataRepository {
   constructor(data) {
     this.data = data;
-    this.enricher = new DataEnricher(this);
+    this.#enricher = new DataEnricher(this);
     this.revision = nextRevision++;
     this.#indexes = new IndexCache();
     this.#memo = new Map();
     this.#resetCaches();
   }
 
+  #enricher;
   #richEvents;
   #richPromotions;
   #richFighters;
@@ -92,7 +93,7 @@ export class DataRepository {
     this.#resetCaches();
     this.#memo.clear();
     this.#indexes.clear();
-    this.enricher.reset();
+    this.#enricher.reset();
   }
 
   // ── 低レベル: 素のコレクションとインデックス (indexes.js の遅延キャッシュ) ──
@@ -161,7 +162,7 @@ export class DataRepository {
   get richEvents() {
     if (this.#richEvents) return this.#richEvents;
     // 名鑑のみの大会は開催日が分からないので、昇順リストの先頭に置いて reverse で同じ信頼度の末尾に回す
-    const enriched = [...this.numbersOnlyEvents, ...this.raw("events")].map(e => this.enricher.enrichEvent(e)).reverse();
+    const enriched = [...this.numbersOnlyEvents, ...this.raw("events")].map(e => this.#enricher.enrichEvent(e)).reverse();
     this.#richEvents = lowReliabilityLast(enriched, eventReliability);
     return this.#richEvents;
   }
@@ -178,7 +179,7 @@ export class DataRepository {
     const canonical = this.fighters;
     const discovered = discoverFighters(canonical, this.numbersNameMatches, this.officialPlayers);
     const ordered = sortByNumbersOrder([...canonical, ...discovered], numbersOrder(this.numbersFighters, this.numbersNameMatches));
-    const enriched = ordered.map(f => this.enricher.enrichFighter(f));
+    const enriched = ordered.map(f => this.#enricher.enrichFighter(f));
     const { survivors, aliasIndex } = mergeDuplicateFighters(enriched, new Set(canonical.map(f => f.fighter_id)));
     this.#fighterAliasIndex = aliasIndex;
     this.#richFighters = lowReliabilityLast(survivors, fighterReliability);
@@ -187,21 +188,21 @@ export class DataRepository {
 
   get richBouts() {
     if (this.#richBouts) return this.#richBouts;
-    const enriched = [...this.numbersOnlyBouts, ...this.raw("bouts")].map(b => this.enricher.enrichBout(b)).reverse();
+    const enriched = [...this.numbersOnlyBouts, ...this.raw("bouts")].map(b => this.#enricher.enrichBout(b)).reverse();
     this.#richBouts = lowReliabilityLast(enriched, boutReliability);
     return this.#richBouts;
   }
 
   get richVideos() {
     if (this.#richVideos) return this.#richVideos;
-    const enriched = this.raw("videos").map(v => this.enricher.enrichVideo(v)).reverse();
+    const enriched = this.raw("videos").map(v => this.#enricher.enrichVideo(v)).reverse();
     this.#richVideos = lowReliabilityLast(enriched, videoReliability);
     return this.#richVideos;
   }
 
   get richArticles() {
     if (this.#richArticles) return this.#richArticles;
-    this.#richArticles = this.raw("articles").map(a => this.enricher.enrichArticle(a)).reverse();
+    this.#richArticles = this.raw("articles").map(a => this.#enricher.enrichArticle(a)).reverse();
     return this.#richArticles;
   }
 
@@ -254,8 +255,8 @@ export class DataRepository {
   richVideoById(id) { return this.#indexes.unique("richVideos:video_id", this.richVideos, v => v.video_id).get(id); }
 
   // 単発の enrich (一覧キャッシュを作らずに 1 件だけ補完する)
-  getRichVideoInfo(video) { return this.enricher.enrichVideo(video); }
-  getRichArticleInfo(article) { return this.enricher.enrichArticle(article); }
+  getRichVideoInfo(video) { return this.#enricher.enrichVideo(video); }
+  getRichArticleInfo(article) { return this.#enricher.enrichArticle(article); }
 
   // ── 名前解決 ────────────────────────────────────────────────────────
 
@@ -298,13 +299,13 @@ export class DataRepository {
 
   sourceReferencesForBout(bout) { return this.findManyByField("sourceBoutReferences", "bout_id", bout.bout_id); }
   sourceReferencesForEvent(event) { return this.findManyByField("sourceEventReferences", "event_id", event.event_id); }
-  sourceReferenceForVideo(video) {
+  #sourceReferenceForVideo(video) {
     return this.findManyByField("sourceVideoReferences", "video_id", video.video_id)[0];
   }
 
   sourceContextForVideo(video) {
     return {
-      reference: this.sourceReferenceForVideo(video),
+      reference: this.#sourceReferenceForVideo(video),
       document: this.sourceDocumentForVideo(video),
     };
   }
