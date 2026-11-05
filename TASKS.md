@@ -13,6 +13,7 @@ Unofficial ARAKAKU Database の作業台帳です。過去の仕事も含め、�
 
 ## 再開メモ（2026-10-25 時点で一時停止）
 
+- 2026-11-05 追記: T.112（リファクタリング）が進行中。中断の状態と残りの作業は T.112 の節を見る。
 - 作業ツリーはクリーンで、すべて push 済み。CI（Test・Deploy Pages）も成功している。
 - 自動で進められるタスクは残っていない。「未着手」「進行中」の親タスクは無く、残りは下の判断待ち（Fable 5.5 まで保留）と、T.42（ニュースが増えるまで）・T.57（#10 の返信待ち）だけ。
 - 再開したら: (1) #10 に作者の返信があれば T.57.3 に進む。(2) Fable 5.5 で動いていれば、下の判断待ちを effort max で自分で判断して進める。(3) それ以外は `make refresh-sources`（YouTube の API キーは `eval "$(grep '^export YOUTUBE_API_KEY=' ~/.bashrc)"` で読み込み、表示しない）で新しい note・動画を取り込み、新しく見つかった作業を台帳に登録して進める。
@@ -323,8 +324,51 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
 - 状態: 進行中
 - 期間: 2026-11-05〜
 
-ユーザーの依頼（2026-11-05）。「Fable max でリファクタリング。テスト可能なことと責務の分割、カプセル化などを重視して細かいファイルに割って構わない」。Fable（effort max）のサブエージェントに、Python（scripts/・tests/）とビューア（docs/assets/js/・Node の検証スクリプト）を別々の worktree で任せる。完了の条件: 生成物（docs/data/*.json と data-src・review の CSV）がリファクタリング前とバイト単位で一致し、make check と make check-generated が通り、新しいテストが分割した単位を直接検査していること。
+ユーザーの依頼（2026-11-05）。「Fable max でリファクタリング。テスト可能なことと責務の分割、カプセル化などを重視して細かいファイルに割って構わない」。完了の条件: 生成物（docs/data/*.json と data-src・review の CSV）がリファクタリング前とバイト単位で一致し、make check と make check-generated が通り、新しいテストが分割した単位を直接検査していること。挙動を変える修正は混ぜない（見つけたバグは T.112.4 に積んで別に直す）。
+
+**役割分担（2026-11-05 にユーザーが決定）:** レビューと設計の判断（T.112.1.10・T.112.2.16・T.112.3.5）は Fable（effort max）が行い、それ以外の細かい作業は Opus が行う。
+
+**中断の記録:** 2026-11-05、Fable のサブエージェント 2 本（Python 側・ビューア側）が Fable の週の利用上限（HTTP 429、9:00 UTC にリセット）で途中で止まった。止まった時点のコミットは各ブランチに残っていて、作業ツリーに未コミットの変更は無い。両ブランチの先端で make check は通り、`make build` の docs/data は master と完全に一致することを確かめた（2026-11-05）。2 つのブランチが変えたファイルは重ならない（Python 側 68 ファイル、ビューア側 81 ファイル）。
+
+- 作業ブランチ（worktree は `.claude/worktrees/` の下）:
+  - Python 側: `worktree-agent-a9a7dad521b481e6b`（先端 6269775、15 コミット）
+  - ビューア側: `worktree-agent-af9a3f71a11f54e70`（先端 3d7e35e、20 コミット）
+- 同じセッション内なら、止まったエージェントにメッセージを送れば続きから再開できる。セッションが変わったら、上のブランチを起点に新しく任せる。
 
 - [ ] T.112.1 Python のスクリプトとパッケージを分割し、単体テストを足す
+  - [x] T.112.1.1 `arakaku/utils.py` を `paths.py`・`io.py`・`text.py`・`csvmap.py` に分け、各スクリプトの import を移す（ece9f62・2db67ad、2026-11-05）
+  - [x] T.112.1.2 JSON の組み立てを `arakaku/build/`（canonical・relations・numbers・official）に移し、build_json.py が import 時に CSV を読む処理（`RESULT_PUBLISHED_AT` など）をなくす。単体テスト test_11_build_canonical.py（9c21e64・021ae96、2026-11-05）
+  - [x] T.112.1.3 検証を `arakaku/validation/`（runner・report・entities・links・rules・sources・official・numbers・archives・locate・common・vocab）に移す。単体テスト test_21_validation_units.py（cafc86f・1dc1afd・12eda30、2026-11-05）
+  - [x] T.112.1.4 本文 DB・アーカイブ・note 一覧・記事の分類・記事リンク・note 結果照合・出典候補・結果候補を `arakaku/sources/`・`arakaku/notes/`・`arakaku/derive/`・`arakaku/review/` に移し、`arakaku/utils.py` と `mapping.py` を消す（f3b44c7・f4cbcbd・e23f1d7・2364df5・9156cb8・9a6372d・e6032b4・6269775、2026-11-05）
+  - [ ] T.112.1.5 `extract_numbers.py`（382 行、手つかず）を分ける。Numbers ファイルの読み込み、行から CSV 行への変換、名前の照合を `arakaku/numbers/` の純粋な関数にし、スクリプトは薄い入口にする。変換と照合に単体テストを足す
+  - [ ] T.112.1.6 `arakaku/build/canonical.py`（372 行）をエンティティごと（選手・大会・試合・王座・動画・記事など）に分ける
+  - [ ] T.112.1.7 import の付け替えしかしていない小さいスクリプトを同じ形にそろえる（純粋な関数をパッケージへ移し、`main` は引数の処理と読み書きだけにする）。対象: discover_youtube_videos.py・cache_note_html.py・cache_youtube_api.py・generate_promotions.py・generate_titles.py・generate_aliases.py・generate_video_links.py・generate_official_csvs.py・generate_official_pages_csv.py・reorder_data.py・apply_structured_result_patches.py・build_numbers_json.py・build_official_pages_json.py
+  - [ ] T.112.1.8 単体テストの無いパッケージにテストを足す。`arakaku/notes/`（html・crawl・articles・matchups・results）、`arakaku/sources/`（documents・mentions・archives）、`arakaku/derive/article_links.py`、`arakaku/review/`（note_results・reference_candidates・mention_result_candidates）。実データではなく小さい手書きの入力で検査する
+  - [ ] T.112.1.9 古い `arakaku.utils` を指すコメントを直す（`scripts/arakaku/__init__.py:2`、`scripts/apply_structured_result_patches.py:10`）。各スクリプトの冒頭コメント（役割・アーキ上の位置・不変条件・関連スキル）が新しい構成と合っているかも確かめる
+  - [ ] T.112.1.10 Fable（effort max）が Python 側の差分全体をレビューする（モジュールの境界、公開する名前と隠す名前、命名、テストの粒度、過剰な抽象化がないか）。指摘は T.112.1 の新しい子として積む
 - [ ] T.112.2 ビューアの JS を分割し、Node の単体テストを足す
+  - [x] T.112.2.1 Node の単体テストを `tests/js/` に移し、`make validate` で `node --test tests/js/test_*.mjs` として走らせる（9642088、2026-11-05）
+  - [x] T.112.2.2 `data/repository.js` から大会の日付・王座の系譜・出典の検索・名鑑だけの試合・選手の一覧・重複選手の統合・索引を切り出す（ec420bd・b00be6e・b0c5f5f・4883888・94ecf0b・1b4d003・680f0e6、2026-11-05）
+  - [x] T.112.2.3 `data/enricher.js` を `data/enrich/`（official・fighter・bout・media）に分ける（33de0fc・1c7b5d4・00a25cf・c9df281、2026-11-05）
+  - [x] T.112.2.4 `data/query.js` から検索用テキストの組み立てを `data/search_text.js` に分ける（9e52152、2026-11-05）
+  - [x] T.112.2.5 `ui/parts.js` の HTML 組み立てを `ui/parts/` の純粋なモジュールに移し、Parts クラスをなくす（3b90e98・ed15397、2026-11-05）
+  - [x] T.112.2.6 `ui/sections/admin.js` を管理タブごとのモジュールに分ける（a1d209a、2026-11-05）
+  - [x] T.112.2.7 `app/state.js` から URL の読み書きと履歴の同期を分ける（c277e50、2026-11-05）
+  - [x] T.112.2.8 `ui/shell.js` から検索窓・テーマ切り替え・トースト・動画埋め込み、ナビ・統計・警告・絞り込み・ツールバーの描画、一覧の描画（`ui/render/list_view.js`）を分ける（8d2a971・b9736d8・3d7e35e、2026-11-05）
+  - [ ] T.112.2.9 `ui/list.js`（315 行、手つかず）を分ける。行の開閉・ページ送り・仮想化などの判断を純粋な関数にし、DOM の操作と分けてテストを足す
+  - [ ] T.112.2.10 `data/repository.js` の残り（382 行）をさらに分ける。公開する API を小さくし、切り出したモジュールを直接使えるところは直接使う
+  - [ ] T.112.2.11 `data/loader.js`（190 行）・`data/filters.js`・`ui/keyboard.js`・`config.js`・`main.js` を見直す。fetch や DOM と純粋な処理（JSON の検査、キーと操作の対応、設定の組み立て）を分け、純粋な部分にテストを足す
+  - [ ] T.112.2.12 `ui/sections/` の各タブの `build()` を、DOM なしで呼べる単位としてテストする（小さい repo と state の偽物を渡して、items・keyOf・行の HTML を確かめる）
+  - [ ] T.112.2.13 `scripts/validate_json.js`（319 行）を、検査の種類ごとに分けるか見直す。検査は弱めない
+  - [ ] T.112.2.14 挙動が変わっていないことを確かめる（データ層）。master と作業ブランチで、loader・repository・enricher・query・filters を実データで動かして要約（件数、試合と選手のオブジェクト、並び順、全絞り込みの結果、いくつかの検索結果）を書き出す Node スクリプトを作り、出力の差分が無いことを確かめる（スクリプトはコミットしない）
+  - [ ] T.112.2.15 挙動が変わっていないことを確かめる（ブラウザ）。作業ブランチを `python3 -m http.server` で配信し、全タブ・選手・試合・大会・王座のフォーカス、検索、絞り込み、戻る・進むを開いてコンソールのエラーが 0 件であることを確かめる。master も別のポートで配信し、URL ごとに `main` の innerHTML を比べる。メモリが少ないので Chrome のページは 1 枚ずつ開く
+  - [ ] T.112.2.16 Fable（effort max）がビューア側の差分全体をレビューする（モジュールの境界、依存の渡し方、共有された可変状態が残っていないか、テストの粒度）。指摘は T.112.2 の新しい子として積む
 - [ ] T.112.3 2 つの作業を master に取り込み、ドキュメントとスキルを新しい構成に合わせる
+  - [ ] T.112.3.1 2 つのブランチを master にマージする（変えたファイルは重ならない）。マージ後に make check と、変更の無い作業ツリーで make check-generated を通し、`make build` の docs/data がマージ前の master と一致することを確かめる
+  - [ ] T.112.3.2 古いパスを指すドキュメントを直す。README の「scripts の役割」と Makefile の節、scripts/GEMINI.md の Key Scripts、HANDOFF.md、CODEX.md、OPERATIONS_CHECKLIST.md、docs/VIEWER_FEATURES.md、.github/pull_request_template.md。`grep -rn "arakaku/utils\|arakaku.utils\|ui/parts.js\|enricher.js\|test_filters.mjs\|test_markdown.mjs"` などで洗い出す
+  - [ ] T.112.3.3 スキルを新しい構成に合わせる。arakaku-maintainer・arakaku-source-pipeline・arakaku-review-workflow・arakaku-data-curator・arakaku-viewer-ui・arakaku-sorting-strategy・arakaku-docs-handoff（特にモジュールの一覧と make validate の中身）
+  - [ ] T.112.3.4 push して CI（Test・Deploy Pages）が通ることを確かめ、公開サイトを開いてコンソールのエラーが無いことを確かめる
+  - [ ] T.112.3.5 Fable（effort max）がマージ後の全体を最終レビューする。指摘は新しい子として積む
+  - [ ] T.112.3.6 作業用の worktree とブランチを消す（`git worktree remove`・`git branch -d`）
+- [ ] T.112.4 リファクタリング中に見つけたバグを集めて、1 件ずつ別のタスクとして積む。Fable のエージェントには「挙動が変わる修正はせずに報告だけ」と頼んでいたが、上限で止まったため報告を受け取れていない。再開したエージェントに一覧を出してもらうか、T.112.1.10・T.112.2.16 のレビューで洗い出す
+- [ ] T.112.5 `.claude/worktrees/` を .gitignore に入れる。今は master の作業ツリーで `.claude/` が未追跡として出ていて、`git add -A` で worktree を誤ってコミットするおそれがある
