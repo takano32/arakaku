@@ -7,7 +7,7 @@ import { access, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ADMIN_TABS, CORE_DATA_KEYS, DATA_FILES, PUBLIC_TABS } from "../docs/assets/js/config.js";
+import { ADMIN_TABS, CORE_DATA_KEYS, DATA_FILES, MENTION_TYPE_ORDER, PUBLIC_TABS } from "../docs/assets/js/config.js";
 import { DataLoader } from "../docs/assets/js/data/loader.js";
 import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/data/parser.js";
 import { QueryMatcher } from "../docs/assets/js/data/query.js";
@@ -91,6 +91,10 @@ function validateLoadedData(data, repository) {
   assert(Array.isArray(data.sourceDocuments), "sourceDocuments must be an array");
   assert(Array.isArray(data.sourceDocumentBodies), "sourceDocumentBodies must be an array");
   assert(Array.isArray(data.sourceMentions), "sourceMentions must be an array");
+  // Python の VALID_MENTION_TYPES と JS の MENTION_TYPE_ORDER は手で同期しているので、ずれたらここで止める (T.112.6.16)
+  for (const mention of data.sourceMentions) {
+    assert(MENTION_TYPE_ORDER.includes(mention.mention_type), `sourceMentions mention_type not in MENTION_TYPE_ORDER: ${mention.mention_id} (${mention.mention_type})`);
+  }
   assert(typeof data.metadata === "object" && !Array.isArray(data.metadata), "metadata must be an object");
   assert(typeof data.aliases === "object" && !Array.isArray(data.aliases), "aliases must be an object");
   assert(Array.isArray(data.youtubeArchives), "youtubeArchives must be an array");
