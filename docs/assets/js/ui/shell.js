@@ -12,6 +12,9 @@ import { labels } from "../data/labels.js";
 import { escapeHtml, uniqueSorted } from "./html.js";
 import { RecordList } from "./list.js";
 import { SECTIONS } from "./sections/index.js";
+import { ThemeToggle } from "./theme.js";
+import { Toast } from "./toast.js";
+import { activateVideoFacade } from "./video_embed.js";
 
 /**
  * Shell — 画面全体 (ナビ・件数・検索・絞り込み・一覧・エラー表示) の描画と UI イベントの配線。
@@ -22,11 +25,15 @@ import { SECTIONS } from "./sections/index.js";
  * - 一覧はタブごとに 1 つの RecordList を保持し、タブを切り替えても開閉状態と描画済み件数を保つ。
  * - 選手/大会/試合リンク (ui/parts/links.js の data-* 属性) と YouTube ファサードのクリックは
  *   #list-host への委譲で受ける。
+ * - 検索欄 (ui/search_box.js)・配色 (ui/theme.js)・通知 (ui/toast.js) は部品として持つ。
  */
 export class Shell {
   #state;
   #loader;
   #query;
+  #searchBox;
+  #theme = new ThemeToggle();
+  #toast = new Toast();
   #lists = new Map();
   #currentTab = null;
   #prevRevision = new Map();
@@ -39,13 +46,13 @@ export class Shell {
   #prevPublicTab = DEFAULT_TAB;
   #prevAdminTab = DEFAULT_ADMIN_TAB;
   #syncingNav = false;
-  #searchTimer = null;
   #lastCount = -1;
 
-  constructor({ state, loader, query }) {
+  constructor({ state, loader, query, searchBox }) {
     this.#state = state;
     this.#loader = loader;
     this.#query = query;
+    this.#searchBox = searchBox;
   }
 
   get state() { return this.#state; }
@@ -54,27 +61,13 @@ export class Shell {
   // ── 配線 ───────────────────────────────────────────────────────────
 
   bind() {
-    const searchInput = document.querySelector("#search");
-    const clearButton = document.querySelector("#search-clear");
-
-    const scheduleSearch = (value) => {
-      if (clearButton) clearButton.hidden = !value;
-      clearTimeout(this.#searchTimer);
-      this.#searchTimer = setTimeout(() => {
+    this.#searchBox.bind({
+      onSearch: (value) => {
         this.#state.clearFocus();
         this.#state.patch({ query: value });
-      }, 150);
-    };
-    // 日本語入力の変換中は検索せず、確定 (compositionend) で検索する。
-    searchInput?.addEventListener("input", (event) => {
-      if (event.isComposing) return;
-      scheduleSearch(event.target.value);
+      },
+      onClear: () => this.clearSearch(),
     });
-    searchInput?.addEventListener("compositionend", (event) => scheduleSearch(event.target.value));
-    searchInput?.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") this.clearSearch();
-    });
-    clearButton?.addEventListener("click", () => this.clearSearch());
 
     for (const selector of ["#nav", "#stats"]) {
       document.querySelector(selector)?.addEventListener("click", (event) => {
@@ -123,11 +116,10 @@ export class Shell {
       const bout = event.target.closest(".link-bout");
       if (bout) { this.jumpToBout(bout.dataset.boutId); return; }
       const yt = event.target.closest(".yt");
-      if (yt) this.#activateVideo(yt);
+      if (yt) activateVideoFacade(yt);
     });
 
-    document.querySelector("#theme-toggle")?.addEventListener("click", () => this.#toggleTheme());
-    this.#syncThemeButton();
+    this.#theme.bind();
 
     this.#state.subscribe(() => this.render());
   }
@@ -152,10 +144,7 @@ export class Shell {
   #jump(patch) {
     this.#state.clearFocus();
     this.#state.patch({ ...patch, query: "" });
-    const searchInput = document.querySelector("#search");
-    if (searchInput) searchInput.value = "";
-    const clearButton = document.querySelector("#search-clear");
-    if (clearButton) clearButton.hidden = true;
+    this.#searchBox.setValue("");
     this.#loader.loadForTab(this.#state.tab);
     window.scrollTo({ top: 0, behavior: "instant" });
     this.#focusHeading();
@@ -166,11 +155,8 @@ export class Shell {
   jumpToBout(boutId) { this.#jump({ tab: "bouts", focusBoutId: boutId || "" }); }
 
   clearSearch() {
-    const searchInput = document.querySelector("#search");
-    const clearButton = document.querySelector("#search-clear");
-    if (searchInput) searchInput.value = "";
-    if (clearButton) clearButton.hidden = true;
-    clearTimeout(this.#searchTimer);
+    this.#searchBox.setValue("");
+    this.#searchBox.cancelPending();
     this.#state.clearFocus();
     this.#state.patch({ query: "" });
   }
@@ -180,46 +166,7 @@ export class Shell {
   }
 
   toast(message) {
-    const el = document.querySelector("#toast");
-    if (!el) return;
-    el.textContent = message;
-    el.classList.add("is-shown");
-    clearTimeout(this.#toastTimer);
-    this.#toastTimer = setTimeout(() => el.classList.remove("is-shown"), 2000);
-  }
-  #toastTimer = null;
-
-  // YouTube ファサード → iframe に差し替え (クリックされた動画だけ読み込む)
-  #activateVideo(el) {
-    const id = el.dataset.ytId;
-    if (!id || el.querySelector("iframe")) return;
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
-    iframe.title = el.querySelector(".yt-play")?.getAttribute("aria-label") ?? "YouTube";
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-    iframe.allowFullscreen = true;
-    el.replaceChildren(iframe);
-    el.classList.add("is-active");
-  }
-
-  #toggleTheme() {
-    const root = document.documentElement;
-    const current = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = current === "dark" ? "light" : "dark";
-    root.dataset.theme = next;
-    try { localStorage.setItem("arakaku-theme", next); } catch { /* 保存できなくても動作に支障なし */ }
-    this.#syncThemeButton();
-  }
-
-  // 配色ボタンのラベルで、押すとどちらの配色になるかを伝える (アイコンだけでは状態が分からないため)。
-  #syncThemeButton() {
-    const button = document.querySelector("#theme-toggle");
-    if (!button) return;
-    const root = document.documentElement;
-    const dark = (root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark";
-    const label = dark ? "ライト配色に切り替える" : "ダーク配色に切り替える";
-    button.setAttribute("aria-label", label);
-    button.title = label;
+    this.#toast.show(message);
   }
 
   // ── 描画 ───────────────────────────────────────────────────────────
@@ -403,10 +350,7 @@ export class Shell {
     indicator.textContent = loading ? `読み込み中 ${loadedCount}/${total}` : "";
     // 一覧がまだ描けていない間だけ aria-busy (描けた後の補完データの読み込み中は busy にしない)。
     document.querySelector("#list-host")?.setAttribute("aria-busy", loading && count < 0 ? "true" : "false");
-    const searchInput = document.querySelector("#search");
-    if (searchInput && section?.placeholder && searchInput.placeholder !== section.placeholder) {
-      searchInput.placeholder = section.placeholder;
-    }
+    this.#searchBox.setPlaceholder(section?.placeholder);
   }
 
   #fingerprint() {

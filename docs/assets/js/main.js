@@ -5,6 +5,7 @@ import { DataLoader } from "./data/loader.js";
 import { QueryMatcher } from "./data/query.js";
 import { Shell } from "./ui/shell.js";
 import { KeyboardNav } from "./ui/keyboard.js";
+import { SearchBox } from "./ui/search_box.js";
 import { escapeHtml } from "./ui/html.js";
 
 /**
@@ -15,21 +16,19 @@ import { escapeHtml } from "./ui/html.js";
  */
 const state = new Store();
 const historySync = new HistorySync();
+const searchBox = new SearchBox();
 
 const urlPatch = readFromURL();
 if (Object.keys(urlPatch).length > 0) {
   state.patch(urlPatch);
-  const searchInput = document.querySelector("#search");
-  if (searchInput && urlPatch.query) searchInput.value = urlPatch.query;
-  const clearButton = document.querySelector("#search-clear");
-  if (clearButton && urlPatch.query) clearButton.hidden = false;
+  if (urlPatch.query) searchBox.setValue(urlPatch.query);
 }
 // URL への書き戻しは復元が終わってから購読する (復元中の patch をループさせない)
 state.subscribe((s) => historySync.write(s));
 
 const loader = new DataLoader(state);
 const query = new QueryMatcher(state, () => state.repository);
-const shell = new Shell({ state, loader, query });
+const shell = new Shell({ state, loader, query, searchBox });
 shell.bind();
 new KeyboardNav({
   state,
@@ -49,10 +48,7 @@ window.addEventListener("popstate", (event) => {
     if (scrollY > document.documentElement.scrollHeight - window.innerHeight) shell.currentList()?.renderAll();
     window.scrollTo({ top: scrollY, behavior: "instant" });
   });
-  const searchInput = document.querySelector("#search");
-  if (searchInput) searchInput.value = patch.query;
-  const clearButton = document.querySelector("#search-clear");
-  if (clearButton) clearButton.hidden = !patch.query;
+  searchBox.setValue(patch.query);
   loader.loadForTab(state.tab);
 });
 
