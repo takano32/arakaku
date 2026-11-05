@@ -12,6 +12,7 @@ import {
   videoIdsLinkedToEventBouts,
   videosForEntity,
 } from "./relations.js";
+import { withBodies } from "./source_documents.js";
 import { SourceDocumentLookup } from "./source_lookup.js";
 import { enrichTitle, titleDisplayName } from "./title_lineage.js";
 import {
@@ -219,15 +220,9 @@ export class DataRepository {
     if (this.#sourceDocuments) return this.#sourceDocuments;
     const docs = [...this.raw("sourceDocuments")].reverse();
     const bodies = this.data.sourceDocumentBodies;
-    if (!bodies?.length) {
-      this.#sourceDocuments = docs;
-      return docs;
-    }
-    const bodyMap = this.#indexes.unique("sourceDocumentBodies:source_id", bodies, b => b.source_id);
-    this.#sourceDocuments = docs.map(d => {
-      const body = bodyMap.get(d.source_id);
-      return body ? { ...d, content_text: body.content_text } : d;
-    });
+    this.#sourceDocuments = bodies?.length
+      ? withBodies(docs, this.#indexes.unique("sourceDocumentBodies:source_id", bodies, b => b.source_id))
+      : docs;
     return this.#sourceDocuments;
   }
 
