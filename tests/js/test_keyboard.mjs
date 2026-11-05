@@ -52,11 +52,17 @@ test("ヘルプが開いている間は ? (閉じる) と Esc 以外を無視す
   assert.equal(name({ key: "1", dialogOpen: true }), null);
 });
 
-test("修飾キー付きは無視する (? は除く)", () => {
+test("修飾キー付きは ? と Esc も含めて無視する (Shift は ? の入力に要るので許す)", () => {
   assert.equal(name({ key: "r", ctrlKey: true }), null);
   assert.equal(name({ key: "c", metaKey: true }), null);
   assert.equal(name({ key: "1", altKey: true }), null);
-  assert.equal(name({ key: "?", ctrlKey: true }), "toggleHelp");
+  assert.equal(name({ key: "?", ctrlKey: true }), null);
+  assert.equal(name({ key: "?", metaKey: true }), null);
+  assert.equal(name({ key: "?", altKey: true }), null);
+  assert.equal(name({ key: "?", ctrlKey: true, dialogOpen: true }), null);
+  assert.equal(name({ key: "Escape", metaKey: true, hasQuery: true }), null);
+  assert.equal(name({ key: "Escape", ctrlKey: true, dialogOpen: true }), null);
+  assert.equal(name({ key: "?", shiftKey: true }), "toggleHelp");
 });
 
 test("ボタン・リンク・summary の上の Enter と Space はブラウザに任せる", () => {
