@@ -71,9 +71,11 @@ def load_tables(data_src: Path = DATA_SRC, review: Path = REVIEW) -> Tables:
         source_mentions=rows("source_mentions.csv"),
         youtube_archives=rows("archives/youtube.csv"),
         note_archives=rows("archives/note.csv"),
-        source_event_references=read_csv(review / "source_event_reference_candidates.csv"),
-        source_bout_references=read_csv(review / "source_bout_reference_candidates.csv"),
-        source_video_references=read_csv(review / "source_video_reference_candidates.csv"),
+        # review の候補 CSV は make generate-stage2 が作ってコミットしている。無いのに空として進めると
+        # source_*_references.json が空のまま検証も通るので、無ければエラー (T.112.4.5)。
+        source_event_references=read_csv(review / "source_event_reference_candidates.csv", required=True),
+        source_bout_references=read_csv(review / "source_bout_reference_candidates.csv", required=True),
+        source_video_references=read_csv(review / "source_video_reference_candidates.csv", required=True),
     )
 
 
