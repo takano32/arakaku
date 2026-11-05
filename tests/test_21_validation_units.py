@@ -16,6 +16,7 @@ from arakaku.validation import (
     validate_bouts,
     validate_docs_data,
     validate_events,
+    validate_fighter_snapshots,
     validate_fighters,
     validate_numbers_data,
     validate_official_history,
@@ -178,3 +179,15 @@ def test_source_and_numbers_and_archive_checks(report: Report):
         "official_history.json[1]: missing required field: title",
     ):
         assert expected in errors
+
+
+def test_duplicate_title_and_snapshot_ids_are_reported_once(report):
+    # 以前は runner と各バリデータの両方が collect_ids を呼び、同じ ERROR が 2 行出た (T.112.4.7)。
+    titles = [{"title_id": "t", "promotion_id": "p"}, {"title_id": "t", "promotion_id": "p"}]
+    assert validate_titles(report, titles, {"p"}, set(), set(), set()) == {"t"}
+    snapshots = [{"snapshot_id": "s"}, {"snapshot_id": "s"}]
+    assert validate_fighter_snapshots(report, snapshots, set(), set(), set(), set()) == {"s"}
+    assert [e for e in report.errors if "duplicate" in e] == [
+        "titles.json[1]: duplicate title_id: t",
+        "fighter_snapshots.json[1]: duplicate snapshot_id: s",
+    ]
