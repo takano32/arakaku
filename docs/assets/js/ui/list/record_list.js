@@ -4,7 +4,7 @@ import { initialCount, keysUnchanged, moreLabel, nextEnd, refreshTarget, statusT
 import { rowShellHtml, safeRender, toggleLabel } from "./row_html.js";
 
 /** 行の見出し部のクリックでも開閉しない操作要素 (リンク・ボタン・フォーム部品など)。 */
-export const INTERACTIVE_SELECTOR = "a, button, summary, input, select, textarea, label";
+const INTERACTIVE_SELECTOR = "a, button, summary, input, select, textarea, label";
 
 /**
  * RecordList — 段階的に描画する一覧 (レコード行の開閉・カーソル付き)。
