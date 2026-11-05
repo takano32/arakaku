@@ -11,6 +11,7 @@ from __future__ import annotations
 #       タイ・ブレイクに主キー/順序列を足して並びを決定的にしている（同点でも順序が揺れない）。
 # 関連スキル: .agents/skills/arakaku-sorting-strategy
 from arakaku.derive.ordering import bout_sort_key, event_sort_date, reign_sort_key, sort_key_date
+from arakaku.event_dates import event_note_dates
 from arakaku.io import read_csv, write_csv
 from arakaku.paths import DATA_SRC
 
@@ -22,25 +23,12 @@ def reorder_csvs():
         write_csv(DATA_SRC / "articles.csv", list(articles[0].keys()), articles)
 
     # 2. Events
-    # 大会の日付は CSV に無いので、結果 note の投稿日 (build_json.py の result_published_at と同じ)、
+    # 大会の日付は CSV に無いので、結果 note の投稿日 (events.json の result_published_at と同じ規則)、
     # 無ければその大会の note のいちばん早い投稿日 (対戦カードだけの大会)、それも無ければ published_at で並べる (T.77)。
-    article_dates = {a["article_id"]: (a.get("article_type", ""), a.get("published_at", "")) for a in articles}
-    result_dates: dict[str, str] = {}
-    any_note_dates: dict[str, str] = {}
-    for link in read_csv(DATA_SRC / "article_links.csv"):
-        if link["entity_type"] != "event":
-            continue
-        article_type, date = article_dates.get(link["article_id"], ("", ""))
-        if not date:
-            continue
-        event_id = link["entity_id"]
-        if article_type == "event_result" and date < result_dates.get(event_id, "9999"):
-            result_dates[event_id] = date
-        if date < any_note_dates.get(event_id, "9999"):
-            any_note_dates[event_id] = date
+    result_dates, note_dates = event_note_dates(articles, read_csv(DATA_SRC / "article_links.csv"))
 
     def event_date(e: dict[str, str]) -> str:
-        return event_sort_date(e, result_dates, any_note_dates)
+        return event_sort_date(e, result_dates, note_dates)
 
     events = read_csv(DATA_SRC / "events.csv")
     if events:
