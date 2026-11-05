@@ -169,7 +169,7 @@ notes
 
 Only `match_method=exact_display_name` with a known `matched_fighter_id` should be treated as a strong existing-fighter link. Generated candidates are review aids, not confirmed identities.
 
-When there is no exact match, `extract_numbers.py` retries with the viewer's `normalizeFighterName` rule (NFKC, then drop `・`, spaces, and periods, lowercase). A unique hit is recorded as `match_method=normalized_display_name`, `match_confidence=medium`; it is used for bout lookup but is not a strong link (aliases skip it). Fight-record opponents who are not in the Numbers fighter sheet are matched against `fighters.csv` by exact `display_name`. `event_number_normalized` keeps only the edition number for MAXバウト rows written as `第5回 1回戦A`, so they key to the tournament event (`max_bout:5`); the round stays in `event_number_raw`.
+The rule is `match_name` in `scripts/arakaku/numbers/names.py`. When there is no exact match, it retries with the viewer's `normalizeFighterName` rule (NFKC, then drop `・`, spaces, and periods, lowercase). A unique hit is recorded as `match_method=normalized_display_name`, `match_confidence=medium`; it is used for bout lookup but is not a strong link (aliases skip it). Fight-record opponents who are not in the Numbers fighter sheet are matched against `fighters.csv` by exact `display_name`. `event_number_normalized` keeps only the edition number for MAXバウト rows written as `第5回 1回戦A`, so they key to the tournament event (`max_bout:5`); the round stays in `event_number_raw`.
 
 ---
 
@@ -209,7 +209,7 @@ The viewer's admin view (管理ビュー) includes three Numbers-specific tabs:
 名鑑記録 (numbersFightRecords) ← fight records + bout correspondence
 ```
 
-These tabs load from ENRICHMENT_DATA_KEYS (fetched in Phase 2 of `docs/assets/js/data/loader.js` automatically) and are rendered by `docs/assets/js/ui/sections/admin.js`.
+These tabs load from ENRICHMENT_DATA_KEYS (fetched in Phase 2 of `docs/assets/js/data/loader.js` automatically) and are rendered by `docs/assets/js/ui/sections/numbers_fighters.js`, `numbers_name_matches.js` and `numbers_fight_records.js`.
 
 ## Viewer expectations
 
@@ -217,10 +217,10 @@ The static viewer loads Numbers JSON files for **Rich Data Supplementation** at 
 
 - `DataRepository.richFighters` dynamically discovers and merges Numbers-only (and official-only) entities.
 - `DataRepository.numbersOnlyEvents` / `numbersOnlyBouts` synthesize events and bouts that appear only in Numbers fight records (`numbers_only: true`); they are not written to CSV.
-- `DataEnricher.enrichFighter` fills missing canonical profiles from Numbers rows (after 公式; 名鑑 is highest tier).
-- Displays a **Numbers Stats Block** (`renderNumbersBlock`, blue `.source-block.source-numbers`) in fighter cards (fights, wins, losses) with achievement markers (👑 belts, 🏆 tournament wins).
-- `DataEnricher.enrichBout` fills unknown canonical results, divisions, and formats from Numbers records and sets `result_status = "numbers_verified"`.
-- UI marks the source with a `名鑑` badge (`.video-badge`); 公式 data uses a `公式` badge and a green `.source-block.source-official` block. See `arakaku-reliability-layering` and `arakaku-viewer-ui`.
+- `DataEnricher` fills missing canonical profiles from Numbers rows (`composeFighter` in `docs/assets/js/data/enrich/fighter.js`; after 公式; 名鑑 is highest tier).
+- Fighter rows show the record (fights, wins, losses) with achievement markers (👑 belts, 🏆 tournament wins) in one `戦績・プロフィール` block (`profileBlock` in `docs/assets/js/ui/parts/fighters.js`).
+- `DataEnricher` fills unknown canonical results, divisions, and formats from Numbers records (`applyFightRecords` in `docs/assets/js/data/enrich/bout.js`) and sets `result_status = "numbers_verified"`.
+- UI marks the source with a blue `名鑑` badge (`.badge-numbers`); 公式 data uses a green `公式` badge (`.badge-official`). See `arakaku-reliability-layering` and `arakaku-viewer-ui`.
 
 Client-side JavaScript also handles:
 ...
