@@ -52,7 +52,7 @@ def main() -> int:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    rows = read_csv(args.articles)
+    rows = read_csv(args.articles, required=True)  # 打ち間違えたパスで 0 行のまま進まない (T.112.6.14)
 
     fetched = 0
     skipped = 0

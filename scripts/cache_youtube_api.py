@@ -50,7 +50,7 @@ def main() -> int:
 
     video_ids = []
     skipped = 0
-    for row in read_csv(args.videos):
+    for row in read_csv(args.videos, required=True):  # 打ち間違えたパスで 0 行のまま進まない (T.112.6.14)
         if not is_cacheable_video(row):
             skipped += 1
             continue
