@@ -66,5 +66,11 @@ def reorder_csvs():
         reigns.sort(key=reign_sort_key)
         write_csv(DATA_SRC / "title_reigns.csv", list(reigns[0].keys()), reigns)
 
-if __name__ == "__main__":
+
+def main() -> int:
     reorder_csvs()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
