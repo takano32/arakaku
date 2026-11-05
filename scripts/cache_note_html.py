@@ -3,12 +3,13 @@ from __future__ import annotations
 
 # 役割: articles.csv の note.com 記事 URL を巡回し、生 HTML を tmp/note-html/ に
 #   キャッシュする取得専用スクリプト。
-# アーキ上の位置: パイプライン最上流の取得段。ファイル名は note_cache_name() で決まり、
-#   (arakaku/notes/cache.py)。下流の build_source_documents.py が同じ関数で同じ名前を読む (writer/reader 契約)。
+# アーキ上の位置: パイプライン最上流の取得段。キャッシュする記事の判定 (is_note_article_url) とファイル名
+#   (note_cache_name) は arakaku/notes/cache.py にあり、下流の build_source_documents.py が同じ関数で
+#   同じ名前を読む (writer/reader 契約)。
 #   ここでファイル名規約を直書きしないこと。
 # 不変条件: tmp/ はキャッシュでありコミットしない。安定メタデータは別途
 #   archive_metadata.py が data-src/archives/note.csv へ吸い上げる。
-#   404/非公開記事はパイプライン全体を止めない (main は常に 0 を返す)。
+#   404/410 (削除・非公開記事) はパイプライン全体を止めない。それ以外の取得失敗は終了コード 1。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 import argparse
 import time
@@ -17,7 +18,7 @@ import urllib.request
 from pathlib import Path
 
 from arakaku.io import read_csv
-from arakaku.notes.cache import note_cache_name
+from arakaku.notes.cache import is_note_article_url, note_cache_name
 from arakaku.paths import DATA_SRC, NOTE_HTML_DIR
 
 
@@ -62,7 +63,7 @@ def main() -> int:
         url = row.get("url", "")
         article_id = row.get("article_id", "")
 
-        if "note.com" not in url:
+        if not is_note_article_url(url):
             skipped += 1
             continue
 
