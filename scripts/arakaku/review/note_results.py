@@ -141,7 +141,7 @@ def locate_winner(a: CsvRow, b: CsvRow, event_id: str, ctx: NoteMatchContext) ->
     verdicts: dict[str, tuple[str, int, int]] = {}
     for article_id in sorted(ctx.result_notes.get(event_id, ())):
         lines = ctx.bodies.get(article_id, "").split("\n")
-        for a_wins, first, last in pair_verdicts(lines, ctx.names[a["fighter_id"]], ctx.names[b["fighter_id"]]):
+        for a_wins, first, last in pair_verdicts(lines, ctx.names.get(a["fighter_id"], ()), ctx.names.get(b["fighter_id"], ())):
             winner = a if a_wins else b
             verdicts.setdefault(winner["fighter_id"], (article_id, first, last))
     if len(verdicts) != 1:
