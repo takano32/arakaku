@@ -10,7 +10,7 @@ import { PUBLIC_TABS } from "../config.js";
  */
 export class KeyboardNav {
   /**
-   * @param {{ switchTab(tabId: string): void, list(): import("./list.js").RecordList|null,
+   * @param {{ switchTab(tabId: string): void, list(): import("./list/record_list.js").RecordList|null,
    *           clearSearch(): void, toast(msg: string): void, state: { tab: string } }} app
    */
   constructor(app) {

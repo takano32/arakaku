@@ -1,4 +1,4 @@
-import { escapeHtml } from "./html.js";
+import { escapeHtml } from "../html.js";
 
 /**
  * RecordList — 段階的に描画する一覧 (レコード行の開閉・カーソル付き)。
