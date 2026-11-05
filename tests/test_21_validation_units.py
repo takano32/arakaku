@@ -196,3 +196,10 @@ def test_non_numeric_reign_order_is_an_error(report):
     from arakaku.validation.entities import validate_title_reigns
     validate_title_reigns(report, [{"reign_id": "r", "title_id": "t", "reign_order": "x"}], {"t"}, set(), set(), set(), set())
     assert "title_reigns.json[0]: reign_order is not a number: x" in report.errors
+
+
+def test_unknown_article_type_is_an_error(report):
+    from arakaku.validation.entities import validate_articles
+    validate_articles(report, [{"article_id": "a", "title": "t", "url": "https://note.com/x", "article_type": "title_history"},
+                               {"article_id": "b", "title": "t", "url": "https://note.com/y", "article_type": "event_card"}])
+    assert report.errors == ["articles.json[0]: unknown article_type: title_history"]

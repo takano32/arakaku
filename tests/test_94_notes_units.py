@@ -180,3 +180,11 @@ def test_infer_time():
     assert infer_time("1R ２分５秒 KO") == "2分5秒"
     assert infer_time("3R 3:07 TKO") == "3分07秒"
     assert infer_time("判定3-0") == ""
+
+
+def test_crawled_title_and_rule_notes_are_promotion_profiles():
+    # 以前は「歴代王者」「王座」を、誰も扱わない title_history にしていた (T.112.4.10)。
+    from arakaku.notes.crawl import infer_article_type
+    assert infer_article_type("ターゲット歴代王者") == "promotion_profile"
+    assert infer_article_type("エンペラー団体紹介とルール") == "promotion_profile"
+    assert infer_article_type("ターゲットNo.105試合結果") == "event_result"
