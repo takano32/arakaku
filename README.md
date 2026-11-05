@@ -718,13 +718,13 @@ make generate-stage1   # 生データ取り込み（Numbers + crawl キャッシ
 make generate-stage2   # 派生（stage1 CSV → 派生 CSV）
 make regenerate-csvs   # generate-stage1 → generate-stage2 → reorder-data
 make rebuild           # check-stage1/2-inputs → clean-generated-csvs + clean-generated → regenerate-csvs → check
-make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2 → check
+make rebuild-stage2    # check-stage2-inputs → clean-stage2-csvs + clean-generated → generate-stage2 → reorder-data → check
 ```
 
 ローカルに `tmp/note-html/`、`tmp/youtube-api/`、`data-raw/アラカク選手名鑑.numbers`、`tmp/arakaku-site/` がある前提です。canonical CSV は git の内容を使います。
 
 - `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs`。`reorder_data` は stage 2 の `article_links.csv` を読むので、`regenerate-csvs` が stage 2 のあとに 1 回だけ実行します。
-- `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv`。
+- `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv` → `make_source_mention_result_candidates` → `make_source_reference_candidates`。
 - `rebuild`: 生成 CSV と生成 JSON を全削除してから全再生成し、check まで通します。
 - `rebuild-stage2`: stage2 生成 CSV だけ作り直して check します（stage1 を作り直さない高速ループ）。
 
