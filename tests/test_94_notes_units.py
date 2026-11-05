@@ -117,6 +117,25 @@ def test_parse_rss_keeps_only_article_links():
     assert (row["article_type"], row["promotion_id"], row["notes"]) == ("event_result", "target", "Crawled from note RSS.")
 
 
+def test_crawl_note_api_pages_stops_at_an_empty_page_and_logs_through_the_given_function():
+    pages = {1: '{"contents": [{"key": "n0123456789ab", "name": "A"}]}', 2: '{"contents": []}'}
+
+    def fetch(url, sleep=0.5):
+        return pages[int(url.rsplit("=", 1)[1])] if "kind=note" in url else '{"contents": [{"key": "n0123456789ab"}]}'
+
+    logs = []
+    rows = crawl.crawl_note_api_pages("xyz1090", 5, 0, fetch, log=logs.append)
+    assert [r["url"] for r in rows] == ["https://note.com/xyz1090/n/n0123456789ab"]
+    assert logs == [
+        "[fetch api] https://note.com/api/v2/creators/xyz1090/contents?kind=note&page=1",
+        "[api rows] page=1 rows=1 added=1",
+        "[fetch api] https://note.com/api/v2/creators/xyz1090/contents?kind=note&page=2",
+        "[api rows] page=2 rows=0; stop",
+        "[fetch api] https://note.com/api/v2/creators/xyz1090/contents?kind=magazine&page=1",
+        "[api rows] page=1 rows=1 added=0",
+    ]
+
+
 # --- notes/html と notes/articles ---
 
 def test_parse_note_metadata_reads_title_canonical_and_description():
