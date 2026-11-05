@@ -15,8 +15,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from arakaku.event_dates import event_note_dates
-from arakaku.io import CsvRow, read_csv
+from arakaku.io import read_csv
 from arakaku.paths import DATA_SRC, REVIEW
+from arakaku.schema import CsvRow
 
 
 @dataclass(frozen=True)

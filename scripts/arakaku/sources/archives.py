@@ -14,7 +14,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 
 YOUTUBE_FIELDS = [
     "display_id",

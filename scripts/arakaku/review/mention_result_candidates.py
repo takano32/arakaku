@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 from arakaku.textparse import find_method, infer_time, normalize_digits
 
 FIELDS = [

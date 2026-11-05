@@ -7,7 +7,7 @@
 # 関連スキル: .agents/skills/arakaku-sorting-strategy。
 from __future__ import annotations
 
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 
 
 def event_note_dates(articles: list[CsvRow], article_links: list[CsvRow]) -> tuple[dict[str, str], dict[str, str]]:

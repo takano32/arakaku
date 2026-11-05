@@ -17,8 +17,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Callable
 
-from arakaku.io import CsvRow
 from arakaku.notes.matchups import extract_matchups, extract_promotion_profile_fighters, title_to_event_ids
+from arakaku.schema import CsvRow
 
 FIELDS = ["link_id", "article_id", "entity_type", "entity_id", "relation_type", "notes"]
 

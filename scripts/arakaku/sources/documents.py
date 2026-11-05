@@ -17,9 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from arakaku.io import CsvRow
 from arakaku.notes.html import note_content_text
 from arakaku.paths import note_cache_name
+from arakaku.schema import CsvRow
 from arakaku.text import normalize_text
 
 DOCUMENT_FIELDS = [

@@ -16,7 +16,7 @@ from typing import Any, Callable
 
 from arakaku.build.relations import Relations, Tables
 from arakaku.csvmap import field_or_default, field_or_empty, int_field, map_rows
-from arakaku.io import CsvRow
+from arakaku.schema import CsvRow
 from arakaku.text import bool_from_text, none_if_empty, parse_int
 
 
