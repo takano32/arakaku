@@ -1,4 +1,6 @@
-import { Store, readFromURL, stateFromHistory, writeToURL } from "./app/state.js";
+import { HistorySync } from "./app/history_sync.js";
+import { Store } from "./app/state.js";
+import { readFromURL } from "./app/url_params.js";
 import { DataLoader } from "./data/loader.js";
 import { QueryMatcher } from "./data/query.js";
 import { Shell } from "./ui/shell.js";
@@ -12,6 +14,7 @@ import { escapeHtml } from "./ui/html.js";
  * DataLoader が吸収し、Shell が「データ読み込み失敗」として一覧の上に出す。
  */
 const state = new Store();
+const historySync = new HistorySync();
 
 const urlPatch = readFromURL();
 if (Object.keys(urlPatch).length > 0) {
@@ -22,7 +25,7 @@ if (Object.keys(urlPatch).length > 0) {
   if (clearButton && urlPatch.query) clearButton.hidden = false;
 }
 // URL への書き戻しは復元が終わってから購読する (復元中の patch をループさせない)
-state.subscribe((s) => writeToURL(s));
+state.subscribe((s) => historySync.write(s));
 
 const loader = new DataLoader(state);
 const query = new QueryMatcher(state, () => state.repository);
@@ -38,7 +41,7 @@ new KeyboardNav({
 
 // ブラウザの「戻る」「進む」: URL の状態に戻し、検索欄と遅延データも合わせる。
 window.addEventListener("popstate", (event) => {
-  const patch = stateFromHistory();
+  const patch = historySync.restore();
   state.patch(patch);
   // 離れたときのスクロール位置に戻す。一覧は最初 30 行しか描かないので、必要なら全行を描いてから。
   const scrollY = event.state?.scrollY ?? 0;
