@@ -2,7 +2,8 @@
 #   下流スクリプトが使う平坦なメタデータ dict に正規化する共有モジュール。あわせて、取得する側の
 #   純粋な規則 (API の URL、キャッシュする行の判定、動画種別の推定、Shorts の判定、videos.csv の新しい行) も持つ。
 # アーキ上の位置: writer = cache_youtube_api.py・discover_youtube_videos.py (urllib での取得はスクリプトに残す)。
-#   reader = archive_metadata.py / build_source_documents.py。API 項目名の解釈はここに一元化する。
+#   reader = archive_metadata.py / build_source_documents.py (キャッシュの場所を iter_cached_videos に渡す)。
+#   API 項目名の解釈はここに一元化する。arakaku.paths・arakaku.io は import しない (sources/documents.py が import するため)。
 # 不変条件: キャッシュ 1 ファイル = API の items[] 1 要素そのまま (加工しない)。
 #   upload_date は publishedAt の UTC 日付を YYYYMMDD、duration_string は H:MM:SS / M:SS / S。
 #   thumbnail_sizes は snippet.thumbnails のキーを THUMBNAIL_SIZE_ORDER 順に空白区切り。
@@ -12,8 +13,6 @@ import json
 import re
 import urllib.parse
 from pathlib import Path
-
-from arakaku.paths import YOUTUBE_CACHE_DIR
 
 # YouTube の画像サイズ名を小さい順に並べたもの。standard = sddefault、maxres = maxresdefault。
 THUMBNAIL_SIZE_ORDER = ["default", "medium", "high", "standard", "maxres"]
@@ -144,7 +143,8 @@ def flatten_video(item: dict) -> dict[str, str]:
     }
 
 
-def iter_cached_videos(cache_dir: Path = YOUTUBE_CACHE_DIR):
+def iter_cached_videos(cache_dir: Path):
+    # キャッシュの場所 (paths.YOUTUBE_CACHE_DIR) は呼ぶ側が渡す。ここは arakaku.paths を import しない (T.112.6.2)。
     for path in sorted(cache_dir.glob("*.json")):
         try:
             item = json.loads(path.read_text(encoding="utf-8"))
