@@ -2,6 +2,7 @@ import { DataEnricher } from "./enricher.js";
 import { eventSortDate } from "./event_dates.js";
 import { discoverFighters, numbersOrder, sortByNumbersOrder } from "./fighter_catalog.js";
 import { mergeDuplicateFighters } from "./fighter_merge.js";
+import { IndexCache } from "./indexes.js";
 import { buildNumbersOnly } from "./numbers_only.js";
 import { SourceDocumentLookup } from "./source_lookup.js";
 import { enrichTitle, titleDisplayName } from "./title_lineage.js";
@@ -45,9 +46,9 @@ let nextRevision = 1;
 export class DataRepository {
   constructor(data) {
     this.data = data;
-    this.indexes = new Map();
     this.enricher = new DataEnricher(this);
     this.revision = nextRevision++;
+    this.#indexes = new IndexCache();
     this.#memo = new Map();
     this.#resetCaches();
   }
@@ -64,6 +65,7 @@ export class DataRepository {
   #richSourceMentions;
   #sourceDocLookup;
   #numbersOnly;
+  #indexes;
   #memo;
 
   #resetCaches() {
@@ -89,25 +91,11 @@ export class DataRepository {
     this.revision = nextRevision++;
     this.#resetCaches();
     this.#memo.clear();
-    this.indexes.clear();
+    this.#indexes.clear();
     this.enricher.reset();
   }
 
-  // ── 低レベル: 素のコレクションとインデックス ─────────────────────────
-
-  // 1キー1レコードの Map を遅延構築してキャッシュ。同名キーは後勝ち (set で上書き)。
-  index(name, records, keyForRecord) {
-    if (this.indexes.has(name)) return this.indexes.get(name);
-    const index = new Map();
-    if (records) {
-      for (const record of records) {
-        const key = keyForRecord(record);
-        if (key) index.set(key, record);
-      }
-    }
-    this.indexes.set(name, index);
-    return index;
-  }
+  // ── 低レベル: 素のコレクションとインデックス (indexes.js の遅延キャッシュ) ──
 
   // findById / findManyByField はコレクションのゲッター (this[collectionName]) を引く。
   // events / sourceMentions は降順、sourceDocuments は本文結合済みの配列が対象になる
@@ -116,29 +104,12 @@ export class DataRepository {
     const idField = COLLECTION_FIELDS[collectionName];
     const records = this[collectionName];
     if (!records) return undefined;
-    return this.index(`${collectionName}:${idField}`, records, (record) => record[idField]).get(id);
-  }
-
-  // index と同様だが 1キー → レコード配列 (1対多) を構築する遅延キャッシュ。
-  groupIndex(name, records, keyForRecord) {
-    if (this.indexes.has(name)) return this.indexes.get(name);
-    const index = new Map();
-    if (records) {
-      for (const record of records) {
-        const key = keyForRecord(record);
-        if (!key) continue;
-        const group = index.get(key) ?? [];
-        group.push(record);
-        index.set(key, group);
-      }
-    }
-    this.indexes.set(name, index);
-    return index;
+    return this.#indexes.unique(`${collectionName}:${idField}`, records, (record) => record[idField]).get(id);
   }
 
   findManyByField(collectionName, fieldName, value) {
     const records = this[collectionName] ?? [];
-    return this.groupIndex(`${collectionName}:${fieldName}:many`, records, (r) => r[fieldName]).get(value) ?? [];
+    return this.#indexes.group(`${collectionName}:${fieldName}:many`, records, (r) => r[fieldName]).get(value) ?? [];
   }
 
   /** 生 JSON の配列をそのまま (整形・enrich せず) 返す */
@@ -185,8 +156,8 @@ export class DataRepository {
   findEvent(id) { return this.findById("events", id) ?? this.#numbersOnlyData().eventById.get(id); }
   findBout(id) { return this.findById("bouts", id) ?? this.#numbersOnlyData().boutById.get(id); }
 
-  findYoutubeArchive(displayId) { return this.index("youtubeArchives:display_id", this.youtubeArchives, (r) => r.display_id).get(displayId); }
-  findNoteArchive(url) { return this.index("noteArchives:webpage_url", this.noteArchives, (r) => r.webpage_url).get(url); }
+  findYoutubeArchive(displayId) { return this.#indexes.unique("youtubeArchives:display_id", this.youtubeArchives, (r) => r.display_id).get(displayId); }
+  findNoteArchive(url) { return this.#indexes.unique("noteArchives:webpage_url", this.noteArchives, (r) => r.webpage_url).get(url); }
 
   // ── Rich コレクション ───────────────────────────────────────────────
 
@@ -246,7 +217,7 @@ export class DataRepository {
       this.#sourceDocuments = docs;
       return docs;
     }
-    const bodyMap = this.index("sourceDocumentBodies:source_id", bodies, b => b.source_id);
+    const bodyMap = this.#indexes.unique("sourceDocumentBodies:source_id", bodies, b => b.source_id);
     this.#sourceDocuments = docs.map(d => {
       const body = bodyMap.get(d.source_id);
       return body ? { ...d, content_text: body.content_text } : d;
@@ -275,15 +246,15 @@ export class DataRepository {
 
   // ── Rich finders ──────────────────────────────────────────────────
 
-  findRichEvent(id) { return this.index("richEvents:event_id", this.richEvents, e => e.event_id).get(id); }
-  findRichBout(id) { return this.index("richBouts:bout_id", this.richBouts, b => b.bout_id).get(id); }
+  findRichEvent(id) { return this.#indexes.unique("richEvents:event_id", this.richEvents, e => e.event_id).get(id); }
+  findRichBout(id) { return this.#indexes.unique("richBouts:bout_id", this.richBouts, b => b.bout_id).get(id); }
   findRichFighter(id) {
     if (!id) return undefined;
     void this.richFighters; // alias index を構築させる
     return this.#fighterAliasIndex.get(id);
   }
-  findRichArticle(id) { return this.index("richArticles:article_id", this.richArticles, a => a.article_id).get(id); }
-  richVideoById(id) { return this.index("richVideos:video_id", this.richVideos, v => v.video_id).get(id); }
+  findRichArticle(id) { return this.#indexes.unique("richArticles:article_id", this.richArticles, a => a.article_id).get(id); }
+  richVideoById(id) { return this.#indexes.unique("richVideos:video_id", this.richVideos, v => v.video_id).get(id); }
 
   // 単発の enrich (一覧キャッシュを作らずに 1 件だけ補完する)
   getRichVideoInfo(video) { return this.enricher.enrichVideo(video); }
@@ -299,7 +270,7 @@ export class DataRepository {
   promotionIdByName(name) {
     if (!name) return undefined;
     const norm = (s) => String(s).replace(/[・·\s]/g, "");
-    const index = this.index("promotions:normName", this.promotions, (p) => norm(p.name));
+    const index = this.#indexes.unique("promotions:normName", this.promotions, (p) => norm(p.name));
     return index.get(norm(name))?.promotion_id;
   }
 
@@ -318,7 +289,7 @@ export class DataRepository {
   // ── 関係ヘルパ ─────────────────────────────────────────────────────
 
   videosForEntity(type, id) {
-    return (this.groupIndex("videoLinks:entity", this.videoLinks, l => `${l.entity_type}\0${l.entity_id}`).get(`${type}\0${id}`) ?? [])
+    return (this.#indexes.group("videoLinks:entity", this.videoLinks, l => `${l.entity_type}\0${l.entity_id}`).get(`${type}\0${id}`) ?? [])
       .map(l => ({ link: l, video: this.richVideoById(l.video_id) }))
       .filter(i => i.video);
   }
@@ -368,7 +339,7 @@ export class DataRepository {
 
   countSourceReferences(sourceId) {
     const count = (name, records) =>
-      (this.groupIndex(`${name}:source_id`, records, r => r.source_id).get(sourceId)?.length ?? 0);
+      (this.#indexes.group(`${name}:source_id`, records, r => r.source_id).get(sourceId)?.length ?? 0);
     return {
       events: count("sourceEventReferences", this.sourceEventReferences),
       bouts: count("sourceBoutReferences", this.sourceBoutReferences),
@@ -378,7 +349,7 @@ export class DataRepository {
 
   countSourceMentions(sourceId, mentionTypes) {
     const counts = Object.fromEntries(mentionTypes.map(t => [t, 0]));
-    const mentions = this.groupIndex("sourceMentions:source_id", this.sourceMentions, m => m.source_id).get(sourceId) ?? [];
+    const mentions = this.#indexes.group("sourceMentions:source_id", this.sourceMentions, m => m.source_id).get(sourceId) ?? [];
     for (const m of mentions) {
       if (m.mention_type in counts) counts[m.mention_type]++;
     }
@@ -396,7 +367,7 @@ export class DataRepository {
   // 大会内の試合は試合順の昇順 (第1試合 → メインイベント) のまま返す
   boutsForEvent(eventId) {
     // 大会の行ごとに呼ばれるので、全試合の走査ではなく event_id の索引から引く (T.85)。
-    return [...(this.groupIndex("richBouts:event_id", this.richBouts, b => b.event_id).get(eventId) ?? [])]
+    return [...(this.#indexes.group("richBouts:event_id", this.richBouts, b => b.event_id).get(eventId) ?? [])]
       .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
   }
 
