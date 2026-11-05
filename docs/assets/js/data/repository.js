@@ -120,11 +120,8 @@ export class DataRepository {
   get bouts() { return this.raw("bouts"); }
   get videos() { return this.raw("videos"); }
   get articles() { return this.raw("articles"); }
-  get sourceDocumentBodies() { return this.raw("sourceDocumentBodies"); }
   get articleLinks() { return this.raw("articleLinks"); }
-  get boutParticipants() { return this.raw("boutParticipants"); }
   get titles() { return this.raw("titles"); }
-  get titleReigns() { return this.raw("titleReigns"); }
   get videoLinks() { return this.raw("videoLinks"); }
   get fighterSnapshots() { return this.raw("fighterSnapshots"); }
   get numbersFighters() { return this.raw("numbersFighters"); }
