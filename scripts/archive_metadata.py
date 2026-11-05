@@ -41,7 +41,7 @@ def archive_youtube() -> None:
     new_archived_at = current_archive_time()
     rows = [
         youtube_archive_row(video, archived_at_for(existing, video["platform_video_id"], new_archived_at))
-        for _, video in iter_cached_videos()
+        for _, video in iter_cached_videos(YOUTUBE_CACHE_DIR)
     ]
     keep_uncached_rows(rows, existing, "display_id", YT_ARCHIVE)
     rows.sort(key=lambda row: row["display_id"])

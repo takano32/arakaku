@@ -1,7 +1,7 @@
 """arakaku/derive/ (article_links・video_links・aliases・ordering) の単体テスト。小さい手書きの行で確かめる。"""
 from __future__ import annotations
 
-from arakaku.derive.aliases import METHOD_ALIASES, PROMOTION_ALIASES, alias_rows
+from arakaku.derive.aliases import alias_rows
 from arakaku.derive.article_links import ArticleLinkSources, article_link_rows, make_link_id
 from arakaku.derive.ordering import bout_sort_key, event_sort_date, reign_sort_key, sort_key_date
 from arakaku.derive.video_links import video_link_rows
@@ -134,8 +134,11 @@ def test_alias_rows_from_numbers_matches_display_names_and_static_tables():
     rows = alias_rows(matches, fighters)
     fighter_rows = [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "fighters"]
     assert fighter_rows == [("カブト", "kabuto"), ("ザモン", "zamon"), ("ローリングJr.", "rolling_jr"), ("ローリングjr", "rolling_jr")]
-    assert [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "promotions"] == PROMOTION_ALIASES
-    assert [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "methods"] == METHOD_ALIASES
+    # モジュール自身の定数と比べると常に真なので、行をそのまま書く (T.112.6.7)。
+    assert [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "promotions"] == [
+        ("ターゲット", "target"), ("エンペラー", "emperor"), ("マウンテン・ヒーローズ", "mh"), ("M・H", "mh"), ("MAXバウト", "max_bout")]
+    assert [(r["alias"], r["canonical_id"]) for r in rows if r["alias_type"] == "methods"] == [
+        ("KO", "KO"), ("TKO", "TKO"), ("判定", "DEC"), ("アナコンダチョーク", "SUB_ANACONDA_CHOKE")]
 
 
 def test_ordering_keys():
@@ -147,5 +150,6 @@ def test_ordering_keys():
     assert event_sort_date(event, {}, {}) == "2020-01-01"
     assert bout_sort_key({"event_id": "e1", "bout_order": "10"}, {"e1": "2021-01-01"}) == ("2021-01-01", "e1", 10)
     assert bout_sort_key({"event_id": "e9", "bout_order": "x"}, {}) == ("0000-00-00", "e9", 0)
-    reigns = [{"title_id": "t", "reign_order": "10"}, {"title_id": "t", "reign_order": "2"}, {"title_id": "t", "reign_order": ""}]
-    assert [r["reign_order"] for r in sorted(reigns, key=reign_sort_key)] == ["", "2", "10"]
+    reigns = [{"title_id": "t", "reign_order": o} for o in ("x", "10", "2", "")]
+    # 数字でない値は build/titles.py の lineage と同じく末尾 (T.112.6.12)。
+    assert [r["reign_order"] for r in sorted(reigns, key=reign_sort_key)] == ["", "2", "10", "x"]

@@ -17,7 +17,7 @@ from arakaku.numbers.cells import (
     row_dict,
 )
 from arakaku.numbers.names import match_name, normalized_name, normalized_name_map
-from arakaku.numbers.sheets import FIGHTER_COLUMNS, RECORD_COLUMNS, extract_fight_records, extract_fighters
+from arakaku.numbers.sheets import FIGHTER_COLUMNS, RECORD_COLUMNS, extract_fight_records, extract_fighters, sheet_table_rows
 from arakaku.schema import CSV_HEADERS
 
 NAME_TO_ID = {"ローリングJr.": "rolling_jr", "かぶと": "kabuto", "わく": "waku_a", "ワク": "waku_b"}
@@ -109,6 +109,36 @@ def test_extract_fighters_needs_a_header_row():
         extract_fighters([["title"]], NAME_TO_ID)
     with pytest.raises(NumbersSchemaError, match="全体: 優勝"):
         extract_fighters([["title"], ["白グローブ出場回数"]], NAME_TO_ID)
+
+
+class FakeCell:
+    def __init__(self, value):
+        self.value = value
+
+
+class FakeTable:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def rows(self):
+        return [[FakeCell(v) for v in row] for row in self._rows]
+
+
+class FakeSheet:
+    def __init__(self, rows):
+        self.tables = [FakeTable(rows)]
+
+
+def test_sheet_table_rows_reads_the_first_table_as_text():
+    sheets = [FakeSheet([["名前", "年齢"], ["かぶと", 30.0], [None, None]])]
+    assert sheet_table_rows(sheets, 0, "全体") == [["名前", "年齢"], ["かぶと", "30.0"], ["", ""]]
+
+
+def test_sheet_table_rows_stops_on_a_missing_sheet():
+    # T.112.6.1: 「個人成績」のシートが無いのに見出しだけの numbers_fight_records.csv を書かない。
+    sheets = [FakeSheet([["title"]])]
+    with pytest.raises(NumbersSchemaError, match=r"Numbers sheet 個人成績 \(index 1\) is missing"):
+        sheet_table_rows(sheets, 1, "個人成績")
 
 
 def test_extract_fight_records_fills_opponents_from_fighters_csv():

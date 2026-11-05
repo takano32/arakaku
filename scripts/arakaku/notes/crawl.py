@@ -7,7 +7,8 @@
 #   - 既存行は URL 正規化キー (normalize_url) で重複判定し、絶対に上書き/削除しない (事実保護)。
 #     normalize_url の規則が緩むと重複行や取りこぼしの原因になる。
 #   - 発見した行は status="unparsed" で追記し、本文確定は下流に任せる。article_type / promotion_id は
-#     タイトルからの推測なので後段レビュー対象。
+#     タイトルからの推測 (notes/articles.py の classify_article。T.112.6.13) なので後段レビュー対象。
+#     articles.csv は generate_articles.py が archives/note.csv から作り直すので、ここの値は取得までのつなぎ。
 #   - API の JSON は入れ子を全部たどるので、記事以外の key (32 桁の英数字。開くと 404) も拾ってしまう。
 #     記事の ID は n + 12 桁の 16 進数なので、それ以外は捨てる (T.86)。
 #   - API ページが JSON でなければ「一覧の終わり」ではなく FetchFailed (レート制限のエラーページ対策、T.103)。
@@ -21,6 +22,8 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from typing import Any, Callable
+
+from arakaku.notes.articles import classify_article
 
 DEFAULT_CREATOR = "xyz1090"
 
@@ -80,43 +83,20 @@ def normalize_date(value: str) -> str:
     return date_from_rss(value)
 
 
-def infer_promotion_id(title: str) -> str:
-    if "ターゲット" in title:
-        return "target"
-    if "エンペラー" in title:
-        return "emperor"
-    if "マウンテン・ヒーローズ" in title or "マウンテンヒーローズ" in title:
-        return "mh"
-    if "MAXバウト" in title:
-        return "max_bout"
-    if "エリートスピリッツ" in title:
-        return "elite_spirits"
-    return ""
-
-
-def infer_article_type(title: str) -> str:
-    if "試合結果" in title or "結果" in title:
-        return "event_result"
-    if "対戦カード" in title or "見どころ" in title:
-        return "event_card"
-    # 歴代王者・団体紹介は notes/articles.py と同じく promotion_profile (以前は誰も扱わない title_history
-    # を出していた。T.112.4.10)。
-    if "歴代王者" in title or "王座" in title or "ルール" in title or "団体" in title:
-        return "promotion_profile"
-    return "note_article"
-
-
 def make_article_row(*, title: str, url: str, published_at: str = "", notes: str) -> dict[str, str]:
     title = html.unescape(str(title or "")).strip()
     url = normalize_url(url)
+    # 分類は generate_articles.py と同じ classify_article に任せる。以前は crawl 側に別の分類器があり、
+    # 「アンケート結果のお知らせ」も event_result にしていた (T.112.6.13)。
+    article_type, promotion_id, _ = classify_article(f"{article_id_from_url(url)}.html", title)
 
     return {
         "article_id": article_id_from_url(url),
         "title": title or f"note article {article_id_from_url(url).removeprefix('note-')}",
         "url": url,
         "source_type": "official_note",
-        "article_type": infer_article_type(title),
-        "promotion_id": infer_promotion_id(title),
+        "article_type": article_type,
+        "promotion_id": promotion_id,
         "published_at": normalize_date(published_at),
         "last_checked_at": "",
         "status": "unparsed",

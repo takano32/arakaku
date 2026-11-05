@@ -61,7 +61,8 @@ def _bout_title(row: CsvRow) -> dict[str, Any]:
         "is_title_bout": _is_title_bout(row),
         "title_id": none_if_empty(row.get("title_id")),
         "title_result": none_if_empty(row.get("title_result")),
-        "note": none_if_empty(row.get("title_note")) or "",
+        # 空は null (ほかの列とそろえる。以前は "" だった。T.112.6.15)。
+        "note": none_if_empty(row.get("title_note")),
     }
 
 

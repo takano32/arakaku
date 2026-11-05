@@ -14,6 +14,7 @@ from typing import Any
 from .report import Report
 from .vocab import (
     VALID_ARTICLE_STATUSES,
+    VALID_ARTICLE_TYPES,
     VALID_BOUT_TYPES,
     VALID_EVENT_TYPES,
     VALID_INFERRED_CONFIDENCES,
@@ -63,6 +64,8 @@ def validate_enums(report: Report, data: dict[str, list[Any]]) -> None:
     check_enum(report, data['source_mentions'], 'source_mentions.json', 'mention_type', VALID_MENTION_TYPES, 'mention_id')
     check_enum(report, data['numbers_name_matches'], 'numbers_name_matches.json', 'match_method', VALID_NAME_MATCH_METHODS, 'numbers_fighter_id')
     check_enum(report, data['articles'], 'articles.json', 'status', VALID_ARTICLE_STATUSES, 'article_id')
+    # 以前は entities.validate_articles が ID の無い形のメッセージで調べていた (T.112.6.18)。
+    check_enum(report, data['articles'], 'articles.json', 'article_type', VALID_ARTICLE_TYPES, 'article_id')
 
 
 def validate_cross_tables(report: Report, bouts: list[Any], events: list[Any], aliases: Any, fighter_ids: set[str], promotion_ids: set[str], title_reigns: list[Any], source_mentions: list[Any], source_documents: list[Any]) -> None:

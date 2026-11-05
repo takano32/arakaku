@@ -109,7 +109,7 @@ def test_build_bouts_derives_matchup_winner_and_loser_from_participants():
     assert [f["side"] for f in decided["fighters"]] == ["red", "blue"]
     assert decided["fighters"][0]["fighter_id"] is None and decided["fighters"][0]["corner"] == "赤"
     assert (decided["winner"], decided["winner_id"], decided["loser"], decided["loser_id"]) == ("赤井", None, "青木", "b")
-    assert decided["result_status"] == "unknown"  # an empty result_status is left for the validator to judge
+    assert decided["result_status"] == "unknown"  # 空の result_status は build/bouts.py が "unknown" にする (T.112.6.23)
     assert decided["result"]["round"] == 2 and decided["result"]["time"] is None  # 空は null (T.112.4.8)
     assert decided["source_article_id"] == "result"
     assert unknown["winner"] is None and unknown["loser_id"] is None
@@ -151,9 +151,17 @@ def test_build_videos_takes_archive_metadata_and_link_status():
     assert full["link_status"] == "linked" and none["link_status"] == "unlinked"
     assert none["channel_name"] is None and none["thumbnail_sizes"] == ""
     assert other["thumbnail_sizes"] == ""  # only YouTube videos have archive thumbnails
+    # チャンネル名と公開日も、同じ ID の YouTube のアーカイブから写さない (T.112.6.22)。
+    assert (other["channel_name"], other["published_at"]) == (None, None)
 
 
 # --- build/articles ---
+
+def test_build_articles_keeps_the_status_cell():
+    # 空の status を、検証の vocab に無い "parsed" に書き換えない (T.112.6.10)。
+    rows = articles.build_articles([{"article_id": "a", "status": "unparsed"}, {"article_id": "b", "status": ""}])
+    assert [row["status"] for row in rows] == ["unparsed", None]
+
 
 def test_source_documents_are_split_from_their_bodies():
     docs = [{"source_id": "note:a", "title": "A", "content_text": "本文"}]
@@ -204,4 +212,4 @@ def test_empty_bout_result_and_title_cells_become_null():
            "is_title_bout": "", "title_id": "", "title_result": "", "title_note": ""}
     assert set(_bout_result(row).values()) == {None}
     title = _bout_title(row)
-    assert (title["title_id"], title["title_result"]) == (None, None)
+    assert (title["title_id"], title["title_result"], title["note"]) == (None, None, None)  # note は T.112.6.15

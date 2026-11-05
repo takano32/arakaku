@@ -1,7 +1,8 @@
 # 役割: Apple Numbers の選手名鑑の 2 つの表 (シート「全体」と「個人成績」) を、numbers_fighters /
 #   numbers_name_matches / numbers_fight_records の CSV の行にする。
-# アーキ上の位置: scripts/extract_numbers.py が numbers_parser で表を開き、セルを文字列にした行
-#   (list[list[str]]) をここに渡して write_csv する。ここは numbers_parser を import しない (CI でも import できる)。
+# アーキ上の位置: scripts/extract_numbers.py が numbers_parser で表を開き、その Document.sheets を
+#   sheet_table_rows に渡してセルを文字列にした行 (list[list[str]]) にし、ここで組み立てた行を write_csv する。
+#   ここは numbers_parser を import しない (CI でも import できる)。シートが足りなければ書く前に止まる。
 # 不変条件:
 #   - 「全体」は 1 行目がタイトル、2 行目が見出し、3 行目からがデータ。「個人成績」は 1 行目が見出し。
 #   - 行の辞書のキーは schema.CSV_HEADERS の numbers_*.csv の見出しと同じ (テストで確かめる)。
@@ -16,6 +17,7 @@ from arakaku.numbers.cells import (
     clean_event_number,
     clean_number,
     clean_text,
+    cell_text,
     promotion_id,
     require_columns,
     row_dict,
@@ -44,6 +46,17 @@ FIGHTER_COLUMNS = [
 RECORD_COLUMNS = ["名前", "階級", "団体", "No", "形式", "対戦相手", "勝敗", "詳細"]
 
 TableRows = list[list[str]]
+
+
+def sheet_table_rows(sheets, index: int, sheet_name: str) -> TableRows:
+    """index 番目のシートの最初の表を、セルを文字列にした行のリストにする。
+
+    sheets は numbers_parser の Document.sheets (ここでは型を import しない)。シートが足りないときは
+    NumbersSchemaError にする (T.112.6.1: 空のリストを返すと「記録なし」として見出しだけの CSV を書いてしまう)。
+    """
+    if len(sheets) <= index:
+        raise NumbersSchemaError(f"Numbers sheet {sheet_name} (index {index}) is missing")
+    return [[cell_text(cell) for cell in row] for row in sheets[index].tables[0].rows()]
 
 
 def fighter_row(nf_id: str, source_row: int, name: str, raw: dict[str, str]) -> dict[str, str]:

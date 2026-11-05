@@ -2,7 +2,7 @@
 #   書き込みは同じディレクトリの一時ファイルに書いてから原子的に差し替える。
 # アーキ上の位置: paths.py と schema.py にだけ依存する。読み書きをする全スクリプトと build/ が import する。
 #   純粋なロジック (notes/ sources/ derive/ review/ と build/ の組み立て) は io を import せず
-#   (型 CsvRow は schema.py)、行のリストを受け取る。読み書きをするのは build/relations.py (load_tables) と、
+#   (型 CsvRow は schema.py)、行のリストを受け取る。読み書きをするのは build/io.py (load_tables) と、
 #   docs/data を読む validation/runner.py・locate.py。
 # 不変条件:
 #   - read_csv は data-src 配下の CSV のヘッダ違い・欠落をエラーにする (列の改名や消えたファイルを

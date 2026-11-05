@@ -1,6 +1,6 @@
 # 役割: リポジトリ内の入出力先パスの正本。data-src / review / docs/data と、コミットしない
 #   tmp/ のキャッシュ置き場、Numbers ファイルの場所をここで一元管理する。
-# アーキ上の位置: arakaku パッケージの最下層 (どのモジュールにも依存しない)。io.py・youtube.py・build/relations.py・
+# アーキ上の位置: arakaku パッケージの最下層 (どのモジュールにも依存しない)。io.py・build/io.py・
 #   validation/ (runner・locate) と各 scripts/*.py の main() が既定パスとして import する。ロジック側の関数はパスを引数で受け取り、
 #   ここの定数は入口 (main) だけが参照するのが望ましい。
 # 不変条件:

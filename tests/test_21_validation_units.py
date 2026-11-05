@@ -41,8 +41,22 @@ def test_validate_docs_data_reports_every_missing_file_in_sorted_order(tmp_path:
     report = validate_docs_data(tmp_path)
     missing = [e for e in report.errors if e.startswith("missing json file: ")]
     assert missing == [f"missing json file: {name}" for name in sorted(ALL_JSON_FILES - {"metadata.json"})]
-    assert REQUIRED_JSON_FILES <= ALL_JSON_FILES
     assert len(report.errors) == len(missing)  # empty lists are otherwise valid
+
+
+def test_all_json_files_are_exactly_what_the_builders_write():
+    # 以前の REQUIRED_JSON_FILES <= ALL_JSON_FILES は作り方から常に真だった (T.112.6.7)。
+    # make build の 4 つの入口が書くファイルと、検証が「欠けたら error」とする一覧を突き合わせる。
+    from arakaku.build import canonical, numbers, official
+    from arakaku.build.relations import Tables
+
+    built = (
+        set(canonical.json_builders(Tables()))
+        | set(numbers.json_builders([], [], []))
+        | set(official.json_builders([], [], [], []))
+        | set(official.pages_json_builders([], []))
+    )
+    assert built == ALL_JSON_FILES
 
 
 def test_validate_docs_data_passes_on_the_built_data(docs_data):
@@ -199,7 +213,9 @@ def test_non_numeric_reign_order_is_an_error(report):
 
 
 def test_unknown_article_type_is_an_error(report):
-    from arakaku.validation.entities import validate_articles
-    validate_articles(report, [{"article_id": "a", "title": "t", "url": "https://note.com/x", "article_type": "title_history"},
-                               {"article_id": "b", "title": "t", "url": "https://note.com/y", "article_type": "event_card"}])
-    assert report.errors == ["articles.json[0]: unknown article_type: title_history"]
+    # ほかの語彙と同じ check_enum で、ID つきの形 (T.112.6.18)。
+    from arakaku.validation.rules import validate_enums
+    articles = [{"article_id": "a", "article_type": "title_history"}, {"article_id": "b", "article_type": "event_card"}]
+    validate_enums(report, {"bouts": [], "events": [], "fighters": [], "bout_participants": [], "source_mentions": [],
+                            "numbers_name_matches": [], "articles": articles})
+    assert report.errors == ["articles.json[0] (a): unknown article_type: title_history"]

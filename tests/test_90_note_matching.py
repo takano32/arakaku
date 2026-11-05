@@ -44,3 +44,42 @@ def test_locate_winner_passes_name_variants_in_sorted_order(monkeypatch):
     result = note_results.locate_winner({'fighter_id': 'waku'}, {'fighter_id': 'bill'}, 'e1', ctx)
     assert seen == [(['WAKU', 'わく', 'ワク'], ['ビル'])]
     assert result == ('waku', 'n1', 1, 1)
+
+
+# --- review/note_results の Numbers の表 (T.112.6.22) ---
+
+def test_numbers_key_prefers_matched_ids_and_needs_both_fighters():
+    from arakaku.review.note_results import numbers_key
+    row = {'matched_fighter_id': 'waku', 'candidate_fighter_id': 'other', 'opponent_candidate_fighter_id': 'bill',
+           'promotion_id': 'target', 'event_number_normalized': 105}
+    assert numbers_key(row) == (frozenset({'waku', 'bill'}), 'target', '105')
+    assert numbers_key({'candidate_fighter_id': 'waku', 'opponent_candidate_fighter_id': 'bill'}) == (frozenset({'waku', 'bill'}), '', '')
+    assert numbers_key({'matched_fighter_id': 'waku'}) is None
+
+
+def test_numbers_winners_index_by_event_and_by_pair():
+    from arakaku.review.note_results import numbers_winners
+    pair = frozenset({'waku', 'bill'})
+    records = [
+        {'matched_fighter_id': 'waku', 'opponent_matched_fighter_id': 'bill', 'promotion_id': 'target', 'event_number_normalized': '105', 'result': 'win'},
+        {'matched_fighter_id': 'bill', 'opponent_matched_fighter_id': 'waku', 'promotion_id': 'target', 'event_number_normalized': '110', 'result': 'win'},
+        {'matched_fighter_id': 'waku', 'opponent_matched_fighter_id': 'bill', 'promotion_id': 'target', 'event_number_normalized': '120', 'result': 'draw'},
+        {'matched_fighter_id': 'waku', 'result': 'win'},  # 対戦相手が無い行は使わない
+    ]
+    winners = numbers_winners(records)
+    assert winners[(pair, 'target', '105')] == {'waku'}
+    assert winners[(pair, 'target', '110')] == {'bill'}
+    assert (pair, 'target', '120') not in winners  # 勝ち負けでない結果は数えない
+    assert winners[(pair, '', '')] == {'waku', 'bill'}
+
+
+def test_for_event_exact_falls_back_to_every_event_of_the_pair():
+    from arakaku.review.note_results import for_event, for_event_exact
+    pair = frozenset({'waku', 'bill'})
+    table = {(pair, 'target', '105'): {'waku'}, (pair, '', ''): {'waku', 'bill'}}
+    assert for_event_exact(table, pair, {'promotion_id': 'target', 'event_number': '105'}) == ({'waku'}, True)
+    # numbers_event_number (MAXバウトの回など) が event_number より先。
+    assert for_event_exact(table, pair, {'promotion_id': 'target', 'event_number': '1', 'numbers_event_number': '105'}) == ({'waku'}, True)
+    assert for_event_exact(table, pair, {'promotion_id': 'target', 'event_number': '106'}) == ({'waku', 'bill'}, False)
+    assert for_event_exact({}, pair, {'promotion_id': 'target'}) == (set(), False)
+    assert for_event(table, pair, {'promotion_id': 'target', 'event_number': '105'}) == {'waku'}
