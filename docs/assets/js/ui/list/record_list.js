@@ -1,7 +1,10 @@
-import { escapeHtml } from "../html.js";
 import { clampIndex, edgeCursor, nextCursor } from "./cursor.js";
 import { OpenState } from "./open_state.js";
 import { initialCount, keysUnchanged, moreLabel, nextEnd, refreshTarget, statusText } from "./paging.js";
+import { rowShellHtml, safeRender, toggleLabel } from "./row_html.js";
+
+/** 行の見出し部のクリックでも開閉しない操作要素 (リンク・ボタン・フォーム部品など)。 */
+export const INTERACTIVE_SELECTOR = "a, button, summary, input, select, textarea, label";
 
 /**
  * RecordList — 段階的に描画する一覧 (レコード行の開閉・カーソル付き)。
@@ -21,6 +24,9 @@ import { initialCount, keysUnchanged, moreLabel, nextEnd, refreshTarget, statusT
  *
  * refresh() はデータ更新用: 描画済み件数とカーソルを保ち、各行の HTML が変わったときだけ差し替える
  * (開いた <details> やフォーカスを保つ)。setItems() はタブ切替用で先頭から描き直す。
+ *
+ * DOM を持つのはこのクラスだけ。件数・状態行 (paging.js)、カーソルの移動先 (cursor.js)、開閉の記憶 (open_state.js)、
+ * 行の HTML (row_html.js) の判断は同じディレクトリの純粋なモジュールにある。
  */
 export class RecordList {
   #el;
@@ -213,22 +219,13 @@ export class RecordList {
     if (remaining > 0) this.#moreButton.textContent = moreLabel(remaining);
   }
 
-  #safe(fn, item, what) {
-    try {
-      return fn(item);
-    } catch (err) {
-      console.error(`RecordList: ${what} failed`, err, item);
-      return `<p class="render-error">描画エラー: ${escapeHtml(err.message)}</p>`;
-    }
-  }
-
   #buildRow(index) {
     const item = this.#items[index];
     const key = this.#desc.keyOf(item);
     const el = document.createElement("article");
     if (this.#desc.isHeader?.(item)) {
       el.className = "list-heading";
-      el.innerHTML = this.#safe(this.#desc.renderHead, item, "renderHead");
+      el.innerHTML = safeRender(this.#desc.renderHead, item, "renderHead");
       const row = { key, el, head: el.innerHTML, body: "", open: false, header: true };
       this.#rows[index] = row;
       return el;
@@ -236,16 +233,10 @@ export class RecordList {
     el.className = `rec ${this.#desc.rowClass?.(item) ?? ""}`.trim();
     el.dataset.key = key;
     el.dataset.index = String(index);
-    el.innerHTML = `
-      <div class="rec-head">
-        <div class="rec-main"></div>
-        <button type="button" class="rec-toggle" aria-expanded="false" aria-label="詳細を開く"><span class="chev" aria-hidden="true"></span></button>
-      </div>
-      <div class="rec-body" hidden></div>
-    `;
+    el.innerHTML = rowShellHtml();
     const row = { key, el, head: "", body: "", open: false, header: false };
     this.#rows[index] = row;
-    row.head = this.#safe(this.#desc.renderHead, item, "renderHead");
+    row.head = safeRender(this.#desc.renderHead, item, "renderHead");
     el.querySelector(".rec-main").innerHTML = row.head;
     if (index === this.#cursor) el.classList.add("rec-cursor");
     this.#applyOpen(row, index, this.isOpen(index));
@@ -256,19 +247,19 @@ export class RecordList {
     const row = this.#rows[index];
     const item = this.#items[index];
     if (row.header) {
-      const head = this.#safe(this.#desc.renderHead, item, "renderHead");
+      const head = safeRender(this.#desc.renderHead, item, "renderHead");
       if (head !== row.head) { row.el.innerHTML = head; row.head = head; }
       return;
     }
     row.el.dataset.index = String(index);
-    const head = this.#safe(this.#desc.renderHead, item, "renderHead");
+    const head = safeRender(this.#desc.renderHead, item, "renderHead");
     if (head !== row.head) {
       row.el.querySelector(".rec-main").innerHTML = head;
       row.head = head;
     }
     const open = this.isOpen(index);
     if (open) {
-      const body = this.#safe(this.#desc.renderBody, item, "renderBody");
+      const body = safeRender(this.#desc.renderBody, item, "renderBody");
       if (!row.open || body !== row.body) {
         row.el.querySelector(".rec-body").innerHTML = body;
         row.body = body;
@@ -281,7 +272,7 @@ export class RecordList {
     const bodyEl = row.el.querySelector(".rec-body");
     const toggle = row.el.querySelector(".rec-toggle");
     if (open && (!row.open || !row.body)) {
-      row.body = this.#safe(this.#desc.renderBody, this.#items[index], "renderBody");
+      row.body = safeRender(this.#desc.renderBody, this.#items[index], "renderBody");
       bodyEl.innerHTML = row.body;
     }
     row.open = open;
@@ -290,7 +281,7 @@ export class RecordList {
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
     // どの行の開閉かが分かるよう、ラベルに行の見出しを含める (T.102)。
     const title = row.el.querySelector(".rec-title")?.textContent.trim();
-    toggle.setAttribute("aria-label", `${open ? "詳細を閉じる" : "詳細を開く"}${title ? `: ${title}` : ""}`);
+    toggle.setAttribute("aria-label", toggleLabel(open, title));
   }
 
   // 行の見出し部 (rec-head) のクリックで開閉する。リンク・ボタン等の操作要素や本体部のクリック、
@@ -301,7 +292,7 @@ export class RecordList {
     const head = event.target.closest(".rec-head");
     if (!head || head.parentElement !== rec) return;
     const onToggle = Boolean(event.target.closest(".rec-toggle"));
-    if (!onToggle && event.target.closest("a, button, summary, input, select, textarea, label")) return;
+    if (!onToggle && event.target.closest(INTERACTIVE_SELECTOR)) return;
     if (!onToggle && window.getSelection?.()?.toString()) return;
     const index = Number(rec.dataset.index);
     if (!Number.isInteger(index)) return;
