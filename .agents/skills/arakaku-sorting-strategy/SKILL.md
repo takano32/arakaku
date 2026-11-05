@@ -41,7 +41,7 @@ The reversal of order happens in the browser via `docs/assets/js/data/repository
 
 ## Implementation Rules
 
-- **Pure Build**: The build script (`scripts/build_json.py`) must NOT perform any sorting or reversal. It should strictly map the CSV rows as they appear in the source.
+- **Pure Build**: The build script (`scripts/build_json.py`) must NOT sort or reverse the top-level collections. Each JSON array keeps the CSV rows in source order. The only ordering inside the build is within a single record's nested list: `build/relations.py` (`participants_by_bout`) puts each bout's participants red, then blue, and `build/titles.py` puts each title's `lineage` in `reign_order` order.
 - **Lazy Enriched Getters**: Use the `rich*` getters in `DataRepository` to provide the reversed, supplemented collections to the UI.
 - **Validation**: Always run `make check` after re-sorting to ensure that IDs and relationships remain intact and that the viewer's logic handles the reversed arrays correctly.
 
