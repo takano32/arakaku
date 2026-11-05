@@ -7,7 +7,7 @@ import { normalizeFighterName } from "./names.js";
  * `merged_fighter_ids` と aliasIndex (fighter_id → survivor) で survivor に解決できる。
  * 団体が矛盾する組は誤統合を避けて統合しない。
  *
- * @param {object[]} fighters   enrich 済みの選手 (統合しない行はその場で merged_fighter_ids を付ける。統合する組は複製する)
+ * @param {object[]} fighters   enrich 済みの選手 (入力のオブジェクトは変更しない。どの行も写してから merged_fighter_ids を付ける)
  * @param {Set<string>} canonicalIds fighters.csv にある fighter_id
  * @returns {{ survivors: object[], aliasIndex: Map<string, object> }}
  */
@@ -25,9 +25,11 @@ export function mergeDuplicateFighters(fighters, canonicalIds) {
     // 1 人だけ、または団体が矛盾する組は統合しない
     if (group.length === 1 || promotions.size > 1) {
       for (const f of group) {
-        f.merged_fighter_ids = [f.fighter_id];
-        aliasIndex.set(f.fighter_id, f);
-        survivors.push(f);
+        // 写してから付ける。f は enrich が何も足さなかった選手では state.data.fighters の生の行そのもので、
+        // 生の JSON は読むだけという約束を破っていた (T.112.4.19)。
+        const survivor = { ...f, merged_fighter_ids: [f.fighter_id] };
+        aliasIndex.set(f.fighter_id, survivor);
+        survivors.push(survivor);
       }
       continue;
     }
