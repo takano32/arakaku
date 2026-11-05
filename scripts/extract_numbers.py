@@ -3,7 +3,7 @@ from __future__ import annotations
 
 # 役割: Apple Numbers の選手名鑑 (data-raw/*.numbers) を読み、比較用データとして
 #   data-src/numbers_*.csv 3 本 (fighters / name_matches / fight_records) に書き出す。
-#   numbers_parser で表を開いてセルを文字列にするところまでがここで、行の組み立てと名前の照合は
+#   numbers_parser で表を開くところまでがここで、セルの文字列化・行の組み立て・名前の照合は
 #   arakaku/numbers/ (cells・names・sheets) にある。
 # アーキ上の位置: 取り込みパイプラインの入口。下流は build_numbers_json.py が
 #   この CSV を JSON 化し、ビューワが DataRepository 経由で正規 CSV と突き合わせる。
@@ -15,8 +15,8 @@ from __future__ import annotations
 from numbers_parser import Document
 
 from arakaku.io import read_csv, write_csv
-from arakaku.numbers.cells import NumbersSchemaError, cell_text
-from arakaku.numbers.sheets import extract_fight_records, extract_fighters
+from arakaku.numbers.cells import NumbersSchemaError
+from arakaku.numbers.sheets import extract_fight_records, extract_fighters, sheet_table_rows
 from arakaku.paths import DATA_SRC, NUMBERS_PATH
 from arakaku.schema import CSV_HEADERS
 
@@ -29,13 +29,6 @@ def existing_name_map() -> dict[str, str]:
     }
 
 
-def sheet_rows(doc: Document, index: int) -> list[list[str]]:
-    """index 番目のシートの最初の表を、セルを文字列にした行のリストにする。シートが無ければ空。"""
-    if len(doc.sheets) <= index:
-        return []
-    return [[cell_text(cell) for cell in row] for row in doc.sheets[index].tables[0].rows()]
-
-
 def main() -> None:
     if not NUMBERS_PATH.exists():
         raise SystemExit(f"[error] {NUMBERS_PATH} not found.")
@@ -43,8 +36,8 @@ def main() -> None:
     doc = Document(str(NUMBERS_PATH))
     name_to_id = existing_name_map()
     try:
-        fighters, matches, fighters_by_name = extract_fighters(sheet_rows(doc, 0), name_to_id)
-        fight_records = extract_fight_records(sheet_rows(doc, 1), fighters_by_name, matches, name_to_id)
+        fighters, matches, fighters_by_name = extract_fighters(sheet_table_rows(doc.sheets, 0, "全体"), name_to_id)
+        fight_records = extract_fight_records(sheet_table_rows(doc.sheets, 1, "個人成績"), fighters_by_name, matches, name_to_id)
     except NumbersSchemaError as exc:
         raise SystemExit(f"[error] {exc}") from exc
 
