@@ -2,26 +2,19 @@ from __future__ import annotations
 
 import csv
 
-import pytest
-
-from conftest import load_module
-
 
 def rows(repo_root, name):
     with (repo_root / 'data-src' / name).open(encoding='utf-8-sig', newline='') as f:
         return list(csv.DictReader(f))
 
 
-@pytest.fixture
-def generate_articles(repo_root):
-    return load_module('generate_articles', repo_root / 'scripts' / 'generate_articles.py')
+def test_card_notes_are_recognised_from_their_opening():
+    from arakaku.notes.articles import classify_article
 
-
-def test_card_notes_are_recognised_from_their_opening(generate_articles):
     card = '第5回MAXバウトミドル級ＧＰ 1回戦Aグループ  🚨①名前②キャッチコピー'
-    assert generate_articles.classify_article('note-x.html', '第5回MAXバウトミドル級ＧＰ一回戦Aグループ｜アラカク通信のーと', card)[0] == 'event_card'
-    assert generate_articles.classify_article('note-y.html', 'ターゲットNo.87 試合結果', '○A🆚●B')[0] == 'event_result'
-    assert generate_articles.classify_article('note-z.html', 'おめでとうございます', '誕生日です')[0] == 'note_article'
+    assert classify_article('note-x.html', '第5回MAXバウトミドル級ＧＰ一回戦Aグループ｜アラカク通信のーと', card)[0] == 'event_card'
+    assert classify_article('note-y.html', 'ターゲットNo.87 試合結果', '○A🆚●B')[0] == 'event_result'
+    assert classify_article('note-z.html', 'おめでとうございます', '誕生日です')[0] == 'note_article'
 
 
 def test_note_publish_date_comes_from_json_ld():
