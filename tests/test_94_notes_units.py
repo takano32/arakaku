@@ -1,4 +1,4 @@
-"""arakaku/notes/ (matchups・results・crawl・html・articles) と arakaku/textparse.py の単体テスト。小さい手書きの文字列で確かめる。"""
+"""arakaku/notes/ (matchups・results・crawl・html・articles) と notes/patterns の単体テスト。小さい手書きの文字列で確かめる。"""
 from __future__ import annotations
 
 import pytest
@@ -7,8 +7,8 @@ from arakaku.notes import crawl
 from arakaku.notes.articles import article_row
 from arakaku.notes.html import parse_note_metadata
 from arakaku.notes.matchups import clean_fighter_name, extract_matchups, max_bout_event_id, title_to_event_ids
+from arakaku.notes.patterns import infer_time, strip_name_prefix
 from arakaku.notes.results import pair_verdicts
-from arakaku.textparse import infer_time, strip_name_prefix
 
 
 # --- notes/matchups ---
@@ -149,7 +149,7 @@ def test_article_row_from_an_archived_note():
     assert (profile["article_type"], profile["promotion_id"], profile["notes"]) == ("promotion_profile", "target", "団体設定・ルール・歴代王者")
 
 
-# --- textparse ---
+# --- notes/patterns ---
 
 def test_strip_name_prefix():
     assert strip_name_prefix("🟥○①かぶと") == ("○", "かぶと")

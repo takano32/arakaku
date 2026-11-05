@@ -1,9 +1,9 @@
 # 役割: source_mentions.csv の "result" 種別の言及からテキストを解析し、試合結果の手掛かり
 #   (method/round/time/event/matchup) を抽出した review/source_mention_result_candidates.csv の行を作る。
 # アーキ上の位置: scripts/make_source_mention_result_candidates.py が source_mentions.csv を読んで
-#   build_rows に渡し write_csv する。共有テキスト解析ヘルパは arakaku/textparse.py。
+#   build_rows に渡し write_csv する。共有テキスト解析ヘルパは arakaku/notes/patterns.py。
 # 不変条件 / 注意: METHOD_PATTERNS / ROUND_RE / RESULT_WORD_RE はこの候補生成に固有の語彙なので
-#   textparse.py へ移さないこと (skill の指示)。出力はあくまで候補であり winner/loser は推定しない
+#   notes/patterns.py へ移さないこと (skill の指示)。出力はあくまで候補であり winner/loser は推定しない
 #   (winner_hint/loser_hint は常に空)。
 # 関連 skill: .agents/skills/arakaku-source-pipeline (Review candidate pipeline)。
 from __future__ import annotations
@@ -12,7 +12,7 @@ import re
 from collections import defaultdict
 
 from arakaku.schema import CsvRow
-from arakaku.textparse import find_method, infer_time, normalize_digits
+from arakaku.notes.patterns import find_method, infer_time, normalize_digits
 
 FIELDS = [
     "candidate_id",

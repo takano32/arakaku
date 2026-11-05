@@ -17,7 +17,6 @@ PURE_PACKAGES = ["notes", "sources", "derive", "review", "official", "numbers"]
 PURE_MODULES = [
     "csvmap.py",
     "text.py",
-    "textparse.py",
     "event_dates.py",
     "build/canonical.py",
     "build/numbers.py",

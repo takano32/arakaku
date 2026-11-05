@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 
-from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
+from arakaku.notes.patterns import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
 
 MENTION_FIELDS = [
     "mention_id",
