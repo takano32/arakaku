@@ -1,5 +1,6 @@
 import { DataEnricher, normalizeFighterName } from "./enricher.js";
 import { eventSortDate } from "./event_dates.js";
+import { SourceDocumentLookup } from "./source_lookup.js";
 import { enrichTitle, titleDisplayName } from "./title_lineage.js";
 import {
   boutReliability,
@@ -505,67 +506,15 @@ export class DataRepository {
 
   titleDisplayName(title) { return titleDisplayName(title, this.promotionName(title.promotion_id)); }
 
-  // ── 出典本文の引き当て ──────────────────────────────────────────────
+  // ── 出典本文の引き当て (source_lookup.js) ──────────────────────────
 
-  /**
-   * source_type 別に ref_id / source_id / url → 文書を引くインデックスを構築する。
-   * 各 Map は配列順で最初に現れた文書を保持し、各エントリには元配列の添字 (idx) を添えておく。
-   * 複数キーがヒットしても「元配列で最初の文書」を選び直せるようにするため
-   * (線形 find が OR 条件全体で配列順最初の文書を返すのと同じ結果になる)。
-   * キーは === と同じ照合になるよう値そのもの (undefined/"" 含む) で登録する。
-   */
   #sourceDocumentLookup() {
-    if (this.#sourceDocLookup) return this.#sourceDocLookup;
-    const lookup = new Map();
-    const tableFor = (sourceType) => {
-      let table = lookup.get(sourceType);
-      if (!table) {
-        table = { refId: new Map(), sourceId: new Map(), url: new Map() };
-        lookup.set(sourceType, table);
-      }
-      return table;
-    };
-    const remember = (map, key, doc, idx) => {
-      if (!map.has(key)) map.set(key, { doc, idx });
-    };
-    const docs = this.sourceDocuments ?? [];
-    docs.forEach((doc, idx) => {
-      const table = tableFor(doc.source_type);
-      remember(table.refId, doc.source_ref_id, doc, idx);
-      remember(table.sourceId, doc.source_id, doc, idx);
-      remember(table.url, doc.url, doc, idx);
-    });
-    this.#sourceDocLookup = lookup;
-    return lookup;
+    this.#sourceDocLookup ??= new SourceDocumentLookup(this.sourceDocuments);
+    return this.#sourceDocLookup;
   }
 
-  /** 候補エントリ ({doc, idx}) のうち元配列で最初に現れた文書を返す。 */
-  #firstSourceDoc(...entries) {
-    let best;
-    for (const entry of entries) {
-      if (entry && (!best || entry.idx < best.idx)) best = entry;
-    }
-    return best?.doc;
-  }
-
-  sourceDocumentForArticle(articleId) {
-    const table = this.#sourceDocumentLookup().get("note_article");
-    if (!table) return undefined;
-    return this.#firstSourceDoc(
-      table.refId.get(articleId),
-      table.sourceId.get(`note:${articleId}`),
-    );
-  }
-
-  sourceDocumentForVideo(video) {
-    const table = this.#sourceDocumentLookup().get("youtube_description");
-    if (!table) return undefined;
-    return this.#firstSourceDoc(
-      table.refId.get(video.video_id),
-      table.sourceId.get(`youtube_description:${video.video_id}`),
-      table.url.get(video.url),
-    );
-  }
+  sourceDocumentForArticle(articleId) { return this.#sourceDocumentLookup().forArticle(articleId); }
+  sourceDocumentForVideo(video) { return this.#sourceDocumentLookup().forVideo(video); }
 
   // ── 関係ヘルパ ─────────────────────────────────────────────────────
 
