@@ -300,13 +300,13 @@ export class DataRepository extends RawRepository {
 
   // 大会内の試合は試合順の昇順 (第1試合 → メインイベント) のまま返す
   boutsForEvent(eventId) {
-    // 大会の行ごとに呼ばれるので、全試合の走査ではなく event_id の索引から引く (T.85)。
+    // 大会の行ごとに呼ばれるので、全試合の走査ではなく event_id の索引から引く (T85)。
     return boutsInOrder(this.#indexes.group("richBouts:event_id", this.richBouts, b => b.event_id).get(eventId) ?? []);
   }
 
   // ── 王座 ───────────────────────────────────────────────────────────
 
-  // 歴代の獲得・喪失大会の補完は title_lineage.js (獲得大会は title_reigns.csv に明示されたものだけ。T.89)
+  // 歴代の獲得・喪失大会の補完は title_lineage.js (獲得大会は title_reigns.csv に明示されたものだけ。T89)
   get richTitles() {
     if (this.#richTitles) return this.#richTitles;
     this.#richTitles = this.titles.map(enrichTitle);

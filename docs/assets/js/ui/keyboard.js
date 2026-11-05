@@ -33,11 +33,11 @@ const KEY_ACTIONS = {
 export function keyToAction({ key, shiftKey, ctrlKey, metaKey, altKey, inInput, dialogOpen, onControl, hasQuery }) {
   if (inInput) return key === "Escape" ? { name: "blurInput", preventDefault: false } : null;
   // 修飾キー付きは ? と Esc も含めて無視する (Shift は ? の入力に要るので見ない)。以前は ? と Esc を先に扱っていて、
-  // Ctrl/Meta/Alt+? でヘルプが開き、Meta+Esc で検索が消えた (T.112.6.20)。
+  // Ctrl/Meta/Alt+? でヘルプが開き、Meta+Esc で検索が消えた (T112.6.20)。
   if (ctrlKey || metaKey || altKey) return null;
   if (key === "Escape") {
     if (dialogOpen) return { name: "closeHelp", preventDefault: false };
-    // 検索語があるときだけ消す。無いときに消すと選手などの絞り込みまで外れて履歴も積まれていた (T.102)。
+    // 検索語があるときだけ消す。無いときに消すと選手などの絞り込みまで外れて履歴も積まれていた (T102)。
     return hasQuery ? { name: "clearSearch", preventDefault: false } : null;
   }
   if (key === "?") return { name: "toggleHelp", preventDefault: true };

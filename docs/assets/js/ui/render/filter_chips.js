@@ -46,7 +46,7 @@ export class FiltersRenderer {
   #el;
   #prevKey = "";
   // 言及の種別の一覧 (2,500 件余りを写して並べる) はデータが変わったときだけ作り直す。以前は 1 文字打つたびに
-  // 作っていた (T.112.4.22)。
+  // 作っていた (T112.4.22)。
   #mentionTypes = { revision: null, types: [] };
 
   constructor(el = document.querySelector("#filters")) {

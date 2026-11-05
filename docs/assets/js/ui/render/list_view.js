@@ -115,7 +115,7 @@ export class ListView {
       console.error(`Shell: section "${tabId}" failed to build`, err);
       host.innerHTML = `<div class="alert" role="alert"><p class="alert-title">描画エラー (${escapeHtml(tabId)})</p><p>${escapeHtml(err.message)}</p></div>`;
       this.#currentTab = null;
-      this.#lastCount = -1; // エラーの横に前のタブの「N 件」を残さない (T.112.4.17)
+      this.#lastCount = -1; // エラーの横に前のタブの「N 件」を残さない (T112.4.17)
       return;
     }
 

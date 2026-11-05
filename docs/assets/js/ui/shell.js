@@ -62,7 +62,7 @@ export class Shell {
       document.querySelector(selector)?.addEventListener("click", (event) => {
         const link = event.target.closest("a[data-tab]");
         if (!link) return;
-        // Ctrl/Cmd/Shift クリックや中クリックはブラウザに任せて新しいタブ・ウィンドウで開く (T.102)。
+        // Ctrl/Cmd/Shift クリックや中クリックはブラウザに任せて新しいタブ・ウィンドウで開く (T102)。
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
         event.preventDefault();
         this.switchTab(link.dataset.tab);
@@ -125,13 +125,13 @@ export class Shell {
   }
 
   // タブ切り替え・飛び先への移動のあと、押したボタンが描き直しで消えてフォーカスが body に落ちるので、
-  // 見出しへ移して新しい表示を支援技術に伝える (T.102)。
+  // 見出しへ移して新しい表示を支援技術に伝える (T102)。
   #focusHeading() {
     document.querySelector("#toolbar .section-title")?.focus({ preventScroll: true });
   }
 
   #jump(patch) {
-    // 打ちかけの検索 (150ms の遅延待ち) が飛んだ先のフォーカスを消さないよう、先に取り消す (T.112.4.15)。
+    // 打ちかけの検索 (150ms の遅延待ち) が飛んだ先のフォーカスを消さないよう、先に取り消す (T112.4.15)。
     this.#searchBox.cancelPending();
     this.#state.clearFocus();
     this.#state.patch({ ...patch, query: "" });
@@ -149,7 +149,7 @@ export class Shell {
     this.#searchBox.setValue("");
     this.#searchBox.cancelPending();
     // 検索語が無いときは消すものが無い。空の検索欄で Esc を押しても、選手などのフォーカスを外したり
-    // 履歴を積んだりしない (全体の Esc と同じ。T.112.4.14)。
+    // 履歴を積んだりしない (全体の Esc と同じ。T112.4.14)。
     if (!this.#state.query) return;
     this.#state.clearFocus();
     this.#state.patch({ query: "" });

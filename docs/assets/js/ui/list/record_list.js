@@ -279,7 +279,7 @@ export class RecordList {
     bodyEl.hidden = !open;
     row.el.classList.toggle("rec-open", open);
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    // どの行の開閉かが分かるよう、ラベルに行の見出しを含める (T.102)。
+    // どの行の開閉かが分かるよう、ラベルに行の見出しを含める (T102)。
     const title = row.el.querySelector(".rec-title")?.textContent.trim();
     toggle.setAttribute("aria-label", toggleLabel(open, title));
   }

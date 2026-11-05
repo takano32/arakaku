@@ -26,7 +26,7 @@ export function mergeDuplicateFighters(fighters, canonicalIds) {
     if (group.length === 1 || promotions.size > 1) {
       for (const f of group) {
         // 写してから付ける。f は enrich が何も足さなかった選手では state.data.fighters の生の行そのもので、
-        // 生の JSON は読むだけという約束を破っていた (T.112.4.19)。
+        // 生の JSON は読むだけという約束を破っていた (T112.4.19)。
         const survivor = { ...f, merged_fighter_ids: [f.fighter_id] };
         aliasIndex.set(f.fighter_id, survivor);
         survivors.push(survivor);

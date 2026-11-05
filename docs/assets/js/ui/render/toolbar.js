@@ -44,7 +44,7 @@ export class ToolbarRenderer {
     // 分母は取得済み + 取得中 (DATA_FILES 全体ではない: タブ専用データや viewer が読まないファイルがある)。
     const total = loadedCount + loading;
     // 見出しと絞り込みチップは中身が変わったときだけ描き直し、読み込み件数は別の要素の文字だけ更新する
-    // (件数が変わるたびに全体を描き直すと、チップの ✕ にあるキーボードフォーカスが消えていた。T.102)。
+    // (件数が変わるたびに全体を描き直すと、チップの ✕ にあるキーボードフォーカスが消えていた。T102)。
     const main = toolbarMainHtml(section?.label, count, focusChipHtml(focusChipLabel(state, repo)));
     let mainEl = el.querySelector(".toolbar-main");
     let indicator = el.querySelector(".loading-indicator");

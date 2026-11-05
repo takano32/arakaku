@@ -15,7 +15,7 @@ export function rowShellHtml() {
     `;
 }
 
-/** 開閉ボタンの aria-label。どの行の開閉かが分かるよう、行の見出し (title) があれば含める (T.102)。 */
+/** 開閉ボタンの aria-label。どの行の開閉かが分かるよう、行の見出し (title) があれば含める (T102)。 */
 export function toggleLabel(open, title) {
   return `${open ? "詳細を閉じる" : "詳細を開く"}${title ? `: ${title}` : ""}`;
 }

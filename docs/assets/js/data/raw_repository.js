@@ -49,7 +49,7 @@ export class RawRepository {
 
   /**
    * 記事 1 本から出ているリンク (article_links.json)。getter を文字列 ("articleLinks") でしか参照しないと
-   * 使われていないように見えて消されかけたので、名前つきのメソッドにする (T.112.4.26)。
+   * 使われていないように見えて消されかけたので、名前つきのメソッドにする (T112.4.26)。
    */
   articleLinksForArticle(articleId) { return this.findManyByField("articleLinks", "article_id", articleId); }
 

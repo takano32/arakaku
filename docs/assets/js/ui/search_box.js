@@ -1,7 +1,7 @@
 /**
  * 検索欄 (#search) と ✕ ボタン (#search-clear) の配線。状態は持たず、入力を onSearch / onClear に渡す。
  * - 入力は 150ms のデバウンス後に onSearch(value) を呼ぶ。日本語入力の変換中 (isComposing) は検索せず、
- *   確定 (compositionend) で検索する (T.66)。
+ *   確定 (compositionend) で検索する (T66)。
  * - Esc と ✕ は onClear() を呼ぶ。
  * - setValue は URL からの復元・「戻る」・飛び先への移動で、検索欄と ✕ の表示を状態に合わせるために使う
  *   (イベントは発火しない)。

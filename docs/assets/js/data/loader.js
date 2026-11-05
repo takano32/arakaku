@@ -120,10 +120,10 @@ export class DataLoader {
         })
       );
       // 解析と形の検査は #loadKeyProgressive と同じ applyLoadedText で行う。以前はここに「配列 JSON か」の
-      // 検査が無く、公式ページが {} だと読み込みエラーではなく描画エラーになった (T.112.4.16)。
+      // 検査が無く、公式ページが {} だと読み込みエラーではなく描画エラーになった (T112.4.16)。
       const results = entries.map(([key, text]) => [key, applyLoadedText(key, text)]);
       // required のときはすべてを検査してから書く。以前は壊れたファイルの手前のキーまで state.data に書いてから
-      // throw していた (T.112.6.17)。
+      // throw していた (T112.6.17)。
       if (required) {
         const broken = results.find(([, result]) => result.error !== null);
         if (broken) throw new Error(`${this.dataFiles[broken[0]]}: ${broken[1].error}`);

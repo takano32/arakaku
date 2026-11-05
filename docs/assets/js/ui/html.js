@@ -40,7 +40,7 @@ export function textList(values) {
 }
 
 export function externalLink(url, label, className = "") {
-  // http(s) 以外 (javascript: など) はリンクにしない。データは検証済みだが多層防御として (T.106)。
+  // http(s) 以外 (javascript: など) はリンクにしない。データは検証済みだが多層防御として (T106)。
   if (!url || !/^https?:\/\//i.test(String(url))) return `<code>${escapeHtml(label)}</code>`;
   const cls = className ? ` class="${escapeHtml(className)}"` : "";
   return `<a${cls} href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
@@ -50,7 +50,7 @@ export function externalLink(url, label, className = "") {
 // 名鑑由来の method_raw (detail_raw) は「1R 1:37 KO(大外刈り)」のようにラウンドと時間を含むので、
 // その場合は round / time を重ねて表示しない。
 export function boutResultText(bout) {
-  // 名鑑の detail_raw は「1R 1:37 KO(大外刈り)\nメジャーデビュー戦」のように改行で注記が続くので 1 行にする (T.102)。
+  // 名鑑の detail_raw は「1R 1:37 KO(大外刈り)\nメジャーデビュー戦」のように改行で注記が続くので 1 行にする (T102)。
   const method = (bout.result?.method_raw ?? "").replace(/\s*\n\s*/g, " / ");
   if (/^\d+R\b/.test(method.trim())) return method.trim();
   return [

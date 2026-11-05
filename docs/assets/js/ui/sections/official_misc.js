@@ -5,11 +5,11 @@ import { code } from "./common.js";
 /** 管理ビュー「公式」: 公式サイトのトーナメント・試合・沿革。行の左の色帯 rec-src-official (緑)。 */
 
 // 公式サイトの試合 (matches) と沿革 (history) は、note・公式の大会一覧・CSV のどれとも合わず、登場する選手も
-// ほかに出てこない (例: 1995 荒木好之 vs デーモンキング)。公式サイトの仮のデータとみられるので、消さずに注記する (T.78)。
+// ほかに出てこない (例: 1995 荒木好之 vs デーモンキング)。公式サイトの仮のデータとみられるので、消さずに注記する (T78)。
 const UNVERIFIED_NOTE = `<p class="muted small">公式サイトのデータ。note・公式の大会一覧・このデータベースの記録と合わず、仮のデータの可能性があります。</p>`;
 
 // 公式の沿革の month は「春」「夏」「冬」「通年」などの言葉なので、数字のときだけ「月」を付ける
-// (以前は常に付けていて「春月」になった。T.112.4.25)。
+// (以前は常に付けていて「春月」になった。T112.4.25)。
 function monthLabel(month) {
   if (month == null || month === "") return "";
   return /^\d+$/.test(String(month)) ? `${month}月` : String(month);
@@ -21,7 +21,7 @@ export const officialMiscSection = {
   placeholder: "トーナメント・試合・沿革で検索",
   empty: "該当する公式データがありません。",
   build({ repo, query }) {
-    // 検索は元のレコードで行う。足した _type・_key で検索すると「tournament」「h:」などで全件が当たっていた (T.112.6.3)。
+    // 検索は元のレコードで行う。足した _type・_key で検索すると「tournament」「h:」などで全件が当たっていた (T112.6.3)。
     const items = [
       ...repo.officialTournaments.map((t) => [t, { _type: "tournament", _key: `t:${t.id}`, ...t }]),
       ...repo.officialMatches.map((m) => [m, { _type: "match", _key: `m:${m.id}`, ...m }]),

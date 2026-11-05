@@ -51,7 +51,7 @@ export class SourceDocumentLookup {
 }
 
 function remember(map, key, doc, idx) {
-  // 空のキーは登録しない。以前は url の無い動画が url の無い最初の文書に当たっていた (undefined === undefined。T.112.4.20)。
+  // 空のキーは登録しない。以前は url の無い動画が url の無い最初の文書に当たっていた (undefined === undefined。T112.4.20)。
   if (key == null || key === "") return;
   if (!map.has(key)) map.set(key, { doc, idx });
 }

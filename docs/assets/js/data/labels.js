@@ -71,7 +71,7 @@ export const labels = {
   sourceType: (v) => SOURCE_TYPES[v] ?? v ?? "出典",
   mentionType: (v) => MENTION_TYPES[v] ?? v ?? "言及",
   articleType: (v) => ARTICLE_TYPES[v] ?? v ?? "",
-  // 種別は CSV の英語コードと名鑑の日本語 (ワンマッチ等) が混在するので、英語コードだけ訳す (T.102)。
+  // 種別は CSV の英語コードと名鑑の日本語 (ワンマッチ等) が混在するので、英語コードだけ訳す (T102)。
   boutType: (v) => BOUT_TYPES[v] ?? v ?? "",
   fighterResult: (v) => FIGHTER_RESULTS[v] ?? v ?? "不明",
   side: (v) => SIDES[v] ?? v ?? "",

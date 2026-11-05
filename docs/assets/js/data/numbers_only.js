@@ -43,7 +43,7 @@ export function buildNumbersOnly({ events: rawEvents, fightRecords, promotionNam
     const opponentId = r.opponent_matched_fighter_id || r.opponent_candidate_fighter_id || null;
     const pairKey = `${eventId}:${[fighterId || r.fighter_name, opponentId || r.opponent_name].sort().join("|")}`;
     if (bouts.has(pairKey)) {
-      // 相手側の行。両側の勝敗が食い違う (両者勝ち・両者負け) なら、どちらかに決めず不明にする (T.89)。
+      // 相手側の行。両側の勝敗が食い違う (両者勝ち・両者負け) なら、どちらかに決めず不明にする (T89)。
       const bout = bouts.get(pairKey);
       bout.numbers_records.push(r);
       const own = bout.fighters.find(f => (fighterId && f.fighter_id === fighterId) || f.name === r.fighter_name);
@@ -62,7 +62,7 @@ export function buildNumbersOnly({ events: rawEvents, fightRecords, promotionNam
     const loser = fighters.find(f => f.result === "loss");
     bouts.set(pairKey, {
       // ID は 2 人の組から作る (Numbers の記録の並びが変わっても共有リンクがずれない)。試合順は
-      // Numbers に無いので持たない (以前は記録の並びを「第N試合」と表示していた。T.90)。
+      // Numbers に無いので持たない (以前は記録の並びを「第N試合」と表示していた。T90)。
       bout_id: `${eventId}--${[fighterId || r.fighter_name, opponentId || r.opponent_name].sort().join("--")}`,
       event_id: eventId,
       promotion_id: r.promotion_id,
@@ -84,7 +84,7 @@ export function buildNumbersOnly({ events: rawEvents, fightRecords, promotionNam
   }
   const byNumber = (a, b) => a.promotion_id.localeCompare(b.promotion_id, "ja") || a.event_number - b.event_number;
   const eventList = [...events.values()].sort(byNumber);
-  // 大会 (団体・興行番号) → 対戦の名前の順に並べる。記録の並びのままだと試合タブで大会が混ざる (T.90)。
+  // 大会 (団体・興行番号) → 対戦の名前の順に並べる。記録の並びのままだと試合タブで大会が混ざる (T90)。
   const eventOrder = new Map(eventList.map((e, i) => [e.event_id, i]));
   const boutList = [...bouts.values()].sort((a, b) =>
     (eventOrder.get(a.event_id) ?? 0) - (eventOrder.get(b.event_id) ?? 0) || a.matchup.localeCompare(b.matchup, "ja"));

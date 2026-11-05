@@ -2,7 +2,7 @@
  * 大会の日付の規則 (純関数)。
  * 大会の日付は、結果 note の投稿日 (result_published_at)、無ければその大会の note の最初の投稿日
  * (note_published_at。対戦カードだけの大会)、無ければ公開日 (published_at)。
- * reorder_data.py の大会の並びと同じ規則 (T.102)。
+ * reorder_data.py の大会の並びと同じ規則 (T102)。
  */
 
 /** 並び替え用の日付文字列。無ければ "" (名鑑のみの大会など)。 */

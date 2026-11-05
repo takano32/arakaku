@@ -49,7 +49,7 @@ export function applyFightRecords(bout, records) {
   const participants = (bout.fighters ?? []).map(f => ({ ...f }));
 
   // Numbers の 2 行が矛盾する (両者勝ち・両者負け) 試合は勝敗を上書きしない。CSV には note の勝者を
-  // 入れてあり (T.40.4・T.86.6)、上書きすると「A def. A」や両者勝ちの表示になる (T.89)。
+  // 入れてあり (T40.4・T86.6)、上書きすると「A def. A」や両者勝ちの表示になる (T89)。
   const numbersResults = participants.map((p) => {
     if (!p.fighter_id) return p.result;
     const own = records.find(rec => rec.matched_fighter_id === p.fighter_id || rec.candidate_fighter_id === p.fighter_id);
