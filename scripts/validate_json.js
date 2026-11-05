@@ -13,7 +13,6 @@ import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/data
 import { QueryMatcher } from "../docs/assets/js/data/query.js";
 import { boutSearchText } from "../docs/assets/js/data/search_text.js";
 import { TAB_FILTERS } from "../docs/assets/js/data/filters.js";
-import { Parts } from "../docs/assets/js/ui/parts.js";
 import { SECTIONS } from "../docs/assets/js/ui/sections/index.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -154,7 +153,6 @@ function makeViewerContext(state) {
     },
   };
   ctx.query = new QueryMatcher(state, () => state.repository);
-  ctx.parts = new Parts(ctx);
   return ctx;
 }
 

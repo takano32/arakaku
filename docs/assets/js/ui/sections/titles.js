@@ -1,5 +1,9 @@
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
 import { escapeHtml } from "../html.js";
+import { details } from "../parts/basic.js";
+import { eventLink, fighterLink } from "../parts/links.js";
+import { articleRefs } from "../parts/sources.js";
+import { videoRefs } from "../parts/videos.js";
 
 /** 王座タブ: 団体 → 階級で並べ、「団体 / 階級」の見出し行を挟む。各王座は歴代を開いた状態で見せる。 */
 // 最後の王者が返上・喪失していれば「現王者」ではなく空位 (T.89: ギタミン・アーロンは返上済み)。
@@ -15,7 +19,7 @@ export const titlesSection = {
   label: "王座",
   placeholder: "王座・王者名で検索",
   empty: "該当する王座がありません。",
-  build({ repo, parts, state, query }) {
+  build({ repo, state, query }) {
     const list = repo.richTitles
       .filter((t) => query.titleMatches(t) && itemPassesFilters(t, TAB_FILTERS.titles, state))
       .sort(
@@ -37,16 +41,16 @@ export const titlesSection = {
 
     const reignRow = (reign) => {
       const events = [
-        reign.won_at_event_id ? `獲得: ${parts.eventLink(reign.won_at_event_id, repo.eventName(reign.won_at_event_id))}` : "",
-        reign.lost_at_event_id ? `喪失: ${parts.eventLink(reign.lost_at_event_id, repo.eventName(reign.lost_at_event_id))}` : "",
+        reign.won_at_event_id ? `獲得: ${eventLink(repo, reign.won_at_event_id, repo.eventName(reign.won_at_event_id))}` : "",
+        reign.lost_at_event_id ? `喪失: ${eventLink(repo, reign.lost_at_event_id, repo.eventName(reign.lost_at_event_id))}` : "",
         reign.end_reason === "vacated" ? "返上（空位）" : "",
       ].filter(Boolean);
       const source = reign.source_video_id
-        ? `出典: ${parts.videoRefs([reign.source_video_id], { inline: true })}`
-        : reign.source_article_id ? `出典: ${parts.articleRefs(reign.source_article_id)}` : "";
+        ? `出典: ${videoRefs(repo, [reign.source_video_id], { inline: true })}`
+        : reign.source_article_id ? `出典: ${articleRefs(repo, reign.source_article_id)}` : "";
       return `<li class="reign">
         <span class="reign-label">${escapeHtml(reign.reign_label ?? `${reign.order}代`)}</span>
-        <span class="reign-name">${parts.fighterLink(reign.fighter_id, reign.fighter_name)}</span>
+        <span class="reign-name">${fighterLink(repo, reign.fighter_id, reign.fighter_name)}</span>
         <span class="reign-meta muted small">${[...events, source].filter(Boolean).join(" / ")}</span>
       </li>`;
     };
@@ -71,7 +75,7 @@ export const titlesSection = {
         const lineage = [...(t.lineage ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         return `
           ${lineage.length ? `<ol class="reigns">${lineage.map(reignRow).join("")}</ol>` : `<p class="muted">歴代王者はまだ登録されていません。</p>`}
-          ${parts.details([
+          ${details([
             ["title_id", `<code>${escapeHtml(t.title_id)}</code>`],
             ["団体", escapeHtml(repo.promotionName(t.promotion_id))],
             ["階級", escapeHtml(t.division ?? "")],

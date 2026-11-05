@@ -21,7 +21,7 @@ import {
  *   { id, label, placeholder (検索欄の文言), empty (0 件のときの文言), build(ctx) }
  * を持ち、build(ctx) は RecordList の descriptor
  *   { items, keyOf, renderHead, renderBody, defaultOpen?, rowClass?, isHeader? }
- * を返す。ctx は { state, repo, query, parts }。
+ * を返す。ctx は { state, repo, query }。HTML 部品は ui/parts/*.js を直接 import する。
  * キーは config.js の PUBLIC_TABS / ADMIN_TABS の ID と完全一致させること。
  */
 export const SECTIONS = Object.fromEntries([

@@ -20,13 +20,12 @@ import { SECTIONS } from "./sections/index.js";
  *   (ナビは aria-current の更新だけ、絞り込みは指紋が変わったときだけ、一覧はタブ・repo.revision・
  *   指紋のいずれかが変わったときだけ build する)。
  * - 一覧はタブごとに 1 つの RecordList を保持し、タブを切り替えても開閉状態と描画済み件数を保つ。
- * - 選手/大会/試合リンク (ui/parts.js の data-* 属性) と YouTube ファサードのクリックは
+ * - 選手/大会/試合リンク (ui/parts/links.js の data-* 属性) と YouTube ファサードのクリックは
  *   #list-host への委譲で受ける。
  */
 export class Shell {
   #state;
   #loader;
-  #parts;
   #query;
   #lists = new Map();
   #currentTab = null;
@@ -43,10 +42,9 @@ export class Shell {
   #searchTimer = null;
   #lastCount = -1;
 
-  constructor({ state, loader, parts, query }) {
+  constructor({ state, loader, query }) {
     this.#state = state;
     this.#loader = loader;
-    this.#parts = parts;
     this.#query = query;
   }
 
@@ -459,7 +457,7 @@ export class Shell {
 
     let desc;
     try {
-      desc = section.build({ state, repo: this.repo, query: this.#query, parts: this.#parts });
+      desc = section.build({ state, repo: this.repo, query: this.#query });
     } catch (err) {
       console.error(`Shell: section "${tabId}" failed to build`, err);
       host.innerHTML = `<div class="alert" role="alert"><p class="alert-title">描画エラー (${escapeHtml(tabId)})</p><p>${escapeHtml(err.message)}</p></div>`;

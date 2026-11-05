@@ -1,7 +1,6 @@
 import { Store, readFromURL, stateFromHistory, writeToURL } from "./app/state.js";
 import { DataLoader } from "./data/loader.js";
 import { QueryMatcher } from "./data/query.js";
-import { Parts } from "./ui/parts.js";
 import { Shell } from "./ui/shell.js";
 import { KeyboardNav } from "./ui/keyboard.js";
 import { escapeHtml } from "./ui/html.js";
@@ -26,10 +25,8 @@ if (Object.keys(urlPatch).length > 0) {
 state.subscribe((s) => writeToURL(s));
 
 const loader = new DataLoader(state);
-const ctx = { state, get repo() { return state.repository; } };
 const query = new QueryMatcher(state, () => state.repository);
-const parts = new Parts(ctx);
-const shell = new Shell({ state, loader, parts, query });
+const shell = new Shell({ state, loader, query });
 shell.bind();
 new KeyboardNav({
   state,

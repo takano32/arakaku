@@ -1,5 +1,9 @@
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
 import { codeList, escapeHtml, joinPresent, recordText, textList } from "../html.js";
+import { badge, badges, details, dl } from "../parts/basic.js";
+import { relatedBouts } from "../parts/bouts.js";
+import { fighterSnapshots, profileBlock } from "../parts/fighters.js";
+import { articleRefList } from "../parts/sources.js";
 import { focusedOrFiltered } from "./common.js";
 
 /** 選手タブ (名鑑掲載順。低信頼の選手は末尾) */
@@ -8,7 +12,7 @@ export const fightersSection = {
   label: "選手",
   placeholder: "選手名・所属・階級で検索",
   empty: "該当する選手がいません。",
-  build({ repo, parts, state, query }) {
+  build({ repo, state, query }) {
     const items = focusedOrFiltered(
       state.focusFighterId,
       (id) => repo.findRichFighter(id),
@@ -25,10 +29,10 @@ export const fightersSection = {
         return `<div class="rec-text">
           <p class="rec-title"><span class="name">${escapeHtml(f.display_name)}</span>${f.profile?.nickname ? ` <span class="nick">「${escapeHtml(f.profile.nickname)}」</span>` : ""}</p>
           <p class="rec-sub">${escapeHtml(joinPresent([f.main_division, repo.promotionName(f.main_promotion_id), f.profile?.gym]))}</p>
-          ${parts.badges([
-            f.numbers_data ? parts.badge("名鑑", "numbers") : "",
-            f.official_data ? parts.badge("公式", "official") : "",
-            ...(f.profile?.achievements ?? []).map((a) => parts.badge(a, "gold")),
+          ${badges([
+            f.numbers_data ? badge("名鑑", "numbers") : "",
+            f.official_data ? badge("公式", "official") : "",
+            ...(f.profile?.achievements ?? []).map((a) => badge(a, "gold")),
           ])}
         </div>
         <div class="rec-aside">
@@ -38,16 +42,16 @@ export const fightersSection = {
       },
       renderBody: (f) => `
         ${f.summary ? `<p class="summary pre-line">${escapeHtml(f.summary)}</p>` : ""}
-        ${parts.dl([
+        ${dl([
           ["所属", escapeHtml(f.profile?.gym ?? "")],
           ["身長・年齢", escapeHtml(joinPresent([f.profile?.height, f.profile?.age]))],
           ["国籍", escapeHtml(f.profile?.nationality ?? "")],
         ], "dl-inline")}
-        ${parts.profileBlock(f)}
-        ${parts.relatedBouts(f.fighter_id)}
-        ${parts.fighterSnapshots(f.fighter_id)}
-        ${parts.articleRefList(f.source_article_ids)}
-        ${parts.details([
+        ${profileBlock(f)}
+        ${relatedBouts(repo, f.fighter_id)}
+        ${fighterSnapshots(repo, f.fighter_id)}
+        ${articleRefList(repo, f.source_article_ids)}
+        ${details([
           ["fighter_id", `<code>${escapeHtml(f.fighter_id)}</code>`],
           ["統合した ID", (f.merged_fighter_ids?.length ?? 0) > 1 ? codeList(f.merged_fighter_ids) : ""],
           ["別名", textList(f.aliases)],
