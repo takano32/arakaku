@@ -15,7 +15,7 @@ Python scripts in this directory handle data processing, validation, and extract
 - Numbers-derived CSVs are comparison/review inputs. Do not use import scripts to confirm winners, bouts, or participant results without a separate review step. The static viewer uses these for automated supplementation of unknown fields.
 - `archive_metadata.py` is an explicit cache-to-source archiving script: it reads local cache files and regenerates `data-src/archives/youtube.csv` and `data-src/archives/note.csv`.
 - Archive CSVs preserve external metadata for review/display. Do not use archive rows to confirm bout results or fighter identities without a separate review step.
-- `download_official_data.sh` downloads the full `src/` tree from `kobayashi856/arakaku-site` into `tmp/arakaku-site/`. Run via `make download-official-data` (included in `make cache-sources`).
+- `download_official_data.sh` downloads the full `src/` tree from `kobayashi856/arakaku-site` into `tmp/arakaku-site/` and the `public/` tree into `tmp/arakaku-site/public/`. Run via `make download-official-data` (included in `make cache-sources`).
 - `generate_official_csvs.py` reads `tmp/arakaku-site/data/*.json` and writes `data-src/official_*.csv`. This is a stage-1 script (raw ingestion from `tmp/`). Do not derive values from other CSVs here.
 - `build_official_json.py` reads `data-src/official_*.csv` and writes `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, and `official_history.json` (`build_official_pages_json.py` writes `official_news.json` / `official_pages.json`). Run via `make build`. **IMPORTANT: never add official data enrichment to `build_json.py`** — all enrichment happens client-side in `docs/assets/js/data/enricher.js` (rules in `docs/assets/js/data/enrich/*.js`). (Copying archive display metadata such as thumbnail sizes, channel name and upload date into `videos.json` is not enrichment and is done in `build_json.py`.)
 
@@ -31,7 +31,7 @@ Python scripts in this directory handle data processing, validation, and extract
 - `validate_json.py`: Ensures structural integrity and referential correctness.
 - `validate_json.js`: Node check of the viewer's JSON parser/loader and render-path coverage (`make validate`).
 - `extract_numbers.py`: Exports `numbers_fighters.csv`, `numbers_name_matches.csv`, and `numbers_fight_records.csv` from the Numbers file.
-- `download_official_data.sh`: Downloads `src/` tree from official site repo into `tmp/arakaku-site/`.
+- `download_official_data.sh`: Downloads the `src/` tree from official site repo into `tmp/arakaku-site/` and `public/` into `tmp/arakaku-site/public/`.
 - `generate_official_csvs.py`: Converts `tmp/arakaku-site/data/*.json` to `data-src/official_*.csv`.
 - `crawl_note_articles.py`: Discovers official note articles and appends unregistered URLs to `data-src/articles.csv` (append-only; `make discover-note-articles`).
 - `discover_youtube_videos.py`: Lists the official channel's uploads via the YouTube Data API and appends missing non-Shorts videos to `data-src/videos.csv` (append-only; `make discover-youtube-videos`).
