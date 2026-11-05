@@ -16,3 +16,6 @@ tmp/*
 !tmp/youtube-api/.gitkeep
 !tmp/arakaku-site/.gitkeep
 .venv/
+
+# Claude Code agent worktrees (T.112.5)
+.claude/worktrees/
