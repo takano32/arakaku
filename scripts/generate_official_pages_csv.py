@@ -15,10 +15,11 @@ import re
 #       extract_astro_body の正規表現は順序依存（frontmatter→レイアウトタグ→コメント→
 #       map 展開→base パス→残り式属性→class/style の順で剥がす）。
 # 関連スキル: .agents/skills/arakaku-data-curator
-from arakaku.utils import DATA_SRC, ROOT, write_csv
+from arakaku.io import write_csv
+from arakaku.paths import DATA_SRC, OFFICIAL_SITE_DIR
 
 # 公式サイトのソースツリー置き場（git 管理外、要事前取得）。
-SRC = ROOT / "tmp" / "arakaku-site"
+SRC = OFFICIAL_SITE_DIR
 NEWS_DIR = SRC / "content" / "news"
 PAGES_DIR = SRC / "pages"
 

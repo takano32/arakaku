@@ -2,37 +2,27 @@ from __future__ import annotations
 
 import csv
 
-import pytest
-
-from conftest import load_module
-
 
 def rows(repo_root, name):
     with (repo_root / 'data-src' / name).open(encoding='utf-8-sig', newline='') as f:
         return list(csv.DictReader(f))
 
 
-@pytest.fixture
-def generate_articles(repo_root):
-    return load_module('generate_articles', repo_root / 'scripts' / 'generate_articles.py')
+def test_card_notes_are_recognised_from_their_opening():
+    from arakaku.notes.articles import classify_article
 
-
-def test_card_notes_are_recognised_from_their_opening(generate_articles):
     card = '第5回MAXバウトミドル級ＧＰ 1回戦Aグループ  🚨①名前②キャッチコピー'
-    assert generate_articles.classify_article('note-x.html', '第5回MAXバウトミドル級ＧＰ一回戦Aグループ｜アラカク通信のーと', card)[0] == 'event_card'
-    assert generate_articles.classify_article('note-y.html', 'ターゲットNo.87 試合結果', '○A🆚●B')[0] == 'event_result'
-    assert generate_articles.classify_article('note-z.html', 'おめでとうございます', '誕生日です')[0] == 'note_article'
+    assert classify_article('note-x.html', '第5回MAXバウトミドル級ＧＰ一回戦Aグループ｜アラカク通信のーと', card)[0] == 'event_card'
+    assert classify_article('note-y.html', 'ターゲットNo.87 試合結果', '○A🆚●B')[0] == 'event_result'
+    assert classify_article('note-z.html', 'おめでとうございます', '誕生日です')[0] == 'note_article'
 
 
-@pytest.fixture
-def archive_metadata(repo_root):
-    return load_module('archive_metadata', repo_root / 'scripts' / 'archive_metadata.py')
+def test_note_publish_date_comes_from_json_ld():
+    from arakaku.notes.html import parse_note_metadata
 
-
-def test_note_publish_date_comes_from_json_ld(archive_metadata):
     html = '<title>T｜アラカク通信のーと</title><script>{"datePublished":"2026-07-31T09:42:15.000+09:00"}</script>'
-    assert archive_metadata.parse_note_metadata(html)['published_at'] == '2026-07-31'
-    assert archive_metadata.parse_note_metadata('<title>x</title>')['published_at'] == ''
+    assert parse_note_metadata(html)['published_at'] == '2026-07-31'
+    assert parse_note_metadata('<title>x</title>')['published_at'] == ''
 
 
 def event_note_dates(repo_root):

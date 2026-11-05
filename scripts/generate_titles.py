@@ -9,7 +9,8 @@ from __future__ import annotations
 # 不変条件: 各 TITLES の promotion_id は promotions.csv に存在する団体に限る（FK）。
 #       title_id は title_reigns から参照されるので命名変更は両者同期必須。
 # 関連スキル: .agents/skills/arakaku-data-curator
-from arakaku.utils import DATA_SRC, write_csv
+from arakaku.io import write_csv
+from arakaku.paths import DATA_SRC
 
 OUTPUT = DATA_SRC / "titles.csv"
 FIELDS = ["title_id", "promotion_id", "division"]

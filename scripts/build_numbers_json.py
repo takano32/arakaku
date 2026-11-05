@@ -1,73 +1,24 @@
 #!/usr/bin/env python3
-# 役割: Apple Numbers (アラカク選手名鑑.numbers) 由来の numbers_*.csv を docs/data/numbers_*.json
-#   に変換する。viewer は実行時にこの比較データで正規 CSV を補完する (人手検証済み Numbers が優先)。
-# アーキ上の位置: 入力 = data-src/numbers_*.csv (extract_numbers.py が Numbers から生成)、
-#   出力 = docs/data/numbers_*.json。build_json.py とは別系統で、正規 CSV を上書きしない比較レイヤ。
-# 不変条件: Numbers の事実を捏造・改変しない。正規データへの「直接置換」ではなく比較データとして扱う。
+# 役割: Apple Numbers 由来の numbers_*.csv を読み、docs/data/numbers_*.json を書く入口。
+# アーキ上の位置: 入力 = data-src/numbers_*.csv (extract_numbers.py が生成)、組み立ては
+#   arakaku/build/numbers.py、書き出しは arakaku/io.py。build_json.py とは別系統の比較レイヤ。
+# 不変条件: ここにはロジックを置かない。Numbers の事実を捏造・改変しない。
 # 関連スキル: .agents/skills/arakaku-numbers-pipeline。
 """Build numbers_*.json from numbers_*.csv (sourced from アラカク選手名鑑.numbers)."""
 from __future__ import annotations
 
-from typing import Any
-
-from arakaku.utils import (
-    build_json_files,
-    field_or_empty,
-    int_field,
-    map_csv,
-    read_csv,
-    DATA_SRC,
-)
-
-
-def rows(name: str):
-    return read_csv(DATA_SRC / name)
-
-
-def build_numbers_fighters() -> list[dict[str, Any]]:
-    return map_csv(
-        "numbers_fighters.csv",
-        {
-            "numbers_fighter_id": "numbers_fighter_id",
-            "source_sheet": "source_sheet",
-            "source_row": int_field("source_row"),
-            "display_name": "display_name",
-            "main_division": "main_division",
-            "main_promotion_raw": "main_promotion_raw",
-            "main_promotion_id": "main_promotion_id",
-            "profile": {
-                "age": "age",
-                "height": "height",
-                "gym": "gym",
-            },
-            "stats": {
-                "fight_count": int_field("fight_count"),
-                "wins": int_field("wins"),
-                "losses": int_field("losses"),
-                "win_rate": "win_rate",
-            },
-            "achievements": {
-                "white_glove_count": int_field("white_glove_count"),
-                "tournament_win_marker": "tournament_win_marker",
-                "tournament_entry_raw": "tournament_entry_raw",
-                "belt_marker": "belt_marker",
-            },
-            "catchphrase": "catchphrase",
-            "notes": field_or_empty("notes"),
-            "source_confidence": "source_confidence",
-        },
-    )
-
-
-JSON_BUILDERS = {
-    "numbers_fighters.json":     build_numbers_fighters,
-    "numbers_name_matches.json": lambda: rows("numbers_name_matches.csv"),
-    "numbers_fight_records.json": lambda: rows("numbers_fight_records.csv"),
-}
+from arakaku.build.numbers import json_builders
+from arakaku.io import build_json_files, read_csv
+from arakaku.paths import DATA_SRC, DOCS_DATA
 
 
 def main() -> None:
-    build_json_files(JSON_BUILDERS, "[done] numbers JSON build completed")
+    builders = json_builders(
+        read_csv(DATA_SRC / "numbers_fighters.csv"),
+        read_csv(DATA_SRC / "numbers_name_matches.csv"),
+        read_csv(DATA_SRC / "numbers_fight_records.csv"),
+    )
+    build_json_files(DOCS_DATA, builders, "[done] numbers JSON build completed")
 
 
 if __name__ == "__main__":

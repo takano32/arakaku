@@ -15,10 +15,10 @@ import unicodedata
 # 関連スキル: .agents/skills/arakaku-numbers-pipeline/SKILL.md を必ず参照。
 from numbers_parser import Document
 
-from arakaku.utils import DATA_SRC, ROOT, read_csv, safe_slug, write_csv
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC, NUMBERS_PATH
+from arakaku.text import safe_slug
 
-
-NUMBERS_PATH = ROOT / "data-raw" / "アラカク選手名鑑.numbers"
 
 # Numbers 上の日本語団体表記 -> 正規 promotion_id。未知の表記は promotion_id() で
 # lower() フォールバックされるため、ここは既知エイリアスの明示マップに留める。

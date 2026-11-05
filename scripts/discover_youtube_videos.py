@@ -20,8 +20,9 @@ import sys
 import urllib.parse
 import urllib.request
 
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC
 from arakaku.schema import CSV_HEADERS
-from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 VIDEOS_CSV = DATA_SRC / "videos.csv"
 API = "https://www.googleapis.com/youtube/v3"

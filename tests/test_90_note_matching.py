@@ -2,12 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from conftest import load_module
-
-
-@pytest.fixture
-def matcher(repo_root):
-    return load_module('match_unknown_bouts_to_note_results', repo_root / 'scripts' / 'match_unknown_bouts_to_note_results.py')
+from arakaku.notes import results as matcher
 
 
 @pytest.mark.parametrize('text, expected', [
@@ -19,12 +14,12 @@ def matcher(repo_root):
     ('1R 3分4秒 (アームバー)', ('1R', '3分04秒', 'SUB', 'アームバー', '')),
     ('3R 判定29-28', ('3R', '', 'DEC', '', '29-28')),
 ])
-def test_parse_result(matcher, text, expected):
+def test_parse_result(text, expected):
     r = matcher.parse_result(text)
     assert (r['round'], r['time'], r['method_normalized'], r['technique'], r['decision_score']) == expected
 
 
-def test_occurrences_reads_marks_and_skips_longer_words(matcher):
+def test_occurrences_reads_marks_and_skips_longer_words():
     lines = ['○アイス・トロン🆚●ナパーム', '〇ブルーワンvs●きたむら', '🟦 ①ルージュド・スターリー', 'フロントチョーク']
     assert matcher.occurrences(lines, 'アイス・トロン') == [(0, '○')]
     assert matcher.occurrences(lines, 'ブルーワン') == [(1, '〇')]
@@ -33,7 +28,7 @@ def test_occurrences_reads_marks_and_skips_longer_words(matcher):
     assert matcher.occurrences(lines, 'ロン') == []  # inside アイス・トロン and フロントチョーク
 
 
-def test_result_text_finds_the_result_line(matcher):
+def test_result_text_finds_the_result_line():
     lines = ['☆ミドル級ワンマッチ', '●ローリングJr.', '29歳186cm', '【5勝4敗】', '🆚', '○ぱいそんはやし', '26歳 188cm', '【1勝0敗】', '（3R終了 判定3-0）', '☆次の試合']
     assert matcher.result_text(lines, 1, 5) == '3R終了 判定3-0'
     assert matcher.result_text(['○A(ジムX)🆚●B(1R2分KO 左フック)'], 0, 0) == '1R2分KO 左フック'

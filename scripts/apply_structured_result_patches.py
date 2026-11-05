@@ -7,8 +7,8 @@ from __future__ import annotations
 #   生成する review/unknown_bout_note_results.csv (既定) か review/known_bout_note_methods.csv。
 #   apply=true の行のみが対象。winner/loser/fighter_a/fighter_b 列は上流が解決済みの値であることを前提とする。
 # 不変条件 / 注意: 元データ (bouts.csv / bout_participants.csv) を破壊的に上書き
-#   するため、レビュー済みの apply 行のみ処理すること。csv は arakaku/utils の
-#   ラッパを使わず標準 csv を直接使い、書き戻し時に extrasaction="ignore" と
+#   するため、レビュー済みの apply 行のみ処理すること。csv は arakaku.io の
+#   read_csv / write_csv を使わず標準 csv を直接使い、書き戻し時に extrasaction="ignore" と
 #   既存 fieldnames を保つことで列構成を変えない (この契約を維持すること)。
 # 関連 skill: .agents/skills/arakaku-review-workflow。
 
@@ -16,7 +16,7 @@ import csv
 import sys
 from pathlib import Path
 
-from arakaku.utils import ROOT
+from arakaku.paths import ROOT
 
 BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
 PARTICIPANTS_CSV = ROOT / "data-src" / "bout_participants.csv"

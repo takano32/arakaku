@@ -1,4 +1,4 @@
-# 役割: data-src/*.csv の列の定義 (ヘッダの正本)。arakaku.utils.read_csv が読み込み時に照合し、
+# 役割: data-src/*.csv の列の定義 (ヘッダの正本)。arakaku.io.read_csv が読み込み時に照合し、
 #   tests/test_05_csv_schema.py も同じ表を使う。列を足す・消す・改名するときはここも変える。
 # 不変条件: キーは DATA_SRC からの相対パス、値は CSV の 1 行目と同じ並びの列名。
 
