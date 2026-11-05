@@ -38,13 +38,19 @@ def test_merge_articles_keeps_existing_rows(crawler):
 
 
 @pytest.fixture
-def discover(repo_root):
-    return load_module('discover_youtube_videos', repo_root / 'scripts' / 'discover_youtube_videos.py')
+def youtube():
+    import arakaku.youtube
+
+    return arakaku.youtube
 
 
-def test_shorts_and_types(discover):
-    assert discover.is_short('KOシーン！！#shorts', 30)
-    assert discover.is_short('#アラカク #格闘技', 45)
-    assert not discover.is_short('Full Fight！ターゲットNo.104', 900)
-    assert discover.classify_video_type('【ブルーワンvsイスカン・アステ】…フルファイト！！') == 'full_fight'
-    assert discover.classify_video_type('第7回MAXバウトライト級GP一回戦ダイジェスト') == 'highlight'
+def test_discover_script_imports(repo_root):
+    load_module('discover_youtube_videos', repo_root / 'scripts' / 'discover_youtube_videos.py')
+
+
+def test_shorts_and_types(youtube):
+    assert youtube.is_short('KOシーン！！#shorts', 30)
+    assert youtube.is_short('#アラカク #格闘技', 45)
+    assert not youtube.is_short('Full Fight！ターゲットNo.104', 900)
+    assert youtube.classify_video_type('【ブルーワンvsイスカン・アステ】…フルファイト！！') == 'full_fight'
+    assert youtube.classify_video_type('第7回MAXバウトライト級GP一回戦ダイジェスト') == 'highlight'
