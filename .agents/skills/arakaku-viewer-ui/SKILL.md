@@ -15,15 +15,24 @@ docs/assets/app.css             stylesheet (light/dark tokens on :root, phone la
 docs/sw.js                      Service Worker for docs/data/*.json (stale-while-revalidate + DATA_UPDATED)
 docs/assets/js/main.js          boot sequence
 docs/assets/js/config.js        DATA_FILES, PUBLIC_TABS / ADMIN_TABS, load phases, TAB_DATA_KEYS, REQUIRED_TAB_DATA_KEYS
-docs/assets/js/app/state.js     Store (UI state) + URL sync (PARAM_MAP)
-docs/assets/js/data/            data rules (parser, loader, repository, enricher, reliability, query, filters, labels)
-docs/assets/js/ui/shell.js      renders nav / counts / toolbar / filters / alerts and drives the lists
-docs/assets/js/ui/list.js       RecordList (progressive list with open rows and a keyboard cursor)
-docs/assets/js/ui/parts.js      shared HTML partials (badges, links, dl, folds, video facade, references, related bouts, profile)
-docs/assets/js/ui/sections/     one module per tab + admin.js + index.js (SECTIONS registry)
-docs/assets/js/ui/keyboard.js   shortcuts
+docs/assets/js/app/state.js     Store (UI state) only
+docs/assets/js/app/url_params.js  UI state <-> URL query (PARAM_MAP, readFromURL, searchStringFor, stateFromSearch; pure)
+docs/assets/js/app/history_sync.js HistorySync (pushState / replaceState, restore on popstate)
+docs/assets/js/app/sw_client.js Service Worker registration + DATA_UPDATED banner
+docs/assets/js/data/            data rules: parser, loader, raw_repository (RawRepository) + repository (DataRepository) and the
+                                modules split from it (relations, indexes, source_documents, source_lookup, event_dates,
+                                title_lineage, numbers_only, fighter_catalog, fighter_merge), enricher + enrich/{official,fighter,bout,media},
+                                names, reliability, query + search_text, filters, labels
+docs/assets/js/ui/shell.js      wires UI events, tab switches and jumps, and orders the renderers
+docs/assets/js/ui/render/       nav, stats, alerts (+ showFatalError), filter_chips, toolbar, list_view (ListView: gate + change detection)
+docs/assets/js/ui/search_box.js / theme.js / toast.js / video_embed.js   search input, theme toggle, toast, YouTube facade activation
+docs/assets/js/ui/list/         record_list.js (RecordList) + pure helpers paging / cursor / open_state / row_html
+docs/assets/js/ui/parts/        shared HTML partials: basic, links, bouts, videos, sources, fighters
+docs/assets/js/ui/sections/     one module per tab (8 public + 7 admin) + common.js + index.js (SECTIONS registry)
+docs/assets/js/ui/keyboard.js   shortcuts (KeyboardNav; the key -> action mapping is the pure keyToAction)
 docs/assets/js/ui/html.js       escapeHtml and formatting helpers
-docs/assets/js/ui/markdown.js   official news Markdown → HTML (links only for http(s); one-line <iframe>: tiget.net embedded, other hosts as links; tests: scripts/test_markdown.mjs)
+docs/assets/js/ui/markdown.js   official news Markdown → HTML (links only for http(s); one-line <iframe>: tiget.net embedded, other hosts as links; tests: tests/js/test_markdown.mjs)
+tests/js/test_*.mjs             Node unit tests (node:test, no DOM; tests/js/fixtures/fake_repo.mjs); `make validate` runs them
 docs/VIEWER_FEATURES.md         feature map (old implementation → new module, verification status)
 ```
 
@@ -75,7 +84,7 @@ Expected behavior:
 
 ### Section descriptors
 
-Each module in `ui/sections/` exports `{ id, label, placeholder, empty, build(ctx) }`. `build(ctx)` receives `{ state, repo, query, parts }` and returns a RecordList descriptor:
+Each module in `ui/sections/` exports `{ id, label, placeholder, empty, build(ctx) }`. `build(ctx)` receives `{ state, repo, query }` (sections import partials from `ui/parts/*.js` directly) and returns a RecordList descriptor:
 
 ```javascript
 {
@@ -91,19 +100,19 @@ Each module in `ui/sections/` exports `{ id, label, placeholder, empty, build(ct
 
 `validate_json.js` builds every section on the real data and renders every row's head and body in Node, so sections must not touch `document` / `window` and must never return `undefined` in HTML.
 
-### RecordList (`ui/list.js`)
+### RecordList (`ui/list/record_list.js`)
 
 - `setItems(desc)` on tab change: renders the first 30 rows; an IntersectionObserver sentinel (or the 「さらに表示」 button) appends the next chunk.
 - `refresh(desc)` on data / filter changes: keeps the rendered count and cursor; if the rendered keys are unchanged it only replaces heads/bodies whose HTML changed (open `<details>` survive), otherwise it rebuilds.
-- Open state is per key (`#openState`), so a row stays open across refreshes and tab switches.
+- Open state is per key (`OpenState` in `ui/list/open_state.js`), so a row stays open across refreshes and tab switches.
 - Cursor: `moveCursor`, `setCursorToEdge`, `toggleCursor`, `getCursorEl`. Clicking a row sets the cursor index without painting the outline.
 
-### Shell (`ui/shell.js`)
+### Shell (`ui/shell.js`) and renderers (`ui/render/`)
 
-- `state.subscribe(() => shell.render())` is the only re-render path. `render()` is idempotent: nav updates `aria-current`, filters re-render only when their fingerprint changes, the list rebuilds only when tab / `repo.revision` / fingerprint / gate changed.
-- Render gate: `REQUIRED_TAB_DATA_KEYS[tab]` missing → 「読み込み待ち…」/「読み込み中…」 status; the fighters tab additionally waits for `numbersFighters` + `numbersNameMatches` so the 名鑑 order is final before the first paint.
-- Counts (`#counts()`): 試合/動画 use raw lengths (+ numbers-only rows once `numbersFightRecords` is loaded); 選手 uses `richFighters.length` only after fighters/numbersFighters/numbersNameMatches/officialPlayers are loaded; 出典 / 出典候補 show `…` until loaded.
-- Deep links: when `state.hasFocus` and the section yields exactly one item, the row is opened and the page scrolled to top — once per focus key, after the data has arrived.
+- `state.subscribe(() => shell.render())` is the only re-render path. `render()` is idempotent and calls each renderer in turn: `NavRenderer` updates `aria-current`, `FiltersRenderer` re-renders only when its fingerprint changes, `ListView` rebuilds only when tab / `repo.revision` / fingerprint / gate changed.
+- Render gate (`ListView`, `listGate`): `REQUIRED_TAB_DATA_KEYS[tab]` missing → 「読み込み待ち…」/「読み込み中…」 status; the fighters tab additionally waits for `numbersFighters` + `numbersNameMatches` so the 名鑑 order is final before the first paint.
+- Counts (`ui/render/stats.js` `dataCounts`): 試合/動画 use raw lengths (+ numbers-only rows once `numbersFightRecords` is loaded); 選手 uses `richFighters.length` only after fighters/numbersFighters/numbersNameMatches/officialPlayers are loaded; 出典 / 出典候補 show `…` until loaded.
+- Deep links (`ListView`): when `state.hasFocus` and the section yields exactly one item, the row is opened and the page scrolled to top — once per focus key, after the data has arrived.
 
 ---
 
@@ -118,7 +127,7 @@ Phase 2  ENRICHMENT_DATA_KEYS + PUBLIC_REFERENCE_DATA_KEYS in one parallel pool
 on demand loadForTab(tab) → TAB_DATA_KEYS[tab]         sourceDocumentBodies (tsushin/sources), sourceMentions (mentions)
 ```
 
-- Failure semantics are per key: fallback value (`data/parser.js` `fallbackForDataKey`) + `dataLoadErrors[key]` + `loadedDataKeys.add(key)`; `load()` never rejects because of one file. `Shell #renderAlerts` shows the failed file names (`role="alert"`).
+- Failure semantics are per key: fallback value (`data/parser.js` `fallbackForDataKey`) + `dataLoadErrors[key]` + `loadedDataKeys.add(key)`; `load()` never rejects because of one file. `AlertsRenderer` (`ui/render/alerts.js`) shows the failed file names (`role="alert"`).
 - `loadingDataKeys` tracks every in-flight key. The toolbar shows 読み込み中 n/m, where m = files already loaded + files still loading (only the files requested so far, not a fixed total).
 - `CORE_DATA_KEYS = INITIAL + PRIMARY + ENRICHMENT` is what `validate_json.js` asserts after `load()`.
 - Object-shaped JSON (`aliases`, `metadata`) is listed in `DATA_FILES` but not in any phase (nothing reads it); array keys that parse to a non-array are treated as broken files.
@@ -132,9 +141,9 @@ One `DataRepository` per page (`state.repository`), created by `ensureStateData(
 
 ## Filters, search, URL
 
-- Filters: `data/filters.js` `TAB_FILTERS` (see the **arakaku-filters** skill). `Shell #renderFilters` draws chips (`.chip`, `data-filter-type` / `data-filter-val`), clicks toggle `state[group.stateKey]`.
+- Filters: `data/filters.js` `TAB_FILTERS` (see the **arakaku-filters** skill). `FiltersRenderer` (`ui/render/filter_chips.js`) draws chips (`.chip`, `data-filter-type` / `data-filter-val`); clicks (handled in `Shell.bind()`) toggle `state[group.stateKey]`.
 - Search: `data/query.js` `QueryMatcher(state, () => repo)`; each section calls the matching `*Matches` method. The cache is keyed by `repo.revision`.
-- URL: `app/state.js` `PARAM_MAP` (unchanged short names plus `bout`). `writeToURL` uses `pushState` when the tab or the focus target (fighter / event / bout) changes and `replaceState` for search and filter changes; it omits defaults and skips identical URLs. `main.js`'s `popstate` handler restores the previous view via `stateFromHistory`, so browser Back/Forward work (see `docs/VIEWER_FEATURES.md` row C3).
+- URL: `app/url_params.js` `PARAM_MAP` (unchanged short names plus `bout`). `HistorySync.write` (`app/history_sync.js`) uses `pushState` when the tab or the focus target (fighter / event / bout) changes and `replaceState` for search and filter changes; it omits defaults and skips identical URLs. `main.js`'s `popstate` handler restores the previous view via `HistorySync.restore` (`stateFromSearch`), so browser Back/Forward work (see `docs/VIEWER_FEATURES.md` row C3).
 
 ---
 
