@@ -110,7 +110,7 @@ def test_build_bouts_derives_matchup_winner_and_loser_from_participants():
     assert decided["fighters"][0]["fighter_id"] is None and decided["fighters"][0]["corner"] == "赤"
     assert (decided["winner"], decided["winner_id"], decided["loser"], decided["loser_id"]) == ("赤井", None, "青木", "b")
     assert decided["result_status"] == "unknown"  # an empty result_status is left for the validator to judge
-    assert decided["result"]["round"] == 2 and decided["result"]["time"] == ""
+    assert decided["result"]["round"] == 2 and decided["result"]["time"] is None  # 空は null (T.112.4.8)
     assert decided["source_article_id"] == "result"
     assert unknown["winner"] is None and unknown["loser_id"] is None
     assert unknown["fighters"][0]["result"] == "unknown"
@@ -195,3 +195,13 @@ def test_build_titles_does_not_crash_on_a_non_numeric_reign_order():
     reigns = [{"reign_id": f"r{order}", "title_id": "t", "reign_order": order} for order in ("x", "10", "2", "")]
     [title] = titles.build_titles([{"title_id": "t", "promotion_id": "target", "division": "ライト級"}], reigns)
     assert [r["reign_id"] for r in title["lineage"]] == ["r", "r2", "r10", "rx"]
+
+
+def test_empty_bout_result_and_title_cells_become_null():
+    # 以前は time・method_*・technique・decision_score・title_id・title_result だけ空を "" で出していた (T.112.4.8)。
+    from arakaku.build.bouts import _bout_result, _bout_title
+    row = {"round": "", "time": "", "method_raw": "", "method_normalized": "", "technique": "", "decision_score": "",
+           "is_title_bout": "", "title_id": "", "title_result": "", "title_note": ""}
+    assert set(_bout_result(row).values()) == {None}
+    title = _bout_title(row)
+    assert (title["title_id"], title["title_result"]) == (None, None)
