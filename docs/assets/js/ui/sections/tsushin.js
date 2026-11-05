@@ -43,7 +43,7 @@ export const tsushinSection = {
     const withFilterFields = (doc) => {
       const article = repo.findArticle(doc.source_ref_id);
       const divisions = [...new Set(
-        repo.findManyByField("articleLinks", "article_id", doc.source_ref_id)
+        repo.articleLinksForArticle(doc.source_ref_id)
           .filter((l) => l.entity_type === "bout")
           .map((l) => repo.findBout(l.entity_id)?.division)
           .filter(Boolean)

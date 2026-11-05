@@ -47,6 +47,12 @@ export class RawRepository {
     return this.#indexes.group(`${collectionName}:${fieldName}:many`, records, (r) => r[fieldName]).get(value) ?? [];
   }
 
+  /**
+   * 記事 1 本から出ているリンク (article_links.json)。getter を文字列 ("articleLinks") でしか参照しないと
+   * 使われていないように見えて消されかけたので、名前つきのメソッドにする (T.112.4.26)。
+   */
+  articleLinksForArticle(articleId) { return this.findManyByField("articleLinks", "article_id", articleId); }
+
   /** 生 JSON の配列をそのまま (整形・enrich せず) 返す */
   raw(key) { return this.data[key] ?? []; }
 
