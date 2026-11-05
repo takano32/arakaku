@@ -45,6 +45,9 @@ export function filterRows(state, groups, mentionTypes = null) {
 export class FiltersRenderer {
   #el;
   #prevKey = "";
+  // 言及の種別の一覧 (2,500 件余りを写して並べる) はデータが変わったときだけ作り直す。以前は 1 文字打つたびに
+  // 作っていた (T.112.4.22)。
+  #mentionTypes = { revision: null, types: [] };
 
   constructor(el = document.querySelector("#filters")) {
     this.#el = el;
@@ -55,12 +58,19 @@ export class FiltersRenderer {
     if (!el) return;
     const groups = TAB_FILTERS[state.tab] ?? [];
     const isMentions = state.tab === "mentions";
-    const mentionTypes = isMentions ? sortMentionTypes(repo.richSourceMentions.map((m) => m.mention_type)) : [];
+    const mentionTypes = isMentions ? this.#mentionTypesFor(repo) : [];
     const key = [state.tab, state.mentionType, mentionTypes.join(","), ...groups.map((g) => state[g.stateKey])].join("\0");
     if (key === this.#prevKey) return;
     this.#prevKey = key;
     const rows = filterRows(state, groups, isMentions ? mentionTypes : null);
     el.hidden = rows.length === 0;
     el.innerHTML = rows.join("");
+  }
+
+  #mentionTypesFor(repo) {
+    if (this.#mentionTypes.revision !== repo.revision) {
+      this.#mentionTypes = { revision: repo.revision, types: sortMentionTypes(repo.richSourceMentions.map((m) => m.mention_type)) };
+    }
+    return this.#mentionTypes.types;
   }
 }
