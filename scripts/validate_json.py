@@ -18,7 +18,7 @@ import sys
 import urllib.parse
 from typing import Any
 from arakaku.utils import DATA_SRC, DOCS_DATA, load_json, read_csv
-from arakaku.validation import (
+from arakaku.validation.vocab import (
     VALID_METHODS,
     VALID_VIDEO_TYPES,
     VALID_VIDEO_LINK_STATUSES,
