@@ -353,7 +353,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
 5. Fable が最終レビューをする（T.112.3.5）。
 6. T.112.4 のバグを 1 件ずつ直す（挙動が変わるので、リファクタリングとは別のコミットにする）。
 
-- [ ] T.112.1 Python のスクリプトとパッケージを分割し、単体テストを足す
+- [x] T.112.1 Python のスクリプトとパッケージを分割し、単体テストを足す（2026-11-05。子はすべて完了）
   - [x] T.112.1.1 `arakaku/utils.py` を `paths.py`・`io.py`・`text.py`・`csvmap.py` に分け、各スクリプトの import を移す（ece9f62・2db67ad、2026-11-05）
   - [x] T.112.1.2 JSON の組み立てを `arakaku/build/`（canonical・relations・numbers・official）に移し、build_json.py が import 時に CSV を読む処理（`RESULT_PUBLISHED_AT` など）をなくす。単体テスト test_11_build_canonical.py（9c21e64・021ae96、2026-11-05）
   - [x] T.112.1.3 検証を `arakaku/validation/`（runner・report・entities・links・rules・sources・official・numbers・archives・locate・common・vocab）に移す。単体テスト test_21_validation_units.py（cafc86f・1dc1afd・12eda30、2026-11-05）
@@ -490,17 +490,17 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
 - [ ] T.112.4 リファクタリング中に見つけたバグを、1 件ずつ別のコミットで直す。2026-11-05 に、2 本の引き継ぎの報告と 2 本のレビューから集めた。どれもリファクタリング前の master からある（マージ前のバグ T.112.1.11 は除く）。直すと出力や挙動が変わるので、データが変わるものは生成物を別のコミットにし、ビューアの挙動が変わるものは docs/VIEWER_FEATURES.md も直す
   - [x] T.112.4.1 【Python・高】`build_source_documents.py` は、`tmp/` にキャッシュが無いと終了コード 0 のまま `data-src/source_documents.csv`（27,913 行が 1 行になる）と `source_mentions.csv` を切り詰めてしまう（master で再現済み）。文書が 0 件のときは `SystemExit("[error] no cached sources under tmp/; refusing to overwrite …")` で書かないようにするか、`build-sources` を `check-stage1-inputs` に依存させる（6e92fc8・94d6f67、2026-11-05）。note と YouTube のどちらかが 0 件なら書かずに止まる。キャッシュがあるときの出力は値も件数も変わらない
   - [x] T.112.4.2 【Python】`review/note_results.py:50,144`（元の `match_unknown_bouts_to_note_results.py:58-68, 219-233`）。名前の表記の集合を set の順で回すので、同じ note に 2 つの表記（例: わく・ワク）が別の行範囲で記号付きで出ると、引用する行が実行ごとに変わりうる（make check-generated が不安定になる）。今のデータでは起きない。名前を並べ替えた順で回す（28727f2・ab6939e、2026-11-05）。make check-generated で review の CSV が変わらないことを確かめた
-  - [ ] T.112.4.3 【Python】`apply_structured_result_patches.py` が `bouts.csv`・`bout_participants.csv` をそのまま `open("w")` で書いている。途中で落ちると正本のデータが切り詰められるので、`arakaku.io` の atomic な書き込みにする（表示の順番は変えない）
-  - [ ] T.112.4.4 【Python】`apply_structured_result_patches.py:107,109` の補いは、赤コーナー＝fighter_a を前提にしている。しかし作る側（`review/note_results.match_bouts`）の fighter_a は `bout_participants.csv` の最初の行で、赤とは限らない。今は名前の一致が先に当たるので害は無いが、名前が合わない手直しの行では勝者を取り違える。fighter_a・fighter_b の名前だけで決めるようにする
-  - [ ] T.112.4.5 【Python】`read_csv`（`arakaku/io.py:34-37`）は、data-src の外のファイル（`load_tables` が読む review の 3 つの CSV）が無いと `[warn]` を出して `[]` を返す。そのため review の CSV を消したり改名したりすると、`source_*_references.json` が空になったまま検証も通る。`load_tables` のこの 3 ファイルは、無ければエラーにする（`required=True`）
-  - [ ] T.112.4.6 【Python】`build/canonical.py:229` の王座の並べ替えキー `parse_int(...) or 0` は、数字でない `reign_order` のとき文字列を返す。そのため `sorted()` が `TypeError` で build ごと止まり、悪い行が報告されない。検証で報告するようにする（今のデータはすべて数字）
+  - [x] T.112.4.3 【Python】`apply_structured_result_patches.py` が `bouts.csv`・`bout_participants.csv` をそのまま `open("w")` で書いている。途中で落ちると正本のデータが切り詰められるので、`arakaku.io` の atomic な書き込みにする（表示の順番は変えない）（9dcf49f、2026-11-05）。表示の順番はそのまま
+  - [x] T.112.4.4 【Python】`apply_structured_result_patches.py:107,109` の補いは、赤コーナー＝fighter_a を前提にしている。しかし作る側（`review/note_results.match_bouts`）の fighter_a は `bout_participants.csv` の最初の行で、赤とは限らない。今は名前の一致が先に当たるので害は無いが、名前が合わない手直しの行では勝者を取り違える。fighter_a・fighter_b の名前だけで決めるようにする（4435a93・9dcf49f・e174732、2026-11-05）。名前が 1 人ずつ一致しない行は [warn] を出して何も当てない（補いで勝者を推測しない）
+  - [x] T.112.4.5 【Python】`read_csv`（`arakaku/io.py:34-37`）は、data-src の外のファイル（`load_tables` が読む review の 3 つの CSV）が無いと `[warn]` を出して `[]` を返す。そのため review の CSV を消したり改名したりすると、`source_*_references.json` が空になったまま検証も通る。`load_tables` のこの 3 ファイルは、無ければエラーにする（`required=True`）（4eb9bc9・3ef9960・d22841f、2026-11-05）
+  - [x] T.112.4.6 【Python】`build/canonical.py:229` の王座の並べ替えキー `parse_int(...) or 0` は、数字でない `reign_order` のとき文字列を返す。そのため `sorted()` が `TypeError` で build ごと止まり、悪い行が報告されない。検証で報告するようにする（今のデータはすべて数字）（44e23bf・a0f45b2・f1c3e26、2026-11-05）。数字でない値は検証で error にする
   - [x] T.112.4.7 【Python】titles と fighter_snapshots の ID の重複が 2 回報告される（`validation/runner.py:117,119` と `entities.py:161,216` の両方で `collect_ids` を呼んでいる）。1 回にする。あわせて `validation/runner.py:58-61` で `metadata.json` が 2 回挙がっているのを直す（1ae17fb・1346f26、2026-11-05）
   - [ ] T.112.4.8 【Python】bouts.json の空の扱いがそろっていない。`build/canonical.py:139` の `time`・`method_raw`・`method_normalized`・`technique`・`decision_score` と、`:150` の `title_id`・`title_result` は、空のセルを `""` で出す。ほかの列はすべて `none_if_empty` で `null` にしている。`null` にそろえる（bouts.json が変わるので、検証器・ビューア・validate_json.js が両方を空として扱うことを確かめてから）
   - [x] T.112.4.9 【Python】`sources/documents.py:98` の `video.get("published_at") or cached["upload_date"]` は、videos.csv に `published_at` 列が無いので、CSV の値が勝つことはない。「正本の値を優先する」というコメントもこの列については誤り。死んだ分岐を消す（827138d・a99eff4、2026-11-05）。source_documents.csv の値は変わらない
-  - [ ] T.112.4.10 【Python】`notes/crawl.py:97-106` の `infer_article_type` が、`notes/articles.py` では作らず、検証もしない `title_history` という値を出す。この値は、キャッシュされず再生成もされない取得行に残る。語彙をそろえるか、`article_type` を検証する
+  - [x] T.112.4.10 【Python】`notes/crawl.py:97-106` の `infer_article_type` が、`notes/articles.py` では作らず、検証もしない `title_history` という値を出す。この値は、キャッシュされず再生成もされない取得行に残る。語彙をそろえるか、`article_type` を検証する（387916c・25d1b73・8fe195a、2026-11-05）。promotion_profile にそろえ、article_type を検証する
   - [x] T.112.4.11 【Python】`notes/articles.py:89` は、タイトルに「｜」があるときだけ `.strip()` する（`classify_article` は常に strip する）。直す前に、articles.csv に前後の空白があるかを確かめる（あれば出力が変わる）（59a796d・a99eff4、2026-11-05）。articles.csv に前後の空白のあるタイトルは無く、生成物は変わらない
-  - [ ] T.112.4.12 【Python】`arakaku/youtube.py:62-64` は、壊れたキャッシュの JSON を `[warn]` だけで飲み込んでいる（AGENTS.md の「広く例外を飲み込まない」に反する）。エラーにする
-  - [ ] T.112.4.13 【Python・小】細かいもの
+  - [x] T.112.4.12 【Python】`arakaku/youtube.py:62-64` は、壊れたキャッシュの JSON を `[warn]` だけで飲み込んでいる（AGENTS.md の「広く例外を飲み込まない」に反する）。エラーにする（fff741b・d9c5359、2026-11-05）
+  - [x] T.112.4.13 【Python・小】細かいもの（1d4ebd3・a260c8b・c837fca・a282b5b、2026-11-05）。archived_at の既存の行は、どの時間帯で書いたか分からない（+0900 の環境で書かれた）ので書き換えず、新しい行だけ UTC の時差つきにした。source_documents の並びは今のデータでは変わらない。`Report.warnings` は、消すと表示が変わるだけで得が無いので残す
     - `sources/archives.py:36` の `archived_at` は時差の無いローカル時刻で、`fetched_at` は UTC と時差つき。そろえる
     - `reorder_data.py:85` は `source_documents` を日付だけで並べ、同じ日付の順番を作る側に任せている。ID を第 2 キーにする
     - `notes/results.py:62` の `mark_a in WIN_MARKS` は、`"" in "○◯〇"` が真であることに依存している。明示的に書く
@@ -514,6 +514,6 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [ ] T.112.4.20 【ビューア・潜在】`data/source_lookup.js:18,48` の `forVideo` は、`doc.url`・`video.url` を生の値で登録して引く。そのため url の無い動画が、url の無い最初の YouTube の文書に当たる（`undefined === undefined`）。今は url の無い文書も動画も 0 件。`remember()` で `null` と `""` を登録せず、`forVideo` で `!video.url` のときは url で引かない。T.112.2.18 のテストも合わせて直す
   - [ ] T.112.4.21 【ビューア】`mention=` は値を検査しない（`VALID_FILTER_VALUES` に `mentionType` が無い）。そのため `?tab=mentions&mention=bogus` は 0 件（「該当する言及がありません」）なのに、select は一致する選択肢が無いので「すべての言及」と表示する。`isValidParam` で `MENTION_TYPE_ORDER` と照らし合わせる
   - [ ] T.112.4.22 【ビューア・性能】言及タブでは、`ui/render/filters.js:58` の `sortMentionTypes` が、状態が変わるたび（1 文字打つたび）に 2,527 件の言及を写して並べ替える。`repo.revision` で覚えておく
-  - [ ] T.112.4.23 【Python】`notes/matchups.py:81-96` の `extract_promotion_profile_fighters` は `nfkc(line)` に対して照合するが、NFKC で全角の括弧「（）」が「()」になるのに、コードは `（[^）]*）` を取り除き、MAXバウトの形式は `第N回名前（` を探している。そのため実データで、役割の注記が取れずに選手 ID に結びつかない（note-emperor の「むらき(ターゲットライト級王座統一)」「ユーナ・ガナ(2階級王者)」）。MAXバウトの王者の形式も一致せず、note-max-bout の団体紹介記事に選手のリンクが付かない。直すと article_links.csv が変わる（2026-11-05、Python 側の残りのリファクタリングで見つかった）
-  - [ ] T.112.4.24 【Python・潜在】`sources/documents.py:89` は、videos.csv に無い動画の ID を `youtube_<元の ID>` で作るが、videos.csv の ID は `youtube_<slugify した ID>`（小文字）。今は videos.csv に無い動画の文書は無いので表に出ない。`arakaku.youtube` の ID の作り方を共有する
+  - [x] T.112.4.23 【Python】`notes/matchups.py:81-96` の `extract_promotion_profile_fighters` は `nfkc(line)` に対して照合するが、NFKC で全角の括弧「（）」が「()」になるのに、コードは `（[^）]*）` を取り除き、MAXバウトの形式は `第N回名前（` を探している。そのため実データで、役割の注記が取れずに選手 ID に結びつかない（note-emperor の「むらき(ターゲットライト級王座統一)」「ユーナ・ガナ(2階級王者)」）。MAXバウトの王者の形式も一致せず、note-max-bout の団体紹介記事に選手のリンクが付かない。直すと article_links.csv が変わる（2026-11-05、Python 側の残りのリファクタリングで見つかった）（005661c・c7b06c3・3622dce、2026-11-05）。団体紹介の note から歴代王者へのリンクが 10 本増えた（note の行と照らして確かめた）
+  - [x] T.112.4.24 【Python・潜在】`sources/documents.py:89` は、videos.csv に無い動画の ID を `youtube_<元の ID>` で作るが、videos.csv の ID は `youtube_<slugify した ID>`（小文字）。今は videos.csv に無い動画の文書は無いので表に出ない。`arakaku.youtube` の ID の作り方を共有する（e039e46・fd81ce3、2026-11-05）。今のデータでは変わらない
 - [x] T.112.5 `.claude/worktrees/` を .gitignore に入れる（47f4ec7、2026-11-05）。今は master の作業ツリーで `.claude/` が未追跡として出ていて、`git add -A` で worktree を誤ってコミットするおそれがある
