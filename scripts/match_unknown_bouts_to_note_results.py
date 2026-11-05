@@ -23,7 +23,7 @@ from arakaku.review.note_results import (
     note_bodies,
     numbers_detail_by_pair,
     numbers_winners,
-    participants_by_bout,
+    participant_pairs_by_bout,
     result_notes_by_event,
 )
 
@@ -37,7 +37,7 @@ def main() -> int:
     participants = read_csv(DATA_SRC / "bout_participants.csv")
     records = read_json(DOCS_DATA / "numbers_fight_records.json")
     ctx = NoteMatchContext(
-        participants=participants_by_bout(participants),
+        participants=participant_pairs_by_bout(participants),
         events={e["event_id"]: e for e in read_csv(DATA_SRC / "events.csv")},
         result_notes=result_notes_by_event(read_csv(DATA_SRC / "article_links.csv"), read_csv(DATA_SRC / "articles.csv")),
         bodies=note_bodies(read_json(DOCS_DATA / "source_document_bodies.json")),

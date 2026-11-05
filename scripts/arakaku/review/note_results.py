@@ -59,7 +59,9 @@ def names_by_fighter(fighters: list[CsvRow], aliases: list[CsvRow], participants
     return names
 
 
-def participants_by_bout(participants: list[CsvRow]) -> dict[str, list[CsvRow]]:
+def participant_pairs_by_bout(participants: list[CsvRow]) -> dict[str, list[CsvRow]]:
+    """bout_participants.csv のファイルの順のまま (並べ替えない)。この順が fighter_a・fighter_b の列を決める。
+    赤・青の順に並べる build/relations.participants_by_bout とは別物。"""
     by_bout: dict[str, list[CsvRow]] = collections.defaultdict(list)
     for p in participants:
         by_bout[p["bout_id"]].append(p)
