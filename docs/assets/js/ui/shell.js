@@ -1,9 +1,8 @@
-import { DEFAULT_ADMIN_TAB, DEFAULT_TAB, REQUIRED_TAB_DATA_KEYS } from "../config.js";
-import { FILTER_STATE_KEYS, TAB_FILTERS } from "../data/filters.js";
-import { escapeHtml } from "./html.js";
-import { RecordList } from "./list.js";
+import { DEFAULT_ADMIN_TAB, DEFAULT_TAB } from "../config.js";
+import { TAB_FILTERS } from "../data/filters.js";
 import { AlertsRenderer } from "./render/alerts.js";
 import { FiltersRenderer } from "./render/filters.js";
+import { ListView } from "./render/list_view.js";
 import { NavRenderer } from "./render/nav.js";
 import { StatsRenderer } from "./render/stats.js";
 import { ToolbarRenderer } from "./render/toolbar.js";
@@ -17,8 +16,7 @@ import { activateVideoFacade } from "./video_embed.js";
  *
  * - state.subscribe → render() が唯一の再描画経路。render() は冪等で、各レンダラ (ui/render/*.js) が
  *   変化した部分だけ DOM を触る (ナビは aria-current の更新だけ、絞り込みは指紋が変わったときだけ、
- *   一覧はタブ・repo.revision・指紋のいずれかが変わったときだけ build する)。
- * - 一覧はタブごとに 1 つの RecordList を保持し、タブを切り替えても開閉状態と描画済み件数を保つ。
+ *   一覧 (ListView) はタブ・repo.revision・指紋のいずれかが変わったときだけ build する)。
  * - 選手/大会/試合リンク (ui/parts/links.js の data-* 属性) と YouTube ファサードのクリックは
  *   #list-host への委譲で受ける。
  * - 検索欄 (ui/search_box.js)・配色 (ui/theme.js)・通知 (ui/toast.js) は部品として持つ。
@@ -26,7 +24,6 @@ import { activateVideoFacade } from "./video_embed.js";
 export class Shell {
   #state;
   #loader;
-  #query;
   #searchBox;
   #theme = new ThemeToggle();
   #toast = new Toast();
@@ -35,22 +32,16 @@ export class Shell {
   #alerts = new AlertsRenderer();
   #filters = new FiltersRenderer();
   #toolbar = new ToolbarRenderer();
-  #lists = new Map();
-  #currentTab = null;
-  #prevRevision = new Map();
-  #prevFingerprint = new Map();
-  #prevGate = new Map();
-  #prevFocusKey = "";
-  #prevSortReady = new Map();
+  #listView;
+  // 管理ビューの開閉 (ビュー切替) で、離れる前の各ビューの最後のタブへ戻すための記憶
   #prevPublicTab = DEFAULT_TAB;
   #prevAdminTab = DEFAULT_ADMIN_TAB;
-  #lastCount = -1;
 
   constructor({ state, loader, query, searchBox }) {
     this.#state = state;
     this.#loader = loader;
-    this.#query = query;
     this.#searchBox = searchBox;
+    this.#listView = new ListView({ query });
   }
 
   get state() { return this.#state; }
@@ -159,8 +150,9 @@ export class Shell {
     this.#state.patch({ query: "" });
   }
 
+  /** 現在のタブの RecordList (キーボード操作用。まだ描いていなければ null) */
   currentList() {
-    return this.#lists.get(this.#state.tab) ?? null;
+    return this.#listView.listFor(this.#state.tab);
   }
 
   toast(message) {
@@ -179,90 +171,9 @@ export class Shell {
     this.#stats.render(state, this.repo);
     this.#alerts.render(state.dataLoadErrors);
     this.#filters.render(state, this.repo);
-    this.#renderList();
+    this.#listView.render(state, this.repo);
     const section = SECTIONS[state.tab];
-    this.#toolbar.render({ state, repo: this.repo, section, count: this.#lastCount });
-    // 一覧がまだ描けていない間だけ aria-busy (描けた後の補完データの読み込み中は busy にしない)。
-    document.querySelector("#list-host")?.setAttribute("aria-busy", state.loadingDataKeys.size && this.#lastCount < 0 ? "true" : "false");
+    this.#toolbar.render({ state, repo: this.repo, section, count: this.#listView.count });
     this.#searchBox.setPlaceholder(section?.placeholder);
-  }
-
-  #fingerprint() {
-    const s = this.#state;
-    return [s.query, s.focusFighterId, s.focusEventId, s.focusBoutId, s.mentionType, ...FILTER_STATE_KEYS.map((k) => s[k])].join("\0");
-  }
-
-  #renderList() {
-    const host = document.querySelector("#list-host");
-    if (!host) return;
-    const state = this.#state;
-    const tabId = SECTIONS[state.tab] ? state.tab : DEFAULT_TAB;
-    const section = SECTIONS[tabId];
-
-    if (!this.#lists.has(tabId)) this.#lists.set(tabId, new RecordList());
-    const list = this.#lists.get(tabId);
-    const tabChanged = tabId !== this.#currentTab;
-    if (tabChanged || list.el.parentNode !== host) {
-      host.replaceChildren(list.el);
-      this.#currentTab = tabId;
-    }
-
-    // 描画ゲート: 必須データが未着ならプレースホルダだけ出す
-    const required = REQUIRED_TAB_DATA_KEYS[tabId] ?? [];
-    const missing = required.filter((k) => !state.loadedDataKeys.has(k));
-    const gateKey = missing.join(",");
-    // 選手タブは名鑑順ソートに必要なキーが揃うまで待ち、揃ったら 1 回だけ描画する
-    const sortReady = tabId !== "fighters" || ["numbersFighters", "numbersNameMatches"].every((k) => state.loadedDataKeys.has(k));
-    if (missing.length > 0 || !sortReady) {
-      const loading = missing.some((k) => state.loadingDataKeys.has(k)) || !sortReady;
-      list.setItems({ items: [], keyOf: () => "", renderHead: () => "", renderBody: () => "" });
-      list.setStatus({ loading: true, emptyMessage: loading ? "読み込み中…" : "読み込み待ち…" });
-      this.#prevGate.set(tabId, gateKey);
-      this.#prevSortReady.set(tabId, sortReady);
-      this.#prevRevision.set(tabId, null);
-      this.#lastCount = -1;
-      return;
-    }
-
-    const revision = this.repo.revision;
-    const fingerprint = this.#fingerprint();
-    const focusKey = [state.focusFighterId, state.focusEventId, state.focusBoutId].join("\0");
-    const focusChanged = focusKey !== this.#prevFocusKey;
-    const gateChanged = gateKey !== this.#prevGate.get(tabId) || sortReady !== this.#prevSortReady.get(tabId);
-    const changed = tabChanged || gateChanged || revision !== this.#prevRevision.get(tabId) || fingerprint !== this.#prevFingerprint.get(tabId);
-    list.setStatus({ loading: state.loadingDataKeys.size > 0, emptyMessage: section.empty });
-    if (!changed) return;
-
-    let desc;
-    try {
-      desc = section.build({ state, repo: this.repo, query: this.#query });
-    } catch (err) {
-      console.error(`Shell: section "${tabId}" failed to build`, err);
-      host.innerHTML = `<div class="alert" role="alert"><p class="alert-title">描画エラー (${escapeHtml(tabId)})</p><p>${escapeHtml(err.message)}</p></div>`;
-      this.#currentTab = null;
-      return;
-    }
-
-    if (tabChanged || gateChanged || this.#prevRevision.get(tabId) == null) {
-      list.setItems(desc);
-    } else {
-      list.refresh(desc);
-    }
-    // フォーカス (特定レコードへのジャンプ) は 1 件を開いた状態で先頭に出す。
-    // データ到着前はまだ見つからないので、見つかった描画で初めて「処理済み」にする。
-    if (state.hasFocus) {
-      if (focusChanged && desc.items.length === 1) {
-        list.openByKey(desc.keyOf(desc.items[0]));
-        window.scrollTo({ top: 0, behavior: "instant" });
-        this.#prevFocusKey = focusKey;
-      }
-    } else {
-      this.#prevFocusKey = focusKey;
-    }
-    this.#lastCount = desc.items.filter((item) => !desc.isHeader?.(item)).length;
-    this.#prevRevision.set(tabId, revision);
-    this.#prevFingerprint.set(tabId, fingerprint);
-    this.#prevGate.set(tabId, gateKey);
-    this.#prevSortReady.set(tabId, sortReady);
   }
 }
