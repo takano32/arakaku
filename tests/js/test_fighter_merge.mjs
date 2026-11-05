@@ -31,8 +31,11 @@ test("団体が矛盾する組は統合せず、それぞれ merged_fighter_ids 
   const b = { fighter_id: "b", display_name: "同名", main_promotion_id: "emperor" };
   const { survivors, aliasIndex } = mergeDuplicateFighters([a, b], new Set(["a", "b"]));
   assert.deepEqual(survivors.map((f) => f.fighter_id), ["a", "b"]);
-  assert.deepEqual(a.merged_fighter_ids, ["a"]);
-  assert.equal(aliasIndex.get("b"), b);
+  assert.deepEqual(survivors[0].merged_fighter_ids, ["a"]);
+  assert.equal(aliasIndex.get("b"), survivors[1]);
+  // 入力 (生の行のことがある) は変更しない (T.112.4.19)
+  assert.equal("merged_fighter_ids" in a, false);
+  assert.equal("merged_fighter_ids" in b, false);
 });
 
 test("survivor は canonical 優先、次に関連 (動画 + 記事) の多さ、次に名鑑ありで決める", () => {
