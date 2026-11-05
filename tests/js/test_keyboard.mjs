@@ -3,8 +3,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { PUBLIC_TABS } from "../../docs/assets/js/config.js";
-import { keyToAction } from "../../docs/assets/js/ui/keyboard.js";
+import { ADMIN_TABS, PUBLIC_TABS } from "../../docs/assets/js/config.js";
+import { keyToAction, nextTabId } from "../../docs/assets/js/ui/keyboard.js";
 
 const name = (input) => keyToAction(input)?.name ?? null;
 
@@ -63,6 +63,17 @@ test("修飾キー付きは ? と Esc も含めて無視する (Shift は ? の�
   assert.equal(name({ key: "Escape", metaKey: true, hasQuery: true }), null);
   assert.equal(name({ key: "Escape", ctrlKey: true, dialogOpen: true }), null);
   assert.equal(name({ key: "?", shiftKey: true }), "toggleHelp");
+});
+
+test("nextTabId は公開タブを前後に移り、端では反対側へ回る。管理タブからは公開の先頭/末尾へ", () => {
+  const ids = PUBLIC_TABS.map(([id]) => id);
+  const last = ids.length - 1;
+  assert.equal(nextTabId(ids[0], 1), ids[1]);
+  assert.equal(nextTabId(ids[1], -1), ids[0]);
+  assert.equal(nextTabId(ids[last], 1), ids[0]);
+  assert.equal(nextTabId(ids[0], -1), ids[last]);
+  assert.equal(nextTabId(ADMIN_TABS[0][0], 1), ids[0]);
+  assert.equal(nextTabId(ADMIN_TABS[0][0], -1), ids[last]);
 });
 
 test("ボタン・リンク・summary の上の Enter と Space はブラウザに任せる", () => {
