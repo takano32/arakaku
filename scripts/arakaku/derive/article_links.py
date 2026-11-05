@@ -9,7 +9,7 @@
 #   - 同一 (記事, エンティティ種別, エンティティID) の重複リンクは 1 本に畳む。
 #   - article_type の値（event_card/event_result/promotion_profile）は arakaku/notes/articles.py の
 #     分類と同期していること。
-#   - 動画リンクはここで作らない（note HTML に YouTube ID が無いため）。それは scripts/generate_video_links.py。
+#   - 動画リンクはここで作らない（note HTML に YouTube ID が無いため）。それは derive/video_links.py。
 # 関連スキル: .agents/skills/arakaku-source-pipeline
 from __future__ import annotations
 
