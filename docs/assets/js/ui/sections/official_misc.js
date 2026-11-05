@@ -21,11 +21,14 @@ export const officialMiscSection = {
   placeholder: "トーナメント・試合・沿革で検索",
   empty: "該当する公式データがありません。",
   build({ repo, query }) {
+    // 検索は元のレコードで行う。足した _type・_key で検索すると「tournament」「h:」などで全件が当たっていた (T.112.6.3)。
     const items = [
-      ...repo.officialTournaments.map((t) => ({ _type: "tournament", _key: `t:${t.id}`, ...t })),
-      ...repo.officialMatches.map((m) => ({ _type: "match", _key: `m:${m.id}`, ...m })),
-      ...repo.officialHistory.map((h, i) => ({ _type: "history", _key: `h:${i}`, ...h })),
-    ].filter((item) => query.includes(Object.values(item).filter((v) => typeof v === "string" || typeof v === "number")));
+      ...repo.officialTournaments.map((t) => [t, { _type: "tournament", _key: `t:${t.id}`, ...t }]),
+      ...repo.officialMatches.map((m) => [m, { _type: "match", _key: `m:${m.id}`, ...m }]),
+      ...repo.officialHistory.map((h, i) => [h, { _type: "history", _key: `h:${i}`, ...h }]),
+    ]
+      .filter(([record]) => query.includes(Object.values(record).filter((v) => typeof v === "string" || typeof v === "number")))
+      .map(([, item]) => item);
     return {
       items,
       keyOf: (item) => item._key,
