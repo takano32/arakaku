@@ -26,6 +26,22 @@ import { fallbackForDataKey, parseDataFileEntries, parseJsonText } from "./parse
  * 引数順を変えないこと (ブラウザ実装は fallback を無視して失敗時に throw する)。
  */
 
+/**
+ * 取得した 1 ファイルのテキストを解析する (純関数)。配列のキーに配列以外が来たら壊れたファイルとして扱う
+ * (消費側が .map/.filter 前提のため)。失敗したときは value に空のフォールバック、error に理由を入れる。
+ * @returns {{ value: unknown, error: string|null }}
+ */
+export function applyLoadedText(key, text) {
+  try {
+    const parsed = parseJsonText(text, key);
+    const fallbackIsArray = Array.isArray(fallbackForDataKey(key));
+    if (fallbackIsArray && !Array.isArray(parsed)) throw new Error("配列 JSON ではありません");
+    return { value: parsed, error: null };
+  } catch (error) {
+    return { value: fallbackForDataKey(key), error: error.message };
+  }
+}
+
 async function fetchJsonText(path) {
   const response = await fetch(path);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -128,16 +144,15 @@ export class DataLoader {
   async #loadKeyProgressive(key) {
     this.state.loadingDataKeys.add(key);
     try {
-      const text = await this.fetchText(this.dataFiles[key], JSON.stringify(fallbackForDataKey(key)));
-      const parsed = parseJsonText(text, key);
-      // 配列キーに配列以外が来たら壊れたファイルとして扱う (消費側が .map/.filter 前提のため)
-      const fallbackIsArray = Array.isArray(fallbackForDataKey(key));
-      if (fallbackIsArray && !Array.isArray(parsed)) throw new Error("配列 JSON ではありません");
-      this.state.data[key] = parsed;
-      delete this.state.dataLoadErrors[key];
-    } catch (error) {
-      this.state.data[key] = fallbackForDataKey(key);
-      this.state.dataLoadErrors[key] = error.message;
+      let result;
+      try {
+        result = applyLoadedText(key, await this.fetchText(this.dataFiles[key], JSON.stringify(fallbackForDataKey(key))));
+      } catch (error) {
+        result = { value: fallbackForDataKey(key), error: error.message }; // 取得の失敗 (HTTP エラーなど)
+      }
+      this.state.data[key] = result.value;
+      if (result.error === null) delete this.state.dataLoadErrors[key];
+      else this.state.dataLoadErrors[key] = result.error;
     } finally {
       this.state.loadingDataKeys.delete(key);
       this.state.loadedDataKeys.add(key);
