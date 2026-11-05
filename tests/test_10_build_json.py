@@ -56,7 +56,7 @@ def test_read_csv_required_raises_outside_data_src(io_module, tmp_path):
 
 def test_load_tables_fails_when_a_review_candidate_csv_is_missing(repo_root, tmp_path):
     import shutil
-    from arakaku.build.relations import load_tables
+    from arakaku.build.io import load_tables
     review = tmp_path / "review"
     shutil.copytree(repo_root / "review", review)
     load_tables(review=review)

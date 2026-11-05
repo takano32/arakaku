@@ -1,8 +1,8 @@
 # 役割: 正規 JSON ビルド (build/canonical.py) の入力。Tables = 読み込んだ CSV の行、
 #   Relations = 関係テーブル (article_links / video_links / bout_participants / aliases / アーカイブ)
 #   から一度だけ作る索引。各ビルダは Relations 経由で派生情報を join する。
-# アーキ上の位置: load_tables だけが I/O (arakaku.io.read_csv) をし、それ以外は純粋関数。
-#   テストは Tables / Relations を小さな行リストから直接組み立てられる。
+# アーキ上の位置: 純粋関数だけを置く。CSV を読んで Tables を作る load_tables (I/O) は build/io.py
+#   (T.112.6.19)。テストは Tables / Relations を小さな行リストから直接組み立てられる。
 # 不変条件:
 #   - participants_by_bout は red を先, blue を次, それ以外 (未知の side) を末尾に固定する。
 #     matchup の "A vs B" 表示順と winner/loser の決め方がこれに依存する。
@@ -12,11 +12,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from arakaku.event_dates import event_note_dates
-from arakaku.io import read_csv
-from arakaku.paths import DATA_SRC, REVIEW
 from arakaku.schema import CsvRow
 
 
@@ -46,37 +43,6 @@ class Tables:
     source_event_references: list[CsvRow] = field(default_factory=list)
     source_bout_references: list[CsvRow] = field(default_factory=list)
     source_video_references: list[CsvRow] = field(default_factory=list)
-
-
-def load_tables(data_src: Path = DATA_SRC, review: Path = REVIEW) -> Tables:
-    def rows(name: str) -> list[CsvRow]:
-        return read_csv(data_src / name)
-
-    return Tables(
-        articles=rows("articles.csv"),
-        article_links=rows("article_links.csv"),
-        promotions=rows("promotions.csv"),
-        events=rows("events.csv"),
-        bouts=rows("bouts.csv"),
-        bout_participants=rows("bout_participants.csv"),
-        fighters=rows("fighters.csv"),
-        titles=rows("titles.csv"),
-        title_reigns=rows("title_reigns.csv"),
-        fighter_snapshots=rows("fighter_snapshots.csv"),
-        videos=rows("videos.csv"),
-        video_links=rows("video_links.csv"),
-        video_bout_links=rows("video_bout_links.csv"),
-        aliases=rows("aliases.csv"),
-        source_documents=rows("source_documents.csv"),
-        source_mentions=rows("source_mentions.csv"),
-        youtube_archives=rows("archives/youtube.csv"),
-        note_archives=rows("archives/note.csv"),
-        # review の候補 CSV は make generate-stage2 が作ってコミットしている。無いのに空として進めると
-        # source_*_references.json が空のまま検証も通るので、無ければエラー (T.112.4.5)。
-        source_event_references=read_csv(review / "source_event_reference_candidates.csv", required=True),
-        source_bout_references=read_csv(review / "source_bout_reference_candidates.csv", required=True),
-        source_video_references=read_csv(review / "source_video_reference_candidates.csv", required=True),
-    )
 
 
 def index_link_ids(links: list[CsvRow], id_field: str) -> dict[tuple[str, str], list[str]]:
