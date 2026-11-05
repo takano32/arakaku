@@ -15,7 +15,6 @@ from arakaku.io import load_json
 from arakaku.paths import DATA_SRC, DOCS_DATA
 
 from .archives import validate_archive_data
-from .common import collect_ids
 from .entities import (
     validate_articles,
     validate_bout_participants,
@@ -58,7 +57,7 @@ REQUIRED_JSON_FILES = {
 ALL_JSON_FILES = REQUIRED_JSON_FILES | {
     'article_links.json', 'titles.json', 'title_reigns.json',
     'bout_participants.json', 'fighter_snapshots.json', 'videos.json',
-    'video_links.json', 'aliases.json', 'metadata.json',
+    'video_links.json', 'aliases.json',
     'source_documents.json', 'source_document_bodies.json', 'source_mentions.json',
     'numbers_fighters.json', 'numbers_name_matches.json',
     'numbers_fight_records.json',
@@ -114,14 +113,14 @@ def validate_docs_data(docs_data: Path = DOCS_DATA) -> Report:
     event_ids = validate_events(report, events, promotion_ids, article_ids)
     fighter_ids = validate_fighters(report, fighters, promotion_ids, article_ids)
     bout_ids = validate_bouts(report, bouts, event_ids, promotion_ids, fighter_ids, article_ids)
-    title_ids = collect_ids(report, titles, 'titles.json', 'title_id')
     video_ids = validate_videos(report, videos, article_ids)
-    snapshot_ids = collect_ids(report, snapshots, 'fighter_snapshots.json', 'snapshot_id')
+    # titles と fighter_snapshots の ID はそれぞれのバリデータが 1 回だけ集める (T.112.4.7。以前は
+    # ここでも collect_ids を呼んでいたので、重複 ID が 2 回報告された)。
+    title_ids = validate_titles(report, titles, promotion_ids, fighter_ids, article_ids, video_ids)
+    snapshot_ids = validate_fighter_snapshots(report, snapshots, fighter_ids, event_ids, article_ids, promotion_ids, {x.get('slug') for x in official_news if isinstance(x, dict)})
     reign_ids = validate_title_reigns(report, title_reigns, title_ids, fighter_ids, event_ids, article_ids, video_ids)
 
-    validate_titles(report, titles, promotion_ids, fighter_ids, article_ids, video_ids)
     validate_bout_participants(report, bout_participants, bout_ids, fighter_ids)
-    validate_fighter_snapshots(report, snapshots, fighter_ids, event_ids, article_ids, promotion_ids, {x.get('slug') for x in official_news if isinstance(x, dict)})
     validate_video_links(report, video_links, video_ids, event_ids, bout_ids, fighter_ids, promotion_ids, title_ids)
     validate_article_links(report, article_links, article_ids, event_ids, bout_ids, fighter_ids, snapshot_ids, promotion_ids, title_ids, reign_ids, video_ids)
     validate_source_documents(report, source_documents)

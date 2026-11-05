@@ -157,8 +157,8 @@ def validate_bout_participants(report: Report, participants: list[Any], bout_ids
     return ids
 
 
-def validate_titles(report: Report, titles: list[Any], promotion_ids: set[str], fighter_ids: set[str], article_ids: set[str], video_ids: set[str] | None = None) -> None:
-    collect_ids(report, titles, 'titles.json', 'title_id')
+def validate_titles(report: Report, titles: list[Any], promotion_ids: set[str], fighter_ids: set[str], article_ids: set[str], video_ids: set[str] | None = None) -> set[str]:
+    title_ids = collect_ids(report, titles, 'titles.json', 'title_id')
     for i, x in enumerate(titles):
         if not isinstance(x, dict):
             continue
@@ -175,6 +175,7 @@ def validate_titles(report: Report, titles: list[Any], promotion_ids: set[str], 
                 report.error(f"titles.json[{i}].lineage[{j}]: unknown article reference: {aid}")
             if vid and video_ids is not None and vid not in video_ids:
                 report.error(f"titles.json[{i}].lineage[{j}]: unknown video reference: {vid}")
+    return title_ids
 
 
 def validate_title_reigns(report: Report, reigns: list[Any], title_ids: set[str], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], video_ids: set[str]) -> set[str]:
@@ -212,8 +213,8 @@ def validate_title_reigns(report: Report, reigns: list[Any], title_ids: set[str]
     return ids
 
 
-def validate_fighter_snapshots(report: Report, snapshots: list[Any], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], promotion_ids: set[str], official_news_slugs: set[str] | None = None) -> None:
-    collect_ids(report, snapshots, 'fighter_snapshots.json', 'snapshot_id')
+def validate_fighter_snapshots(report: Report, snapshots: list[Any], fighter_ids: set[str], event_ids: set[str], article_ids: set[str], promotion_ids: set[str], official_news_slugs: set[str] | None = None) -> set[str]:
+    snapshot_ids = collect_ids(report, snapshots, 'fighter_snapshots.json', 'snapshot_id')
     for i, x in enumerate(snapshots):
         if not isinstance(x, dict):
             continue
@@ -228,6 +229,7 @@ def validate_fighter_snapshots(report: Report, snapshots: list[Any], fighter_ids
             report.error(f"fighter_snapshots.json[{i}]: unknown article reference in source_id: {source_ref}")
         elif source_type == 'official_news' and official_news_slugs is not None and source_ref not in official_news_slugs:
             report.error(f"fighter_snapshots.json[{i}]: unknown official news reference in source_id: {source_ref}")
+    return snapshot_ids
 
 
 def validate_videos(report: Report, videos: list[Any], article_ids: set[str]) -> set[str]:
