@@ -7,7 +7,7 @@ import { videoRefs } from "../parts/videos.js";
 
 /** 王座タブ: 団体 → 階級で並べ、「団体 / 階級」の見出し行を挟む。各王座は歴代を開いた状態で見せる。 */
 // 最後の王者が返上・喪失していれば「現王者」ではなく空位 (T.89: ギタミン・アーロンは返上済み)。
-function championLabel(latest, isTournament) {
+export function championLabel(latest, isTournament) {
   if (isTournament) return `最新優勝: ${escapeHtml(latest.fighter_name)}`;
   if (latest.end_reason === "vacated") return `空位（${escapeHtml(latest.fighter_name)} が返上）`;
   if (latest.lost_at_event_id) return "空位";
