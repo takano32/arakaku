@@ -221,7 +221,7 @@ docs/sw.js
 - 一覧は最初の 30 行だけ描画され、スクロールすると続きが足される（「さらに表示」ボタンでも可）
 - Phase 2 エンリッチメント後にスクロール位置がリセットされず、開いていた行が閉じない
 - 検索クリア後に古い行が残らない
-- `ui/sections/*.js` の `build()` が `{ items, keyOf, renderHead, renderBody }` を返している
+- `ui/sections/*.js` の `build(ctx)`（ctx は `{ state, repo, query }`。部品は `ui/parts/*.js` から import）が `{ items, keyOf, renderHead, renderBody }` を返している
 - `config.js` の `PRIMARY_DATA_KEYS` / `ENRICHMENT_DATA_KEYS` に追加したキーが入っている
 - `validate_json.js` が通る（`node scripts/validate_json.js`。全セクションの全行を Node で描画する）
 - スマートフォン幅で横スクロールが出ない

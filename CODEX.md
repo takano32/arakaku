@@ -49,7 +49,7 @@ GitHub Pages viewer で以下を確認済みです。
 ```text
 公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画 / 出典本文 / 出典言及 / 名鑑・公式の管理セクション
 関連出典候補 / 本文・概要欄の折りたたみ / archive 由来の動画・記事メタデータ補助表示
-段階描画する一覧（docs/assets/js/ui/list.js、CDN 依存なし）
+段階描画する一覧（docs/assets/js/ui/list/record_list.js、CDN 依存なし）
 ファイル単位の段階ロード（Phase 0 公式 → Phase 1 一覧データ → Phase 2 補完・出典候補 → タブ別遅延）
 ```
 
@@ -351,7 +351,7 @@ pytest passed
 - 公式セクションが先に出て、他のデータが届くたびに件数が増える
 - Phase 2 エンリッチメント後にスクロール位置がリセットされず、開いていた行が閉じない
 - 検索クリア後（アイテム数が増加するフィルタ変更後）に古い内容が残らない
-- `ui/sections/*.js` の `build()` が `{ items, keyOf, renderHead, renderBody }` を返している（HTML 文字列ではない）
+- `ui/sections/*.js` の `build(ctx)`（ctx は `{ state, repo, query }`。部品は `ui/parts/*.js` から import）が `{ items, keyOf, renderHead, renderBody }` を返している（HTML 文字列ではない）
 - `node scripts/validate_json.js` が通る（`CORE_DATA_KEYS` 全件が `loadedDataKeys` に入り、全セクションの全行が Node で描画できる）
 - スマートフォン幅（390px）で横スクロールが出ない
 
