@@ -73,26 +73,26 @@ A tab without an entry in `TAB_FILTERS` simply shows no filter bar.
 Some tabs filter on **derived** fields the JSON doesn't carry directly. Compute
 them in the section's `build()` (`docs/assets/js/ui/sections/*.js`) before `itemPassesFilters`, not in `filters.js`:
 
-- `videos` → `promotion_id`/`division` derived in `enrichVideo` from `video_links`
-  → bout/event.
+- `videos` → `promotion_id`/`division` derived by `deriveVideoFilterFields`
+  (`data/enrich/media.js`, called from `DataEnricher.enrichVideo`) from `video_links` → bout/event.
 - `tsushin` → `withFilterFields(doc)` in `ui/sections/tsushin.js` adds `promotion_id` (from the article)
   and `divisions[]` (from `article_links` → bout).
-- `officialPlayers` → `ui/sections/admin.js` maps `organization` → `promotion_id` via
+- `officialPlayers` → `ui/sections/official_players.js` maps `organization` → `promotion_id` via
   `repo.promotionIdByName(...)` before filtering.
 
 ## Rendering & interaction (do not duplicate)
 
-- **Render** — `Shell #renderFilters()` (`docs/assets/js/ui/shell.js`) writes
+- **Render** — `FiltersRenderer.render()` (`docs/assets/js/ui/render/filter_chips.js`) writes
   `TAB_FILTERS[state.tab]` into `#filters` (hidden when the tab has no groups).
   Markup per group: `.filter-row` > `.filter-label` + `.chips` > `.chip`
   (`.is-active` + `aria-pressed` on the selected one), each with
   `data-filter-type` and `data-filter-val`. Buttons come from
   `filterButtons(group)` (options + その他). The mentions tab adds the
   `#mention-type` `<select>` to the same container.
-- **Click** — `Shell.bind()` delegates from `#filters`: it finds the group by
+- **Click** — `Shell.bind()` (`docs/assets/js/ui/shell.js`) delegates from `#filters`: it finds the group by
   `data-filter-type`, toggles (`selected === val ? "" : val`) and patches state.
   Clicking the active chip clears it.
-- **Re-render trigger** — `Shell #fingerprint()` is generic:
+- **Re-render trigger** — `stateFingerprint()` (`docs/assets/js/ui/render/list_view.js`) is generic:
   `FILTER_STATE_KEYS.map(k => state[k])` joined with query/focus/mention.
   **Because it iterates every group's `stateKey` automatically, you do NOT edit
   the fingerprint when adding a filter** — just make sure the new group is in
@@ -105,13 +105,13 @@ them in the section's `build()` (`docs/assets/js/ui/sections/*.js`) before `item
    `TAB_FILTERS` group (`type`, `label`, `stateKey`, `field`, `options`,
    optional `otherLabel`/`forceOther`/`match`). The state field is created
    automatically from `FILTER_STATE_KEYS`.
-2. `app/state.js`: add a short **English** param ↔ `stateKey` to `PARAM_MAP`
+2. `app/url_params.js`: add a short **English** param ↔ `stateKey` to `PARAM_MAP`
    (e.g. `fighter_div: "fighterDivision"`).
 3. Ensure the `field` exists on each item; if not, derive it in the section's
    `build()` (see the derived-field examples above).
 4. Confirm the section calls `itemPassesFilters(item, TAB_FILTERS.<tab>, state)`.
 
-No change to `#renderFilters`, the click handler, or the fingerprint is needed —
+No change to `FiltersRenderer`, the click handler, or the fingerprint is needed —
 they are all data-driven from `TAB_FILTERS`.
 
 ## CSS
@@ -127,6 +127,6 @@ make build && make validate && make test
 make clean-generated
 ```
 
-Verify in a browser (or headless `--dump-dom`) that `#tab-filters` renders the
+Verify in a browser (or headless `--dump-dom`) that `#filters` renders the
 expected `data-filter-type` rows and that selecting a button narrows the list and
 updates the URL with the English token.

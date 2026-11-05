@@ -155,7 +155,8 @@ Current viewer rendering architecture:
 
 ```text
 ui/sections/<tab>.js build(ctx) → { items, keyOf, renderHead, renderBody, defaultOpen?, rowClass?, isHeader? }
-ui/shell.js → one ui/list.js RecordList per tab (chunked rendering, lazy row bodies, diffed refresh, cursor)
+ui/sections/<tab>.js build(ctx): ctx = { state, repo, query }; partials are imported from ui/parts/*.js
+ui/shell.js → ui/render/list_view.js ListView → one ui/list/record_list.js RecordList per tab (chunked rendering, lazy row bodies, diffed refresh, cursor)
 data/loader.js load() → Phase 0 loadKeys(INITIAL_TAB_DATA_KEYS = officialPages, officialNews)
                       → Phase 1 PRIMARY_DATA_KEYS fetched in parallel, each file applied as it arrives
                       → Phase 2 ENRICHMENT_DATA_KEYS + PUBLIC_REFERENCE_DATA_KEYS in one parallel pool

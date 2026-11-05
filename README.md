@@ -90,20 +90,41 @@ docs/assets/app.css               スタイル（ライト / ダーク、スマ�
 docs/sw.js                        docs/data/*.json の Service Worker（stale-while-revalidate と更新通知）
 docs/assets/js/main.js            起動シーケンス（URL 復元 → 配線 → 段階ロード → SW 登録）
 docs/assets/js/config.js          DATA_FILES・タブ定義・読み込みフェーズ・タブ別遅延ロードと描画ゲート
-docs/assets/js/app/state.js       UI 状態 (Store) と URL クエリの双方向同期 (PARAM_MAP)
+docs/assets/js/app/state.js       UI 状態 (Store)
+docs/assets/js/app/url_params.js  UI 状態 ⇔ URL クエリの変換（PARAM_MAP、純関数）
+docs/assets/js/app/history_sync.js 状態と URL の同期（タブ・飛び先が変われば pushState、それ以外は replaceState）
+docs/assets/js/app/sw_client.js   Service Worker の登録とデータ更新の通知
 docs/assets/js/data/parser.js     データキーごとの空フォールバックと JSON パース
 docs/assets/js/data/loader.js     段階ロード（初期タブ → 一覧データ → 補完・出典候補 → タブ別遅延）
-docs/assets/js/data/repository.js 生データのアクセサ、rich* コレクション、関係ヘルパ、名鑑のみ合成、王座の獲得/喪失導出、重複選手統合
-docs/assets/js/data/enricher.js   名鑑・公式・アーカイブの重ね合わせ (enrichFighter / enrichBout / enrichEvent / enrichVideo / enrichArticle)
+docs/assets/js/data/raw_repository.js 生 JSON への素のアクセサと索引 (RawRepository)
+docs/assets/js/data/repository.js DataRepository（RawRepository を継承し、rich* コレクションと関係ヘルパを持つ）
+docs/assets/js/data/relations.js  関係の解決と並べ替え（純関数）
+docs/assets/js/data/indexes.js    レコード配列の索引と遅延キャッシュ (IndexCache)
+docs/assets/js/data/source_documents.js / source_lookup.js 出典本文の結合と、記事・動画からの引き当て
+docs/assets/js/data/event_dates.js 大会の日付の規則
+docs/assets/js/data/title_lineage.js 王座の獲得/喪失大会の導出と表示名
+docs/assets/js/data/numbers_only.js 名鑑のみの大会・試合の合成
+docs/assets/js/data/fighter_catalog.js 選手一覧の母集団（名鑑・公式からの発掘）と名鑑順
+docs/assets/js/data/fighter_merge.js 表記ゆれ重複選手の統合
+docs/assets/js/data/names.js      選手名の正規化 (normalizeFighterName)
+docs/assets/js/data/enricher.js   名鑑・公式・アーカイブの重ね合わせの接着層 (DataEnricher)
+docs/assets/js/data/enrich/*.js   重ね合わせの規則（official / fighter / bout / media、純関数）
 docs/assets/js/data/reliability.js 信頼性ティアと低信頼の末尾寄せ、最小登録の判定
-docs/assets/js/data/query.js      フリーテキスト検索（エンティティごとの検索対象テキスト）
+docs/assets/js/data/query.js      フリーテキスト検索 (QueryMatcher)
+docs/assets/js/data/search_text.js エンティティごとの検索対象テキスト
 docs/assets/js/data/filters.js    タブ別絞り込みの定義と照合 (TAB_FILTERS / itemPassesFilters)
 docs/assets/js/data/labels.js     コード値 → 日本語ラベル
-docs/assets/js/ui/shell.js        ナビ・件数・検索・絞り込み・一覧の描画と UI イベントの配線
-docs/assets/js/ui/list.js         段階描画する一覧 RecordList（行の開閉・差分更新・キーボードカーソル）
-docs/assets/js/ui/parts.js        共通部品（バッジ・リンク・定義リスト・動画ファサード・出典候補・関連試合・プロフィール）
-docs/assets/js/ui/sections/*.js   タブごとの行の描画（official / tsushin / bouts / fighters / events / promotions / titles / videos / admin）
-docs/assets/js/ui/keyboard.js     キーボードショートカット
+docs/assets/js/ui/shell.js        UI イベントの配線・タブ切替・飛び先と描画の順序付け
+docs/assets/js/ui/render/*.js     ナビ・件数・アラート (showFatalError)・絞り込みチップ・見出し・一覧 (ListView) の描画
+docs/assets/js/ui/search_box.js   検索欄（デバウンス・日本語入力）
+docs/assets/js/ui/theme.js        配色の切り替え (ThemeToggle)
+docs/assets/js/ui/toast.js        短い通知
+docs/assets/js/ui/video_embed.js  YouTube ファサードを iframe に差し替える
+docs/assets/js/ui/list/record_list.js 段階描画する一覧 RecordList（行の開閉・差分更新・キーボードカーソル）
+docs/assets/js/ui/list/*.js       RecordList から切り出した純関数（paging / cursor / open_state / row_html）
+docs/assets/js/ui/parts/*.js      共通部品（basic / links / bouts / videos / sources / fighters）
+docs/assets/js/ui/sections/*.js   タブごとの行の描画（公開タブ 8 個と管理タブ 7 個を 1 ファイルずつ、共通ヘルパは common.js、登録は index.js）
+docs/assets/js/ui/keyboard.js     キーボードショートカット（キー → 操作は純関数 keyToAction）
 docs/assets/js/ui/html.js         エスケープと整形ヘルパ
 docs/assets/js/ui/markdown.js     公式ニュース本文の Markdown → HTML
 ```
@@ -179,7 +200,7 @@ JSON は viewer 用の生成物です。
 ├── review/                 # 自動抽出・推定・反映前レビュー用CSV
 ├── scripts/                # build / validate / import / extraction scripts（arakaku/ は共有ヘルパ）
 ├── tasks/                  # 完了した親タスクの記録（T.N.md）
-├── tests/                  # pytest
+├── tests/                  # pytest（js/ は viewer の Node テスト）
 ├── tmp/                    # ローカルキャッシュ（中身はコミットしない）
 │   ├── arakaku-site/        # 公式サイトのソース（download_official_data.sh）
 │   ├── note-html/           # note HTML cache
@@ -207,8 +228,8 @@ JSON は viewer 用の生成物です。
 - `review/*.csv`
 - `docs/data/.gitkeep`
 - `tmp/.gitkeep`、`tmp/arakaku-site/.gitkeep`、`tmp/note-html/.gitkeep`、`tmp/youtube-api/.gitkeep`
-- `scripts/*.py`、`scripts/*.js`、`scripts/*.mjs`、`scripts/*.sh`、`scripts/arakaku/*.py`
-- `tests/*.py`
+- `scripts/*.py`、`scripts/*.js`、`scripts/*.sh`、`scripts/arakaku/**/*.py`
+- `tests/*.py`、`tests/js/`
 - `docs/assets/js/**/*.js`
 - `docs/assets/app.css`
 - `docs/assets/images/`
@@ -484,6 +505,8 @@ note 記事などの出典記事データです。`archives/note.csv` から `ge
 
 記事ID、タイトル、URL、記事種別、団体ID、公開日、状態などを管理します。
 
+記事種別 `article_type` は `event_card` / `event_result` / `promotion_profile` / `note_article` / `youtube_description_source` のいずれかで、それ以外は `validate_json.py` がエラーにします。`crawl_note_articles.py` が見つけた記事のうち、結果・対戦カードではなくタイトルに 歴代王者 / 王座 / ルール / 団体 を含むものは `promotion_profile` になります。
+
 削除済み・非公開・404 の記事がある場合でも、必要に応じてレコードは保持します。  
 本文キャッシュに失敗した記事は、`source_documents.csv` には入りません。
 
@@ -572,11 +595,20 @@ viewer や抽出処理での検索・照合改善に使います。
 
 `review/` のデータは、原則として人間が確認してから `data-src/` に反映します。
 
+`source_{event,bout,video}_reference_candidates.csv` は `build_json.py` の入力でもあり、無ければビルドが失敗します。
+
 ---
 
 ## scripts の役割
 
-共有ヘルパは `scripts/arakaku/`（`utils.py` / `mapping.py` / `validation.py` / `textparse.py` / `youtube.py` / `schema.py`）にまとめています。`textparse.py` には複数スクリプトで挙動が完全に一致するテキスト解析パターン・関数（URL 正規表現、全角数字正規化、決まり手・タイム推定）だけを置き、語彙が意図的に異なるパターンは各スクリプト側に残しています。スクリプトは用途で分類できます。
+共有ロジックは `scripts/arakaku/` パッケージにまとめ、`scripts/*.py` は引数とファイルの読み書きだけの薄い入口にしています。各モジュールの先頭コメントに 役割 / アーキ上の位置 / 不変条件 を書いています。
+
+- `paths.py`（入出力先）・`io.py`（CSV・JSON の読み書き。書き込みは原子的）・`schema.py`（CSV の見出し `CSV_HEADERS` と `CsvRow`）・`text.py`（文字列の整形）・`csvmap.py`（行から JSON への写像）・`event_dates.py`（大会の日付 `event_note_dates`）・`youtube.py`（YouTube キャッシュの読み込み、動画種別・Shorts・新しい行・ID の規則）
+- `build/`（`docs/data/*.json` のビルダ。`canonical.py` は出力の一覧 `json_builders` だけを持ち、エンティティごとに articles・promotions・events・bouts・fighters・titles・videos・aliases、索引は relations、名鑑は numbers、公式は official）
+- `validation/`（生成 JSON の検証。列挙値は `vocab.py`。パッケージが公開するのは `Report`・`run`・`validate_docs_data`・`locate_error` だけ）
+- `notes/`（note 記事の解析。`patterns.py`・`cache.py`・`html.py`・`crawl.py`・`articles.py`・`matchups.py`・`results.py`）、`sources/`（`source_documents.csv`・`source_mentions.csv`・アーカイブの行）、`derive/`（article_links・video_links・aliases と行の並べ替えキー `ordering.py`）、`review/`（note_results・reference_candidates・mention_result_candidates と反映規則 patches）、`official/`（csvs・pages）、`numbers/`（cells・names・sheets）
+
+`notes/patterns.py` には複数スクリプトで挙動が完全に一致するテキスト解析パターン・関数（URL 正規表現、全角数字正規化、決まり手・タイム推定）だけを置き、語彙が意図的に異なるパターンは各スクリプト側に残しています。スクリプトは用途で分類できます。
 
 ### JSON 生成（build_*）
 
@@ -615,11 +647,11 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ### アーカイブメタデータ
 
-- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-api/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻を入れます。キャッシュに無い既存行（削除・非公開・未取得）は消さずに残し、`[kept]` と表示します。archive CSV は再取得できなくなった場合に備えてコミット対象です。
+- `scripts/archive_metadata.py`: `tmp/note-html/` と `tmp/youtube-api/` から外部メタデータを `data-src/archives/youtube.csv`・`data-src/archives/note.csv` に保存します。既存行の `archived_at` は維持し、新規行だけに実行時刻（UTC、`+00:00` の時差つき）を入れます。キャッシュに無い既存行（削除・非公開・未取得）は消さずに残し、`[kept]` と表示します。archive CSV は再取得できなくなった場合に備えてコミット対象です。
 
 ### 本文DB生成
 
-- `scripts/build_source_documents.py`: `tmp/note-html/` と `tmp/youtube-api/` を読み、`source_documents.csv` と `source_mentions.csv` を生成します。本文中の大会名・対戦カード・結果・URL などの候補を抽出します。
+- `scripts/build_source_documents.py`: `tmp/note-html/` と `tmp/youtube-api/` を読み、`source_documents.csv` と `source_mentions.csv` を生成します。本文中の大会名・対戦カード・結果・URL などの候補を抽出します。`tmp/` の note か YouTube のキャッシュが空のときは、本文 DB を空で上書きしないよう何も書かずに止まります。壊れた YouTube キャッシュ JSON があれば読み飛ばさずに止まります（そのファイルを消して `make cache-youtube-api` をやり直します）。
 
 ### 記事クロール
 
@@ -634,19 +666,18 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 - `scripts/make_source_mention_result_candidates.py`: `source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
 - `scripts/make_source_reference_candidates.py`: note本文と YouTube概要欄から、`review/source_event_reference_candidates.csv`・`review/source_bout_reference_candidates.csv`・`review/source_video_reference_candidates.csv` を作ります。確認支援用の候補です。
-- `scripts/match_unknown_bouts_to_note_results.py`: 試合側から結果 note を探します。結果不明の試合は両選手の名前の直前の ○/◯/● で勝者を決め、`review/unknown_bout_note_results.csv` に書きます（Numbers の勝者と一致した行だけ `apply=true`）。結果が分かっている試合は、空の決着欄（決着方法・技・判定スコアなど）を同じ note の行から埋める候補を `review/known_bout_note_methods.csv` に書きます。
-- `scripts/apply_structured_result_patches.py`: レビュー済みの結果候補（`apply=true` の行）を `bouts.csv` / `bout_participants.csv` に反映します。既定は `review/unknown_bout_note_results.csv` で、同じ列の CSV を引数で渡せます（例: `python3 scripts/apply_structured_result_patches.py review/known_bout_note_methods.csv`）。反映前に必ず候補CSVを確認してください。
+- `scripts/match_unknown_bouts_to_note_results.py`: 試合側から結果 note を探します。結果不明の試合は両選手の名前の直前の ○/◯/● で勝者を決め、`review/unknown_bout_note_results.csv` に書きます（Numbers の勝者と一致した行だけ `apply=true`）。結果が分かっている試合は、空の決着欄（決着方法・技・判定スコアなど）を同じ note の行から埋める候補を `review/known_bout_note_methods.csv` に書きます。`docs/data` の JSON を読むので、先に `make build` が要ります（無ければエラーで止まります）。
+- `scripts/apply_structured_result_patches.py`: レビュー済みの結果候補（`apply=true` の行）を `bouts.csv` / `bout_participants.csv` に反映します。既定は `review/unknown_bout_note_results.csv` で、同じ列の CSV を引数で渡せます（例: `python3 scripts/apply_structured_result_patches.py review/known_bout_note_methods.csv`）。勝敗は winner / loser と出場者の名前の完全一致だけで決め、2 人の出場者に 1 人ずつ一致しない行は `[warn]` を出して反映しません。CSV は一時ファイルから原子的に差し替えます。反映前に必ず候補CSVを確認してください。
 
 
 ### 検証
 
 - `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
 - `scripts/validate_json.js`: Node 側から生成 JSON を viewer の実モジュールに通して検証します（段階ロードで CORE キーが揃うこと、失敗ファイルの fallback、`loadForTab`、Repository の ID 解決、空クエリの検索一致、全セクションの全行を実際に描画して例外や `undefined` の混入が無いこと）。
-- `scripts/test_filters.mjs`: viewer のフィルタ中核 `itemPassesFilters`（`docs/assets/js/data/filters.js`）の Node ユニットテスト（`node:test`、依存なし）。
-- `scripts/test_markdown.mjs`: 公式ニュース本文の Markdown 変換（`docs/assets/js/ui/markdown.js`）の Node ユニットテスト。リンクや iframe から属性・スクリプトを注入できないことを確かめます。
-- `make validate` がこの 4 つを順に実行します。
-- CSV の列は `scripts/arakaku/schema.py`（`CSV_HEADERS`）が正本です。`arakaku.utils.read_csv` は `data-src` の CSV を読むたびにヘッダを照合し、無いファイル・列名の違いはエラーにします（列を足す・改名するときは schema.py も直します）。
-- `validate_json.py` は列挙値（`arakaku/validation.py`）の範囲外、表をまたぐ矛盾（試合と大会の団体、別名の参照先、出典言及の出典、王座の喪失大会と次の獲得大会）、壊れた・欠けた生成 JSON をすべてエラーにします。JSON の行についてのエラーには `[data-src/bouts.csv:27, bout_id=…]` のように CSV の行と主キーを付けます。
+- `tests/js/test_*.mjs`: viewer の Node ユニットテスト（`node:test`、依存なし、DOM なし）。データ層（filters・query・relations・enrich など）、URL と履歴、一覧の純関数、部品、各セクションの `build()`、Markdown 変換（リンクや iframe から属性・スクリプトを注入できないこと）を確かめます。
+- `make validate` が `validate_json.py`・`validate_json.js` と `node --test tests/js/test_*.mjs` を順に実行します（テストファイルが 1 つも無ければ失敗します）。
+- CSV の列は `scripts/arakaku/schema.py`（`CSV_HEADERS`）が正本です。`arakaku.io.read_csv` は `data-src` の CSV を読むたびにヘッダを照合し、無いファイル・列名の違いはエラーにします（列を足す・改名するときは schema.py も直します）。
+- `validate_json.py` は列挙値（`arakaku/validation/vocab.py`。`articles.article_type` も含む）の範囲外、数字でない `reign_order`、表をまたぐ矛盾（試合と大会の団体、別名の参照先、出典言及の出典、王座の喪失大会と次の獲得大会）、壊れた・欠けた生成 JSON をすべてエラーにします。JSON の行についてのエラーには `[data-src/bouts.csv:27, bout_id=…]` のように CSV の行と主キーを付けます。
 - CSV と JSON は一時ファイルに書いてから置き換えるので、並行して走る検証が書きかけのファイルを読むことはありません。
 
 ---
@@ -657,14 +688,14 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 ```bash
 make build      # build_json + build_numbers_json + build_official_json + build_official_pages_json
-make validate   # validate_json.py + validate_json.js + test_filters.mjs + test_markdown.mjs
+make validate   # validate_json.py + validate_json.js + node --test tests/js/test_*.mjs
 make test       # pytest -q
 make check      # build → validate → test
 make check-generated  # 生成 CSV をオフラインで再生成し、git と差分があれば失敗
 ```
 
 - `make build`: 4 本の build スクリプトで CSV から `docs/data/*.json` を生成します。
-- `make validate`: Python・Node の JSON 検証に加え、`itemPassesFilters` の Node ユニットテストを実行します。
+- `make validate`: Python・Node の JSON 検証に加え、`tests/js/` の viewer の Node ユニットテストを実行します。
 - `make test`: pytest を実行します。
 - `make check`: build → validate → test を順に実行します。
 - `make check-generated`: まず `make build` し、`generate_articles.py`、stage2 の生成 CSV（promotions・titles・aliases・video_links・article_links）、`reorder_data.py`、review の候補 CSV、`match_unknown_bouts_to_note_results.py` の出力を再生成し、`git diff --exit-code -- data-src review` で差分があれば失敗します。`bouts.csv` などを直したのに `make generate-stage2` を忘れた場合に気づけます。git と比べるので、コミット前の変更がない状態で実行します（`tmp/` が要る `generate_official_pages_csv.py` は含めません）。
@@ -864,7 +895,7 @@ viewer の主要ファイルは以下です（役割は「viewer の構成」を
 - `docs/assets/js/ui/`
 - `docs/sw.js`
 
-データ層（`docs/assets/js/data/`）の規則（名鑑優先の補完、名鑑のみの合成、王座の導出、重複選手統合、新しい順 + 低信頼末尾）は変えないでください。描画は `docs/assets/js/ui/sections/*.js` と `docs/assets/js/ui/parts.js` に閉じています。変更後は `docs/VIEWER_FEATURES.md` の該当行も更新してください。
+データ層（`docs/assets/js/data/`）の規則（名鑑優先の補完、名鑑のみの合成、王座の導出、重複選手統合、新しい順 + 低信頼末尾）は変えないでください。描画は `docs/assets/js/ui/sections/*.js` と `docs/assets/js/ui/parts/*.js` に閉じています。変更後は `docs/VIEWER_FEATURES.md` の該当行も更新してください。
 
 ### 7. Pages の表示確認
 

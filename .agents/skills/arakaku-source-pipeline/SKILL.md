@@ -97,7 +97,9 @@ and never change or delete existing rows. They run automatically as the first st
 Target: `make discover-note-articles` (runs `crawl_note_articles.py --use-api`).
 
 Lists every article of the official note creator and appends rows for URLs missing from
-`data-src/articles.csv` (`status=unparsed`), so `cache_note_html.py` fetches them.
+`data-src/articles.csv` (`status=unparsed`), so `cache_note_html.py` fetches them. Titles with
+歴代王者 / 王座 / ルール / 団体 (that are not results or cards) get `article_type=promotion_profile`
+(`infer_article_type` in `scripts/arakaku/notes/crawl.py`).
 
 ### discover_youtube_videos.py
 
@@ -123,7 +125,7 @@ tmp/note-html/
 
 404, deleted, or private note articles should not stop the whole pipeline.
 
-Cache filenames come from `note_cache_name()` in `scripts/arakaku/utils.py` —
+Cache filenames come from `note_cache_name()` in `scripts/arakaku/notes/cache.py` —
 the same function `build_source_documents.py` uses to look the files up.
 Never reimplement this naming locally; diverging copies silently break cache
 lookups.
@@ -144,7 +146,7 @@ Do not download video bodies.
 
 Videos the API does not return (deleted, private) are printed as `[missing]` and make the script exit 1.
 
-Read the cache only through `scripts/arakaku/youtube.py` (`iter_cached_videos`), which maps API fields to the flat metadata the downstream scripts use.
+Read the cache only through `scripts/arakaku/youtube.py` (`iter_cached_videos`), which maps API fields to the flat metadata the downstream scripts use. An invalid cache JSON raises instead of being skipped, so the pipeline stops; delete the file and rerun `make cache-youtube-api`.
 
 ### build_source_documents.py
 
@@ -159,6 +161,8 @@ For note articles, the body is only the article title (`h1`), the post time (`ti
 
 `fetched_at` is carried over from the previous `source_documents.csv` when `content_hash` is unchanged, so a rerun without content changes produces no diff.
 
+If the note or YouTube cache under `tmp/` yields no documents (a fresh clone, for example), the script exits with `[error] no cached ... sources under tmp/` and writes nothing, so it never overwrites the committed body DB with an empty one. Run `make cache-sources` first.
+
 ### generate_articles.py
 
 Target: `make generate-articles`. Runs after `archive_metadata.py` and before
@@ -166,7 +170,7 @@ Target: `make generate-articles`. Runs after `archive_metadata.py` and before
 
 Generates `data-src/articles.csv` from `data-src/archives/note.csv` and classifies each article
 (`article_type`: `promotion_profile` / `event_card` / `event_result` / `note_article` /
-`youtube_description_source`). `published_at` comes from `archives/note.csv` (JSON-LD
+`youtube_description_source`; `validate_json.py` rejects any other value). `published_at` comes from `archives/note.csv` (JSON-LD
 `datePublished`). Stage1 generated: hand edits are lost.
 
 ### archive_metadata.py
@@ -182,7 +186,9 @@ Archive CSVs preserve external metadata for display and review. They are generat
 
 Rows whose cache file is missing (deleted, private, or not fetched) are kept unchanged and reported as `[kept]`, so an empty or partial cache never shrinks an archive.
 
-`archives/youtube.csv` `thumbnail_sizes` lists the keys of the API's `snippet.thumbnails` (ordered `default medium high standard maxres`, space-separated). `build_json.py` copies it into `videos.json` so the viewer's YouTube facade (`docs/assets/js/ui/parts.js` `videoFacade`) can pick a thumbnail file that exists (`maxresdefault` → `sddefault` → `hqdefault`) instead of logging a 404.
+Existing rows keep their `archived_at`; new rows get the current UTC time with offset (`+00:00`).
+
+`archives/youtube.csv` `thumbnail_sizes` lists the keys of the API's `snippet.thumbnails` (ordered `default medium high standard maxres`, space-separated). `build_json.py` copies it into `videos.json` so the viewer's YouTube facade (`docs/assets/js/ui/parts/videos.js` `videoFacade`) can pick a thumbnail file that exists (`maxresdefault` → `sddefault` → `hqdefault`) instead of logging a 404.
 
 ---
 
@@ -264,9 +270,10 @@ title lineage on their own.
 
 Text-parsing helpers shared verbatim across the source-pipeline scripts (URL
 regexes, `VS_RE`, `normalize_digits`, `find_method`, `infer_time`) live in
-`scripts/arakaku/textparse.py`. Patterns whose vocabulary intentionally differs
-per script (`METHOD_PATTERNS`, `ROUND_RE`, `EVENT_RE`, `RESULT_RE`) stay local
-to each script — do not merge them into the shared module.
+`scripts/arakaku/notes/patterns.py`. Patterns whose vocabulary intentionally differs
+(`METHOD_PATTERNS`, `ROUND_RE` in `arakaku/review/mention_result_candidates.py`;
+`EVENT_RE`, `RESULT_RE` in `arakaku/sources/mentions.py`) stay local to their
+module — do not merge them into the shared module.
 
 ### make_source_mention_result_candidates.py
 
@@ -304,6 +311,8 @@ review/source_bout_reference_candidates.csv
 review/source_video_reference_candidates.csv
 ```
 
+`build_json.py` reads these three files; if one is missing, the build fails.
+
 Bout matching does not read fighter names or article links off `bouts.csv`.
 Red/blue fighter names come from `bout_participants.csv` (via `side` +
 `fighter_name`), and note source links come from `article_links.csv` rows where
@@ -312,7 +321,7 @@ the script safe to re-run after schema changes to `bouts.csv`.
 
 ### match_unknown_bouts_to_note_results.py
 
-Run directly (after `make build`, since it reads `docs/data/numbers_fight_records.json`):
+Run directly (after `make build`, since it reads `docs/data/numbers_fight_records.json` and `source_document_bodies.json`; it fails if they are missing):
 
 ```bash
 python3 scripts/match_unknown_bouts_to_note_results.py
@@ -332,6 +341,8 @@ Rows with `apply=true` are written back to `bouts.csv` / `bout_participants.csv`
 ```bash
 python3 scripts/apply_structured_result_patches.py [csv]   # default: review/unknown_bout_note_results.csv
 ```
+
+The winner and loser are decided by exact participant names only (rules in `scripts/arakaku/review/patches.py`); a row whose winner/loser do not match one participant each is skipped with a `[warn]`. Both CSVs are written atomically.
 
 ### review/ directory
 

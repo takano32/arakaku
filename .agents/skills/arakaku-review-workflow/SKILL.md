@@ -132,7 +132,7 @@ notes
 
 ## Applying patches
 
-`scripts/match_unknown_bouts_to_note_results.py` writes two review CSVs:
+`scripts/match_unknown_bouts_to_note_results.py` (run after `make build`; it reads `docs/data` JSON and fails if it is missing) writes two review CSVs:
 
 - `review/unknown_bout_note_results.csv`: note results for `result_status=unknown` bouts;
   `apply=true` only when the note winner agrees with the Numbers winner.
@@ -144,6 +144,8 @@ Rows with `apply=true` are written back to `bouts.csv` / `bout_participants.csv`
 ```bash
 python3 scripts/apply_structured_result_patches.py [csv]   # default: review/unknown_bout_note_results.csv
 ```
+
+The winner and loser are decided by exact participant names only; a row whose winner/loser do not match one participant each is skipped with a `[warn]`. Both CSVs are written atomically.
 
 Before using any apply script:
 

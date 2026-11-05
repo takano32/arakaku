@@ -89,7 +89,7 @@ archive CSV 確認:
 - `data-src/archives/youtube.csv` は `display_id` が主キーです。
 - `data-src/archives/note.csv` は `filename` が主キーです。
 - archive は viewer の補助表示・検索に使いますが、試合結果や選手同定の確定根拠ではありません。
-- cache 再取得後は `make archive-metadata` を実行し、`archived_at` が既存行で不要に変わっていないか差分を確認してください。
+- cache 再取得後は `make archive-metadata` を実行し、`archived_at` が既存行で不要に変わっていないか差分を確認してください。新規行の `archived_at` は UTC の時差つき（`+00:00`）です。
 
 本文DBからレビュー用の出典参照候補を作る場合:
 
@@ -108,6 +108,7 @@ review/source_video_reference_candidates.csv
 注意:
 
 - これらはレビュー候補です。
+- `build_json.py` の入力でもあるので、無いと `make build` が失敗します。
 - 試合結果や勝敗として確定反映しないでください。
 - `data-src/bouts.csv` へ反映する前に本文文脈を確認してください。
 
@@ -221,7 +222,7 @@ docs/sw.js
 - 一覧は最初の 30 行だけ描画され、スクロールすると続きが足される（「さらに表示」ボタンでも可）
 - Phase 2 エンリッチメント後にスクロール位置がリセットされず、開いていた行が閉じない
 - 検索クリア後に古い行が残らない
-- `ui/sections/*.js` の `build()` が `{ items, keyOf, renderHead, renderBody }` を返している
+- `ui/sections/*.js` の `build(ctx)`（ctx は `{ state, repo, query }`。部品は `ui/parts/*.js` から import）が `{ items, keyOf, renderHead, renderBody }` を返している
 - `config.js` の `PRIMARY_DATA_KEYS` / `ENRICHMENT_DATA_KEYS` に追加したキーが入っている
 - `validate_json.js` が通る（`node scripts/validate_json.js`。全セクションの全行を Node で描画する）
 - スマートフォン幅で横スクロールが出ない
@@ -326,6 +327,14 @@ make clean-generated
 
 削除済み・非公開・URL不正の可能性があります。  
 全体が止まらない設計なら、そのまま続行できます。
+
+### build-sources が `no cached ... sources under tmp/` で止まる
+
+`tmp/note-html/` か `tmp/youtube-api/` が空です（新しい clone など）。本文 DB を空で上書きしないよう、`build_source_documents.py` は何も書かずに止まります。`make cache-sources` でキャッシュを取得してからやり直してください。
+
+### `invalid YouTube cache JSON` で止まる
+
+`tmp/youtube-api/` に壊れた JSON があります。読み飛ばさずに止まるので、表示されたファイルを消して `make cache-youtube-api` をやり直してください。
 
 ### YouTube API で `[missing]` が出る
 

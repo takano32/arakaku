@@ -24,13 +24,13 @@ Whenever new rows are added or existing dates are corrected, the CSV files must 
 make reorder-data
 ```
 
-This runs `scripts/reorder_data.py`, which sorts the following files:
-- `events.csv`: There is no event date column. Sort by the earliest result-note date (`article_type=event_result` linked through `article_links.csv`, same as `build_json.py`'s `result_published_at`), else the earliest date of any note linked to the event, else `events.published_at` (rarely filled); then `event_id`.
+This runs `scripts/reorder_data.py`, which reads and writes the files; the sort keys live in `scripts/arakaku/derive/ordering.py` (`sort_key_date`, `event_sort_date`, `bout_sort_key`, `reign_sort_key`), and the event dates come from `event_note_dates` in `scripts/arakaku/event_dates.py`. It sorts the following files:
+- `events.csv`: There is no event date column. Sort by the earliest result-note date (`article_type=event_result` linked through `article_links.csv`, same rule as `result_published_at` in `events.json`), else the earliest date of any note linked to the event, else `events.published_at` (rarely filled); then `event_id`.
 - `bouts.csv`: Primary sort by that derived event date, then `event_id`, then `bout_order`.
 - `articles.csv`: Sort by `(published_at, article_id)`.
 - `videos.csv`: `videos.csv` has no date column; sort by `upload_date` from `archives/youtube.csv` (joined on `platform_video_id` = `display_id`), then `video_id`.
-- `source_documents.csv`: Primary sort by `published_at`.
-- `title_reigns.csv`: Primary sort by `title_id`, then by `reign_order`.
+- `source_documents.csv`: Sort by `(published_at, source_id)`.
+- `title_reigns.csv`: Primary sort by `title_id`, then by `reign_order` (sorted as 0 if not numeric; `validate_json.py` reports a non-numeric `reign_order` as an error).
 
 ### 2. Client-Side Reversal
 
@@ -47,7 +47,7 @@ The reversal of order happens in the browser via `docs/assets/js/data/repository
 
 ## RecordList and Reversed Arrays
 
-The viewer renders lists with `RecordList` (`docs/assets/js/ui/list.js`), which keys rendered rows by `keyOf(item)` (the record ID), never by array index. When data arrives (`refresh(desc)`), it compares the key sequence of the rendered window with the new items: identical keys → only heads/bodies whose HTML changed are replaced; different keys → the window is rebuilt. Reversed or re-partitioned collections (`richBouts`, `richVideos`, `events`, `richArticles`, `richFighters` after `lowReliabilityLast`) are therefore safe: a record that moves to another index is re-rendered at its new position instead of showing stale DOM.
+The viewer renders lists with `RecordList` (`docs/assets/js/ui/list/record_list.js`), which keys rendered rows by `keyOf(item)` (the record ID), never by array index. When data arrives (`refresh(desc)`), it compares the key sequence of the rendered window with the new items: identical keys → only heads/bodies whose HTML changed are replaced; different keys → the window is rebuilt. Reversed or re-partitioned collections (`richBouts`, `richVideos`, `events`, `richArticles`, `richFighters` after `lowReliabilityLast`) are therefore safe: a record that moves to another index is re-rendered at its new position instead of showing stale DOM.
 
 **Rule:** rows must have stable, unique keys (`keyOf`). Never key a row by index, and never cache rendered HTML by index. `validate_json.js` asserts key uniqueness per section on the real data.
 

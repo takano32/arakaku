@@ -11,8 +11,8 @@ Use this skill whenever the task touches:
 
 - `data-src/*.csv`
 - `review/*.csv`
-- `scripts/*.py`
-- `tests/*.py`
+- `scripts/*.py`, `scripts/arakaku/**/*.py`
+- `tests/*.py`, `tests/js/*.mjs`
 - `docs/index.html`
 - `docs/assets/js/**/*.js`
 - `docs/assets/app.css`
@@ -76,9 +76,9 @@ Astro syntax stripped: Tailwind classes, frontmatter, JSX `.map()`, `{base}` int
 
 `scripts/build_official_pages_json.py` no longer embeds images (no Base64). Image and link paths starting with `/` are kept as-is, and the viewer rewrites them to the official site at render time.
 
-**Client-side enrichment only.** Never add official data to `scripts/build_json.py`. All enrichment lives in `docs/assets/js/data/enricher.js` (and the synthesis in `docs/assets/js/data/repository.js`).
+**Client-side enrichment only.** Never add official data to `scripts/build_json.py`. All enrichment lives in `docs/assets/js/data/enricher.js` with its rules in `docs/assets/js/data/enrich/*.js` (and the synthesis in `docs/assets/js/data/repository.js` and the modules it uses, e.g. `numbers_only.js`, `fighter_catalog.js`, `fighter_merge.js`).
 
-Fighter summary placeholder `"公式YouTube動画タイトルから抽出した選手。詳細未入力。"` is cleared in `enrichFighter` and replaced with Numbers catchphrase/notes when available.
+Fighter summary placeholder `"公式YouTube動画タイトルから抽出した選手。詳細未入力。"` is cleared in `composeFighter` (`docs/assets/js/data/enrich/fighter.js`) and replaced with Numbers catchphrase/notes when available.
 
 ---
 
@@ -101,9 +101,8 @@ make reorder-data    # normalize CSV sort order
 ```
 
 `make validate` runs `validate_json.py` (schema/referential), `validate_json.js` (viewer
-parser/loader + render-path coverage), `test_filters.mjs` (Node unit test for the viewer's
-`itemPassesFilters` filtering engine — built-in `node:test`, no deps), and `test_markdown.mjs`
-(Node unit test for the viewer's Markdown renderer).
+parser/loader + render-path coverage), and `node --test` over `tests/js/test_*.mjs` (the viewer's
+Node unit tests — built-in `node:test`, no deps, no DOM; it fails if no test file exists).
 
 For source refresh:
 
