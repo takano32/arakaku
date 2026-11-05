@@ -188,6 +188,8 @@ def validate_title_reigns(report: Report, reigns: list[Any], title_ids: set[str]
         if title_id and title_id not in title_ids:
             report.error(f"title_reigns.json[{i}]: unknown title reference: {title_id}")
         order = require_field(report, x, 'title_reigns.json', i, 'reign_order')
+        if order and not str(order).isdigit():
+            report.error(f"title_reigns.json[{i}]: reign_order is not a number: {order}")
         marker = (title_id, order)
         if marker in seen_order:
             report.error(f"title_reigns.json[{i}]: duplicate title/reign_order: {marker}")
