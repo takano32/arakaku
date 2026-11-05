@@ -41,8 +41,22 @@ def test_validate_docs_data_reports_every_missing_file_in_sorted_order(tmp_path:
     report = validate_docs_data(tmp_path)
     missing = [e for e in report.errors if e.startswith("missing json file: ")]
     assert missing == [f"missing json file: {name}" for name in sorted(ALL_JSON_FILES - {"metadata.json"})]
-    assert REQUIRED_JSON_FILES <= ALL_JSON_FILES
     assert len(report.errors) == len(missing)  # empty lists are otherwise valid
+
+
+def test_all_json_files_are_exactly_what_the_builders_write():
+    # 以前の REQUIRED_JSON_FILES <= ALL_JSON_FILES は作り方から常に真だった (T.112.6.7)。
+    # make build の 4 つの入口が書くファイルと、検証が「欠けたら error」とする一覧を突き合わせる。
+    from arakaku.build import canonical, numbers, official
+    from arakaku.build.relations import Tables
+
+    built = (
+        set(canonical.json_builders(Tables()))
+        | set(numbers.json_builders([], [], []))
+        | set(official.json_builders([], [], [], []))
+        | set(official.pages_json_builders([], []))
+    )
+    assert built == ALL_JSON_FILES
 
 
 def test_validate_docs_data_passes_on_the_built_data(docs_data):
