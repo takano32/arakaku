@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import importlib
 import sys
 from pathlib import Path
 
@@ -52,6 +53,34 @@ def test_every_csv_header_matches_schema(repo_root):
     for filename, columns in CSV_HEADERS.items():
         fieldnames, _ = read_csv(repo_root, filename)
         assert fieldnames == columns, f"{filename} header differs from arakaku/schema.py"
+
+
+# 書く側の列の一覧 (モジュール, 定数, 書く CSV)。write_csv は extrasaction="ignore" なので、一覧が
+# schema.CSV_HEADERS とずれると列が黙って空になる (T.112.6.9)。generate_*.py は scripts/ の入口。
+WRITER_FIELDS = [
+    ("arakaku.notes.articles", "FIELDS", "articles.csv"),
+    ("arakaku.derive.aliases", "FIELDS", "aliases.csv"),
+    ("arakaku.derive.article_links", "FIELDS", "article_links.csv"),
+    ("arakaku.derive.video_links", "FIELDS", "video_links.csv"),
+    ("arakaku.sources.documents", "DOCUMENT_FIELDS", "source_documents.csv"),
+    ("arakaku.sources.mentions", "MENTION_FIELDS", "source_mentions.csv"),
+    ("arakaku.sources.archives", "YOUTUBE_FIELDS", "archives/youtube.csv"),
+    ("arakaku.sources.archives", "NOTE_FIELDS", "archives/note.csv"),
+    ("arakaku.official.csvs", "PLAYER_FIELDS", "official_players.csv"),
+    ("arakaku.official.csvs", "TOURNAMENT_FIELDS", "official_tournaments.csv"),
+    ("arakaku.official.csvs", "MATCH_FIELDS", "official_matches.csv"),
+    ("arakaku.official.csvs", "HISTORY_FIELDS", "official_history.csv"),
+    ("arakaku.official.pages", "NEWS_FIELDS", "official_news.csv"),
+    ("arakaku.official.pages", "PAGE_FIELDS", "official_pages.csv"),
+    ("generate_promotions", "FIELDS", "promotions.csv"),
+    ("generate_titles", "FIELDS", "titles.csv"),
+]
+
+
+@pytest.mark.parametrize("module_name, constant, filename", WRITER_FIELDS, ids=[f"{m}.{c}" for m, c, _ in WRITER_FIELDS])
+def test_writer_fields_match_schema(module_name, constant, filename):
+    fields = getattr(importlib.import_module(module_name), constant)
+    assert fields == CSV_HEADERS[filename], f"{module_name}.{constant} differs from CSV_HEADERS[{filename!r}]"
 
 
 def test_read_csv_rejects_renamed_columns_and_missing_files(io_module, tmp_path, monkeypatch):
