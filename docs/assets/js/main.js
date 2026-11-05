@@ -1,5 +1,6 @@
 import { HistorySync } from "./app/history_sync.js";
 import { Store } from "./app/state.js";
+import { registerServiceWorker, showUpdateBanner } from "./app/sw_client.js";
 import { readFromURL } from "./app/url_params.js";
 import { DataLoader } from "./data/loader.js";
 import { QueryMatcher } from "./data/query.js";
@@ -10,7 +11,7 @@ import { showFatalError } from "./ui/render/alerts.js";
 
 /**
  * ビューアの起動シーケンス (docs/index.html から module として読み込まれる)。
- *   URL から状態を復元 → UI を配線 → データを段階的に読み込む → Service Worker を登録。
+ *   URL から状態を復元 → UI を配線 → データを段階的に読み込む → Service Worker を登録 (app/sw_client.js)。
  * 致命的な失敗 (load() 自体の reject) だけをここで表示する。個別ファイルの失敗は
  * DataLoader が吸収し、Shell が「データ読み込み失敗」として一覧の上に出す。
  */
@@ -61,20 +62,5 @@ loader
     showFatalError(document.querySelector("#list-host"), error);
   });
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js").catch(() => {});
-
-  // sw.js が新しい docs/data を検知すると DATA_UPDATED を postMessage する。
-  // 再読み込みバナーは 1 セッション 1 回だけ。
-  let updateBannerShown = false;
-  navigator.serviceWorker.addEventListener("message", (event) => {
-    if (event.data?.type !== "DATA_UPDATED" || updateBannerShown) return;
-    updateBannerShown = true;
-    const banner = document.createElement("div");
-    banner.className = "update-banner";
-    banner.setAttribute("role", "status");
-    banner.innerHTML = 'データが更新されました。<button type="button" class="update-banner-button">再読み込み</button>';
-    banner.querySelector("button").addEventListener("click", () => location.reload());
-    document.body.appendChild(banner);
-  });
-}
+// sw.js が新しい docs/data を検知したら、再読み込みバナーを 1 セッションに 1 回だけ出す。
+registerServiceWorker({ onDataUpdated: showUpdateBanner });
