@@ -723,7 +723,7 @@ make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2
 
 ローカルに `tmp/note-html/`、`tmp/youtube-api/`、`data-raw/アラカク選手名鑑.numbers`、`tmp/arakaku-site/` がある前提です。canonical CSV は git の内容を使います。
 
-- `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs` → `reorder_data`。
+- `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs`。`reorder_data` は stage 2 の `article_links.csv` を読むので、`regenerate-csvs` が stage 2 のあとに 1 回だけ実行します。
 - `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv`。
 - `rebuild`: 生成 CSV と生成 JSON を全削除してから全再生成し、check まで通します。
 - `rebuild-stage2`: stage2 生成 CSV だけ作り直して check します（stage1 を作り直さない高速ループ）。
