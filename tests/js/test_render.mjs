@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 
 import { ADMIN_TABS, PUBLIC_TABS } from "../../docs/assets/js/config.js";
 import { TAB_FILTERS } from "../../docs/assets/js/data/filters.js";
-import { alertsHtml } from "../../docs/assets/js/ui/render/alerts.js";
+import { alertsHtml, fatalErrorHtml, showFatalError } from "../../docs/assets/js/ui/render/alerts.js";
 import { filterRowHtml, filterRows, mentionTypeRowHtml, sortMentionTypes } from "../../docs/assets/js/ui/render/filters.js";
 import { navHtml, navItemHtml, pageTitle } from "../../docs/assets/js/ui/render/nav.js";
 import { dataCounts, statsHtml } from "../../docs/assets/js/ui/render/stats.js";
@@ -40,6 +40,15 @@ test("読み込み失敗は DATA_FILES のファイル名で一覧にし、無�
   assert.equal(alertsHtml(undefined), "");
   const html = alertsHtml({ fighters: "HTTP 404", mystery: "x<y" });
   assert.match(html, /^<div class="alert" role="alert"><p class="alert-title">データ読み込み失敗<\/p><ul><li><code>fighters\.json<\/code> HTTP 404<\/li><li><code>mystery<\/code> x&lt;y<\/li><\/ul>/);
+});
+
+test("読み込み全体の失敗はメッセージをエスケープして host に出し、host が無ければ何もしない", () => {
+  const html = '<div class="alert" role="alert"><p class="alert-title">読み込みに失敗しました</p><p>a&lt;b</p></div>';
+  assert.equal(fatalErrorHtml("a<b"), html);
+  const host = { innerHTML: "" };
+  showFatalError(host, new Error("a<b"));
+  assert.equal(host.innerHTML, html);
+  assert.doesNotThrow(() => showFatalError(null, new Error("x")));
 });
 
 test("言及種別は MENTION_TYPE_ORDER の順、知らない種別は後ろに日本語順、空値と重複は除く", () => {
