@@ -1,5 +1,6 @@
 import { DataEnricher, normalizeFighterName } from "./enricher.js";
 import { eventSortDate } from "./event_dates.js";
+import { enrichTitle, titleDisplayName } from "./title_lineage.js";
 import {
   boutReliability,
   eventReliability,
@@ -502,13 +503,7 @@ export class DataRepository {
     return index.get(norm(name))?.promotion_id;
   }
 
-  titleDisplayName(title) {
-    const p = this.promotionName(title.promotion_id);
-    const d = title.division ?? "階級未設定";
-    if (title.title_id?.includes("tournament")) return `${p} ${d}トーナメント`;
-    if (title.promotion_id === "max_bout") return `${p} ${d}`;
-    return `${p} ${d}王座`;
-  }
+  titleDisplayName(title) { return titleDisplayName(title, this.promotionName(title.promotion_id)); }
 
   // ── 出典本文の引き当て ──────────────────────────────────────────────
 
@@ -659,31 +654,10 @@ export class DataRepository {
 
   // ── 王座 ───────────────────────────────────────────────────────────
 
+  // 歴代の獲得・喪失大会の補完は title_lineage.js (獲得大会は title_reigns.csv に明示されたものだけ。T.89)
   get richTitles() {
     if (this.#richTitles) return this.#richTitles;
-
-    // 出典動画 (source_video_id) から獲得大会は導かない。王座の出典動画は防衛戦のこともあり、
-    // そうした 4 王座で獲得・喪失の大会が誤っていた (T.89)。獲得大会は title_reigns.csv に明示されたものだけ。
-    this.#richTitles = this.titles.map((title) => {
-      const lineage = (title.lineage ?? []).map((r) => ({ ...r }));
-
-      // 前進パス: 次代の獲得大会を喪失大会に
-      // (返上して空位になった王者は、次の王者が王座決定戦で獲得しても負けていない)
-      for (let i = 0; i < lineage.length - 1; i++) {
-        if (lineage[i].end_reason === "vacated") continue;
-        if (!lineage[i].lost_at_event_id && lineage[i + 1].won_at_event_id) {
-          lineage[i].lost_at_event_id = lineage[i + 1].won_at_event_id;
-        }
-      }
-      // 後退パス: 前代の喪失大会を獲得大会に
-      for (let i = lineage.length - 1; i > 0; i--) {
-        if (!lineage[i].won_at_event_id && lineage[i - 1].lost_at_event_id) {
-          lineage[i].won_at_event_id = lineage[i - 1].lost_at_event_id;
-        }
-      }
-
-      return { ...title, lineage };
-    });
+    this.#richTitles = this.titles.map(enrichTitle);
     return this.#richTitles;
   }
 }
