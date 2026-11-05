@@ -32,6 +32,7 @@ def test_extract_matchups_standalone_versus_stops_at_a_bout_heading():
 
 def test_clean_fighter_name():
     assert clean_fighter_name(" 🟦○①かぶと【11勝13敗】（王者） ") == "かぶと"
+    assert clean_fighter_name("🟥わく(ターゲットライト級王者)") == "わく"  # 半角の括弧も取る (T.112.6.11)
 
 
 def test_title_to_event_ids_returns_every_event_of_a_joint_event():
