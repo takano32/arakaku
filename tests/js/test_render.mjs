@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { ADMIN_TABS, PUBLIC_TABS } from "../../docs/assets/js/config.js";
 import { TAB_FILTERS } from "../../docs/assets/js/data/filters.js";
 import { alertsHtml, fatalErrorHtml, showFatalError } from "../../docs/assets/js/ui/render/alerts.js";
-import { filterRowHtml, filterRows, mentionTypeRowHtml, sortMentionTypes } from "../../docs/assets/js/ui/render/filters.js";
+import { filterRowHtml, filterRows, mentionTypeRowHtml, sortMentionTypes } from "../../docs/assets/js/ui/render/filter_chips.js";
 import { navHtml, navItemHtml, pageTitle } from "../../docs/assets/js/ui/render/nav.js";
 import { dataCounts, statsHtml } from "../../docs/assets/js/ui/render/stats.js";
 import { focusChipHtml, focusChipLabel, toolbarMainHtml } from "../../docs/assets/js/ui/render/toolbar.js";
