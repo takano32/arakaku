@@ -6,15 +6,13 @@ import { eventsSection } from "./events.js";
 import { promotionsSection } from "./promotions.js";
 import { titlesSection } from "./titles.js";
 import { videosSection } from "./videos.js";
-import {
-  mentionsSection,
-  numbersFightRecordsSection,
-  numbersFightersSection,
-  numbersNameMatchesSection,
-  officialMiscSection,
-  officialPlayersSection,
-  sourcesSection,
-} from "./admin.js";
+import { sourcesSection } from "./sources.js";
+import { mentionsSection } from "./mentions.js";
+import { numbersFightersSection } from "./numbers_fighters.js";
+import { numbersNameMatchesSection } from "./numbers_name_matches.js";
+import { numbersFightRecordsSection } from "./numbers_fight_records.js";
+import { officialPlayersSection } from "./official_players.js";
+import { officialMiscSection } from "./official_misc.js";
 
 /**
  * タブ ID → セクション定義。各セクションは
