@@ -5,6 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { DataEnricher } from "../../docs/assets/js/data/enricher.js";
+import { composeFighter } from "../../docs/assets/js/data/enrich/fighter.js";
 
 function fakeLookups(overrides = {}) {
   return {
@@ -53,6 +54,30 @@ test("動画のアーカイブは platform_video_id で、リンクは video_id 
   enricher.enrichVideo({ video_id: "v1", platform_video_id: "yt1" });
   assert.deepEqual(calls, [["archive", "yt1"], ["links", "v1"]]);
   assert.equal(enricher.enrichVideo(undefined), undefined);
+});
+
+test("選手は fighter_id で名前対応を、numbers_fighter_id で名鑑を、表示名で公式選手を、所属名で団体を引いて合成する", () => {
+  const calls = [];
+  const nf = { numbers_fighter_id: "nf_1", stats: { wins: 3, losses: 1 } };
+  const op = { name: "かべい", organization: "ターゲット", nickname: "壁" };
+  const enricher = new DataEnricher(fakeLookups({
+    numbersNameMatches: () => [{ candidate_fighter_id: "kabei", numbers_fighter_id: "nf_1" }],
+    numbersFighterById: (id) => { calls.push(["numbers", id]); return nf; },
+    officialPlayers: () => [op],
+    promotionIdByName: (name) => { calls.push(["promotion", name]); return "target"; },
+  }));
+  const fighter = { fighter_id: "kabei", display_name: "かべい" };
+  const rich = enricher.enrichFighter(fighter);
+  assert.deepEqual(calls, [["numbers", "nf_1"], ["promotion", "ターゲット"]]);
+  assert.deepEqual(rich, composeFighter(fighter, { nf, op, officialPromotionId: "target" }));
+  assert.equal(rich.profile.nickname, "壁");
+  assert.equal(rich.profile.record.wins, 3);
+
+  // どちらにも当たらない選手は名鑑・団体を引かず、元のオブジェクトを返す
+  calls.length = 0;
+  const other = { fighter_id: "nobody", display_name: "だれか" };
+  assert.equal(enricher.enrichFighter(other), other);
+  assert.deepEqual(calls, []);
 });
 
 test("大会が引けない試合はコピーを返す", () => {
