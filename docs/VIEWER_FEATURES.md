@@ -75,7 +75,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | E3 | 配列 JSON の SAX ストリーミング（flush ごとの invalidate + rAF でまとめた再描画） | `data-loader.js #streamKey / #schedulePatch` | `data/loader.js #loadKeyProgressive / #schedulePatch` | 変更 | CDN の `@streamparser/json` を使わず、ファイル単位で届き次第反映する（invalidate + rAF でまとめた再描画は同じ）。理由: 一覧は新しい順なので部分配列の描画は先頭が入れ替わり続けて読みにくく、CDN 障害時の分岐も不要になる。最大のファイルでも 1MB 弱で、ファイル単位でも段階的に件数が増えていく |
 | E4 | タブ別遅延ロード `TAB_DATA_KEYS` | `data-loader.js` | `config.js TAB_DATA_KEYS`, `data/loader.js loadForTab` | 検証済 | ブラウザ（通信で本文、出典言及で言及が後から届く）、validate_json.js |
 | E5 | 描画ゲート `REQUIRED_TAB_DATA_KEYS` と「読み込み中 / 読み込み待ち」、通信タブはプレビュー先行 | `view-controller.js renderContent`, `tab-renderers.js renderNoteArticleCard` | `config.js REQUIRED_TAB_DATA_KEYS`, `ui/render/list_view.js listGate`, `ui/sections/tsushin.js`（本文未着時は「本文を読み込み中…」とプレビュー） | 検証済 | ブラウザ |
-| E6 | 失敗はキー単位で fallback + `dataLoadErrors` + loaded 扱い | `data-loader.js #streamKeySafe / loadKeys` | `data/loader.js #loadKeyProgressive / loadKeys` | 検証済 | validate_json.js（存在しないファイルを混ぜても `load()` が落ちず記録される）。T.112.4.16 で、まとめて読む `loadKeys`（Phase 0 と `loadAll`）も `applyLoadedText` で形を検査する（配列のはずのファイルが配列でなければ読み込みエラー） |
+| E6 | 失敗はキー単位で fallback + `dataLoadErrors` + loaded 扱い | `data-loader.js #streamKeySafe / loadKeys` | `data/loader.js #loadKeyProgressive / loadKeys` | 検証済 | validate_json.js（存在しないファイルを混ぜても `load()` が落ちず記録される）。T.112.4.16 で、まとめて読む `loadKeys`（Phase 0 と `loadAll`）も `applyLoadedText` で形を検査する（配列のはずのファイルが配列でなければ読み込みエラー）。T.112.6.17 で、required（`loadAll`）のときは、取得の失敗はそのまま throw し、解析・形の検査はすべてのキーを済ませてから state.data に書く（1 つでも壊れていれば何も書かず、読み込み済みにもしない）。required でないときは、解析エラーもそのキーだけフォールバック + `dataLoadErrors` にする（以前はまとめて読んだ全キーが失敗扱い） |
 | E7 | 「データ読み込み失敗」カード（`role="alert"`） | `view-controller.js renderDataLoadErrors` | `ui/render/alerts.js AlertsRenderer`（`#alerts`） | 検証済 | コード（Node で `dataLoadErrors` の記録を確認。実データでは失敗が無いので表示は未発生） |
 | E8 | 致命的失敗のカード | `event-controller.js renderLoadError` | `main.js`, `ui/render/alerts.js showFatalError`（`#list-host` にアラート） | 検証済 | コード |
 | E9 | 空フォールバックの形 | `core/data-parser.js` | `data/parser.js` | 検証済 | validate_json.js |
@@ -142,7 +142,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | H12 | 名前対応カード | `tab-renderers.js renderNumbersNameMatchCard` | `ui/sections/numbers_name_matches.js`（対応先を選手リンクに） | 検証済 | ブラウザ（106 件） |
 | H13 | 名鑑記録カード | `tab-renderers.js renderNumbersFightRecordCard` | `ui/sections/numbers_fight_records.js` | 検証済 | ブラウザ（561 件、MAXバウト絞り込みで 107 件） |
 | H14 | 公式選手カード | `tab-renderers.js renderOfficialPlayerCard` | `ui/sections/official_players.js` | 検証済 | ブラウザ（108 件） |
-| H15 | 公式（その他）タブ | `tab-renderers.js officialMisc` | `ui/sections/official_misc.js` | 検証済 | ブラウザ（28 件）。T.112.4.25 で、沿革の月は数字のときだけ「月」を付ける（実データは 春・夏・冬・通年） |
+| H15 | 公式（その他）タブ | `tab-renderers.js officialMisc` | `ui/sections/official_misc.js` | 検証済 | ブラウザ（28 件）。T.112.4.25 で、沿革の月は数字のときだけ「月」を付ける（実データは 春・夏・冬・通年）。T.112.6.3 で、検索は元のレコードの項目だけを見る（内部で足した種別名・キーでは当たらない） |
 | H16 | 出所バッジの色（名鑑 = 青、公式 = 緑）と管理カードの左色帯 | `style.css` | `app.css .badge-numbers / .badge-official / .badge-note / .badge-gold`, `.rec-src-numbers / .rec-src-official / .rec-src-note` | 検証済 | ブラウザ。note = 紫、実績・王座戦 = 金を追加。ライト / ダーク両方 |
 | H17 | 共通部品（出典記事参照、動画参照、出典候補サマリ、関連試合、定義リスト、折りたたみ） | `services/source-renderers.js`, `services/related-renderers.js`, `ui/component-builder.js` | `ui/parts/*.js` | 検証済 | ブラウザ・Node（全行描画）。候補の重複排除・確度順・上位 5 件・「上位5件 / N件」は同じ |
 | H18 | YouTube 埋め込みファサードとサムネイル 404 回避 | `services/source-renderers.js renderVideoEmbed`, `main.js (lite-youtube-embed)` | `ui/parts/videos.js videoFacade`, `ui/video_embed.js activateVideoFacade` | 変更 | 自前のファサード（画像 + 再生ボタン → クリックで `youtube-nocookie` の iframe）。`thumbnail_sizes` から存在が確実なサイズ（maxres → sd → hq）を選ぶので 404 が出ない。ブラウザで確認 |
@@ -154,7 +154,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
 | I1 | ショートカット一式 | `ui/keyboard-nav.js`, `index.html #keyboard-help` | `ui/keyboard.js`, `index.html #help` | 変更 | キー割り当ては同じ。Enter / o の意味は F8 のとおり変更。ブラウザで j/k/Enter/o/?/Esc//(検索)/h/l/数字を確認 |
-| I2 | 入力欄フォーカス中は Esc で blur のみ、修飾キーは無視 | `ui/keyboard-nav.js` | `ui/keyboard.js` | 検証済 | コード・ブラウザ |
+| I2 | 入力欄フォーカス中は Esc で blur のみ、修飾キーは無視 | `ui/keyboard-nav.js` | `ui/keyboard.js` | 検証済 | コード・ブラウザ。T.112.6.20 で、Ctrl/Meta/Alt を押しながらの `?` と Esc も無視する（Shift+? は従来どおりヘルプ）。以前は Ctrl/Meta/Alt+? でヘルプが開き、Meta+Esc で検索が消えた。入力欄にフォーカス中の Esc は、修飾キー付きでも入力欄から抜けるだけ |
 | I3 | ヘルプダイアログ | `index.html`, `ui/keyboard-nav.js` | `index.html #help`, `ui/keyboard.js`（ナビ下部 / ページ末尾の「キーボード操作」ボタンからも開く） | 検証済 | ブラウザ |
 | I4 | 本文の開閉 UI（▶ 詳細 / ▼ 詳細、本文を表示、文脈を表示、出典候補、詳細） | `services/source-renderers.js`, `ui/component-builder.js` | `ui/parts/basic.js textFold / fold / details`（`.fold`） | 変更 | 「▶ 詳細 / ▼ 詳細」は「本文を表示」「概要欄を表示」に改名（何が開くか分かるように）。開閉の挙動は同じ |
 
