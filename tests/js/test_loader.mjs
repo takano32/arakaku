@@ -46,3 +46,20 @@ test("段階読み込みでは、壊れたファイル・取得の失敗をキ�
   for (const key of PRIMARY_DATA_KEYS) assert.ok(state.loadedDataKeys.has(key), key);
   assert.equal(state.loadingDataKeys.size, 0);
 });
+
+test("loadKeys は配列のはずのファイルが配列でなければ読み込みエラーにする (T.112.4.16)", async () => {
+  const state = { patch() {} };
+  const files = { officialPages: "official_pages.json", officialNews: "official_news.json" };
+  const texts = { "official_pages.json": "{}", "official_news.json": "[]" };
+  const loader = new DataLoader(state, { dataFiles: files, fetchText: async (path) => texts[path] });
+  await loader.loadKeys(["officialPages", "officialNews"]);
+  assert.deepEqual(state.data.officialPages, []);
+  assert.equal(state.dataLoadErrors.officialPages, "配列 JSON ではありません");
+  assert.equal("officialNews" in state.dataLoadErrors, false);
+  assert.equal(state.loadedDataKeys.has("officialPages"), true);
+});
+
+test("loadKeys(required) は形の壊れたファイルで throw する", async () => {
+  const loader = new DataLoader({ patch() {} }, { dataFiles: { officialPages: "official_pages.json" }, fetchText: async () => "{}" });
+  await assert.rejects(loader.loadKeys(["officialPages"], { required: true }), /official_pages\.json: 配列 JSON ではありません/);
+});
