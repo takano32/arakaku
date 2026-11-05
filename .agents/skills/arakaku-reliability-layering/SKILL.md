@@ -47,7 +47,7 @@ In `reliability.js`, each `*Reliability(entity)` returns the entity's best avail
 
 - **fighter**: `numbers_data`→numbers; `official_data`→official; `isMinimalFighter`→none; `source_article_ids`→note; `inferred_from_video_ids`→youtube; else none.
 - **bout**: `result_status==="numbers_verified"` / `numbers_records`→numbers; `source_article_id`→note; `inferred_from_video_id`→youtube; else none.
-- **event**: `official_data`→official; `source_article_id`→note; `inferred_from==="official_youtube_title"` / `source_video_ids`→youtube; else none.
+- **event**: `numbers_only` (an event that exists only in 名鑑 個人成績)→numbers, checked first; `official_data`→official; `source_article_id`→note; `inferred_from==="official_youtube_title"` / `source_video_ids`→youtube; else none.
 - **video**: `official_status==="official"`→official; `source_article_ids`→note; else youtube.
 
 `source_article_ids` is only a **mention** in a note article, not fighter profile data — it must not lift a stub fighter out of "minimal" (see below).
