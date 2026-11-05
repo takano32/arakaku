@@ -1,3 +1,4 @@
+import { buildNameMatchIndex, composeFighter } from "./enrich/fighter.js";
 import {
   buildOfficialPlayerIndexes,
   buildOfficialTournamentIndex,
@@ -15,17 +16,6 @@ import {
  * - 内部インデックスは遅延構築キャッシュ。repo データ差し替え後は DataRepository.invalidate() が
  *   reset() を呼んで破棄する。
  */
-
-// 名鑑の実績マーカーを表示用ラベル配列にする。belt_marker/tournament_win_marker は生値が
-// 既に絵文字 (👑 / 🏆x3) を含むので、絵文字を二重に付けず「王座/優勝」ラベルを前置するだけにする。
-export function numbersAchievementLabels(achievements) {
-  const a = achievements ?? {};
-  const out = [];
-  if (a.belt_marker) out.push(`王座 ${a.belt_marker}`);
-  if (a.tournament_win_marker) out.push(`優勝 ${a.tournament_win_marker}`);
-  if (a.white_glove_count) out.push(`白グローブ ${a.white_glove_count}回`);
-  return out;
-}
 
 export class DataEnricher {
   constructor(repo) {
@@ -48,14 +38,7 @@ export class DataEnricher {
 
   // fighter_id → numbersNameMatch (matched or candidate)
   get #nameMatches() {
-    if (this.#nameMatchIndex) return this.#nameMatchIndex;
-    this.#nameMatchIndex = new Map();
-    for (const m of this.repo.numbersNameMatches) {
-      if (m.matched_fighter_id && !this.#nameMatchIndex.has(m.matched_fighter_id))
-        this.#nameMatchIndex.set(m.matched_fighter_id, m);
-      if (m.candidate_fighter_id && !this.#nameMatchIndex.has(m.candidate_fighter_id))
-        this.#nameMatchIndex.set(m.candidate_fighter_id, m);
-    }
+    this.#nameMatchIndex ??= buildNameMatchIndex(this.repo.numbersNameMatches);
     return this.#nameMatchIndex;
   }
 
@@ -125,88 +108,13 @@ export class DataEnricher {
     return this.#officialTournamentIndex;
   }
 
-  #applyOfficialPlayer(rich, op) {
-    rich.profile = { ...(rich.profile ?? {}) };
-    if (op.nickname) rich.profile.nickname = op.nickname;
-    if (op.nationality) rich.profile.nationality = op.nationality;
-    if (op.name_kana) rich.profile.name_kana = op.name_kana;
-    // 戦績 (wins/losses/draws) は enrichFighter の #mergeRecord で名鑑と統合し
-    // profile.record に集約するため、ここでは profile に展開しない。
-    if (op.bio && !rich.summary) rich.summary = op.bio;
-    rich.official_data = op;
-  }
-
-  // 公式選手データを fighter に重ねる (base を上書き; 名鑑が後でさらに上書きする)
-  #applyOfficialFighter(rich, op) {
-    this.#applyOfficialPlayer(rich, op);
-    if (op.weight_class) rich.main_division = op.weight_class;
-    const promotionId = this.repo.promotionIdByName(op.organization);
-    if (promotionId) rich.main_promotion_id = promotionId;
-    if (op.gym) rich.profile.gym = op.gym;
-    if (op.age != null && op.age !== "") rich.profile.age = op.age;
-    if (op.height) rich.profile.height = /^\d+$/.test(String(op.height)) ? `${op.height}cm` : op.height;
-  }
-
-  // 名鑑データを fighter に重ねる (最優先)
-  #applyNumbersFighter(rich, nf) {
-    if (nf.display_name) rich.display_name = nf.display_name;
-    if (nf.main_division) rich.main_division = nf.main_division;
-    if (nf.main_promotion_id) rich.main_promotion_id = nf.main_promotion_id;
-    rich.profile = { ...(rich.profile ?? {}) };
-    if (nf.profile?.height) rich.profile.height = nf.profile.height;
-    if (nf.profile?.age) rich.profile.age = nf.profile.age;
-    if (nf.profile?.gym) rich.profile.gym = nf.profile.gym;
-    rich.numbers_data = nf;
-  }
-
-  // 公式・名鑑の戦績を 1 つに統合する。両者は通常一致するので勝敗は一度だけ持つ
-  // (名鑑優先・無ければ公式)。各ソース固有の数値 (名鑑: fight_count/win_rate, 公式: draws)
-  // は取りこぼさず合算する。どちらの戦績も無ければ null。
-  #mergeRecord(op, nf) {
-    const ns = nf?.stats ?? {};
-    const wins = ns.wins ?? op?.wins ?? null;
-    const losses = ns.losses ?? op?.losses ?? null;
-    if (wins == null && losses == null && ns.fight_count == null) return null;
-    return {
-      fight_count: ns.fight_count ?? null, // 名鑑のみ
-      wins,
-      losses,
-      draws: op?.draws ?? null,            // 公式のみ
-      win_rate: ns.win_rate ?? null,       // 名鑑のみ
-    };
-  }
-
+  // 名鑑 (名前対応 → numbers_fighters) と公式 (表示名) を引き当て、重ね順の規則は enrich/fighter.js に任せる
   enrichFighter(fighter) {
-    const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
     const match = this.#nameMatches.get(fighter.fighter_id);
     const nf = match ? this.repo.numbersFighterById(match.numbers_fighter_id) : undefined;
     const op = this.#officialPlayerByName(fighter.display_name);
-
-    const needsClear = fighter.summary === PLACEHOLDER;
-    if (!nf && !op) return needsClear ? { ...fighter, summary: "" } : fighter;
-
-    const rich = { ...fighter };
-    if (needsClear) rich.summary = "";
-
-    // 信頼性の低い順に重ねる: base(通信/YouTube) → 公式 → 名鑑
-    if (op) this.#applyOfficialFighter(rich, op);
-    if (nf) this.#applyNumbersFighter(rich, nf);
-
-    // summary は 名鑑(catchphrase/notes) > base(通信/YouTube) で決定する。
-    // 公式 bio は summary に流用せず、official_data 経由でカードが専用ブロックに表示する。
-    const numbersSummary = nf && (nf.catchphrase || nf.notes)
-      ? [nf.catchphrase, nf.notes].filter(Boolean).join("\n\n")
-      : "";
-    rich.summary = numbersSummary || (needsClear ? "" : (fighter.summary || ""));
-
-    // 公式(戦績/bio/国籍) と 名鑑(通算数/勝率/実績) を 1 つの戦績プロフィールに統合する。
-    rich.profile = { ...(rich.profile ?? {}) };
-    const record = this.#mergeRecord(op, nf);
-    if (record) rich.profile.record = record;
-    const achievements = numbersAchievementLabels(nf?.achievements);
-    if (achievements.length) rich.profile.achievements = achievements;
-
-    return rich;
+    const officialPromotionId = op ? this.repo.promotionIdByName(op.organization) : undefined;
+    return composeFighter(fighter, { nf, op, officialPromotionId });
   }
 
   enrichEvent(event) {

@@ -1,6 +1,6 @@
 import { labels } from "../../data/labels.js";
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
-import { numbersAchievementLabels } from "../../data/enricher.js";
+import { numbersAchievementLabels } from "../../data/enrich/fighter.js";
 import { escapeHtml, externalLink, joinPresent, recordText } from "../html.js";
 
 /**
