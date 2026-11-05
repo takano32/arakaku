@@ -38,6 +38,11 @@ export class SearchBox {
     if (this.#clearButton) this.#clearButton.hidden = !value;
   }
 
+  /** 検索欄にフォーカスを移す (キーボードの / ) */
+  focus() {
+    this.#input?.focus();
+  }
+
   /** 予約済みの検索 (デバウンス待ち) を取り消す */
   cancelPending() {
     clearTimeout(this.#timer);

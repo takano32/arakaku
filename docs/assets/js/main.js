@@ -35,6 +35,7 @@ new KeyboardNav({
   switchTab: (tabId) => shell.switchTab(tabId),
   list: () => shell.currentList(),
   clearSearch: () => shell.clearSearch(),
+  focusSearch: () => searchBox.focus(),
   toast: (message) => shell.toast(message),
 }).bind();
 
