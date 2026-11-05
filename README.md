@@ -641,7 +641,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 ### ソースキャッシュ取得
 
 - `scripts/cache_note_html.py`: `articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。404・削除済みは警告扱いで止めません。
-- `scripts/cache_youtube_api.py`: `videos.csv` の YouTube 動画を YouTube Data API v3（`videos.list`）で取得し、API が返した動画リソースをそのまま `tmp/youtube-api/<platform_video_id>.json` にキャッシュします。環境変数 `YOUTUBE_API_KEY` が必要です。API が返さなかった動画（削除・非公開など）は `[missing]` として表示し、終了コード 1 にします。
+- `scripts/cache_youtube_api.py`: `videos.csv` の YouTube 動画を YouTube Data API v3（`videos.list`）で取得し、API が返した動画リソースをそのまま `tmp/youtube-api/<platform_video_id>.json` にキャッシュします。環境変数 `YOUTUBE_API_KEY` が必要です。API が返さなかった動画（削除・非公開など）は `[missing]` として表示し、終了コード 1 にします。`--allow-missing` を付けると `[missing]` は表示したまま終了コード 0 にします。`make cache-youtube-api` は `--allow-missing` を渡すので、動画が無くても make のターゲット（`make refresh-sources` も）は失敗しません。
 - `scripts/arakaku/youtube.py`: `tmp/youtube-api/*.json` を読み、`archive_metadata.py`・`build_source_documents.py` 向けのメタデータに正規化します（`upload_date` は `publishedAt` の UTC 日付を `YYYYMMDD`、`duration_string` は `H:MM:SS` / `M:SS` / 秒）。
 - `scripts/download_official_data.sh`: 団体公式サイト（`kobayashi856/arakaku-site`）のデータを `tmp/arakaku-site/` に取得します。
 
@@ -666,13 +666,13 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 
 - `scripts/make_source_mention_result_candidates.py`: `source_mentions.csv` の `result` 言及から、レビュー用の試合結果候補CSVを作ります。
 - `scripts/make_source_reference_candidates.py`: note本文と YouTube概要欄から、`review/source_event_reference_candidates.csv`・`review/source_bout_reference_candidates.csv`・`review/source_video_reference_candidates.csv` を作ります。確認支援用の候補です。
-- `scripts/match_unknown_bouts_to_note_results.py`: 試合側から結果 note を探します。結果不明の試合は両選手の名前の直前の ○/◯/● で勝者を決め、`review/unknown_bout_note_results.csv` に書きます（Numbers の勝者と一致した行だけ `apply=true`）。結果が分かっている試合は、空の決着欄（決着方法・技・判定スコアなど）を同じ note の行から埋める候補を `review/known_bout_note_methods.csv` に書きます。`docs/data` の JSON を読むので、先に `make build` が要ります（無ければエラーで止まります）。
+- `scripts/match_unknown_bouts_to_note_results.py`: 試合側から結果 note を探します。結果不明の試合は両選手の名前の直前の ○/◯/〇/● で勝者を決め、`review/unknown_bout_note_results.csv` に書きます（Numbers の勝者と一致した行だけ `apply=true`）。結果が分かっている試合は、空の決着欄（決着方法・技・判定スコアなど）を同じ note の行から埋める候補を `review/known_bout_note_methods.csv` に書きます。`docs/data` の JSON を読むので、先に `make build` が要ります（無ければエラーで止まります）。
 - `scripts/apply_structured_result_patches.py`: レビュー済みの結果候補（`apply=true` の行）を `bouts.csv` / `bout_participants.csv` に反映します。既定は `review/unknown_bout_note_results.csv` で、同じ列の CSV を引数で渡せます（例: `python3 scripts/apply_structured_result_patches.py review/known_bout_note_methods.csv`）。勝敗は winner / loser と出場者の名前の完全一致だけで決め、2 人の出場者に 1 人ずつ一致しない行は `[warn]` を出して反映しません。CSV は一時ファイルから原子的に差し替えます。反映前に必ず候補CSVを確認してください。
 
 
 ### 検証
 
-- `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、invalid video link、missing required field、duplicate source/mention id など）。
+- `scripts/validate_json.py`: 生成 JSON の構造と参照関係を検証します（unknown event/fighter reference、duplicate id、unknown video reference、duplicate video link、missing required field、duplicate source/mention id など）。
 - `scripts/validate_json.js`: Node 側から生成 JSON を viewer の実モジュールに通して検証します（段階ロードで CORE キーが揃うこと、失敗ファイルの fallback、`loadForTab`、Repository の ID 解決、空クエリの検索一致、全セクションの全行を実際に描画して例外や `undefined` の混入が無いこと）。
 - `tests/js/test_*.mjs`: viewer の Node ユニットテスト（`node:test`、依存なし、DOM なし）。データ層（filters・query・relations・enrich など）、URL と履歴、一覧の純関数、部品、各セクションの `build()`、Markdown 変換（リンクや iframe から属性・スクリプトを注入できないこと）を確かめます。
 - `make validate` が `validate_json.py`・`validate_json.js` と `node --test tests/js/test_*.mjs` を順に実行します（テストファイルが 1 つも無ければ失敗します）。
@@ -718,13 +718,13 @@ make generate-stage1   # 生データ取り込み（Numbers + crawl キャッシ
 make generate-stage2   # 派生（stage1 CSV → 派生 CSV）
 make regenerate-csvs   # generate-stage1 → generate-stage2 → reorder-data
 make rebuild           # check-stage1/2-inputs → clean-generated-csvs + clean-generated → regenerate-csvs → check
-make rebuild-stage2    # clean-stage2-csvs + clean-generated → generate-stage2 → check
+make rebuild-stage2    # check-stage2-inputs → clean-stage2-csvs + clean-generated → generate-stage2 → reorder-data → check
 ```
 
 ローカルに `tmp/note-html/`、`tmp/youtube-api/`、`data-raw/アラカク選手名鑑.numbers`、`tmp/arakaku-site/` がある前提です。canonical CSV は git の内容を使います。
 
-- `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs` → `reorder_data`。
-- `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv`。
+- `generate-stage1`: `extract_numbers` → `archive_metadata` → `generate_articles` → `build_source_documents` → `generate_official_csvs`。`reorder_data` は stage 2 の `article_links.csv` を読むので、`regenerate-csvs` が stage 2 のあとに 1 回だけ実行します。
+- `generate-stage2`: `generate_promotions` → `generate_titles` → `generate_aliases` → `generate_video_links` → `generate_article_links` → `generate_official_pages_csv` → `make_source_mention_result_candidates` → `make_source_reference_candidates`。
 - `rebuild`: 生成 CSV と生成 JSON を全削除してから全再生成し、check まで通します。
 - `rebuild-stage2`: stage2 生成 CSV だけ作り直して check します（stage1 を作り直さない高速ループ）。
 

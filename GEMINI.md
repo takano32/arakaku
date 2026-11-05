@@ -77,7 +77,7 @@ To mitigate risks from external site structure changes or data deletion, critica
 Numbers-derived fight records are comparison data. Do not directly promote them into confirmed bouts or participant results.
 
 ### Official Data Pipeline
-1. `make download-official-data` (Fetches `src/` tree from kobayashi856/arakaku-site into `tmp/arakaku-site/`)
+1. `make download-official-data` (Fetches the `src/` tree from kobayashi856/arakaku-site into `tmp/arakaku-site/` and the `public/` tree into `tmp/arakaku-site/public/`)
 2. `python scripts/generate_official_csvs.py` (runs `generate_official_csvs.py` → `data-src/official_*.csv`)
 3. `make build` (runs `build_official_json.py` → `docs/data/official_players.json`, `official_tournaments.json`, `official_matches.json`, `official_history.json`; `build_official_pages_json.py` → `official_news.json`, `official_pages.json`)
 4. Enrichment happens automatically client-side in `docs/assets/js/data/enricher.js` (rules in `docs/assets/js/data/enrich/*.js`) — do NOT add official data to `build_json.py`.

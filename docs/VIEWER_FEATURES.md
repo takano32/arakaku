@@ -33,7 +33,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
-| B1 | フリーテキスト検索（150ms デバウンス、✕ クリア、Esc でクリア、入力でフォーカス解除） | `event-controller.js` | `ui/search_box.js SearchBox`（`#search` / `#search-clear`）、`ui/shell.js clearSearch()` | 変更 | ブラウザ（「テール」で 1 件、クリアで 131 件、URL `q=`）。T.66 で全角半角・ひらがなカタカナ・大文字小文字を同一視（`data/query.js normalizeSearchText`）、空白区切りは AND、選手は団体名でも引ける、日本語入力の変換中は検索しない。validate_json.js で検査。T.112.4.14 で、検索語が空のときの Esc（検索欄でも全体でも）は何もしない（フォーカスと履歴を残す）。T.112.4.15 で、打ちかけの検索（150ms の遅延待ち）は選手・大会・試合へのリンクを押すと取り消す。どちらもブラウザで確認 |
+| B1 | フリーテキスト検索（150ms デバウンス、✕ クリア、Esc でクリア、入力で選手・大会・試合の絞り込み（フォーカス）を解除） | `event-controller.js` | `ui/search_box.js SearchBox`（`#search` / `#search-clear`）、`ui/shell.js clearSearch()` | 変更 | ブラウザ（「テール」で 1 件、クリアで 131 件、URL `q=`）。T.66 で全角半角・ひらがなカタカナ・大文字小文字を同一視（`data/query.js normalizeSearchText`）、空白区切りは AND、選手は団体名でも引ける、日本語入力の変換中は検索しない。validate_json.js で検査。T.112.4.14 で、検索語が空のときの Esc（検索欄でも全体でも）は何もしない（選手・大会・試合の絞り込みと履歴を残す）。T.112.4.15 で、打ちかけの検索（150ms の遅延待ち）は選手・大会・試合へのリンクを押すと取り消す。どちらもブラウザで確認 |
 | B2 | 小文字化した連結文字列への部分一致 | `query-matcher.js #matchQuery` | `data/query.js #matchQuery` | 検証済 | Node 旧新比較 |
 | B3〜B10 | 各エンティティの検索対象テキスト（選手 / 試合 / 大会 / 団体 / 動画 / 王座 / 言及 / 出典本文） | `query-matcher.js` | `data/search_text.js`（`sourceReferenceSearchText` を含む。公式タブ・名鑑系・公式系の管理タブにも `includes` で検索を追加） | 検証済 | Node 旧新比較（21 語 × 3 言及種別で全エンティティの一致結果が同一）。公式 / 名鑑選手 / 名前対応 / 名鑑記録 / 公式選手 / 公式(その他) は旧実装では検索対象外だったが新実装では検索できる（追加） |
 | B11 | 検索キャッシュは `repo.revision` で破棄 | `query-matcher.js #cachedText` | `data/query.js #cachedText` | 検証済 | コード同一 |
