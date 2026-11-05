@@ -53,3 +53,9 @@ test("invalidate するまで索引を使い回し、invalidate の後は新し�
   assert.equal(repo.findFighter("a"), undefined);
   assert.ok(repo.findFighter("b"));
 });
+
+test("articleLinksForArticle は記事 1 本のリンクを返す (T.112.4.26)", () => {
+  const repo = new RawRepository({ articleLinks: [{ article_id: "a", entity_id: "x" }, { article_id: "b", entity_id: "y" }, { article_id: "a", entity_id: "z" }] });
+  assert.deepEqual(repo.articleLinksForArticle("a").map((l) => l.entity_id), ["x", "z"]);
+  assert.deepEqual(repo.articleLinksForArticle("none"), []);
+});
