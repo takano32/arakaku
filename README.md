@@ -641,7 +641,7 @@ JSON はテーブルごとに 1 ファイルずつ出力する viewer の配信 
 ### ソースキャッシュ取得
 
 - `scripts/cache_note_html.py`: `articles.csv` の note URL を読み、本文HTMLを `tmp/note-html/` にキャッシュします。404・削除済みは警告扱いで止めません。
-- `scripts/cache_youtube_api.py`: `videos.csv` の YouTube 動画を YouTube Data API v3（`videos.list`）で取得し、API が返した動画リソースをそのまま `tmp/youtube-api/<platform_video_id>.json` にキャッシュします。環境変数 `YOUTUBE_API_KEY` が必要です。API が返さなかった動画（削除・非公開など）は `[missing]` として表示し、終了コード 1 にします。
+- `scripts/cache_youtube_api.py`: `videos.csv` の YouTube 動画を YouTube Data API v3（`videos.list`）で取得し、API が返した動画リソースをそのまま `tmp/youtube-api/<platform_video_id>.json` にキャッシュします。環境変数 `YOUTUBE_API_KEY` が必要です。API が返さなかった動画（削除・非公開など）は `[missing]` として表示し、終了コード 1 にします。`--allow-missing` を付けると `[missing]` は表示したまま終了コード 0 にします。`make cache-youtube-api` は `--allow-missing` を渡すので、動画が無くても make のターゲット（`make refresh-sources` も）は失敗しません。
 - `scripts/arakaku/youtube.py`: `tmp/youtube-api/*.json` を読み、`archive_metadata.py`・`build_source_documents.py` 向けのメタデータに正規化します（`upload_date` は `publishedAt` の UTC 日付を `YYYYMMDD`、`duration_string` は `H:MM:SS` / `M:SS` / 秒）。
 - `scripts/download_official_data.sh`: 団体公式サイト（`kobayashi856/arakaku-site`）のデータを `tmp/arakaku-site/` に取得します。
 

@@ -144,7 +144,7 @@ tmp/youtube-api/
 
 Do not download video bodies.
 
-Videos the API does not return (deleted, private) are printed as `[missing]` and make the script exit 1.
+Videos the API does not return (deleted, private) are printed as `[missing]` and make the script exit 1, unless `--allow-missing` is given; then they are still listed but the exit code is 0. `make cache-youtube-api` passes `--allow-missing`, so a missing video does not fail the make target (or `make refresh-sources`).
 
 Read the cache only through `scripts/arakaku/youtube.py` (`iter_cached_videos`), which maps API fields to the flat metadata the downstream scripts use. An invalid cache JSON raises instead of being skipped, so the pipeline stops; delete the file and rerun `make cache-youtube-api`.
 
