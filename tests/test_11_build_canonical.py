@@ -155,6 +155,12 @@ def test_build_videos_takes_archive_metadata_and_link_status():
 
 # --- build/articles ---
 
+def test_build_articles_keeps_the_status_cell():
+    # 空の status を、検証の vocab に無い "parsed" に書き換えない (T.112.6.10)。
+    rows = articles.build_articles([{"article_id": "a", "status": "unparsed"}, {"article_id": "b", "status": ""}])
+    assert [row["status"] for row in rows] == ["unparsed", None]
+
+
 def test_source_documents_are_split_from_their_bodies():
     docs = [{"source_id": "note:a", "title": "A", "content_text": "本文"}]
     assert articles.source_documents_without_bodies(docs) == [{"source_id": "note:a", "title": "A"}]
