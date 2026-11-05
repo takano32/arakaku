@@ -102,3 +102,11 @@ def test_archive_row_shapes():
     assert note_archive_row("note-n1.html", metadata, "at") == {
         "filename": "note-n1.html", "webpage_url": "u", "title": "t", "description": "d", "published_at": "2026-01-01", "archived_at": "at",
     }
+
+
+def test_new_archive_rows_get_a_utc_timestamp_with_offset():
+    # fetched_at と同じ形 (T.112.4.13)。既存の行の値は archived_at_for が引き継ぐ。
+    from arakaku.sources.archives import archived_at_for, current_archive_time
+    now = current_archive_time()
+    assert now.endswith("+00:00") and len(now) == 25
+    assert archived_at_for({"k": {"archived_at": "2026-06-13T04:03:42"}}, "k", now) == "2026-06-13T04:03:42"
