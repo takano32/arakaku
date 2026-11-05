@@ -213,7 +213,9 @@ def test_non_numeric_reign_order_is_an_error(report):
 
 
 def test_unknown_article_type_is_an_error(report):
-    from arakaku.validation.entities import validate_articles
-    validate_articles(report, [{"article_id": "a", "title": "t", "url": "https://note.com/x", "article_type": "title_history"},
-                               {"article_id": "b", "title": "t", "url": "https://note.com/y", "article_type": "event_card"}])
-    assert report.errors == ["articles.json[0]: unknown article_type: title_history"]
+    # ほかの語彙と同じ check_enum で、ID つきの形 (T.112.6.18)。
+    from arakaku.validation.rules import validate_enums
+    articles = [{"article_id": "a", "article_type": "title_history"}, {"article_id": "b", "article_type": "event_card"}]
+    validate_enums(report, {"bouts": [], "events": [], "fighters": [], "bout_participants": [], "source_mentions": [],
+                            "numbers_name_matches": [], "articles": articles})
+    assert report.errors == ["articles.json[0] (a): unknown article_type: title_history"]
