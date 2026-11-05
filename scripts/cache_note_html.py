@@ -4,7 +4,7 @@ from __future__ import annotations
 # 役割: articles.csv の note.com 記事 URL を巡回し、生 HTML を tmp/note-html/ に
 #   キャッシュする取得専用スクリプト。
 # アーキ上の位置: パイプライン最上流の取得段。ファイル名は note_cache_name() で決まり、
-#   下流の build_source_documents.py が同じ関数で同じ名前を読む (writer/reader 契約)。
+#   (arakaku/notes/cache.py)。下流の build_source_documents.py が同じ関数で同じ名前を読む (writer/reader 契約)。
 #   ここでファイル名規約を直書きしないこと。
 # 不変条件: tmp/ はキャッシュでありコミットしない。安定メタデータは別途
 #   archive_metadata.py が data-src/archives/note.csv へ吸い上げる。
@@ -17,7 +17,8 @@ import urllib.request
 from pathlib import Path
 
 from arakaku.io import read_csv
-from arakaku.paths import DATA_SRC, NOTE_HTML_DIR, note_cache_name
+from arakaku.notes.cache import note_cache_name
+from arakaku.paths import DATA_SRC, NOTE_HTML_DIR
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"

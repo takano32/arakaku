@@ -1,4 +1,5 @@
 # 役割: note.com の記事 (アラカク通信のーと) に関する純粋なロジックのパッケージ。
+#   cache.py    = tmp/note-html/ のキャッシュのファイル名の規約 (書く側と読む側の契約)
 #   html.py     = 記事 HTML から本文・メタデータを取り出す
 #   crawl.py    = 記事一覧 (RSS / HTML / 非公式 API) の解析と articles.csv への追記規則
 #   articles.py = アーカイブ済みメタデータから articles.csv の行を作る (article_type の分類)
