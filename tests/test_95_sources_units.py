@@ -45,7 +45,7 @@ def test_youtube_document_prefers_the_videos_csv_title_and_url():
 
 def test_youtube_document_falls_back_to_the_cache_and_skips_empty_descriptions():
     doc = youtube_document({}, cached_video(), "Abc.json", "t")
-    assert (doc["source_ref_id"], doc["title"], doc["url"]) == ("youtube_Abc", "API title", "https://www.youtube.com/watch?v=Abc")
+    assert (doc["source_ref_id"], doc["title"], doc["url"]) == ("youtube_abc", "API title", "https://www.youtube.com/watch?v=Abc")
     assert youtube_document({}, cached_video(description=" \n "), "Abc.json", "t") is None
 
 
@@ -53,7 +53,7 @@ def test_youtube_documents_match_videos_by_platform_id():
     videos = [{"platform": "youtube", "platform_video_id": "Abc", "video_id": "youtube_abc"},
               {"platform": "other", "platform_video_id": "Def", "video_id": "other_def"}]
     cached = [(Path("Abc.json"), cached_video("Abc")), (Path("Def.json"), cached_video("Def"))]
-    assert [d["source_ref_id"] for d in youtube_documents(videos, cached, "t")] == ["youtube_abc", "youtube_Def"]
+    assert [d["source_ref_id"] for d in youtube_documents(videos, cached, "t")] == ["youtube_abc", "youtube_def"]
 
 
 def test_note_documents_skip_non_note_urls_missing_caches_and_empty_bodies(tmp_path):
