@@ -1027,6 +1027,26 @@ youtube_rz6qjwr_ebc,bout,max-bout-6-middleweight-gp-08,full_fight,,,公式YouTub
 youtube_rz6qjwr_ebc,event,max-bout-6-middleweight-gp,reference,,,Migrated from events.source_video_ids.
 youtube_rz6qjwr_ebc,fighter,rancher_sugaya,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_rz6qjwr_ebc,fighter,fighter_5d7998006d,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_glr4fpbtkt8,bout,target-105-01,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_glr4fpbtkt8,event,target-105,reference,,,Migrated from events.source_video_ids.
+youtube_glr4fpbtkt8,fighter,fighter_cdb8d47163,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_glr4fpbtkt8,fighter,tsukurihara,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_qrqurslkztu,bout,target-105-02,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_qrqurslkztu,event,target-105,reference,,,Migrated from events.source_video_ids.
+youtube_qrqurslkztu,fighter,kitamura,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_qrqurslkztu,fighter,yamaarashi,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_ld0db62sn4i,bout,target-105-03,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_ld0db62sn4i,event,target-105,reference,,,Migrated from events.source_video_ids.
+youtube_ld0db62sn4i,fighter,frahm_gran,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_ld0db62sn4i,fighter,tsuoshi,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_hw8vsonfpms,bout,target-105-04,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_hw8vsonfpms,event,target-105,reference,,,Migrated from events.source_video_ids.
+youtube_hw8vsonfpms,fighter,daina,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_hw8vsonfpms,fighter,kyonai,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
+youtube_qnfy3q_ci_i,bout,target-105-05,full_fight,,,公式YouTube動画タイトルから推定。
+youtube_qnfy3q_ci_i,event,target-105,reference,,,Migrated from events.source_video_ids.
+youtube_qnfy3q_ci_i,fighter,kintoki,reference,,,Migrated from fighters.inferred_from_video_ids.
+youtube_qnfy3q_ci_i,fighter,ginnosuke,reference,,,Migrated from fighters.inferred_from_video_ids. inferred_confidence=medium.
 youtube_bvtj1lsfwz4,bout,emperor-118-isftownyj1u,preview,,,公式YouTube動画タイトルから推定。
 youtube_bvtj1lsfwz4,event,emperor-118,reference,,,Migrated from events.source_video_ids.
 youtube_bvtj1lsfwz4,fighter,rouged_starry,reference,,,Migrated from fighters.inferred_from_video_ids.
