@@ -210,4 +210,4 @@ def test_empty_bout_result_and_title_cells_become_null():
            "is_title_bout": "", "title_id": "", "title_result": "", "title_note": ""}
     assert set(_bout_result(row).values()) == {None}
     title = _bout_title(row)
-    assert (title["title_id"], title["title_result"]) == (None, None)
+    assert (title["title_id"], title["title_result"], title["note"]) == (None, None, None)  # note は T.112.6.15
