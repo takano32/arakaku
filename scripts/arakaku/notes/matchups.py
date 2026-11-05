@@ -73,11 +73,13 @@ def extract_promotion_profile_fighters(content_text: str) -> list[str]:
     names: list[str] = []
     lines = [ln.strip() for ln in content_text.split("\n") if ln.strip()]
     for line in lines:
+        # NFKC で全角の括弧「（）」は半角の「()」になるので、下の正規表現は半角で書く。以前は全角で
+        # 書いていたため、役割の注記が取れず、MAXバウトの形式も一致しなかった (T.112.4.23)。
         t = nfkc(line)
         # "初代王者 Fighter" or "X代目 Fighter"
         m = re.match(r"(?:初代王者|[0-9]+代目)\s+(.+)", t)
         if m:
-            name = re.sub(r"（[^）]*）", "", m.group(1)).strip()
+            name = re.sub(r"\([^)]*\)", "", m.group(1)).strip()
             if name:
                 names.append(name)
         # "【Fighter】" tournament winners (skip section headers like 【MAXバウトの歴代王者】)
@@ -87,7 +89,7 @@ def extract_promotion_profile_fighters(content_text: str) -> list[str]:
             if name and "王者" not in name and "優勝" not in name:
                 names.append(name)
         # "第X回Fighter（promotion）" (MAXバウト champion format)
-        m = re.match(r"第[0-9]+回(.+?)（", t)
+        m = re.match(r"第[0-9]+回(.+?)\(", t)
         if m:
             name = m.group(1).strip()
             if name:
