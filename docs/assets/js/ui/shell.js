@@ -146,6 +146,9 @@ export class Shell {
   clearSearch() {
     this.#searchBox.setValue("");
     this.#searchBox.cancelPending();
+    // 検索語が無いときは消すものが無い。空の検索欄で Esc を押しても、選手などのフォーカスを外したり
+    // 履歴を積んだりしない (全体の Esc と同じ。T.112.4.14)。
+    if (!this.#state.query) return;
     this.#state.clearFocus();
     this.#state.patch({ query: "" });
   }
