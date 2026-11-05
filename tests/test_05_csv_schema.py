@@ -54,14 +54,14 @@ def test_every_csv_header_matches_schema(repo_root):
         assert fieldnames == columns, f"{filename} header differs from arakaku/schema.py"
 
 
-def test_read_csv_rejects_renamed_columns_and_missing_files(utils_module, tmp_path, monkeypatch):
-    monkeypatch.setattr(utils_module, "DATA_SRC", tmp_path)
+def test_read_csv_rejects_renamed_columns_and_missing_files(io_module, tmp_path, monkeypatch):
+    monkeypatch.setattr(io_module, "DATA_SRC", tmp_path)
     (tmp_path / "events.csv").write_text("date\n2026-01-01\n", encoding="utf-8")
     with pytest.raises(ValueError, match="missing"):
-        utils_module.read_csv(tmp_path / "events.csv")
+        io_module.read_csv(tmp_path / "events.csv")
     with pytest.raises(FileNotFoundError):
-        utils_module.read_csv(tmp_path / "bouts.csv")
-    assert utils_module.read_csv(tmp_path / "bouts.csv", missing_ok=True) == []
+        io_module.read_csv(tmp_path / "bouts.csv")
+    assert io_module.read_csv(tmp_path / "bouts.csv", missing_ok=True) == []
 
 
 def test_relational_csv_primary_keys_are_present_and_unique(repo_root):

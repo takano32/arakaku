@@ -9,7 +9,7 @@ from __future__ import annotations
 #   契約。キーを変える場合は viewer 側と validate_json も合わせること。
 # 関連スキル: .agents/skills/arakaku-maintainer。
 from typing import Any
-from .utils import bool_from_text, none_if_empty
+from .text import bool_from_text, none_if_empty
 
 def promotion_rules(row: dict[str, str]) -> dict[str, Any]:
     return {

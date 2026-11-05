@@ -10,9 +10,7 @@ import json
 import re
 from pathlib import Path
 
-from arakaku.utils import ROOT
-
-YOUTUBE_CACHE_DIR = ROOT / "tmp" / "youtube-api"
+from arakaku.paths import YOUTUBE_CACHE_DIR
 
 # YouTube の画像サイズ名を小さい順に並べたもの。standard = sddefault、maxres = maxresdefault。
 THUMBNAIL_SIZE_ORDER = ["default", "medium", "high", "standard", "maxres"]
