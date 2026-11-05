@@ -34,12 +34,12 @@ def validate_official_tournaments(report: Report, tournaments: list[Any]) -> Non
 
 
 def validate_official_matches(report: Report, matches: list[Any]) -> None:
-    # ui/sections/admin.js shows `id` in the detail disclosure; other fields are guarded.
+    # ui/sections/official_misc.js shows `id` in the detail disclosure; other fields are guarded.
     collect_ids(report, matches, 'official_matches.json', 'id')
 
 
 def validate_official_history(report: Report, history: list[Any]) -> None:
-    # No id column (build_official_json.py); ui/sections/admin.js renders `title`.
+    # No id column (build_official_json.py); ui/sections/official_misc.js renders `title`.
     for i, x in enumerate(history):
         if not isinstance(x, dict):
             report.error(f"official_history.json[{i}]: expected object")
