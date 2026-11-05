@@ -10,6 +10,16 @@ from arakaku.schema import CsvRow
 from arakaku.text import none_if_empty, parse_int
 
 
+
+def _reign_sort_key(reign) -> tuple[int, int, str]:
+    # 数字の reign_order を数値の順に並べ、数字でない値はその後ろに文字列の順で置く。以前は parse_int の
+    # 結果 (int か str) をそのまま比べたので、数字でない値があると TypeError で build ごと止まった。
+    # 数字でない値は validation/entities.py が error として報告する (T.112.4.6)。
+    order = parse_int(reign.get("reign_order"))
+    if isinstance(order, str):
+        return (1, 0, order)
+    return (0, order or 0, "")
+
 def _group_by(items: list[CsvRow], key: str) -> dict[str, list[CsvRow]]:
     groups: dict[str, list[CsvRow]] = {}
     for item in items:
@@ -25,7 +35,7 @@ def build_titles(titles: list[CsvRow], title_reigns: list[CsvRow]) -> list[dict[
     out = []
     for title in titles:
         lineage = []
-        for reign in sorted(reigns_by_title.get(title["title_id"], []), key=lambda r: parse_int(r.get("reign_order")) or 0):
+        for reign in sorted(reigns_by_title.get(title["title_id"], []), key=_reign_sort_key):
             lineage.append(
                 {
                     "reign_id": reign["reign_id"],
