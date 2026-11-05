@@ -1,4 +1,5 @@
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
+import { eventDateLabel } from "../../data/event_dates.js";
 import { booleanJa, escapeHtml, joinPresent } from "../html.js";
 
 const CATEGORY_LABELS = {
@@ -32,7 +33,7 @@ export const promotionsSection = {
       const e = repo.eventsForPromotion(p.promotion_id);
       if (e.length === 0) return "";
       const shown = e.slice(0, 12);
-      return parts.section(`大会（${e.length}）`, `<ul class="plain-list cols">${shown.map((x) => `<li>${parts.eventLink(x.event_id, x.name)} <span class="muted small">${escapeHtml(repo.eventDateLabel(x))}</span></li>`).join("")}</ul>${e.length > shown.length ? `<p class="muted small"><a href="?tab=events&event_promo=${encodeURIComponent(p.promotion_id)}">ほか ${e.length - shown.length} 件</a></p>` : ""}`, "sec-events");
+      return parts.section(`大会（${e.length}）`, `<ul class="plain-list cols">${shown.map((x) => `<li>${parts.eventLink(x.event_id, x.name)} <span class="muted small">${escapeHtml(eventDateLabel(x))}</span></li>`).join("")}</ul>${e.length > shown.length ? `<p class="muted small"><a href="?tab=events&event_promo=${encodeURIComponent(p.promotion_id)}">ほか ${e.length - shown.length} 件</a></p>` : ""}`, "sec-events");
     };
     const titlesBlock = (p) => {
       const t = repo.titlesForPromotion(p.promotion_id);

@@ -1,4 +1,5 @@
 import { DataEnricher, normalizeFighterName } from "./enricher.js";
+import { eventSortDate } from "./event_dates.js";
 import {
   boutReliability,
   eventReliability,
@@ -608,7 +609,7 @@ export class DataRepository {
       const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
       return this.fighterSnapshots
         .filter(s => ids.has(s.fighter_id))
-        .sort((a, b) => this.eventSortDate(this.findEvent(b.event_id)).localeCompare(this.eventSortDate(this.findEvent(a.event_id)))
+        .sort((a, b) => eventSortDate(this.findEvent(b.event_id)).localeCompare(eventSortDate(this.findEvent(a.event_id)))
           || String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
     });
   }
@@ -616,19 +617,7 @@ export class DataRepository {
   eventsForPromotion(promotionId) {
     return this.#memoized(`eventsForPromotion:${promotionId}`, () =>
       [...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]
-        .sort((a, b) => this.eventSortDate(b).localeCompare(this.eventSortDate(a)) || (b.event_number ?? 0) - (a.event_number ?? 0)));
-  }
-
-  // 大会の日付: 結果 note の投稿日、無ければその大会の note の最初の投稿日 (対戦カードだけの大会)。
-  // reorder_data.py の大会の並びと同じ規則 (T.102)。
-  eventSortDate(event) {
-    return String(event?.result_published_at || event?.note_published_at || event?.published_at || "");
-  }
-
-  eventDateLabel(event) {
-    if (event?.result_published_at) return `結果 ${event.result_published_at}`;
-    if (event?.note_published_at) return `カード ${event.note_published_at}`;
-    return event?.published_at || "";
+        .sort((a, b) => eventSortDate(b).localeCompare(eventSortDate(a)) || (b.event_number ?? 0) - (a.event_number ?? 0)));
   }
 
   titlesForPromotion(promotionId) { return this.richTitles.filter(t => t.promotion_id === promotionId); }

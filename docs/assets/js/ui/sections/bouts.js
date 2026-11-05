@@ -1,5 +1,6 @@
 import { labels } from "../../data/labels.js";
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
+import { eventDateLabel } from "../../data/event_dates.js";
 import { codeList, escapeHtml, joinPresent } from "../html.js";
 import { focusedOrFiltered } from "./common.js";
 
@@ -16,7 +17,7 @@ export const boutsSection = {
       repo.richBouts,
       (b) => query.boutMatches(b) && itemPassesFilters(b, TAB_FILTERS.bouts, state)
     );
-    const eventDate = (b) => repo.eventDateLabel(repo.findEvent(b.event_id));
+    const eventDate = (b) => eventDateLabel(repo.findEvent(b.event_id));
     const titleOf = (b) => repo.titles.find((t) => t.title_id === b.title?.title_id);
     return {
       items,

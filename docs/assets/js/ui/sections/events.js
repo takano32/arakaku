@@ -1,4 +1,5 @@
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
+import { eventDateLabel } from "../../data/event_dates.js";
 import { escapeHtml, joinPresent } from "../html.js";
 import { focusedOrFiltered } from "./common.js";
 
@@ -26,7 +27,7 @@ export const eventsSection = {
         const bouts = repo.boutsForEvent(e.event_id).length;
         return `<div class="rec-text">
           <p class="rec-title">${escapeHtml(e.name)}</p>
-          <p class="rec-sub">${escapeHtml(joinPresent([repo.promotionName(e.promotion_id), repo.eventDateLabel(e), EVENT_TYPE_LABELS[e.event_type] ?? e.event_type]))}</p>
+          <p class="rec-sub">${escapeHtml(joinPresent([repo.promotionName(e.promotion_id), eventDateLabel(e), EVENT_TYPE_LABELS[e.event_type] ?? e.event_type]))}</p>
           ${parts.badges([
             od ? parts.badge("公式", "official") : "",
             e.numbers_only ? parts.badge("名鑑のみ", "numbers") : "",
