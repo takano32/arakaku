@@ -52,7 +52,7 @@ def sheet_table_rows(sheets, index: int, sheet_name: str) -> TableRows:
     """index 番目のシートの最初の表を、セルを文字列にした行のリストにする。
 
     sheets は numbers_parser の Document.sheets (ここでは型を import しない)。シートが足りないときは
-    NumbersSchemaError にする (T.112.6.1: 空のリストを返すと「記録なし」として見出しだけの CSV を書いてしまう)。
+    NumbersSchemaError にする (T112.6.1: 空のリストを返すと「記録なし」として見出しだけの CSV を書いてしまう)。
     """
     if len(sheets) <= index:
         raise NumbersSchemaError(f"Numbers sheet {sheet_name} (index {index}) is missing")

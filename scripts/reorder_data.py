@@ -24,7 +24,7 @@ def reorder_csvs():
 
     # 2. Events
     # 大会の日付は CSV に無いので、結果 note の投稿日 (events.json の result_published_at と同じ規則)、
-    # 無ければその大会の note のいちばん早い投稿日 (対戦カードだけの大会)、それも無ければ published_at で並べる (T.77)。
+    # 無ければその大会の note のいちばん早い投稿日 (対戦カードだけの大会)、それも無ければ published_at で並べる (T77)。
     result_dates, note_dates = event_note_dates(articles, read_csv(DATA_SRC / "article_links.csv"))
 
     def event_date(e: dict[str, str]) -> str:
@@ -49,7 +49,7 @@ def reorder_csvs():
     # 4. Videos
     videos = read_csv(DATA_SRC / "videos.csv")
     if videos:
-        # 公開日は videos.csv に無い (T.75) ので archives/youtube.csv の upload_date で並べる (T.102)。
+        # 公開日は videos.csv に無い (T75) ので archives/youtube.csv の upload_date で並べる (T102)。
         uploaded = {r["display_id"]: r.get("upload_date", "") for r in read_csv(DATA_SRC / "archives/youtube.csv")}
         videos.sort(key=lambda x: (uploaded.get(x["platform_video_id"]) or "00000000", x["video_id"]))
         write_csv(DATA_SRC / "videos.csv", list(videos[0].keys()), videos)
@@ -57,7 +57,7 @@ def reorder_csvs():
     # 5. Source Documents
     docs = read_csv(DATA_SRC / "source_documents.csv")
     if docs:
-        # 同じ日付が多い (611 件中 380 件) ので、source_id で順を決める (以前は作る側の順のまま。T.112.4.13)。
+        # 同じ日付が多い (611 件中 380 件) ので、source_id で順を決める (以前は作る側の順のまま。T112.4.13)。
         docs.sort(key=lambda x: (sort_key_date(x, "published_at"), x["source_id"]))
         write_csv(DATA_SRC / "source_documents.csv", list(docs[0].keys()), docs)
 

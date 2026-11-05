@@ -72,7 +72,7 @@ function validateParserFallbacks() {
 
 function validateLoadedData(data, repository) {
   // 表示用の試合 (CSV + Numbers の補完 + Numbers だけの試合) は、結果がある限り勝ち 1・負け 1。
-  // Numbers の矛盾した 2 行で「A def. A」や両者勝ちになっていた (T.89)。
+  // Numbers の矛盾した 2 行で「A def. A」や両者勝ちになっていた (T89)。
   for (const bout of repository.richBouts) {
     const results = (bout.fighters ?? []).map((f) => f.result).filter((r) => r === "win" || r === "loss").sort().join();
     assert(results === "" || results === "loss,win", `bout ${bout.bout_id} must have one win and one loss, got ${results}`);
@@ -91,7 +91,7 @@ function validateLoadedData(data, repository) {
   assert(Array.isArray(data.sourceDocuments), "sourceDocuments must be an array");
   assert(Array.isArray(data.sourceDocumentBodies), "sourceDocumentBodies must be an array");
   assert(Array.isArray(data.sourceMentions), "sourceMentions must be an array");
-  // Python の VALID_MENTION_TYPES と JS の MENTION_TYPE_ORDER は手で同期しているので、ずれたらここで止める (T.112.6.16)
+  // Python の VALID_MENTION_TYPES と JS の MENTION_TYPE_ORDER は手で同期しているので、ずれたらここで止める (T112.6.16)
   for (const mention of data.sourceMentions) {
     assert(MENTION_TYPE_ORDER.includes(mention.mention_type), `sourceMentions mention_type not in MENTION_TYPE_ORDER: ${mention.mention_id} (${mention.mention_type})`);
   }

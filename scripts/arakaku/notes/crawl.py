@@ -7,11 +7,11 @@
 #   - 既存行は URL 正規化キー (normalize_url) で重複判定し、絶対に上書き/削除しない (事実保護)。
 #     normalize_url の規則が緩むと重複行や取りこぼしの原因になる。
 #   - 発見した行は status="unparsed" で追記し、本文確定は下流に任せる。article_type / promotion_id は
-#     タイトルからの推測 (notes/articles.py の classify_article。T.112.6.13) なので後段レビュー対象。
+#     タイトルからの推測 (notes/articles.py の classify_article。T112.6.13) なので後段レビュー対象。
 #     articles.csv は generate_articles.py が archives/note.csv から作り直すので、ここの値は取得までのつなぎ。
 #   - API の JSON は入れ子を全部たどるので、記事以外の key (32 桁の英数字。開くと 404) も拾ってしまう。
-#     記事の ID は n + 12 桁の 16 進数なので、それ以外は捨てる (T.86)。
-#   - API ページが JSON でなければ「一覧の終わり」ではなく FetchFailed (レート制限のエラーページ対策、T.103)。
+#     記事の ID は n + 12 桁の 16 進数なので、それ以外は捨てる (T86)。
+#   - API ページが JSON でなければ「一覧の終わり」ではなく FetchFailed (レート制限のエラーページ対策、T103)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ API_URL_TEMPLATES = [
 
 
 class FetchFailed(Exception):
-    """An API page could not be read; the listing is incomplete (T.103)."""
+    """An API page could not be read; the listing is incomplete (T103)."""
 
 
 def normalize_url(url: str) -> str:
@@ -87,7 +87,7 @@ def make_article_row(*, title: str, url: str, published_at: str = "", notes: str
     title = html.unescape(str(title or "")).strip()
     url = normalize_url(url)
     # 分類は generate_articles.py と同じ classify_article に任せる。以前は crawl 側に別の分類器があり、
-    # 「アンケート結果のお知らせ」も event_result にしていた (T.112.6.13)。
+    # 「アンケート結果のお知らせ」も event_result にしていた (T112.6.13)。
     article_type, promotion_id, _ = classify_article(f"{article_id_from_url(url)}.html", title)
 
     return {

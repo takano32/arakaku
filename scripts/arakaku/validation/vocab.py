@@ -17,7 +17,7 @@ VALID_ARTICLE_ENTITY_TYPES = {
     'event', 'bout', 'fighter', 'fighter_snapshot', 'promotion', 'title', 'title_reign', 'video'
 }
 VALID_ARTICLE_RELATION_TYPES = {'source', 'reference'}
-# 以下は T.69 で追加 (当時の実データの値域そのもの)。
+# 以下は T69 で追加 (当時の実データの値域そのもの)。
 VALID_BOUT_TYPES = {
     'one_match', 'title_match', 'tournament_bout', 'special_one_match', 'video_catalog_bout', 'preview_card'
 }
@@ -27,5 +27,5 @@ VALID_INFERRED_CONFIDENCES = {'high', 'medium', 'low'}
 VALID_MENTION_TYPES = {'event', 'matchup', 'match_result', 'result', 'note_url', 'youtube_url'}  # match_result: build_source_documents.classify_mention (vs + result on one line)
 VALID_NAME_MATCH_METHODS = {'exact_display_name', 'normalized_display_name', 'generated_candidate'}
 VALID_ARTICLE_STATUSES = {'unparsed'}
-# notes/articles.py の classify_article が出す値 (notes/crawl.py もこれを使う。T.112.4.10・T.112.6.13)
+# notes/articles.py の classify_article が出す値 (notes/crawl.py もこれを使う。T112.4.10・T112.6.13)
 VALID_ARTICLE_TYPES = {'event_card', 'event_result', 'promotion_profile', 'note_article', 'youtube_description_source'}

@@ -114,7 +114,7 @@ def validate_docs_data(docs_data: Path = DOCS_DATA) -> Report:
     fighter_ids = validate_fighters(report, fighters, promotion_ids, article_ids)
     bout_ids = validate_bouts(report, bouts, event_ids, promotion_ids, fighter_ids, article_ids)
     video_ids = validate_videos(report, videos, article_ids)
-    # titles と fighter_snapshots の ID はそれぞれのバリデータが 1 回だけ集める (T.112.4.7。以前は
+    # titles と fighter_snapshots の ID はそれぞれのバリデータが 1 回だけ集める (T112.4.7。以前は
     # ここでも collect_ids を呼んでいたので、重複 ID が 2 回報告された)。
     title_ids = validate_titles(report, titles, promotion_ids, fighter_ids, article_ids, video_ids)
     snapshot_ids = validate_fighter_snapshots(report, snapshots, fighter_ids, event_ids, article_ids, promotion_ids, {x.get('slug') for x in official_news if isinstance(x, dict)})

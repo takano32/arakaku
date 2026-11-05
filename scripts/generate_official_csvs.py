@@ -12,7 +12,7 @@ import json
 #       build_official_json.py が読み、ビューアが「公式データ」レイヤとして参照する。
 # 不変条件: official_* は公式由来の比較データであり、本リポジトリの canonical CSV とは別系統。
 #       人手検証済みの値が優先される（AGENTS.md のパイプライン方針）。4 つの入力をすべて
-#       読んでから書く (どれかが無ければ、どの CSV も書かずに止まる。T.112.6.24)。
+#       読んでから書く (どれかが無ければ、どの CSV も書かずに止まる。T112.6.24)。
 # 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.io import write_csv
 from arakaku.official.csvs import (
@@ -45,7 +45,7 @@ def load(filename: str) -> list:
 
 def main() -> None:
     # 4 つの入力をすべて確かめて読んでから書く。以前は 1 つ読んでは 1 つ書いたので、途中の JSON が
-    # 無いとそれより前の CSV だけが書き換わった (T.112.6.24)。
+    # 無いとそれより前の CSV だけが書き換わった (T112.6.24)。
     missing = [filename for filename, *_ in OUTPUTS if not (SRC / filename).exists()]
     if missing:
         raise SystemExit(

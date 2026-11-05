@@ -5,7 +5,7 @@
 # 不変条件:
 #   - 空の日付は "0000-00-00" で、先頭 (最古) に寄せる。
 #   - 数字でない bout_order は 0 として扱う。reign_order は build/titles.py の lineage と同じく、空は 0、
-#     数字でない値は数字の後ろに文字列の順で置く (T.112.6.12)。
+#     数字でない値は数字の後ろに文字列の順で置く (T112.6.12)。
 #   - キーの最後に主キーや順序列を入れて、同じ日付でも並びが揺れないようにする。
 # 関連スキル: .agents/skills/arakaku-sorting-strategy。
 from __future__ import annotations
@@ -28,7 +28,7 @@ def _int_or_zero(value: str) -> int:
 
 
 def event_sort_date(event: CsvRow, result_dates: dict[str, str], note_dates: dict[str, str]) -> str:
-    """結果 note の投稿日、無ければその大会の note のいちばん早い投稿日、それも無ければ published_at (T.77)。"""
+    """結果 note の投稿日、無ければその大会の note のいちばん早い投稿日、それも無ければ published_at (T77)。"""
     event_id = event["event_id"]
     return result_dates.get(event_id) or note_dates.get(event_id) or sort_key_date(event, "published_at")
 
@@ -39,7 +39,7 @@ def bout_sort_key(bout: CsvRow, event_dates: dict[str, str]) -> tuple[str, str, 
 
 
 def reign_sort_key(reign: CsvRow) -> tuple[str, int, int, str]:
-    # 以前は数字でない値を 0 (先頭) にしていて、build/titles.py の lineage (末尾) と逆だった (T.112.6.12)。
+    # 以前は数字でない値を 0 (先頭) にしていて、build/titles.py の lineage (末尾) と逆だった (T112.6.12)。
     order = parse_int(reign.get("reign_order"))
     if isinstance(order, str):
         return (reign["title_id"], 1, 0, order)

@@ -50,7 +50,7 @@ def duration_seconds(iso_duration: str) -> int | None:
     return ((d * 24 + h) * 60 + mi) * 60 + se
 
 
-# video_id の作り方と動画種別の推定は、以前の yt-dlp 取り込み (import_youtube_videos.py、T.84 で削除) と同じ。
+# video_id の作り方と動画種別の推定は、以前の yt-dlp 取り込み (import_youtube_videos.py、T84 で削除) と同じ。
 def slugify(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "_", value).strip("_").lower()
 
@@ -144,11 +144,11 @@ def flatten_video(item: dict) -> dict[str, str]:
 
 
 def iter_cached_videos(cache_dir: Path):
-    # キャッシュの場所 (paths.YOUTUBE_CACHE_DIR) は呼ぶ側が渡す。ここは arakaku.paths を import しない (T.112.6.2)。
+    # キャッシュの場所 (paths.YOUTUBE_CACHE_DIR) は呼ぶ側が渡す。ここは arakaku.paths を import しない (T112.6.2)。
     for path in sorted(cache_dir.glob("*.json")):
         try:
             item = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            # 壊れたキャッシュを飛ばすと、その動画の本文とアーカイブ行が黙って消える。止めて報告する (T.112.4.12)。
+            # 壊れたキャッシュを飛ばすと、その動画の本文とアーカイブ行が黙って消える。止めて報告する (T112.4.12)。
             raise ValueError(f"{path}: invalid YouTube cache JSON: {exc} (delete it and rerun make cache-youtube-api)") from exc
         yield path, flatten_video(item)

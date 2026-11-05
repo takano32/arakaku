@@ -38,7 +38,7 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, default=YOUTUBE_CACHE_DIR)
     parser.add_argument("--force", action="store_true", help="Refetch even if the cache file already exists.")
     parser.add_argument("--allow-missing", action="store_true",
-                        help="Exit 0 even if the API does not return some videos (deleted or private); they are still listed (T.103).")
+                        help="Exit 0 even if the API does not return some videos (deleted or private); they are still listed (T103).")
     args = parser.parse_args()
 
     api_key = os.environ.get("YOUTUBE_API_KEY", "")
@@ -50,7 +50,7 @@ def main() -> int:
 
     video_ids = []
     skipped = 0
-    for row in read_csv(args.videos, required=True):  # 打ち間違えたパスで 0 行のまま進まない (T.112.6.14)
+    for row in read_csv(args.videos, required=True):  # 打ち間違えたパスで 0 行のまま進まない (T112.6.14)
         if not is_cacheable_video(row):
             skipped += 1
             continue

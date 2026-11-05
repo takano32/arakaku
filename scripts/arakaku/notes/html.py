@@ -10,7 +10,7 @@
 #   - ページの部品や「あなたへのおすすめ」を混ぜない (h1 / time / #note-body 以外は捨てる)。
 #   - 切り出しは生 HTML のまま行い、strip_tags() で既存と同じ改行規則のテキストにする
 #     (br / p / div / li / 見出しの終わりで改行、script / style は捨てる)。
-#   - 記事の公開日は JSON-LD の datePublished の日付部分 (日本時間の YYYY-MM-DD) だけを残す (T.77)。
+#   - 記事の公開日は JSON-LD の datePublished の日付部分 (日本時間の YYYY-MM-DD) だけを残す (T77)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline。
 from __future__ import annotations
 

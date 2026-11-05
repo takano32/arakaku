@@ -25,7 +25,7 @@ from arakaku.paths import DATA_SRC
 #   arakaku/notes/crawl.py。
 # 不変条件: 既存行は URL 正規化キーで重複判定し、絶対に上書き/削除しない (事実保護)。
 #   API の取得が途中で失敗しても追記はする (既存行は変えない) が、取りこぼしがありうるので
-#   終了コード 1 で終わる (T.103)。
+#   終了コード 1 で終わる (T103)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
 ARTICLES_CSV = DATA_SRC / "articles.csv"
 

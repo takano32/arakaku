@@ -50,7 +50,7 @@ def infer_time(text: str) -> str:
 
 # note の試合結果の勝敗記号。勝ちは ○ (U+25CB)・◯ (U+25EF)・〇 (U+3007) の 3 種が混在し、負けは ●。
 # 名前の前には 🟥/🟦 のコーナーや ① などの番号が付くことがある (NFKC 後は ① が "1" になる)。
-# notes/matchups.py (記事リンク) と notes/results.py (結果 note の照合) が共有する (T.93)。
+# notes/matchups.py (記事リンク) と notes/results.py (結果 note の照合) が共有する (T93)。
 WIN_MARKS = "○◯〇"
 LOSS_MARKS = "●"
 RESULT_MARKS = WIN_MARKS + LOSS_MARKS

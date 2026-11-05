@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # 役割: YouTube Data API (channels.list → uploads プレイリスト → playlistItems.list) で公式チャンネルの
-#       全動画を列挙し、data-src/videos.csv に無い動画の行を追記する (T.87)。cache_youtube_api.py は
+#       全動画を列挙し、data-src/videos.csv に無い動画の行を追記する (T87)。cache_youtube_api.py は
 #       videos.csv にある ID しか取らないので、これが無いと新しい動画が入らない。
 #       行の組み立て・動画種別の推定・Shorts の判定・API の URL は arakaku/youtube.py にあり、
 #       ここは urllib での取得と CSV の読み書きだけをする。

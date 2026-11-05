@@ -1,6 +1,6 @@
 # 役割: 大会の日付の導出。架空の団体なので開催日はどこにも書かれていないため、結果 note
-#   (article_type=event_result) のいちばん早い投稿日を「結果発表日」(T.77、ユーザー判断)、その大会の
-#   note のいちばん早い投稿日を「note 投稿日」(結果 note の無い大会の並びと表示用、T.102) として使う。
+#   (article_type=event_result) のいちばん早い投稿日を「結果発表日」(T77、ユーザー判断)、その大会の
+#   note のいちばん早い投稿日を「note 投稿日」(結果 note の無い大会の並びと表示用、T102) として使う。
 # アーキ上の位置: build/relations.py (events.json の result_published_at / note_published_at) と
 #   scripts/reorder_data.py (events.csv・bouts.csv の並び順) が使う。純粋関数のみ。
 # 不変条件: 同じ大会に複数の note があれば最小の published_at。日付の無い記事は数えない。

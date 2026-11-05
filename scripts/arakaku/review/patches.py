@@ -26,7 +26,7 @@ class PatchResult:
     participants: list[CsvRow]
     applied: int = 0
     unknown_bout_ids: list[str] = field(default_factory=list)
-    # winner / loser の名前が出場者の名前と 1 人ずつ一致しない行 (反映しない。T.112.4.4)
+    # winner / loser の名前が出場者の名前と 1 人ずつ一致しない行 (反映しない。T112.4.4)
     unmatched_bout_ids: list[str] = field(default_factory=list)
 
 
@@ -52,7 +52,7 @@ def apply_patches(bouts: list[CsvRow], participants: list[CsvRow], patch_rows: l
         bout_participants = participants_by_bout.get(bout_id, [])
 
         # 勝敗は名前の完全一致だけで決める。以前は名前が合わないときに red=fighter_a / blue=fighter_b と
-        # みなしていたが、作る側の fighter_a は bout_participants.csv の最初の行で赤とは限らない (T.112.4.4)。
+        # みなしていたが、作る側の fighter_a は bout_participants.csv の最初の行で赤とは限らない (T112.4.4)。
         if winner and loser:
             names = [p.get("fighter_name", "") for p in bout_participants]
             if winner == loser or names.count(winner) != 1 or names.count(loser) != 1:

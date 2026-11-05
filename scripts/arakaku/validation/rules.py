@@ -3,7 +3,7 @@
 #   王座、日付の形式。
 # アーキ上の位置: round_time_problems は entities.validate_bouts からも呼ばれる純粋関数。
 #   それ以外は runner.py が呼ぶ。
-# 不変条件: 各規則は追加時に実データで成立していた (T.65 / T.69 / T.76 / T.77 / T.95)。
+# 不変条件: 各規則は追加時に実データで成立していた (T65 / T69 / T76 / T77 / T95)。
 #   違反は本物の不整合なので error。
 # 関連スキル: .agents/skills/arakaku-maintainer (make validate)。
 from __future__ import annotations
@@ -26,8 +26,8 @@ from .vocab import (
 
 # bouts.csv: round is "<n>R" (built as an int); time is "<m>分<s>秒" within a 5-minute round,
 # or "終了" for a stop or decision at the end of the round. A time without a round is a mistake
-# (T.65 found note posting timestamps such as 07分51秒 stored as fight times).
-BOUT_TIME = re.compile(r'^(\d{1,2})分(\d{2})秒$')  # seconds are zero-padded: 3分04秒 (T.95)
+# (T65 found note posting timestamps such as 07分51秒 stored as fight times).
+BOUT_TIME = re.compile(r'^(\d{1,2})分(\d{2})秒$')  # seconds are zero-padded: 3分04秒 (T95)
 
 
 def round_time_problems(round_value: Any, time_value: Any) -> list[str]:
@@ -64,12 +64,12 @@ def validate_enums(report: Report, data: dict[str, list[Any]]) -> None:
     check_enum(report, data['source_mentions'], 'source_mentions.json', 'mention_type', VALID_MENTION_TYPES, 'mention_id')
     check_enum(report, data['numbers_name_matches'], 'numbers_name_matches.json', 'match_method', VALID_NAME_MATCH_METHODS, 'numbers_fighter_id')
     check_enum(report, data['articles'], 'articles.json', 'status', VALID_ARTICLE_STATUSES, 'article_id')
-    # 以前は entities.validate_articles が ID の無い形のメッセージで調べていた (T.112.6.18)。
+    # 以前は entities.validate_articles が ID の無い形のメッセージで調べていた (T112.6.18)。
     check_enum(report, data['articles'], 'articles.json', 'article_type', VALID_ARTICLE_TYPES, 'article_id')
 
 
 def validate_cross_tables(report: Report, bouts: list[Any], events: list[Any], aliases: Any, fighter_ids: set[str], promotion_ids: set[str], title_reigns: list[Any], source_mentions: list[Any], source_documents: list[Any]) -> None:
-    # Rules that span tables (T.69). Each held on the data when added; a violation is a real inconsistency.
+    # Rules that span tables (T69). Each held on the data when added; a violation is a real inconsistency.
     event_promotion = {e.get('event_id'): e.get('promotion_id') for e in events if isinstance(e, dict)}
     for i, b in enumerate(bouts):
         if isinstance(b, dict) and b.get('event_id') in event_promotion and b.get('promotion_id') != event_promotion[b.get('event_id')]:
@@ -102,7 +102,7 @@ def validate_cross_tables(report: Report, bouts: list[Any], events: list[Any], a
 
 
 def validate_bout_titles(report: Report, bouts: list[Any], titles: list[Any]) -> None:
-    # A title bout names the title it was for (T.76); the title must exist and match the bout's
+    # A title bout names the title it was for (T76); the title must exist and match the bout's
     # promotion and division. title_result is not stored: title_reigns.csv holds the lineage.
     by_id = {t.get('title_id'): t for t in titles if isinstance(t, dict)}
     for i, b in enumerate(bouts):
@@ -121,7 +121,7 @@ def validate_bout_titles(report: Report, bouts: list[Any], titles: list[Any]) ->
             report.error(f"bouts.json[{i}] ({b.get('bout_id')}): title {title_id} is {t.get('promotion_id')} {t.get('division')}, bout is {b.get('promotion_id')} {b.get('division')}")
 
 
-# Date formats per field (T.77): note dates and derived event dates are YYYY-MM-DD; YouTube
+# Date formats per field (T77): note dates and derived event dates are YYYY-MM-DD; YouTube
 # upload dates keep the API archive's YYYYMMDD. Anything else is a mistake, not a variant.
 ISO_DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 YYYYMMDD = re.compile(r'^\d{8}$')

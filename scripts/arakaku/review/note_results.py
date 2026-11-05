@@ -1,14 +1,14 @@
 # 役割: result_status=unknown の試合ごとに、その大会の結果 note (article_type=event_result) の本文から
 #   両選手の名前を探して勝者を決め (arakaku/notes/results.py)、Numbers の勝者と比べて
 #   review/unknown_bout_note_results.csv の行を作る。Numbers と一致した行だけ apply=true
-#   (T.40 でユーザーが決めた反映条件)。結果が known の試合は、note の勝者が同じときだけ、空の決着欄を
+#   (T40 でユーザーが決めた反映条件)。結果が known の試合は、note の勝者が同じときだけ、空の決着欄を
 #   埋める候補を review/known_bout_note_methods.csv の行にする (既存値と食い違う行は apply=false)。
 # アーキ上の位置: scripts/match_unknown_bouts_to_note_results.py が CSV / JSON を読んで
 #   NoteMatchContext に詰め、match_bouts を呼んで write_csv する。
 #   反映は `python3 scripts/apply_structured_result_patches.py review/unknown_bout_note_results.csv`。
 # 不変条件:
-#   - 再戦があるので、同じ 2 人の Numbers 記録は大会ごとに分けて比べる (T.86)。同じ大会の Numbers
-#     記録が無く、別の大会の記録とだけ一致するものは agree_other_event で反映しない (T.93)。
+#   - 再戦があるので、同じ 2 人の Numbers 記録は大会ごとに分けて比べる (T86)。同じ大会の Numbers
+#     記録が無く、別の大会の記録とだけ一致するものは agree_other_event で反映しない (T93)。
 #   - 勝者が 2 人以上の記事にまたがって食い違えば候補にしない (locate_winner は 1 人のときだけ返す)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline
 from __future__ import annotations
@@ -140,7 +140,7 @@ def locate_winner(a: CsvRow, b: CsvRow, event_id: str, ctx: NoteMatchContext) ->
     """(winner fighter_id, article_id, first line, last line) when the marks name exactly one winner."""
     verdicts: dict[str, tuple[str, int, int]] = {}
     # 名前の表記は set なので、並べ替えてから回す。set の順 (実行ごとのハッシュで変わる) で回すと、
-    # 同じ note に 2 つの表記が別の行で出たときに引用する行が実行ごとに変わりうる (T.112.4.2)。
+    # 同じ note に 2 つの表記が別の行で出たときに引用する行が実行ごとに変わりうる (T112.4.2)。
     for article_id in sorted(ctx.result_notes.get(event_id, ())):
         lines = ctx.bodies.get(article_id, "").split("\n")
         for a_wins, first, last in pair_verdicts(lines, sorted(ctx.names.get(a["fighter_id"], ())), sorted(ctx.names.get(b["fighter_id"], ()))):

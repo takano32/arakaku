@@ -44,7 +44,7 @@ def main() -> int:
     bouts, participants = result.bouts, result.participants
     applied, skipped = result.applied, len(result.unknown_bout_ids) + len(result.unmatched_bout_ids)
 
-    # 正本の CSV を書き換えるので、一時ファイルに書いてから差し替える (途中で落ちても切り詰めない。T.112.4.3)。
+    # 正本の CSV を書き換えるので、一時ファイルに書いてから差し替える (途中で落ちても切り詰めない。T112.4.3)。
     with atomic_open(BOUTS_CSV, newline="") as f:
         writer = csv.DictWriter(f, fieldnames=bout_fieldnames, extrasaction="ignore", lineterminator="\n")
         writer.writeheader()

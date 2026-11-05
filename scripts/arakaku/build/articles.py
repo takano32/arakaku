@@ -23,7 +23,7 @@ def build_articles(articles: list[CsvRow]) -> list[dict[str, Any]]:
             "promotion_id": "promotion_id",
             "published_at": "published_at",
             "last_checked_at": "last_checked_at",
-            # 空のセルは null のまま出す。以前の既定値 "parsed" は vocab (unparsed だけ) に無い値だった (T.112.6.10)。
+            # 空のセルは null のまま出す。以前の既定値 "parsed" は vocab (unparsed だけ) に無い値だった (T112.6.10)。
             "status": "status",
             "notes": field_or_empty("notes"),
         },

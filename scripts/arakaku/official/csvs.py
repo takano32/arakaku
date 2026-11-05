@@ -24,7 +24,7 @@ HISTORY_FIELDS = ["year", "era", "month", "title", "description"]
 
 
 def _text(value: Any) -> str:
-    """数値を文字列にする。JSON の null と欠けたキーは空 (以前は str(None) で "None" になった。T.112.6.22)。"""
+    """数値を文字列にする。JSON の null と欠けたキーは空 (以前は str(None) で "None" になった。T112.6.22)。"""
     return "" if value is None else str(value)
 
 

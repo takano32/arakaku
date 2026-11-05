@@ -7,7 +7,7 @@ from __future__ import annotations
 #   表示して終了コードを返す)。許容値の集合は arakaku/validation/vocab.py。viewer 側の整合は
 #   validate_json.js が別途検証する。
 # 不変条件 / 注意: 致命的不整合は error (return 1)。列挙値の範囲外も error (vocab.py に無い値。
-#   T.69 で warning から変更)。生成 JSON は make build が必ず全部書くので、欠けていれば error、
+#   T69 で warning から変更)。生成 JSON は make build が必ず全部書くので、欠けていれば error、
 #   壊れていれば例外 (arakaku.io.load_json)。ここにはロジックを置かない。
 # 関連 skill: .agents/skills/arakaku-maintainer (make validate)。
 

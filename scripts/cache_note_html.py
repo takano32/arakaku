@@ -52,7 +52,7 @@ def main() -> int:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    rows = read_csv(args.articles, required=True)  # 打ち間違えたパスで 0 行のまま進まない (T.112.6.14)
+    rows = read_csv(args.articles, required=True)  # 打ち間違えたパスで 0 行のまま進まない (T112.6.14)
 
     fetched = 0
     skipped = 0
@@ -102,7 +102,7 @@ def main() -> int:
     print(f"[out] {args.out_dir}")
 
     # 404/410 (deleted or private articles) do not stop the pipeline; the source document
-    # builder skips missing cache files. Any other failure (network, 5xx) is an error (T.103).
+    # builder skips missing cache files. Any other failure (network, 5xx) is an error (T103).
     return 1 if failed else 0
 
 

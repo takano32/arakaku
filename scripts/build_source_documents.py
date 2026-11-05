@@ -35,7 +35,7 @@ SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
 def main() -> int:
     notes = note_documents(read_csv(ARTICLES_CSV), NOTE_HTML_DIR, now_iso())
     videos = youtube_documents(read_csv(VIDEOS_CSV), iter_cached_videos(YOUTUBE_CACHE_DIR), now_iso())
-    # キャッシュが無い (新しい clone など) と 0 件になり、正本の本文 DB を空で上書きしてしまう (T.112.4.1)。
+    # キャッシュが無い (新しい clone など) と 0 件になり、正本の本文 DB を空で上書きしてしまう (T112.4.1)。
     empty = [name for name, docs in (("note", notes), ("YouTube", videos)) if not docs]
     if empty:
         raise SystemExit(

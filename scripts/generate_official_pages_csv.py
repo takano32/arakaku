@@ -7,7 +7,7 @@ from __future__ import annotations
 #       arakaku/official/pages.py にあり、ここはファイルの読み書きと入力の欠けの検査だけをする。
 # アーキ上の位置: generate-stage2 の最後に実行（generate_official_csvs と同じく公式比較データ
 #       系統）。入力 tmp/arakaku-site/ は git 管理外。入力が欠けていれば、どちらの CSV も書かずに
-#       エラーで止まる（以前は official_pages.csv を空で上書きしていた。T.69）。
+#       エラーで止まる（以前は official_pages.csv を空で上書きしていた。T69）。
 #       出力は build_official_pages_json.py が消費する。
 # 不変条件: 変換するページは arakaku.official.pages.ASTRO_PAGES の固定リスト。
 # 関連スキル: .agents/skills/arakaku-data-curator
@@ -43,7 +43,7 @@ def page_rows() -> list[dict[str, str]]:
 
 def main() -> None:
     # 両方の入力を読んでから書く。以前はニュースを書いてからページの欠けで止まり、
-    # official_news.csv だけが書き換わることがあった (generate_official_csvs.py の T.112.6.24 と同じ)。
+    # official_news.csv だけが書き換わることがあった (generate_official_csvs.py の T112.6.24 と同じ)。
     news, pages = news_rows(), page_rows()
     write_csv(DATA_SRC / "official_news.csv", NEWS_FIELDS, news)
     print(f"[done] {len(news)} news rows written")

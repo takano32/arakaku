@@ -3,7 +3,7 @@
 #   に分類する。
 # アーキ上の位置: scripts/generate_articles.py が archives/note.csv を読んでここに渡し、write_csv する。
 #   article_id はファイル名から拡張子 .html を除いたもので、source_documents / article_links の結合キー。
-#   notes/crawl.py の make_article_row も、一覧で見つけた記事の分類に classify_article を使う (T.112.6.13)。
+#   notes/crawl.py の make_article_row も、一覧で見つけた記事の分類に classify_article を使う (T112.6.13)。
 # 不変条件:
 #   - article_type は arakaku/derive/article_links.py 側の分岐 (event_card / event_result /
 #     promotion_profile を特別扱い) と必ず同期させること。
@@ -37,7 +37,7 @@ def detect_promotion(title: str) -> str:
 
 
 # 冒頭 (meta description) が対戦カードの形かどうか。タイトルに「対戦カード」が無いカード記事
-# (例:「第5回MAXバウトミドル級ＧＰ一回戦Aグループ」「マウンテン・ヒーローズNo.37」) を拾う (T.97)。
+# (例:「第5回MAXバウトミドル級ＧＰ一回戦Aグループ」「マウンテン・ヒーローズNo.37」) を拾う (T97)。
 CARD_BODY_RE = re.compile(r"🆚|🚨\s*①名前|[☆🟥🟦][^\n]{0,20}級")
 
 

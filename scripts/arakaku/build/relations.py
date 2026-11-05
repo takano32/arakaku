@@ -2,11 +2,11 @@
 #   Relations = 関係テーブル (article_links / video_links / bout_participants / aliases / アーカイブ)
 #   から一度だけ作る索引。各ビルダは Relations 経由で派生情報を join する。
 # アーキ上の位置: 純粋関数だけを置く。CSV を読んで Tables を作る load_tables (I/O) は build/io.py
-#   (T.112.6.19)。テストは Tables / Relations を小さな行リストから直接組み立てられる。
+#   (T112.6.19)。テストは Tables / Relations を小さな行リストから直接組み立てられる。
 # 不変条件:
 #   - participants_by_bout は red を先, blue を次, それ以外 (未知の side) を末尾に固定する。
 #     matchup の "A vs B" 表示順と winner/loser の決め方がこれに依存する。
-#   - linked_video_ids は T.75 の規則: 試合の元動画 (bouts.inferred_from_video_id)・video_bout_links・
+#   - linked_video_ids は T75 の規則: 試合の元動画 (bouts.inferred_from_video_id)・video_bout_links・
 #     video_links のどれかにあれば linked。
 # 関連スキル: .agents/skills/arakaku-maintainer。
 from __future__ import annotations

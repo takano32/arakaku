@@ -5,7 +5,7 @@
 #   出力はビューアの出典リンク表示が消費する。
 # 不変条件:
 #   - articles.csv の行順 (reorder_data.py の前後で変わる) に出力順を左右されないよう、記事を
-#     (published_at, article_id) で並べてから処理する (T.91)。
+#     (published_at, article_id) で並べてから処理する (T91)。
 #   - 同一 (記事, エンティティ種別, エンティティID) の重複リンクは 1 本に畳む。
 #   - article_type の値（event_card/event_result/promotion_profile）は arakaku/notes/articles.py の
 #     分類と同期していること。

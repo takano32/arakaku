@@ -10,7 +10,7 @@
 #   - write_json は ensure_ascii=False + indent=2 + 末尾改行の「決定的」出力 (docs/data の diff 安定のため)。
 #   - write_csv は lineterminator="\n"・extrasaction="ignore" で、fieldnames が出力スキーマを固定する契約。
 #   - 原子的書き込み: 書きかけのファイルを並行プロセス (make validate など) が読んで壊れた JSON と
-#     判定することがあったため (T.69)。
+#     判定することがあったため (T69)。
 # 関連スキル: .agents/skills/arakaku-maintainer。
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from arakaku.schema import CSV_HEADERS, CsvRow
 
 def read_csv(path: Path, missing_ok: bool = False, required: bool = False) -> list[CsvRow]:
     # data-src のスキーマにある CSV は、無ければエラー (missing_ok=True のときだけ空)。それ以外の場所の
-    # CSV は既定で [warn] と空。required=True なら場所に関係なくエラー (T.112.4.5)。
+    # CSV は既定で [warn] と空。required=True なら場所に関係なくエラー (T112.4.5)。
     try:
         rel = path.resolve().relative_to(DATA_SRC).as_posix()
     except ValueError:

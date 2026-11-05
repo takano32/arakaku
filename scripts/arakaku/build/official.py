@@ -9,7 +9,7 @@
 #   - 公式データを事実として保持し改変しない。出力キーは viewer の契約。
 #   - 本文 HTML はそのまま出す。「/」始まりの画像・リンクは viewer (ui/sections/official.js officialBodyHtml)
 #     が公式サイトの URL に書き換える。以前は tmp/arakaku-site/public/ があるときだけ画像を base64 で
-#     埋め込んでいたが、手元 (1.9MB) と CI (15KB) で出力が変わるのでやめた (T.79、ユーザー判断)。
+#     埋め込んでいたが、手元 (1.9MB) と CI (15KB) で出力が変わるのでやめた (T79、ユーザー判断)。
 # 関連スキル: .agents/skills/arakaku-maintainer。
 from __future__ import annotations
 

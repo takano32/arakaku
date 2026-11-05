@@ -84,7 +84,7 @@ def video_link_rows(
                          "relation_type": "reference", "start_time": "", "end_time": "",
                          "notes": fighter_note(conf)})
 
-    # 大会単位の動画 (見どころ・ダイジェスト・観戦配信など)。手で管理する video_event_links.csv から張る (T.75)。
+    # 大会単位の動画 (見どころ・ダイジェスト・観戦配信など)。手で管理する video_event_links.csv から張る (T75)。
     for link in video_event_links:
         event_key = (link["video_id"], link["event_id"])
         if event_key in seen_event_links:

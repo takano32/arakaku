@@ -2,7 +2,7 @@
 #   titles / title_reigns / fighter_snapshots / videos) の構造・必須フィールド・参照整合性の検証。
 # アーキ上の位置: runner.py が依存順 (article→promotion→event→fighter→bout…) に呼び、各関数が返す
 #   *_ids 集合を後段の参照チェックに渡す。
-# 不変条件: 列挙値の範囲外は error (arakaku/validation/vocab.py に無い値。T.69 で warning から変更)。
+# 不変条件: 列挙値の範囲外は error (arakaku/validation/vocab.py に無い値。T69 で warning から変更)。
 #   result_status 未指定時は winner(_id) の有無から known/unknown を推定する。
 # 関連スキル: .agents/skills/arakaku-maintainer (make validate)。
 from __future__ import annotations

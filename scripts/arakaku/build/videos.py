@@ -17,7 +17,7 @@ def _youtube_archive(row: CsvRow, rel: Relations) -> CsvRow:
     """YouTube の動画の archives/youtube.csv の行。YouTube でない動画と未アーカイブの動画は空。
 
     アーカイブは platform_video_id で引くので、ほかの platform の同じ ID に当たらないようにする
-    (以前はサムネイルだけが platform を確かめていた。T.112.6.22)。
+    (以前はサムネイルだけが platform を確かめていた。T112.6.22)。
     """
     if (row.get("platform") or "youtube") != "youtube":
         return {}
@@ -44,12 +44,12 @@ def build_videos(videos: list[CsvRow], rel: Relations) -> list[dict[str, Any]]:
             "title": "title",
             "original_title": "original_title",
             # チャンネル名と公開日はアーカイブ (archives/youtube.csv) の表示用メタデータから写す
-            # (T.75: videos.csv の列は全件 NA / 空のプレースホルダだった)。viewer の enricher も同じ値で上書きする。
+            # (T75: videos.csv の列は全件 NA / 空のプレースホルダだった)。viewer の enricher も同じ値で上書きする。
             "channel_name": lambda row: archive_value(row, "uploader"),
             "published_at": lambda row: archive_value(row, "upload_date"),
             "official_status": field_or_default("official_status", "unknown"),
             "video_type": field_or_default("video_type", "reference"),
-            # 動画の紐づけ状態はリンク表から導く (T.75: 以前は videos.csv の手入力列で、355 本が古い unlinked のままだった)。
+            # 動画の紐づけ状態はリンク表から導く (T75: 以前は videos.csv の手入力列で、355 本が古い unlinked のままだった)。
             "link_status": lambda row: "linked" if row["video_id"] in rel.linked_video_ids else "unlinked",
             "duplicate_group_id": "duplicate_group_id",
             "duplicate_note": "duplicate_note",

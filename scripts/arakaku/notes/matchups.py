@@ -8,7 +8,7 @@
 #   - title_to_event_ids が組み立てる event_id 文字列は events.csv の event_id 命名規則そのもの。
 #     呼び出し側は known_events に無いものを採用しない。命名を変えるなら両方同期すること。
 #   - 「ターゲットNo.90　エンペラーNo.111合同大会試合結果」のような合同大会はタイトルに出る大会を
-#     すべて返す (T.70: 以前は最初の 1 つだけで、エンペラー側に出典が付かなかった)。
+#     すべて返す (T70: 以前は最初の 1 つだけで、エンペラー側に出典が付かなかった)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import re
 from arakaku.notes.patterns import RESULT_MARKS, strip_name_prefix
 from arakaku.text import nfkc
 
-# 選手名の行の先頭に付くコーナー・勝敗記号 (◯・〇 を含む。T.93)。
+# 選手名の行の先頭に付くコーナー・勝敗記号 (◯・〇 を含む。T93)。
 FIGHTER_NAME_STARTERS = ("🟥", "🟦", *RESULT_MARKS)
 
 
@@ -26,7 +26,7 @@ def clean_fighter_name(raw: str) -> str:
     _, s = strip_name_prefix(raw.strip())
     s = s.strip()
     s = re.sub(r"【[^】]*】", "", s).strip()   # strip win-loss records
-    s = re.sub(r"[（(][^）)]*[）)]", "", s).strip()   # strip role suffixes (全角・半角の括弧。T.112.6.11)
+    s = re.sub(r"[（(][^）)]*[）)]", "", s).strip()   # strip role suffixes (全角・半角の括弧。T112.6.11)
     return s
 
 
@@ -38,7 +38,7 @@ def extract_matchups(content_text: str) -> list[tuple[str, str]]:
     for i, line in enumerate(lines):
         inline_vs = line.startswith(FIGHTER_NAME_STARTERS) and re.search(r"(?i)vs", line) and "🆚" not in line
         if ("🆚" in line and line != "🆚") or inline_vs:
-            # Inline: "●FighterA🆚○FighterB", "FighterA🆚FighterB" or "○FighterAvs●FighterB" (T.93)
+            # Inline: "●FighterA🆚○FighterB", "FighterA🆚FighterB" or "○FighterAvs●FighterB" (T93)
             parts = line.split("🆚", 1) if "🆚" in line else re.split(r"(?i)vs", line, maxsplit=1)
             f1 = clean_fighter_name(parts[0])
             f2 = clean_fighter_name(parts[1])
@@ -74,7 +74,7 @@ def extract_promotion_profile_fighters(content_text: str) -> list[str]:
     lines = [ln.strip() for ln in content_text.split("\n") if ln.strip()]
     for line in lines:
         # NFKC で全角の括弧「（）」は半角の「()」になるので、下の正規表現は半角で書く。以前は全角で
-        # 書いていたため、役割の注記が取れず、MAXバウトの形式も一致しなかった (T.112.4.23)。
+        # 書いていたため、役割の注記が取れず、MAXバウトの形式も一致しなかった (T112.4.23)。
         t = nfkc(line)
         # "初代王者 Fighter" or "X代目 Fighter"
         m = re.match(r"(?:初代王者|[0-9]+代目)\s+(.+)", t)
