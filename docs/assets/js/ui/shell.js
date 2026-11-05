@@ -131,6 +131,8 @@ export class Shell {
   }
 
   #jump(patch) {
+    // 打ちかけの検索 (150ms の遅延待ち) が飛んだ先のフォーカスを消さないよう、先に取り消す (T.112.4.15)。
+    this.#searchBox.cancelPending();
     this.#state.clearFocus();
     this.#state.patch({ ...patch, query: "" });
     this.#searchBox.setValue("");
