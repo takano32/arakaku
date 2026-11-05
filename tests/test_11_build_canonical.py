@@ -151,6 +151,8 @@ def test_build_videos_takes_archive_metadata_and_link_status():
     assert full["link_status"] == "linked" and none["link_status"] == "unlinked"
     assert none["channel_name"] is None and none["thumbnail_sizes"] == ""
     assert other["thumbnail_sizes"] == ""  # only YouTube videos have archive thumbnails
+    # チャンネル名と公開日も、同じ ID の YouTube のアーカイブから写さない (T.112.6.22)。
+    assert (other["channel_name"], other["published_at"]) == (None, None)
 
 
 # --- build/articles ---
