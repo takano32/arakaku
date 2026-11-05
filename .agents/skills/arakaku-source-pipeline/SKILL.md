@@ -97,9 +97,10 @@ and never change or delete existing rows. They run automatically as the first st
 Target: `make discover-note-articles` (runs `crawl_note_articles.py --use-api`).
 
 Lists every article of the official note creator and appends rows for URLs missing from
-`data-src/articles.csv` (`status=unparsed`), so `cache_note_html.py` fetches them. Titles with
-歴代王者 / 王座 / ルール / 団体 (that are not results or cards) get `article_type=promotion_profile`
-(`infer_article_type` in `scripts/arakaku/notes/crawl.py`).
+`data-src/articles.csv` (`status=unparsed`), so `cache_note_html.py` fetches them. The new rows get
+`article_type` and `promotion_id` from the same classifier `generate_articles.py` uses
+(`classify_article` in `scripts/arakaku/notes/articles.py`, called by `make_article_row` in
+`scripts/arakaku/notes/crawl.py`).
 
 ### discover_youtube_videos.py
 
@@ -146,7 +147,7 @@ Do not download video bodies.
 
 Videos the API does not return (deleted, private) are printed as `[missing]` and make the script exit 1, unless `--allow-missing` is given; then they are still listed but the exit code is 0. `make cache-youtube-api` passes `--allow-missing`, so a missing video does not fail the make target (or `make refresh-sources`).
 
-Read the cache only through `scripts/arakaku/youtube.py` (`iter_cached_videos`), which maps API fields to the flat metadata the downstream scripts use. An invalid cache JSON raises instead of being skipped, so the pipeline stops; delete the file and rerun `make cache-youtube-api`.
+Read the cache only through `scripts/arakaku/youtube.py` (`iter_cached_videos(cache_dir)`; the caller passes `arakaku.paths.YOUTUBE_CACHE_DIR`, so youtube.py itself does not depend on paths), which maps API fields to the flat metadata the downstream scripts use. An invalid cache JSON raises instead of being skipped, so the pipeline stops; delete the file and rerun `make cache-youtube-api`.
 
 ### build_source_documents.py
 
