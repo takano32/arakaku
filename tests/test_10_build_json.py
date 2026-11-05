@@ -54,6 +54,22 @@ def test_read_csv_required_raises_outside_data_src(io_module, tmp_path):
         io_module.read_csv(tmp_path / "absent.csv", required=True)
 
 
+def test_atomic_open_leaves_the_original_file_on_failure(io_module, tmp_path):
+    # 書いている途中で落ちても、元のファイルは変わらず、一時ファイルも残らない (T.112.6.22)。
+    target = tmp_path / "bouts.csv"
+    target.write_text("original\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="boom"):
+        with io_module.atomic_open(target) as f:
+            f.write("half written")
+            raise RuntimeError("boom")
+    assert target.read_text(encoding="utf-8") == "original\n"
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["bouts.csv"]
+    with io_module.atomic_open(target) as f:
+        f.write("replaced\n")
+    assert target.read_text(encoding="utf-8") == "replaced\n"
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["bouts.csv"]
+
+
 def test_load_tables_fails_when_a_review_candidate_csv_is_missing(repo_root, tmp_path):
     import shutil
     from arakaku.build.io import load_tables
