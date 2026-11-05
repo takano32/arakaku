@@ -188,3 +188,10 @@ def test_crawled_title_and_rule_notes_are_promotion_profiles():
     assert infer_article_type("ターゲット歴代王者") == "promotion_profile"
     assert infer_article_type("エンペラー団体紹介とルール") == "promotion_profile"
     assert infer_article_type("ターゲットNo.105試合結果") == "event_result"
+
+
+def test_promotion_profile_fighters_handle_full_width_brackets():
+    # NFKC で「（）」は「()」になる。以前は全角のまま照合していて、注記が残り MAXバウトの形式も一致しなかった (T.112.4.23)。
+    from arakaku.notes.matchups import extract_promotion_profile_fighters
+    text = "２代目 むらき（ターゲットライト級王座統一）\n第1回アイス・トロン（エンペラー）\n第７回ブルーワン（エンペラー）"
+    assert extract_promotion_profile_fighters(text) == ["むらき", "アイス・トロン", "ブルーワン"]
