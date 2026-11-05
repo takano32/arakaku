@@ -30,3 +30,9 @@ test("試合と沿革は「note と合わない」と注記する", () => {
   }
   assert.match(desc.renderHead(desc.items[1]), /1995 \/ 創世期 \/ 春</);
 });
+
+test("足した種類名とキー (_type・_key) では検索しない", () => {
+  for (const query of ["tournament", "history", "h:0", "t:emperor"]) {
+    assert.equal(build({ query }).items.length, 0, query);
+  }
+});
