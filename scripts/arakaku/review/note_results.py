@@ -139,9 +139,11 @@ def for_event(table: NumbersTable, pair: frozenset[str], event: CsvRow) -> set[s
 def locate_winner(a: CsvRow, b: CsvRow, event_id: str, ctx: NoteMatchContext) -> tuple[str, str, int, int] | None:
     """(winner fighter_id, article_id, first line, last line) when the marks name exactly one winner."""
     verdicts: dict[str, tuple[str, int, int]] = {}
+    # 名前の表記は set なので、並べ替えてから回す。set の順 (実行ごとのハッシュで変わる) で回すと、
+    # 同じ note に 2 つの表記が別の行で出たときに引用する行が実行ごとに変わりうる (T.112.4.2)。
     for article_id in sorted(ctx.result_notes.get(event_id, ())):
         lines = ctx.bodies.get(article_id, "").split("\n")
-        for a_wins, first, last in pair_verdicts(lines, ctx.names.get(a["fighter_id"], ()), ctx.names.get(b["fighter_id"], ())):
+        for a_wins, first, last in pair_verdicts(lines, sorted(ctx.names.get(a["fighter_id"], ())), sorted(ctx.names.get(b["fighter_id"], ()))):
             winner = a if a_wins else b
             verdicts.setdefault(winner["fighter_id"], (article_id, first, last))
     if len(verdicts) != 1:
