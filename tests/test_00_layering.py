@@ -13,7 +13,7 @@ import pytest
 PACKAGE = Path(__file__).resolve().parents[1] / "scripts" / "arakaku"
 IO_LAYER = {"arakaku.io", "arakaku.paths"}
 
-PURE_PACKAGES = ["notes", "sources", "derive", "review", "official"]
+PURE_PACKAGES = ["notes", "sources", "derive", "review", "official", "numbers"]
 PURE_MODULES = [
     "csvmap.py",
     "text.py",
