@@ -21,6 +21,7 @@ from arakaku.notes.cache import is_note_article_url, note_cache_name
 from arakaku.notes.html import note_content_text
 from arakaku.schema import CsvRow
 from arakaku.text import normalize_text
+from arakaku.youtube import video_csv_id
 
 DOCUMENT_FIELDS = [
     "source_id",
@@ -85,7 +86,8 @@ def note_documents(articles: list[CsvRow], html_dir: Path, fetched_at: str) -> l
 def youtube_document(video: CsvRow, cached: dict[str, str], cache_name: str, fetched_at: str) -> dict[str, str] | None:
     """API キャッシュ 1 件 (arakaku.youtube.flatten_video の形) から document を作る。概要欄が空なら None。"""
     platform_video_id = cached["platform_video_id"]
-    video_id = video.get("video_id") or f"youtube_{platform_video_id}"
+    # videos.csv に無い動画も、discover_youtube_videos.py が付けるのと同じ ID にする (T.112.4.24)。
+    video_id = video.get("video_id") or video_csv_id(platform_video_id)
     description = normalize_text(cached["description"])
     if not description:
         return None
