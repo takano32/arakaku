@@ -127,6 +127,6 @@ make build && make validate && make test
 make clean-generated
 ```
 
-Verify in a browser (or headless `--dump-dom`) that `#tab-filters` renders the
+Verify in a browser (or headless `--dump-dom`) that `#filters` renders the
 expected `data-filter-type` rows and that selecting a button narrows the list and
 updates the URL with the English token.
