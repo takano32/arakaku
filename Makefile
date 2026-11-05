@@ -11,11 +11,11 @@ build:
 
 # validate and test read docs/data, so they build first (make runs build once per invocation,
 # so `make check` still builds only once; a fresh clone can run `make test` directly).
+# tests/js/test_*.mjs are the viewer's Node unit tests (node:test, no dependencies, no DOM).
 validate: build
 	python3 scripts/validate_json.py
 	node scripts/validate_json.js
-	node scripts/test_filters.mjs
-	node scripts/test_markdown.mjs
+	node --test $(wildcard tests/js/test_*.mjs)
 
 test: build
 	python3 -m pytest -q
