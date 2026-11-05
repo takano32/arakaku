@@ -109,7 +109,7 @@ def test_build_bouts_derives_matchup_winner_and_loser_from_participants():
     assert [f["side"] for f in decided["fighters"]] == ["red", "blue"]
     assert decided["fighters"][0]["fighter_id"] is None and decided["fighters"][0]["corner"] == "赤"
     assert (decided["winner"], decided["winner_id"], decided["loser"], decided["loser_id"]) == ("赤井", None, "青木", "b")
-    assert decided["result_status"] == "unknown"  # an empty result_status is left for the validator to judge
+    assert decided["result_status"] == "unknown"  # 空の result_status は build/bouts.py が "unknown" にする (T.112.6.23)
     assert decided["result"]["round"] == 2 and decided["result"]["time"] is None  # 空は null (T.112.4.8)
     assert decided["source_article_id"] == "result"
     assert unknown["winner"] is None and unknown["loser_id"] is None
