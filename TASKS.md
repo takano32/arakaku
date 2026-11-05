@@ -484,7 +484,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [x] T.112.3.3 スキルを新しい構成に合わせる（マージ 93ad318、2026-11-05）。存在しない名前（`renderNumbersBlock`・`.video-badge`・`#tab-filters` など）も実物に直した
     - 報告で分かっている行: arakaku-viewer-ui（18・22・23・26・135・137）、arakaku-filters（80・85・99・108・114）、arakaku-maintainer（81・104〜105）、arakaku-reliability-layering（26〜28・37。`#applyOfficialPlayer` などは data/enrich/fighter.js に移った）、arakaku-numbers-pipeline（172・220・222。入口は今も DataEnricher.enrichFighter・enrichBout だが、規則は移った）、arakaku-source-pipeline（126。`note_cache_name()` は paths.py、T.112.1.15 のあとは notes/cache.py）
     - ほかに arakaku-review-workflow・arakaku-data-curator・arakaku-sorting-strategy・arakaku-docs-handoff も見る（特にモジュールの一覧と make validate の中身）
-  - [ ] T.112.3.4 push して CI（Test・Deploy Pages）が通ることを確かめ、公開サイトを開いてコンソールのエラーが無いことを確かめる
+  - [x] T.112.3.4 push して CI（Test・Deploy Pages）が通ることを確かめ、公開サイトを開いてコンソールのエラーが無いことを確かめる（07b6772、2026-11-05）。CI（Test・Deploy Pages）が通り、公開サイトで全 15 タブとフォーカスの共有リンクを開いて、件数が出てコンソールのエラー・警告が 0 件であることを確かめた
   - [ ] T.112.3.5 Fable（effort max）がマージ後の全体を最終レビューする。指摘は新しい子として積む
   - [x] T.112.3.6 作業用の worktree とブランチを消す（`git worktree remove`・`git branch -d`）（2026-11-05。コミットなし）。最初の 2 本の worktree とブランチを消した。残りのリファクタリング用の worktree（2 本）も、それぞれのマージのあとで消す
 - [x] T.112.4 リファクタリング中に見つけたバグを、1 件ずつ別のコミットで直す。2026-11-05 に、2 本の引き継ぎの報告と 2 本のレビューから集めた。どれもリファクタリング前の master からある（マージ前のバグ T.112.1.11 は除く）。直すと出力や挙動が変わるので、データが変わるものは生成物を別のコミットにし、ビューアの挙動が変わるものは docs/VIEWER_FEATURES.md も直す（2026-11-05。子はすべて完了）
