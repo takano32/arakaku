@@ -8,6 +8,13 @@ import { code } from "./common.js";
 // ほかに出てこない (例: 1995 荒木好之 vs デーモンキング)。公式サイトの仮のデータとみられるので、消さずに注記する (T.78)。
 const UNVERIFIED_NOTE = `<p class="muted small">公式サイトのデータ。note・公式の大会一覧・このデータベースの記録と合わず、仮のデータの可能性があります。</p>`;
 
+// 公式の沿革の month は「春」「夏」「冬」「通年」などの言葉なので、数字のときだけ「月」を付ける
+// (以前は常に付けていて「春月」になった。T.112.4.25)。
+function monthLabel(month) {
+  if (month == null || month === "") return "";
+  return /^\d+$/.test(String(month)) ? `${month}月` : String(month);
+}
+
 export const officialMiscSection = {
   id: "officialMisc",
   label: "公式",
@@ -40,7 +47,7 @@ export const officialMiscSection = {
         }
         return `<div class="rec-text">
           <p class="rec-title">${escapeHtml(item.title)}</p>
-          <p class="rec-sub">${escapeHtml(joinPresent([item.year, item.era, item.month ? `${item.month}月` : ""]))}</p>
+          <p class="rec-sub">${escapeHtml(joinPresent([item.year, item.era, monthLabel(item.month)]))}</p>
         </div>
         <div class="rec-aside">${badge("沿革", "official")}${badge("note と合わない", "soft")}</div>`;
       },

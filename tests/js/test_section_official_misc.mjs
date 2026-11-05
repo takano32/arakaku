@@ -28,5 +28,5 @@ test("試合と沿革は「note と合わない」と注記する", () => {
     assert.match(desc.renderHead(item), /note と合わない/);
     assert.match(desc.renderBody(item), /仮のデータの可能性があります/);
   }
-  assert.match(desc.renderHead(desc.items[1]), /1995 \/ 創世期 \/ 春月/);
+  assert.match(desc.renderHead(desc.items[1]), /1995 \/ 創世期 \/ 春</);
 });
