@@ -1,27 +1,23 @@
-import {
-  ADMIN_TABS,
-  DATA_FILES,
-  DEFAULT_ADMIN_TAB,
-  DEFAULT_TAB,
-  MENTION_TYPE_ORDER,
-  PUBLIC_TABS,
-  REQUIRED_TAB_DATA_KEYS,
-} from "../config.js";
-import { FILTER_STATE_KEYS, TAB_FILTERS, filterButtons } from "../data/filters.js";
-import { labels } from "../data/labels.js";
-import { escapeHtml, uniqueSorted } from "./html.js";
+import { DEFAULT_ADMIN_TAB, DEFAULT_TAB, REQUIRED_TAB_DATA_KEYS } from "../config.js";
+import { FILTER_STATE_KEYS, TAB_FILTERS } from "../data/filters.js";
+import { escapeHtml } from "./html.js";
 import { RecordList } from "./list.js";
+import { AlertsRenderer } from "./render/alerts.js";
+import { FiltersRenderer } from "./render/filters.js";
+import { NavRenderer } from "./render/nav.js";
+import { StatsRenderer } from "./render/stats.js";
+import { ToolbarRenderer } from "./render/toolbar.js";
 import { SECTIONS } from "./sections/index.js";
 import { ThemeToggle } from "./theme.js";
 import { Toast } from "./toast.js";
 import { activateVideoFacade } from "./video_embed.js";
 
 /**
- * Shell — 画面全体 (ナビ・件数・検索・絞り込み・一覧・エラー表示) の描画と UI イベントの配線。
+ * Shell — 画面全体の UI イベントの配線と状態遷移 (タブ切替・飛び先・検索クリア)、および描画の順序付け。
  *
- * - state.subscribe → render() が唯一の再描画経路。render() は冪等で、変化した部分だけ DOM を触る
- *   (ナビは aria-current の更新だけ、絞り込みは指紋が変わったときだけ、一覧はタブ・repo.revision・
- *   指紋のいずれかが変わったときだけ build する)。
+ * - state.subscribe → render() が唯一の再描画経路。render() は冪等で、各レンダラ (ui/render/*.js) が
+ *   変化した部分だけ DOM を触る (ナビは aria-current の更新だけ、絞り込みは指紋が変わったときだけ、
+ *   一覧はタブ・repo.revision・指紋のいずれかが変わったときだけ build する)。
  * - 一覧はタブごとに 1 つの RecordList を保持し、タブを切り替えても開閉状態と描画済み件数を保つ。
  * - 選手/大会/試合リンク (ui/parts/links.js の data-* 属性) と YouTube ファサードのクリックは
  *   #list-host への委譲で受ける。
@@ -34,6 +30,11 @@ export class Shell {
   #searchBox;
   #theme = new ThemeToggle();
   #toast = new Toast();
+  #nav = new NavRenderer();
+  #stats = new StatsRenderer();
+  #alerts = new AlertsRenderer();
+  #filters = new FiltersRenderer();
+  #toolbar = new ToolbarRenderer();
   #lists = new Map();
   #currentTab = null;
   #prevRevision = new Map();
@@ -41,11 +42,8 @@ export class Shell {
   #prevGate = new Map();
   #prevFocusKey = "";
   #prevSortReady = new Map();
-  #prevFilterKey = "";
-  #prevNavKey = "";
   #prevPublicTab = DEFAULT_TAB;
   #prevAdminTab = DEFAULT_ADMIN_TAB;
-  #syncingNav = false;
   #lastCount = -1;
 
   constructor({ state, loader, query, searchBox }) {
@@ -82,7 +80,7 @@ export class Shell {
 
     document.querySelector("#nav")?.addEventListener("toggle", (event) => {
       // 管理ビューの開閉 = ビュー切替。離れる前の各ビューの最後のタブへ戻す。
-      if (this.#syncingNav || !event.target.classList.contains("nav-admin")) return;
+      if (this.#nav.syncing || !event.target.classList.contains("nav-admin")) return;
       const open = event.target.open;
       if (open && this.#state.viewMode === "public") this.switchTab(this.#prevAdminTab);
       else if (!open && this.#state.viewMode === "admin") this.switchTab(this.#prevPublicTab);
@@ -177,179 +175,15 @@ export class Shell {
     if (state.viewMode === "admin") this.#prevAdminTab = state.tab;
     else this.#prevPublicTab = state.tab;
 
-    this.#renderNav();
-    this.#renderStats();
-    this.#renderAlerts();
-    this.#renderFilters();
+    this.#nav.render(state);
+    this.#stats.render(state, this.repo);
+    this.#alerts.render(state.dataLoadErrors);
+    this.#filters.render(state, this.repo);
     this.#renderList();
-    this.#renderToolbar();
-  }
-
-  #navItem(id, label) {
-    const active = id === this.#state.tab;
-    return `<li><a class="nav-link" href="?tab=${escapeHtml(id)}" data-tab="${escapeHtml(id)}"${active ? ' aria-current="page"' : ""}>${escapeHtml(label)}</a></li>`;
-  }
-
-  #renderNav() {
-    const nav = document.querySelector("#nav");
-    if (!nav) return;
-    const key = `${this.#state.tab}`;
-    if (this.#prevNavKey === key && nav.childElementCount > 0) return;
-    const admin = this.#state.viewMode === "admin";
-    if (nav.childElementCount === 0) {
-      nav.innerHTML = `
-        <ul class="nav-list nav-public">${PUBLIC_TABS.map(([id, label]) => this.#navItem(id, label)).join("")}</ul>
-        <details class="nav-admin"${admin ? " open" : ""}>
-          <summary class="nav-admin-summary"><span>管理ビュー</span><span class="chev" aria-hidden="true"></span></summary>
-          <ul class="nav-list nav-admin-list">${ADMIN_TABS.map(([id, label]) => this.#navItem(id, label)).join("")}</ul>
-        </details>
-      `;
-    } else {
-      for (const link of nav.querySelectorAll("a[data-tab]")) {
-        if (link.dataset.tab === this.#state.tab) link.setAttribute("aria-current", "page");
-        else link.removeAttribute("aria-current");
-      }
-      const details = nav.querySelector(".nav-admin");
-      if (details && details.open !== admin) {
-        this.#syncingNav = true;
-        details.open = admin;
-        // toggle イベントは非同期に発火するので、次のタスクまでガードを保つ
-        setTimeout(() => { this.#syncingNav = false; }, 0);
-      }
-    }
-    this.#prevNavKey = key;
-    document.title = `${this.#sectionLabel()} | Unofficial ARAKAKU Database`;
-  }
-
-  #sectionLabel() {
-    return SECTIONS[this.#state.tab]?.label ?? "Unofficial ARAKAKU Database";
-  }
-
-  // 件数の計算規則:
-  // - 試合・動画は enrich で増減しないので生配列長 (名鑑のみの試合は個人成績ロード後に加算)。
-  // - 選手は名鑑/公式由来の発掘と重複統合で件数が変わるため、関係キーが揃ってから richFighters を数える。
-  // - 未ロードのものは "…"。
-  #counts() {
-    const d = this.#state.data;
-    const repo = this.repo;
-    const loaded = this.#state.loadedDataKeys;
-    const fightersFinal = ["fighters", "numbersFighters", "numbersNameMatches", "officialPlayers"].every((k) => loaded.has(k));
-    const numbersOnlyLoaded = loaded.has("numbersFightRecords");
-    const refsLoaded = ["sourceEventReferences", "sourceBoutReferences", "sourceVideoReferences"].every((k) => loaded.has(k));
-    // [ラベル, 件数, 押したときに開くタブ]。出典候補だけの一覧は無く、出典本文の各行に候補件数が出るので出典本文へ。
-    return [
-      ["団体", d.promotions.length, "promotions"],
-      ["大会", d.events.length + (numbersOnlyLoaded ? repo.numbersOnlyEvents.length : 0), "events"],
-      ["試合", d.bouts.length + (numbersOnlyLoaded ? repo.numbersOnlyBouts.length : 0), "bouts"],
-      ["選手", fightersFinal ? repo.richFighters.length : d.fighters.length, "fighters"],
-      ["王座", d.titles.length, "titles"],
-      ["動画", d.videos.length, "videos"],
-      ["出典", loaded.has("sourceDocuments") ? d.sourceDocuments.length : "…", "sources"],
-      ["出典候補", refsLoaded ? (d.sourceEventReferences?.length ?? 0) + (d.sourceBoutReferences?.length ?? 0) + (d.sourceVideoReferences?.length ?? 0) : "…", "sources"],
-    ];
-  }
-
-  #renderStats() {
-    const el = document.querySelector("#stats");
-    if (!el) return;
-    const html = this.#counts().map(([label, count, tab]) => {
-      const name = SECTIONS[tab]?.label ?? label;
-      return `<a class="stat-cell" href="?tab=${escapeHtml(tab)}" data-tab="${escapeHtml(tab)}" title="${escapeHtml(name)}を表示"><span class="stat-num">${escapeHtml(count)}</span><span class="stat-label">${escapeHtml(label)}</span></a>`;
-    }).join("");
-    if (el.innerHTML !== html) el.innerHTML = html;
-  }
-
-  #renderAlerts() {
-    const el = document.querySelector("#alerts");
-    if (!el) return;
-    const entries = Object.entries(this.#state.dataLoadErrors ?? {});
-    if (entries.length === 0) {
-      if (el.childElementCount) el.replaceChildren();
-      return;
-    }
-    const items = entries.map(([key, message]) => {
-      const fileName = (DATA_FILES[key] ?? key).split("/").pop();
-      return `<li><code>${escapeHtml(fileName)}</code> ${escapeHtml(message)}</li>`;
-    }).join("");
-    const html = `<div class="alert" role="alert"><p class="alert-title">データ読み込み失敗</p><ul>${items}</ul><p class="small">読み込めなかったデータは空として扱われています。再読み込みしても直らない場合は配信側の問題です。</p></div>`;
-    if (el.innerHTML !== html) el.innerHTML = html;
-  }
-
-  #sortedMentionTypes() {
-    return uniqueSorted(this.repo.richSourceMentions.map((m) => m.mention_type)).sort((a, b) => {
-      const orderA = MENTION_TYPE_ORDER.indexOf(a);
-      const orderB = MENTION_TYPE_ORDER.indexOf(b);
-      if (orderA === -1 && orderB === -1) return String(a).localeCompare(String(b), "ja");
-      if (orderA === -1) return 1;
-      if (orderB === -1) return -1;
-      return orderA - orderB;
-    });
-  }
-
-  #renderFilters() {
-    const el = document.querySelector("#filters");
-    if (!el) return;
-    const state = this.#state;
-    const groups = TAB_FILTERS[state.tab] ?? [];
-    const isMentions = state.tab === "mentions";
-    const mentionTypes = isMentions ? this.#sortedMentionTypes() : [];
-    const key = [state.tab, state.mentionType, mentionTypes.join(","), ...groups.map((g) => state[g.stateKey])].join("\0");
-    if (key === this.#prevFilterKey) return;
-    this.#prevFilterKey = key;
-
-    const rows = groups.map((group) => {
-      const selected = state[group.stateKey];
-      const buttons = filterButtons(group).map((option) => `
-        <button type="button" class="chip${selected === option.value ? " is-active" : ""}" aria-pressed="${selected === option.value ? "true" : "false"}"
-                data-filter-type="${escapeHtml(group.type)}" data-filter-val="${escapeHtml(option.value)}">${escapeHtml(option.label)}</button>`).join("");
-      return `<div class="filter-row"><span class="filter-label">${escapeHtml(group.label)}</span><div class="chips">${buttons}</div></div>`;
-    });
-    if (isMentions) {
-      const options = [`<option value="">すべての言及</option>`, ...mentionTypes.map((t) => `<option value="${escapeHtml(t)}"${t === state.mentionType ? " selected" : ""}>${escapeHtml(labels.mentionType(t))} / ${escapeHtml(t)}</option>`)].join("");
-      rows.push(`<div class="filter-row"><label class="filter-label" for="mention-type">種別</label><select id="mention-type" class="select">${options}</select></div>`);
-    }
-    el.hidden = rows.length === 0;
-    el.innerHTML = rows.join("");
-  }
-
-  #focusChip() {
-    const state = this.#state;
-    const repo = this.repo;
-    let label = "";
-    if (state.focusFighterId) label = `選手: ${repo.fighterName(state.focusFighterId)}`;
-    else if (state.focusEventId) label = `大会: ${repo.eventName(state.focusEventId)}`;
-    else if (state.focusBoutId) label = `試合: ${repo.findRichBout(state.focusBoutId)?.matchup ?? state.focusBoutId}`;
-    if (!label) return "";
-    return `<span class="focus-chip">${escapeHtml(label)}<button type="button" id="focus-clear" class="focus-clear" aria-label="絞り込みを解除">✕</button></span>`;
-  }
-
-  #renderToolbar() {
-    const el = document.querySelector("#toolbar");
-    if (!el) return;
-    const section = SECTIONS[this.#state.tab];
-    const loading = this.#state.loadingDataKeys.size;
-    const loadedCount = this.#state.loadedDataKeys.size;
-    // 分母は取得済み + 取得中 (DATA_FILES 全体ではない: タブ専用データや viewer が読まないファイルがある)。
-    const total = loadedCount + loading;
-    const count = this.#lastCount;
-    // 見出しと絞り込みチップは中身が変わったときだけ描き直し、読み込み件数は別の要素の文字だけ更新する
-    // (件数が変わるたびに全体を描き直すと、チップの ✕ にあるキーボードフォーカスが消えていた。T.102)。
-    const main = `
-      <h1 class="section-title" tabindex="-1">${escapeHtml(section?.label ?? "")}<span class="section-count">${count >= 0 ? `${escapeHtml(count)} 件` : ""}</span></h1>
-      ${this.#focusChip()}
-    `;
-    let mainEl = el.querySelector(".toolbar-main");
-    let indicator = el.querySelector(".loading-indicator");
-    if (!mainEl) {
-      el.innerHTML = `<div class="toolbar-main"></div><span class="loading-indicator" hidden></span>`;
-      mainEl = el.querySelector(".toolbar-main");
-      indicator = el.querySelector(".loading-indicator");
-    }
-    if (mainEl.innerHTML !== main) mainEl.innerHTML = main;
-    indicator.hidden = !loading;
-    indicator.textContent = loading ? `読み込み中 ${loadedCount}/${total}` : "";
+    const section = SECTIONS[state.tab];
+    this.#toolbar.render({ state, repo: this.repo, section, count: this.#lastCount });
     // 一覧がまだ描けていない間だけ aria-busy (描けた後の補完データの読み込み中は busy にしない)。
-    document.querySelector("#list-host")?.setAttribute("aria-busy", loading && count < 0 ? "true" : "false");
+    document.querySelector("#list-host")?.setAttribute("aria-busy", state.loadingDataKeys.size && this.#lastCount < 0 ? "true" : "false");
     this.#searchBox.setPlaceholder(section?.placeholder);
   }
 
@@ -395,7 +229,7 @@ export class Shell {
     const focusKey = [state.focusFighterId, state.focusEventId, state.focusBoutId].join("\0");
     const focusChanged = focusKey !== this.#prevFocusKey;
     const gateChanged = gateKey !== this.#prevGate.get(tabId) || sortReady !== this.#prevSortReady.get(tabId);
-    const changed = tabChanged || gateChanged || revision !== this.#prevRevision.get(tabId) || fingerprint !== this.#prevFilterKeyFor(tabId);
+    const changed = tabChanged || gateChanged || revision !== this.#prevRevision.get(tabId) || fingerprint !== this.#prevFingerprint.get(tabId);
     list.setStatus({ loading: state.loadingDataKeys.size > 0, emptyMessage: section.empty });
     if (!changed) return;
 
@@ -430,9 +264,5 @@ export class Shell {
     this.#prevFingerprint.set(tabId, fingerprint);
     this.#prevGate.set(tabId, gateKey);
     this.#prevSortReady.set(tabId, sortReady);
-  }
-
-  #prevFilterKeyFor(tabId) {
-    return this.#prevFingerprint.get(tabId);
   }
 }
