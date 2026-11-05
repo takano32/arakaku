@@ -183,12 +183,18 @@ def test_infer_time():
     assert infer_time("判定3-0") == ""
 
 
-def test_crawled_title_and_rule_notes_are_promotion_profiles():
-    # 以前は「歴代王者」「王座」を、誰も扱わない title_history にしていた (T.112.4.10)。
-    from arakaku.notes.crawl import infer_article_type
-    assert infer_article_type("ターゲット歴代王者") == "promotion_profile"
-    assert infer_article_type("エンペラー団体紹介とルール") == "promotion_profile"
-    assert infer_article_type("ターゲットNo.105試合結果") == "event_result"
+def test_crawled_rows_are_classified_like_generated_articles():
+    # crawl 側の 2 つ目の分類器をやめ、classify_article を使う (T.112.6.13)。
+    from arakaku.notes.crawl import make_article_row
+
+    def row(title, key="n0123456789ab"):
+        return make_article_row(title=title, url=f"https://note.com/xyz1090/n/{key}", notes="")
+
+    assert (row("ターゲットNo.105試合結果")["article_type"], row("ターゲットNo.105試合結果")["promotion_id"]) == ("event_result", "target")
+    assert row("エンペラーNo.12対戦カード")["article_type"] == "event_card"
+    # 以前の crawl は「結果」を含むだけで event_result にしていた。
+    assert row("アンケート結果のお知らせ")["article_type"] == "note_article"
+    assert row("x", key="n0123456789ab")["article_id"] == "note-n0123456789ab"
 
 
 def test_promotion_profile_fighters_handle_full_width_brackets():
