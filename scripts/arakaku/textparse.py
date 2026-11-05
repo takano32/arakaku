@@ -1,7 +1,8 @@
 # 役割: 複数スクリプト間で挙動を完全一致させたいテキスト解析の正規表現/関数を共有する。
 #   (下の docstring がモジュールの方針を述べているので必ず合わせて読むこと)
-# アーキ上の位置: build_source_documents.py が NOTE_URL_RE / YOUTUBE_URL_RE / VS_RE を、
-#   review 候補生成スクリプト群が TIME_RE / infer_time / find_method 等を import する。
+# アーキ上の位置: sources/mentions.py が NOTE_URL_RE / YOUTUBE_URL_RE / VS_RE を、
+#   review/mention_result_candidates.py が infer_time / find_method / normalize_digits を、
+#   notes/matchups.py と notes/results.py が勝敗記号と strip_name_prefix を import する。
 # 不変条件: ここに置くのは「全利用箇所で同一であるべき」パターンだけ。
 #   団体ごとに語彙が異なる EVENT_RE / RESULT_RE / METHOD_PATTERNS 等は各スクリプト側に残す
 #   (共有化すると別文脈の変更が意図せず波及するため)。
@@ -49,7 +50,7 @@ def infer_time(text: str) -> str:
 
 # note の試合結果の勝敗記号。勝ちは ○ (U+25CB)・◯ (U+25EF)・〇 (U+3007) の 3 種が混在し、負けは ●。
 # 名前の前には 🟥/🟦 のコーナーや ① などの番号が付くことがある (NFKC 後は ① が "1" になる)。
-# generate_article_links.py と match_unknown_bouts_to_note_results.py が共有する (T.93)。
+# notes/matchups.py (記事リンク) と notes/results.py (結果 note の照合) が共有する (T.93)。
 WIN_MARKS = "○◯〇"
 LOSS_MARKS = "●"
 RESULT_MARKS = WIN_MARKS + LOSS_MARKS

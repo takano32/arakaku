@@ -1,6 +1,6 @@
 # 役割: Apple Numbers (アラカク選手名鑑.numbers) 由来の numbers_*.csv の行を docs/data/numbers_*.json の
 #   形に組み立てる。viewer は実行時にこの比較データで正規 CSV を補完する (人手検証済み Numbers が優先)。
-# アーキ上の位置: 入力 = data-src/numbers_*.csv の行 (arakaku/numbers_extract.py が Numbers から生成)、
+# アーキ上の位置: 入力 = data-src/numbers_*.csv の行 (scripts/extract_numbers.py が Numbers から生成)、
 #   出力 = docs/data/numbers_*.json。build/canonical.py とは別系統で、正規 CSV を上書きしない比較レイヤ。
 #   I/O は scripts/build_numbers_json.py が行う。
 # 不変条件: Numbers の事実を捏造・改変しない。正規データへの「直接置換」ではなく比較データとして扱う。

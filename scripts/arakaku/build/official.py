@@ -1,7 +1,8 @@
 # 役割: 公式サイト由来の official_*.csv の行を docs/data/official_*.json の形に組み立てる。
 #   players / tournaments / matches / history (json_builders) と news / pages (pages_json_builders)。
 #   viewer はこれを正規/Numbers データと突き合わせて表示する。
-# アーキ上の位置: 入力 = data-src/official_*.csv の行 (arakaku/official/ が公式リポジトリから生成)、
+# アーキ上の位置: 入力 = data-src/official_*.csv の行 (scripts/generate_official_csvs.py・generate_official_pages_csv.py が
+#   tmp/arakaku-site の公式サイトのソースから生成)、
 #   出力 = docs/data/official_*.json。I/O は scripts/build_official_json.py と
 #   scripts/build_official_pages_json.py が行う。
 # 不変条件:

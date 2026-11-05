@@ -1,7 +1,9 @@
 # 役割: CSV / JSON の入出力。data-src の CSV はヘッダを schema.CSV_HEADERS と照合して読み、
 #   書き込みは同じディレクトリの一時ファイルに書いてから原子的に差し替える。
 # アーキ上の位置: paths.py と schema.py にだけ依存する。読み書きをする全スクリプトと build/ が import する。
-#   純粋なロジック (notes/ sources/ derive/ review/ validation/) はここを import せず、行のリストを受け取る。
+#   純粋なロジック (notes/ sources/ derive/ review/ と build/ の組み立て) は型 CsvRow だけを import し、
+#   読み書きの関数は使わずに行のリストを受け取る。読み書きをするのは build/relations.py (load_tables) と、
+#   docs/data を読む validation/runner.py・locate.py。
 # 不変条件:
 #   - read_csv は data-src 配下の CSV のヘッダ違い・欠落をエラーにする (列の改名や消えたファイルを
 #     空の値として黙って通さないため)。まだ生成されていない中間 CSV だけ missing_ok=True で空リスト。
