@@ -3,7 +3,7 @@ from __future__ import annotations
 # arakaku/build の単体テスト。実データは make build + validate が通すので、ここでは小さな行から
 # 派生規則 (大会の日付・出場者の並び・勝者の逆引き・動画の紐づけ状態) が意図どおりかだけを見る。
 
-from arakaku.build import canonical, numbers, official
+from arakaku.build import aliases, articles, bouts, canonical, events, fighters, numbers, official, titles, videos
 from arakaku.build.relations import (
     Relations,
     Tables,
@@ -29,6 +29,8 @@ ARTICLE_LINKS = [
     {"article_id": "result", "entity_type": "bout", "entity_id": "e1-01"},
 ]
 
+
+# --- event_dates と build/relations ---
 
 def test_event_note_dates_take_the_earliest_note_of_each_kind():
     result, first = event_note_dates(ARTICLES, ARTICLE_LINKS)
@@ -83,8 +85,10 @@ def _relations() -> Relations:
     return Relations.from_tables(tables)
 
 
+# --- build/events ---
+
 def test_build_events_joins_dates_sources_and_videos():
-    [event] = canonical.build_events([{"event_id": "e1", "name": "E1", "promotion_id": "target", "event_number": "1", "published_at": ""}], _relations())
+    [event] = events.build_events([{"event_id": "e1", "name": "E1", "promotion_id": "target", "event_number": "1", "published_at": ""}], _relations())
     assert event["result_published_at"] == "2026-07-05"
     assert event["note_published_at"] == "2026-07-01"
     assert event["source_article_id"] == "card"  # the first linked article in CSV order
@@ -93,12 +97,14 @@ def test_build_events_joins_dates_sources_and_videos():
     assert event["published_at"] is None and event["summary"] == ""
 
 
+# --- build/bouts ---
+
 def test_build_bouts_derives_matchup_winner_and_loser_from_participants():
     rows = [
         {"bout_id": "e1-01", "event_id": "e1", "promotion_id": "target", "bout_order": "1", "round": "2R", "time": "", "result_status": "", "is_title_bout": "", "title_note": "", "notes": ""},
         {"bout_id": "e1-02", "event_id": "e1", "promotion_id": "target", "bout_order": "2", "round": "", "result_status": "unknown", "is_title_bout": "あり", "title_id": "t", "title_note": " x "},
     ]
-    decided, unknown = canonical.build_bouts(rows, _relations())
+    decided, unknown = bouts.build_bouts(rows, _relations())
     assert decided["matchup"] == "赤井 vs 青木"  # red first even though blue comes first in the CSV
     assert [f["side"] for f in decided["fighters"]] == ["red", "blue"]
     assert decided["fighters"][0]["fighter_id"] is None and decided["fighters"][0]["corner"] == "赤"
@@ -111,11 +117,15 @@ def test_build_bouts_derives_matchup_winner_and_loser_from_participants():
     assert unknown["title"] == {"is_title_bout": True, "title_id": "t", "title_result": None, "note": "x"}
 
 
+# --- build/fighters ---
+
 def test_build_fighters_attaches_aliases_and_profile():
-    [fighter] = canonical.build_fighters([{"fighter_id": "waku", "display_name": "わく", "height": " 170cm ", "age": "", "gym": "G"}], _relations())
+    [fighter] = fighters.build_fighters([{"fighter_id": "waku", "display_name": "わく", "height": " 170cm ", "age": "", "gym": "G"}], _relations())
     assert fighter["aliases"] == ["ワク"]
     assert fighter["profile"] == {"height": "170cm", "age": None, "gym": "G"}
 
+
+# --- build/titles ---
 
 def test_build_titles_sorts_lineage_numerically():
     reigns = [
@@ -123,10 +133,12 @@ def test_build_titles_sorts_lineage_numerically():
         {"reign_id": "t-2", "title_id": "t", "reign_order": "2", "fighter_name": "二", "fighter_id": ""},
         {"reign_id": "other", "title_id": "u", "reign_order": "1", "fighter_name": "他"},
     ]
-    [title] = canonical.build_titles([{"title_id": "t", "promotion_id": "target", "division": "ライト級"}], reigns)
+    [title] = titles.build_titles([{"title_id": "t", "promotion_id": "target", "division": "ライト級"}], reigns)
     assert [r["order"] for r in title["lineage"]] == [2, 10]
     assert title["lineage"][0]["fighter_id"] is None and title["lineage"][1]["fighter_id"] == "ten"
 
+
+# --- build/videos ---
 
 def test_build_videos_takes_archive_metadata_and_link_status():
     rows = [
@@ -134,17 +146,25 @@ def test_build_videos_takes_archive_metadata_and_link_status():
         {"video_id": "v-none", "platform": "youtube", "platform_video_id": "YT9", "url": "https://youtu.be/YT9", "title": "t"},
         {"video_id": "v-other", "platform": "vimeo", "platform_video_id": "YT1", "url": "https://vimeo.com/1", "title": "t"},
     ]
-    full, none, other = canonical.build_videos(rows, _relations())
+    full, none, other = videos.build_videos(rows, _relations())
     assert (full["platform"], full["channel_name"], full["published_at"], full["thumbnail_sizes"]) == ("youtube", "アラカク通信", "20260701", "default high")
     assert full["link_status"] == "linked" and none["link_status"] == "unlinked"
     assert none["channel_name"] is None and none["thumbnail_sizes"] == ""
     assert other["thumbnail_sizes"] == ""  # only YouTube videos have archive thumbnails
 
 
+# --- build/articles ---
+
 def test_source_documents_are_split_from_their_bodies():
     docs = [{"source_id": "note:a", "title": "A", "content_text": "本文"}]
-    assert canonical.source_documents_without_bodies(docs) == [{"source_id": "note:a", "title": "A"}]
-    assert canonical.source_document_bodies(docs) == [{"source_id": "note:a", "content_text": "本文"}]
+    assert articles.source_documents_without_bodies(docs) == [{"source_id": "note:a", "title": "A"}]
+    assert articles.source_document_bodies(docs) == [{"source_id": "note:a", "content_text": "本文"}]
+
+
+# --- build/aliases と build/canonical ---
+
+def test_build_aliases_has_every_alias_type_even_without_rows():
+    assert aliases.build_aliases([]) == {"fighters": {}, "promotions": {}, "methods": {}}
 
 
 def test_json_builders_keep_the_output_file_order():
@@ -155,8 +175,9 @@ def test_json_builders_keep_the_output_file_order():
         "source_mentions.json", "youtube_archives.json", "note_archives.json", "source_event_references.json",
         "source_bout_references.json", "source_video_references.json",
     ]
-    assert canonical.build_aliases([]) == {"fighters": {}, "promotions": {}, "methods": {}}
 
+
+# --- build/numbers と build/official ---
 
 def test_numbers_and_official_builders_parse_integers():
     [fighter] = numbers.build_numbers_fighters([{"numbers_fighter_id": "n1", "source_row": "3", "fight_count": "5", "wins": "3", "losses": "x", "notes": ""}])
