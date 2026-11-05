@@ -95,7 +95,7 @@ def youtube_document(video: CsvRow, cached: dict[str, str], cache_name: str, fet
         "source_ref_id": video_id,
         "title": video.get("title") or cached["title"],
         "url": video.get("url") or cached["url"],
-        "published_at": video.get("published_at") or cached["upload_date"],
+        "published_at": cached["upload_date"],  # videos.csv に日付の列は無い (T.112.4.9)
         "fetched_at": fetched_at,
         "content_format": "plain_text",
         "content_hash": sha256_text(description),
