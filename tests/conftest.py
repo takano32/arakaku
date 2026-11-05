@@ -41,8 +41,11 @@ def text_module():
 
 
 @pytest.fixture
-def validate_json_module(repo_root: Path):
-    return load_module("validate_json", repo_root / "scripts" / "validate_json.py")
+def report():
+    """arakaku.validation の検証関数に渡す空の Report。"""
+    from arakaku.validation import Report
+
+    return Report()
 
 
 @pytest.fixture
