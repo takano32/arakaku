@@ -486,7 +486,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
     - ほかに arakaku-review-workflow・arakaku-data-curator・arakaku-sorting-strategy・arakaku-docs-handoff も見る（特にモジュールの一覧と make validate の中身）
   - [ ] T.112.3.4 push して CI（Test・Deploy Pages）が通ることを確かめ、公開サイトを開いてコンソールのエラーが無いことを確かめる
   - [ ] T.112.3.5 Fable（effort max）がマージ後の全体を最終レビューする。指摘は新しい子として積む
-  - [ ] T.112.3.6 作業用の worktree とブランチを消す（`git worktree remove`・`git branch -d`）
+  - [x] T.112.3.6 作業用の worktree とブランチを消す（`git worktree remove`・`git branch -d`）（2026-11-05。コミットなし）。最初の 2 本の worktree とブランチを消した。残りのリファクタリング用の worktree（2 本）は、そのマージのあとで同じように消す
 - [ ] T.112.4 リファクタリング中に見つけたバグを、1 件ずつ別のコミットで直す。2026-11-05 に、2 本の引き継ぎの報告と 2 本のレビューから集めた。どれもリファクタリング前の master からある（マージ前のバグ T.112.1.11 は除く）。直すと出力や挙動が変わるので、データが変わるものは生成物を別のコミットにし、ビューアの挙動が変わるものは docs/VIEWER_FEATURES.md も直す
   - [ ] T.112.4.1 【Python・高】`build_source_documents.py` は、`tmp/` にキャッシュが無いと終了コード 0 のまま `data-src/source_documents.csv`（27,913 行が 1 行になる）と `source_mentions.csv` を切り詰めてしまう（master で再現済み）。文書が 0 件のときは `SystemExit("[error] no cached sources under tmp/; refusing to overwrite …")` で書かないようにするか、`build-sources` を `check-stage1-inputs` に依存させる
   - [ ] T.112.4.2 【Python】`review/note_results.py:50,144`（元の `match_unknown_bouts_to_note_results.py:58-68, 219-233`）。名前の表記の集合を set の順で回すので、同じ note に 2 つの表記（例: わく・ワク）が別の行範囲で記号付きで出ると、引用する行が実行ごとに変わりうる（make check-generated が不安定になる）。今のデータでは起きない。名前を並べ替えた順で回す
