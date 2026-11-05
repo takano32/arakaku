@@ -16,7 +16,7 @@ import csv
 import sys
 from pathlib import Path
 
-from arakaku.utils import ROOT
+from arakaku.paths import ROOT
 
 BOUTS_CSV = ROOT / "data-src" / "bouts.csv"
 PARTICIPANTS_CSV = ROOT / "data-src" / "bout_participants.csv"

@@ -9,7 +9,8 @@ from __future__ import annotations
 # 不変条件: promotion_id は他テーブルから FK 参照されるので変更・削除はそれらと同期必須。
 #       FIELDS と各 dict のキーは write_csv の DictWriter で厳密一致させること。
 # 関連スキル: .agents/skills/arakaku-data-curator
-from arakaku.utils import DATA_SRC, write_csv
+from arakaku.io import write_csv
+from arakaku.paths import DATA_SRC
 
 OUTPUT = DATA_SRC / "promotions.csv"
 FIELDS = [

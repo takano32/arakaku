@@ -14,7 +14,8 @@ import json
 #       人手検証済みの値が優先される（AGENTS.md のパイプライン方針）。各 generate_* の fields と
 #       dict キーは write_csv の DictWriter で厳密一致させること。
 # 関連スキル: .agents/skills/arakaku-data-curator
-from arakaku.utils import DATA_SRC, ROOT, write_csv
+from arakaku.io import write_csv
+from arakaku.paths import DATA_SRC, ROOT
 
 # 公式サイトの JSON エクスポート置き場（git 管理外、要事前取得）。
 SRC = ROOT / "tmp" / "arakaku-site" / "data"

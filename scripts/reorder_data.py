@@ -9,7 +9,8 @@ from __future__ import annotations
 #       追加・削除・改名は行わない。空日付は "0000-00-00" 扱いで先頭（最古）に寄せる。
 #       タイ・ブレイクに主キー/順序列を足して並びを決定的にしている（同点でも順序が揺れない）。
 # 関連スキル: .agents/skills/arakaku-sorting-strategy
-from arakaku.utils import DATA_SRC, read_csv, write_csv
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC
 
 def sort_key_date(row: dict[str, str], field: str) -> str:
     val = row.get(field, "")

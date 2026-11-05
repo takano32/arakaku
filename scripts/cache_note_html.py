@@ -16,7 +16,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from arakaku.utils import DATA_SRC, ROOT, note_cache_name, read_csv
+from arakaku.io import read_csv
+from arakaku.paths import DATA_SRC, ROOT, note_cache_name
 
 
 ARTICLES_CSV = DATA_SRC / "articles.csv"

@@ -15,8 +15,9 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
-from arakaku.utils import DATA_SRC, ROOT, read_csv, write_csv
-from arakaku.youtube import YOUTUBE_CACHE_DIR, iter_cached_videos
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC, ROOT, YOUTUBE_CACHE_DIR
+from arakaku.youtube import iter_cached_videos
 
 NOTE_CACHE = ROOT / "tmp" / "note-html"
 YT_ARCHIVE = DATA_SRC / "archives/youtube.csv"

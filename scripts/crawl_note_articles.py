@@ -15,7 +15,8 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 
-from arakaku.utils import ROOT, write_csv
+from arakaku.io import write_csv
+from arakaku.paths import ROOT
 
 # 役割: 公式 note クリエイターの記事を RSS / HTML リンク / 非公式 API から発見し、
 #   data-src/articles.csv に「未登録 URL の行だけ」追記するクローラ。

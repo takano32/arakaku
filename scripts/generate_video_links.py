@@ -14,7 +14,8 @@ from __future__ import annotations
 #       重複排除（seen_event_links）するが、bout/fighter リンクは bout ごとに張る。
 #       notes 文言は移行元の出所を残す履歴情報なので安易に変えない。
 # 関連スキル: .agents/skills/arakaku-data-curator
-from arakaku.utils import DATA_SRC, read_csv, write_csv
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC
 
 OUTPUT = DATA_SRC / "video_links.csv"
 FIELDS = ["video_id", "entity_type", "entity_id", "relation_type", "start_time", "end_time", "notes"]

@@ -17,8 +17,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from arakaku.utils import DATA_SRC, read_csv
-from arakaku.youtube import YOUTUBE_CACHE_DIR
+from arakaku.io import read_csv
+from arakaku.paths import DATA_SRC, YOUTUBE_CACHE_DIR
 
 VIDEOS_CSV = DATA_SRC / "videos.csv"
 API_URL = "https://www.googleapis.com/youtube/v3/videos"

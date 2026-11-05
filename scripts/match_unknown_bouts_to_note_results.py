@@ -22,9 +22,9 @@ import json
 import re
 import unicodedata
 
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC, DOCS_DATA, REVIEW
 from arakaku.textparse import WIN_MARKS
-
-from arakaku.utils import DATA_SRC, DOCS_DATA, REVIEW, read_csv, write_csv
 
 OUTPUT = REVIEW / "unknown_bout_note_results.csv"
 # 結果が known なのに決着方法などが空の試合に、同じ note の行から空欄だけを埋める候補 (T.73)。

@@ -11,7 +11,8 @@ from __future__ import annotations
 #       （fighters→fighter_id / promotions→promotion_id / methods→method code）。
 #       PROMOTION_ALIASES / METHOD_ALIASES は固定知識なので静的に持つ。
 # 関連スキル: .agents/skills/arakaku-data-curator
-from arakaku.utils import DATA_SRC, read_csv, write_csv
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC
 
 OUTPUT = DATA_SRC / "aliases.csv"
 FIELDS = ["alias_type", "alias", "canonical_id"]

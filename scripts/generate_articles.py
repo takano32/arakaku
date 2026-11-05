@@ -14,7 +14,8 @@ import re
 #       promotion_profile を特別扱い）と必ず同期させること。detect_promotion の優先順位は
 #       PROMOTIONS_BY_PRIORITY の並び順依存（より具体的な団体を先に判定）。
 # 関連スキル: .agents/skills/arakaku-source-pipeline
-from arakaku.utils import DATA_SRC, read_csv, write_csv
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC
 
 OUTPUT = DATA_SRC / "articles.csv"
 FIELDS = [

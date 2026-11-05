@@ -18,8 +18,9 @@ import re
 import unicodedata
 from collections import defaultdict
 
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC
 from arakaku.textparse import RESULT_MARKS, strip_name_prefix
-from arakaku.utils import DATA_SRC, read_csv, write_csv
 
 # 役割: 記事→各エンティティ（promotion / title_reign / fighter_snapshot / event / bout /
 #       fighter）の関係表 article_links.csv を生成する。一部は構造化データから決定的に、

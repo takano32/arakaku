@@ -17,8 +17,10 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+from arakaku.io import read_csv, write_csv
 from arakaku.mapping import build_bout_fighter_names
-from arakaku.utils import DATA_SRC, REVIEW, compact_join, compact_text, read_csv, write_csv
+from arakaku.paths import DATA_SRC, REVIEW
+from arakaku.text import compact_join, compact_text
 
 SOURCE_DOCUMENTS_CSV = DATA_SRC / "source_documents.csv"
 SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"

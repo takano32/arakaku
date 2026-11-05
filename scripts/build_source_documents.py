@@ -24,8 +24,9 @@ import re
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 
+from arakaku.io import read_csv, write_csv
+from arakaku.paths import DATA_SRC, ROOT, note_cache_name
 from arakaku.textparse import NOTE_URL_RE, VS_RE, YOUTUBE_URL_RE
-from arakaku.utils import DATA_SRC, ROOT, note_cache_name, read_csv, write_csv
 from arakaku.youtube import iter_cached_videos
 
 
