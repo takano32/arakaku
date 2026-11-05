@@ -7,7 +7,7 @@ import { normalizeFighterName } from "./names.js";
  * `merged_fighter_ids` と aliasIndex (fighter_id → survivor) で survivor に解決できる。
  * 団体が矛盾する組は誤統合を避けて統合しない。
  *
- * @param {object[]} fighters   enrich 済みの選手 (入力のオブジェクトは変更しない)
+ * @param {object[]} fighters   enrich 済みの選手 (統合しない行はその場で merged_fighter_ids を付ける。統合する組は複製する)
  * @param {Set<string>} canonicalIds fighters.csv にある fighter_id
  * @returns {{ survivors: object[], aliasIndex: Map<string, object> }}
  */
