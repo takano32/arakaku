@@ -46,7 +46,19 @@ let nextRevision = 1;
 export class DataRepository extends RawRepository {
   constructor(data) {
     super(data);
-    this.#enricher = new DataEnricher(this);
+    this.#enricher = new DataEnricher({
+      findEvent: (id) => this.findEvent(id),
+      findBout: (id) => this.findBout(id),
+      numbersFighterById: (id) => this.numbersFighterById(id),
+      promotionIdByName: (name) => this.promotionIdByName(name),
+      findYoutubeArchive: (displayId) => this.findYoutubeArchive(displayId),
+      findNoteArchive: (url) => this.findNoteArchive(url),
+      videoLinksForVideo: (videoId) => this.videoLinksForVideo(videoId),
+      numbersNameMatches: () => this.numbersNameMatches,
+      numbersFightRecords: () => this.numbersFightRecords,
+      officialPlayers: () => this.officialPlayers,
+      officialTournaments: () => this.officialTournaments,
+    });
     this.revision = nextRevision++;
     this.#indexes = new IndexCache();
     this.#memo = new Map();
