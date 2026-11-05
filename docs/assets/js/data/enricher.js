@@ -1,3 +1,5 @@
+import { normalizeFighterName } from "./names.js";
+
 /**
  * DataEnricher — 各エンティティ (fighter/bout/event/video/article) に、別ソース由来の
  * データ (選手名鑑 numbers / 団体公式 official / YouTube・note アーカイブ) を「重ねる」合成層。
@@ -8,18 +10,6 @@
  * - 内部インデックスは遅延構築キャッシュ。repo データ差し替え後は DataRepository.invalidate() が
  *   reset() を呼んで破棄する。
  */
-
-/**
- * 公式選手名と fighter の display_name を緩く突き合わせるための正規化キー。
- * 中黒・空白・ピリオドの有無や全半角差のみ異なる表記ゆれを吸収する
- * (例: 「ローリングJr」=「ローリングJr.」)。完全一致が取れなかった場合の
- * フォールバックにのみ用いる。
- */
-export function normalizeFighterName(name) {
-  let s = (name ?? "").normalize("NFKC");
-  for (const ch of ["・", "　", " ", ".", "．"]) s = s.split(ch).join("");
-  return s.toLowerCase();
-}
 
 // 名鑑の実績マーカーを表示用ラベル配列にする。belt_marker/tournament_win_marker は生値が
 // 既に絵文字 (👑 / 🏆x3) を含むので、絵文字を二重に付けず「王座/優勝」ラベルを前置するだけにする。
