@@ -71,7 +71,7 @@ clean-generated-csvs: clean-stage1-csvs clean-stage2-csvs
         reorder-data
 
 # discover-note-articles: list every article of the official note through the note API and
-# append the ones missing from articles.csv (T.86: without this step, refresh-sources only
+# append the ones missing from articles.csv (T86: without this step, refresh-sources only
 # refetched known URLs and new articles never arrived).
 discover-note-articles:
 	python3 scripts/crawl_note_articles.py --use-api
@@ -80,11 +80,11 @@ cache-note-html: discover-note-articles
 	python3 scripts/cache_note_html.py
 
 # discover-youtube-videos: list every upload of the official channel (YouTube Data API) and append
-# the non-Shorts videos missing from videos.csv (T.87: cache-youtube-api only refetched known IDs).
+# the non-Shorts videos missing from videos.csv (T87: cache-youtube-api only refetched known IDs).
 discover-youtube-videos:
 	python3 scripts/discover_youtube_videos.py
 
-# --allow-missing: a deleted or private video is listed but does not stop refresh-sources (T.103).
+# --allow-missing: a deleted or private video is listed but does not stop refresh-sources (T103).
 cache-youtube-api: discover-youtube-videos
 	python3 scripts/cache_youtube_api.py --allow-missing
 
@@ -170,7 +170,7 @@ generate-stage2:
 	python3 scripts/make_source_mention_result_candidates.py
 	python3 scripts/make_source_reference_candidates.py
 
-# reorder_data reads article_links.csv (stage 2) to order events, so it runs once after stage 2 (T.91).
+# reorder_data reads article_links.csv (stage 2) to order events, so it runs once after stage 2 (T91).
 regenerate-csvs: generate-stage1 generate-stage2 reorder-data
 
 # check-generated: rerun the offline derivations (no tmp/ or data-raw/ needed) and fail if

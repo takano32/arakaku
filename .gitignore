@@ -17,5 +17,5 @@ tmp/*
 !tmp/arakaku-site/.gitkeep
 .venv/
 
-# Claude Code agent worktrees (T.112.5)
+# Claude Code agent worktrees (T112.5)
 .claude/worktrees/
