@@ -149,6 +149,6 @@ def iter_cached_videos(cache_dir: Path = YOUTUBE_CACHE_DIR):
         try:
             item = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            print(f"[warn] invalid YouTube cache JSON skipped: {path}: {exc}")
-            continue
+            # 壊れたキャッシュを飛ばすと、その動画の本文とアーカイブ行が黙って消える。止めて報告する (T.112.4.12)。
+            raise ValueError(f"{path}: invalid YouTube cache JSON: {exc} (delete it and rerun make cache-youtube-api)") from exc
         yield path, flatten_video(item)
