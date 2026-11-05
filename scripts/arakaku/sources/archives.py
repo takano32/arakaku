@@ -11,7 +11,7 @@
 # 関連スキル: .agents/skills/arakaku-source-pipeline。
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from arakaku.schema import CsvRow
@@ -33,7 +33,9 @@ NOTE_FIELDS = ["filename", "webpage_url", "title", "description", "published_at"
 
 
 def current_archive_time() -> str:
-    return datetime.now().isoformat(timespec="seconds")
+    # 新しい行は fetched_at と同じく UTC の時差つき (T.112.4.13)。以前の行は時差の無いローカル時刻で、
+    # どの時間帯で書いたか分からないので書き換えない (archived_at_for が既存の値を引き継ぐ)。
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
 def index_rows(rows: list[CsvRow], key_field: str) -> dict[str, CsvRow]:
