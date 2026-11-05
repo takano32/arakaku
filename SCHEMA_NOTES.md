@@ -119,7 +119,7 @@ The source model is relational-style:
 - **Sorting Policy**: Canonical CSV files (`data-src/*.csv`) are sorted in **Ascending** order (oldest to newest). The viewer's `DataRepository` dynamically reverses these collections to display them in **Descending** order (newest to oldest) for the user.
 
 Numbers-derived data follows a lighter rule: preserve the source row meaning first, then let the static viewer supplement and merge it with the canonical tables at runtime.
- The build process (`scripts/build_json.py`) remains strictly factual and does not merge Numbers data into the canonical JSON. The viewer's `DataRepository` dynamically discovers Numbers-only (and official-only) entities and uses `DataEnricher.enrichFighter` / `enrichBout` to provide a complete view (including stats, achievements, and results) without requiring manual updates to the canonical CSVs for every small detail.
+ The build process (`scripts/build_json.py`) remains strictly factual and does not merge Numbers data into the canonical JSON. The viewer's `DataRepository` dynamically discovers Numbers-only (and official-only) entities and uses `DataEnricher` (fighter and bout rules in `docs/assets/js/data/enrich/fighter.js` and `enrich/bout.js`) to provide a complete view (including stats, achievements, and results) without requiring manual updates to the canonical CSVs for every small detail.
 
 Recommended Numbers split:
 
@@ -252,9 +252,9 @@ Current structure (rebuilt in T.56; no CDN or framework dependency):
 
 - `docs/index.html`, `docs/assets/app.css`, `docs/sw.js`
 - `docs/assets/js/main.js`, `docs/assets/js/config.js` (`DATA_FILES`, tabs, load phases)
-- `docs/assets/js/app/state.js` (UI state + URL query sync)
-- `docs/assets/js/data/` (parser, loader, repository, enricher, reliability, query, filters, labels — the data rules)
-- `docs/assets/js/ui/` (shell, list, parts, keyboard, html, markdown, `sections/*.js` per tab)
+- `docs/assets/js/app/` (`state.js` UI state Store, `url_params.js` and `history_sync.js` URL query sync, `sw_client.js` service worker client)
+- `docs/assets/js/data/` (parser, loader, `raw_repository.js` + `repository.js` and the modules split out of it — relations, indexes, source documents/lookup, event dates, title lineage, Numbers-only synthesis, fighter catalog/merge — plus `enricher.js` with its rules in `enrich/*.js`, names, reliability, query, search_text, filters, labels — the data rules)
+- `docs/assets/js/ui/` (shell, `render/*.js`, search_box, theme, toast, video_embed, `list/*.js`, `parts/*.js`, keyboard, html, markdown, `sections/*.js` one file per tab)
 
 `config.js` lists every generated JSON file. The data layer under `docs/assets/js/data/` is the only place that interprets JSON shapes; `ui/sections/*.js` render the derived per-view records. `docs/VIEWER_FEATURES.md` maps each viewer feature to its module.
 
