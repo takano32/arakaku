@@ -1,4 +1,5 @@
 import { escapeHtml } from "../html.js";
+import { initialCount, keysUnchanged, moreLabel, nextEnd, refreshTarget, statusText } from "./paging.js";
 
 /**
  * RecordList — 段階的に描画する一覧 (レコード行の開閉・カーソル付き)。
@@ -81,7 +82,7 @@ export class RecordList {
   setItems(desc) {
     this.#desc = desc;
     this.#items = desc.items;
-    this.#rendered = Math.min(this.#chunk, this.#items.length);
+    this.#rendered = initialCount(this.#items.length, this.#chunk);
     this.#cursor = -1;
     this.#rowsEl.replaceChildren();
     this.#rows = [];
@@ -97,8 +98,8 @@ export class RecordList {
     }
     this.#desc = desc;
     this.#items = desc.items;
-    const target = Math.min(Math.max(this.#rendered, this.#chunk), this.#items.length);
-    const sameKeys = this.#rows.length === target && this.#rows.every((row, i) => row.key === desc.keyOf(this.#items[i]));
+    const target = refreshTarget(this.#rendered, this.#chunk, this.#items.length);
+    const sameKeys = keysUnchanged(this.#rows, this.#items, desc.keyOf, target);
     if (!sameKeys) {
       this.#rowsEl.replaceChildren();
       this.#rows = [];
@@ -114,7 +115,7 @@ export class RecordList {
   }
 
   renderMore(n = this.#chunk) {
-    const end = Math.min(this.#items.length, this.#rendered + n);
+    const end = nextEnd(this.#rendered, n, this.#items.length);
     if (end <= this.#rendered) return;
     const frag = document.createDocumentFragment();
     for (let i = this.#rendered; i < end; i++) frag.appendChild(this.#buildRow(i));
@@ -203,16 +204,15 @@ export class RecordList {
   // ── 内部 ───────────────────────────────────────────────────────────
 
   #paintStatus() {
-    if (this.#items.length === 0) {
-      this.#statusEl.textContent = this.#loading ? "読み込み中…" : this.#emptyMessage;
-      this.#statusEl.classList.toggle("is-loading", this.#loading);
-      this.#statusEl.hidden = false;
-    } else {
-      this.#statusEl.hidden = true;
+    const status = statusText({ count: this.#items.length, loading: this.#loading, emptyMessage: this.#emptyMessage });
+    if (!status.hidden) {
+      this.#statusEl.textContent = status.text;
+      this.#statusEl.classList.toggle("is-loading", status.isLoading);
     }
+    this.#statusEl.hidden = status.hidden;
     const remaining = this.#items.length - this.#rendered;
     this.#moreEl.hidden = remaining <= 0;
-    if (remaining > 0) this.#moreButton.textContent = `さらに表示（残り ${remaining} 件）`;
+    if (remaining > 0) this.#moreButton.textContent = moreLabel(remaining);
   }
 
   #safe(fn, item, what) {
