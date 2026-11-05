@@ -92,8 +92,16 @@ def write_json(path: Path, data: Any) -> None:
     print(f"[info] {path}")
 
 
+def read_json(path: Path) -> Any:
+    """必須の JSON を読む。無ければ FileNotFoundError (空として扱って出力を上書きしないため)。"""
+    if not path.exists():
+        raise FileNotFoundError(f"{path}: required JSON is missing (run make build)")
+    return load_json(path)
+
+
 def load_json(path: Path, default: Any = None) -> Any:
-    # 無いファイルは default (存在の検査は呼び出し側)。壊れた JSON は握りつぶさずにエラーにする。
+    # 無いファイルは default (存在の検査は呼び出し側。validation/runner.py が自分で欠けを報告する)。
+    # 壊れた JSON は握りつぶさずにエラーにする。
     if not path.exists():
         return default
     try:
