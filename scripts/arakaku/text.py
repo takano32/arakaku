@@ -81,3 +81,13 @@ def safe_slug(value: str) -> str:
 def nfkc(text: str) -> str:
     """NFKC 正規化 (全角数字・英字を半角に、① を 1 に、（）を () にする)。"""
     return unicodedata.normalize("NFKC", text)
+
+
+def normalize_text(text: str) -> str:
+    """各行の連続する空白を 1 つに畳み、前後の空白と空行を落とす (source_documents の本文の規則)。"""
+    lines = []
+    for raw_line in text.splitlines():
+        line = re.sub(r"\s+", " ", raw_line).strip()
+        if line:
+            lines.append(line)
+    return "\n".join(lines)
