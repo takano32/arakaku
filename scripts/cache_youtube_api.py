@@ -3,7 +3,8 @@ from __future__ import annotations
 
 # 役割: videos.csv の YouTube 動画を YouTube Data API v3 (videos.list) で取得し、
 #   items[] の各要素をそのまま tmp/youtube-api/<platform_video_id>.json にキャッシュする取得専用スクリプト。
-# アーキ上の位置: パイプライン最上流の取得段。読み取りと正規化は arakaku/youtube.py が担う。
+# アーキ上の位置: パイプライン最上流の取得段。API の URL とキャッシュする行の判定、読み取りと正規化は
+#   arakaku/youtube.py が担い、ここは urllib での取得とファイルの書き込みだけをする。
 # 不変条件: tmp/ はキャッシュでありコミットしない。API キーは環境変数 YOUTUBE_API_KEY から読み、
 #   URL ではなくヘッダで送る。--force 無しなら既存ファイルはスキップ。API が返さなかった
 #   (削除・非公開など) 動画が 1 件でもあれば終了コード 1 を返す。
@@ -13,25 +14,18 @@ import json
 import os
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
 from pathlib import Path
 
 from arakaku.io import read_csv
 from arakaku.paths import DATA_SRC, YOUTUBE_CACHE_DIR
+from arakaku.youtube import BATCH_SIZE, is_cacheable_video, video_details_url
 
 VIDEOS_CSV = DATA_SRC / "videos.csv"
-API_URL = "https://www.googleapis.com/youtube/v3/videos"
-BATCH_SIZE = 50  # videos.list の id 指定上限
 
 
 def fetch_items(api_key: str, video_ids: list[str]) -> list[dict]:
-    query = urllib.parse.urlencode({
-        "part": "snippet,contentDetails,statistics",
-        "id": ",".join(video_ids),
-        "maxResults": BATCH_SIZE,
-    })
-    request = urllib.request.Request(f"{API_URL}?{query}", headers={"X-Goog-Api-Key": api_key})
+    request = urllib.request.Request(video_details_url(video_ids), headers={"X-Goog-Api-Key": api_key})
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.load(response).get("items", [])
 
@@ -57,10 +51,10 @@ def main() -> int:
     video_ids = []
     skipped = 0
     for row in read_csv(args.videos):
-        platform_video_id = row.get("platform_video_id", "")
-        if row.get("platform") != "youtube" or not platform_video_id:
+        if not is_cacheable_video(row):
             skipped += 1
             continue
+        platform_video_id = row["platform_video_id"]
         if (args.out_dir / f"{platform_video_id}.json").exists() and not args.force:
             skipped += 1
             continue
