@@ -329,7 +329,7 @@ python3 scripts/match_unknown_bouts_to_note_results.py
 
 Searches from the bout side: for each bout, it looks in its event's result note
 (`article_type=event_result`) for both fighters' names and decides the winner only from
-the ○/◯/● mark before a name. Writes:
+the ○/◯/〇/● mark before a name. Writes:
 
 ```text
 review/unknown_bout_note_results.csv   ← result_status=unknown bouts; apply=true only when the Numbers winner agrees
