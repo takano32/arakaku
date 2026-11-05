@@ -1,9 +1,17 @@
 import { DataEnricher } from "./enricher.js";
-import { eventSortDate } from "./event_dates.js";
 import { discoverFighters, numbersOrder, sortByNumbersOrder } from "./fighter_catalog.js";
 import { mergeDuplicateFighters } from "./fighter_merge.js";
 import { IndexCache } from "./indexes.js";
 import { buildNumbersOnly } from "./numbers_only.js";
+import {
+  boutsForFighterIds,
+  boutsInOrder,
+  countMentionTypes,
+  sortEventsNewestFirst,
+  sortSnapshotsByEvent,
+  videoIdsLinkedToEventBouts,
+  videosForEntity,
+} from "./relations.js";
 import { SourceDocumentLookup } from "./source_lookup.js";
 import { enrichTitle, titleDisplayName } from "./title_lineage.js";
 import {
@@ -287,14 +295,12 @@ export class DataRepository {
   // ── 関係ヘルパ ─────────────────────────────────────────────────────
 
   videosForEntity(type, id) {
-    return (this.#indexes.group("videoLinks:entity", this.videoLinks, l => `${l.entity_type}\0${l.entity_id}`).get(`${type}\0${id}`) ?? [])
-      .map(l => ({ link: l, video: this.richVideoById(l.video_id) }))
-      .filter(i => i.video);
+    const linksByEntity = this.#indexes.group("videoLinks:entity", this.videoLinks, l => `${l.entity_type}\0${l.entity_id}`);
+    return videosForEntity(linksByEntity, type, id, (videoId) => this.richVideoById(videoId));
   }
 
   videoIdsLinkedToEventBouts(eventId) {
-    const boutIds = new Set(this.richBouts.filter(b => b.event_id === eventId).map(b => b.bout_id));
-    return new Set(this.videoLinks.filter(l => l.entity_type === "bout" && boutIds.has(l.entity_id)).map(l => l.video_id));
+    return videoIdsLinkedToEventBouts(this.richBouts, this.videoLinks, eventId);
   }
 
   sourceReferencesForBout(bout) { return this.findManyByField("sourceBoutReferences", "bout_id", bout.bout_id); }
@@ -319,17 +325,13 @@ export class DataRepository {
   fighterSnapshotsForFighter(fighterId) {
     return this.#memoized(`fighterSnapshots:${fighterId}`, () => {
       const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
-      return this.fighterSnapshots
-        .filter(s => ids.has(s.fighter_id))
-        .sort((a, b) => eventSortDate(this.findEvent(b.event_id)).localeCompare(eventSortDate(this.findEvent(a.event_id)))
-          || String(b.event_id ?? "").localeCompare(String(a.event_id ?? ""), "ja"));
+      return sortSnapshotsByEvent(this.fighterSnapshots.filter(s => ids.has(s.fighter_id)), (eventId) => this.findEvent(eventId));
     });
   }
 
   eventsForPromotion(promotionId) {
     return this.#memoized(`eventsForPromotion:${promotionId}`, () =>
-      [...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]
-        .sort((a, b) => eventSortDate(b).localeCompare(eventSortDate(a)) || (b.event_number ?? 0) - (a.event_number ?? 0)));
+      sortEventsNewestFirst([...this.findManyByField("events", "promotion_id", promotionId), ...this.numbersOnlyEvents.filter(e => e.promotion_id === promotionId)]));
   }
 
   titlesForPromotion(promotionId) { return this.richTitles.filter(t => t.promotion_id === promotionId); }
@@ -346,27 +348,22 @@ export class DataRepository {
   }
 
   countSourceMentions(sourceId, mentionTypes) {
-    const counts = Object.fromEntries(mentionTypes.map(t => [t, 0]));
     const mentions = this.#indexes.group("sourceMentions:source_id", this.sourceMentions, m => m.source_id).get(sourceId) ?? [];
-    for (const m of mentions) {
-      if (m.mention_type in counts) counts[m.mention_type]++;
-    }
-    return counts;
+    return countMentionTypes(mentions, mentionTypes);
   }
 
   relatedBoutsForFighter(fighterId) {
     if (!fighterId) return [];
     return this.#memoized(`relatedBouts:${fighterId}`, () => {
       const ids = new Set(this.findRichFighter(fighterId)?.merged_fighter_ids ?? [fighterId]);
-      return this.richBouts.filter(b => (b.fighters ?? []).some(f => ids.has(f.fighter_id)));
+      return boutsForFighterIds(this.richBouts, ids);
     });
   }
 
   // 大会内の試合は試合順の昇順 (第1試合 → メインイベント) のまま返す
   boutsForEvent(eventId) {
     // 大会の行ごとに呼ばれるので、全試合の走査ではなく event_id の索引から引く (T.85)。
-    return [...(this.#indexes.group("richBouts:event_id", this.richBouts, b => b.event_id).get(eventId) ?? [])]
-      .sort((a, b) => (a.bout_order ?? 0) - (b.bout_order ?? 0));
+    return boutsInOrder(this.#indexes.group("richBouts:event_id", this.richBouts, b => b.event_id).get(eventId) ?? []);
   }
 
   // ── 王座 ───────────────────────────────────────────────────────────
