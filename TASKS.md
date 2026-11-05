@@ -471,7 +471,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [x] T.112.2.22 細かい整理。`ui/render/filters.js` と `data/filters.js` は名前が同じなので、前者を `ui/render/filter_chips.js` に改名する。`test_parts_bouts.mjs` の中で `links.js` を検査している部分を `test_parts_links.mjs` に分ける。`events.js` の `EVENT_TYPE_LABELS` と `promotions.js` の `CATEGORY_LABELS` が `filters.js` の選択肢のラベルと重複しているので、1 か所にまとめる（表示が変わらないことを `cmp/dump.mjs` で確かめる）。`data/query.js:24` の正規表現の文字の書き換えは、同じ文字であることを確かめたので、そのままにする（cdeca9e・60d489e・ffbc6e3・bf1e5d2、マージ 5f83094、2026-11-05）
 - [ ] T.112.3 2 つの作業を master に取り込み、ドキュメントとスキルを新しい構成に合わせる
   - [x] T.112.3.1 2 つのブランチを master にマージする（変えたファイルは重ならない）。マージ後に make check と、変更の無い作業ツリーで make check-generated を通し、`make build` の docs/data がマージ前の master と一致することを確かめる（57caec7・636aef3、2026-11-05）。make check（JS 115 件と pytest）と make check-generated が通り、docs/data はマージ前と一致
-  - [ ] T.112.3.2 古いパスを指すドキュメントを直す（`grep -rn "arakaku/utils\|arakaku.utils\|mapping.py\|ui/parts.js\|enricher.js\|sections/admin.js\|test_filters.mjs\|test_markdown.mjs\|readFromURL\|writeToURL\|#renderList\|#renderNav\|#renderFilters"` で洗い出す）。報告で分かっている行:
+  - [x] T.112.3.2 古いパスを指すドキュメントを直す（`grep -rn "arakaku/utils\|arakaku.utils\|mapping.py\|ui/parts.js\|enricher.js\|sections/admin.js\|test_filters.mjs\|test_markdown.mjs\|readFromURL\|writeToURL\|#renderList\|#renderNav\|#renderFilters"` で洗い出す）。報告で分かっている行:（21 コミット、マージ 93ad318、ほかに bd768eb・eabcb57、2026-11-05）。T.112.4 の挙動の変化も書いた。HANDOFF.md:14 の「2026-10-25 時点」の記述は履歴なので残した
     - README.md: 93・97・104・579・645〜646・648・649・660・867
     - scripts/GEMINI.md: 28・33
     - GEMINI.md: 83・90
@@ -481,7 +481,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
     - scripts/validate_json.py: 8
     - docs/index.html: 31 の HTML コメント（`ui/shell.js #syncThemeButton` → `ui/theme.js ThemeToggle.sync`）
     - HANDOFF.md: 188〜196・501 は日付つきの履歴なので残す。CHRONICLE.md・tasks/ も履歴なので直さない
-  - [ ] T.112.3.3 スキルを新しい構成に合わせる
+  - [x] T.112.3.3 スキルを新しい構成に合わせる（マージ 93ad318、2026-11-05）。存在しない名前（`renderNumbersBlock`・`.video-badge`・`#tab-filters` など）も実物に直した
     - 報告で分かっている行: arakaku-viewer-ui（18・22・23・26・135・137）、arakaku-filters（80・85・99・108・114）、arakaku-maintainer（81・104〜105）、arakaku-reliability-layering（26〜28・37。`#applyOfficialPlayer` などは data/enrich/fighter.js に移った）、arakaku-numbers-pipeline（172・220・222。入口は今も DataEnricher.enrichFighter・enrichBout だが、規則は移った）、arakaku-source-pipeline（126。`note_cache_name()` は paths.py、T.112.1.15 のあとは notes/cache.py）
     - ほかに arakaku-review-workflow・arakaku-data-curator・arakaku-sorting-strategy・arakaku-docs-handoff も見る（特にモジュールの一覧と make validate の中身）
   - [ ] T.112.3.4 push して CI（Test・Deploy Pages）が通ることを確かめ、公開サイトを開いてコンソールのエラーが無いことを確かめる
