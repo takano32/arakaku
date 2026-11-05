@@ -59,11 +59,12 @@ def pair_verdicts(lines: list[str], names_a: Iterable[str], names_b: Iterable[st
             between = lines[min(line_a, line_b) + 1:max(line_a, line_b)]
             if any("☆" in ln for ln in between) or sum("🆚" in ln for ln in between) > 1:
                 continue
-            a_wins = mark_a in WIN_MARKS and mark_a or mark_b == "●"
-            b_wins = mark_b in WIN_MARKS and mark_b or mark_a == "●"
-            if bool(a_wins) == bool(b_wins):
+            # 記号が無い ("") ときは勝ちとみなさない ("" in WIN_MARKS は真なので明示する。T.112.4.13)。
+            a_wins = (mark_a != "" and mark_a in WIN_MARKS) or mark_b == "●"
+            b_wins = (mark_b != "" and mark_b in WIN_MARKS) or mark_a == "●"
+            if a_wins == b_wins:
                 continue
-            verdicts.append((bool(a_wins), min(line_a, line_b), max(line_a, line_b)))
+            verdicts.append((a_wins, min(line_a, line_b), max(line_a, line_b)))
     return verdicts
 
 
