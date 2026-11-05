@@ -57,7 +57,8 @@ def reorder_csvs():
     # 5. Source Documents
     docs = read_csv(DATA_SRC / "source_documents.csv")
     if docs:
-        docs.sort(key=lambda x: sort_key_date(x, "published_at"))
+        # 同じ日付が多い (611 件中 380 件) ので、source_id で順を決める (以前は作る側の順のまま。T.112.4.13)。
+        docs.sort(key=lambda x: (sort_key_date(x, "published_at"), x["source_id"]))
         write_csv(DATA_SRC / "source_documents.csv", list(docs[0].keys()), docs)
 
     # 6. Title Reigns
