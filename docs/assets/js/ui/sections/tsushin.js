@@ -1,6 +1,7 @@
 import { labels } from "../../data/labels.js";
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
 import { escapeHtml, externalLink, joinPresent } from "../html.js";
+import { badge, badges } from "../parts/basic.js";
 
 // note 記事スクレイプから本文だけを抽出する。
 // 日付行の後 ～ フッタ (応援・ハッシュタグ等) の前を本文とし、見出しと重複する先頭行を落とす。
@@ -38,7 +39,7 @@ export const tsushinSection = {
   label: "通信",
   placeholder: "記事タイトル・本文で検索",
   empty: "該当する記事がありません。",
-  build({ repo, parts, state, query }) {
+  build({ repo, state, query }) {
     const withFilterFields = (doc) => {
       const article = repo.findArticle(doc.source_ref_id);
       const divisions = [...new Set(
@@ -68,9 +69,9 @@ export const tsushinSection = {
           <p class="rec-sub">${escapeHtml(joinPresent([date, repo.promotionName(d.promotion_id) !== d.promotion_id ? repo.promotionName(d.promotion_id) : "", d.divisions.join("・")]))}</p>
           ${preview ? `<p class="rec-preview">${escapeHtml(preview)}</p>` : ""}
         </div>
-        <div class="rec-aside">${parts.badges([
-          d.article_type ? parts.badge(labels.articleType(d.article_type)) : "",
-          parts.badge(labels.sourceType(d.source_type), "note"),
+        <div class="rec-aside">${badges([
+          d.article_type ? badge(labels.articleType(d.article_type)) : "",
+          badge(labels.sourceType(d.source_type), "note"),
         ])}</div>`;
       },
       renderBody: (d) => {

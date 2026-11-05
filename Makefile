@@ -11,11 +11,15 @@ build:
 
 # validate and test read docs/data, so they build first (make runs build once per invocation,
 # so `make check` still builds only once; a fresh clone can run `make test` directly).
+# tests/js/test_*.mjs are the viewer's Node unit tests (node:test, no dependencies, no DOM).
+# node --test passes with zero tests when given no files, so an empty glob is an error here.
+JS_TESTS := $(wildcard tests/js/test_*.mjs)
+
 validate: build
 	python3 scripts/validate_json.py
 	node scripts/validate_json.js
-	node scripts/test_filters.mjs
-	node scripts/test_markdown.mjs
+	@test -n "$(JS_TESTS)" || { echo "no tests/js/test_*.mjs found"; exit 1; }
+	node --test $(JS_TESTS)
 
 test: build
 	python3 -m pytest -q

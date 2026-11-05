@@ -11,8 +11,8 @@ import { ADMIN_TABS, CORE_DATA_KEYS, DATA_FILES, PUBLIC_TABS } from "../docs/ass
 import { DataLoader } from "../docs/assets/js/data/loader.js";
 import { fallbackForDataKey, parseDataFileEntries } from "../docs/assets/js/data/parser.js";
 import { QueryMatcher } from "../docs/assets/js/data/query.js";
+import { boutSearchText } from "../docs/assets/js/data/search_text.js";
 import { TAB_FILTERS } from "../docs/assets/js/data/filters.js";
-import { Parts } from "../docs/assets/js/ui/parts.js";
 import { SECTIONS } from "../docs/assets/js/ui/sections/index.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -153,7 +153,6 @@ function makeViewerContext(state) {
     },
   };
   ctx.query = new QueryMatcher(state, () => state.repository);
-  ctx.parts = new Parts(ctx);
   return ctx;
 }
 
@@ -163,7 +162,7 @@ function validateViewerSearchPaths(state) {
 
   state.query = "";
   for (const fighter of repo.richFighters) assert(ctx.query.fighterMatches(fighter), `empty query must match fighter: ${fighter.fighter_id}`);
-  for (const bout of repo.richBouts) assert(ctx.query.includes(ctx.query.boutSearchText(bout)), `empty query must match bout: ${bout.bout_id}`);
+  for (const bout of repo.richBouts) assert(ctx.query.includes(boutSearchText(repo, bout)), `empty query must match bout: ${bout.bout_id}`);
   for (const event of repo.richEvents) assert(ctx.query.eventMatches(event), `empty query must match event: ${event.event_id}`);
   for (const promotion of repo.richPromotions) assert(ctx.query.promotionMatches(promotion), `empty query must match promotion: ${promotion.promotion_id}`);
   for (const video of repo.richVideos) assert(ctx.query.videoMatches(video), `empty query must match video: ${video.video_id}`);
@@ -174,7 +173,7 @@ function validateViewerSearchPaths(state) {
   const firstBout = state.data.bouts[0];
   if (firstBout) {
     state.query = firstBout.bout_id;
-    assert(ctx.query.includes(ctx.query.boutSearchText(firstBout)), `bout id query must match bout: ${firstBout.bout_id}`);
+    assert(ctx.query.includes(boutSearchText(repo, firstBout)), `bout id query must match bout: ${firstBout.bout_id}`);
     assert(ctx.query.boutMatches(firstBout), `bout id query must match bout via boutMatches: ${firstBout.bout_id}`);
   }
   // 全角半角・ひらがなカタカナ・大文字小文字の違いは同じ結果になり、空白区切りは AND で効くこと

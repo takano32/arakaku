@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { mdToHtml } from "../docs/assets/js/ui/markdown.js";
+import { mdToHtml } from "../../docs/assets/js/ui/markdown.js";
 
 test("http(s) のリンクは a 要素になる", () => {
   assert.equal(

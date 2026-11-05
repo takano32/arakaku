@@ -1,5 +1,6 @@
 import { OFFICIAL_SITE_URL } from "../../config.js";
 import { escapeHtml, joinPresent } from "../html.js";
+import { badge } from "../parts/basic.js";
 import { mdToHtml } from "../markdown.js";
 
 /**
@@ -26,7 +27,7 @@ export const officialSection = {
   label: "公式",
   placeholder: "公式ページ・ニュースを検索",
   empty: "公式サイトのデータがありません。",
-  build({ repo, parts, query }) {
+  build({ repo, query }) {
     const pages = repo.officialPages.map((p) => ({ _kind: "page", ...p }));
     const news = [...repo.officialNews]
       .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
@@ -45,12 +46,12 @@ export const officialSection = {
              <p class="rec-title">${escapeHtml(item.title)}</p>
              <p class="rec-sub">${escapeHtml(item.description ?? "")}</p>
            </div>
-           <div class="rec-aside">${parts.badge("公式ページ", "official")}</div>`
+           <div class="rec-aside">${badge("公式ページ", "official")}</div>`
         : `<div class="rec-text">
              <p class="rec-title">${escapeHtml(item.title)}</p>
              <p class="rec-sub">${escapeHtml(joinPresent([item.date, item.category]))}</p>
            </div>
-           <div class="rec-aside">${parts.badge("公式ニュース", "official")}</div>`,
+           <div class="rec-aside">${badge("公式ニュース", "official")}</div>`,
       renderBody: (item) => item._kind === "page"
         ? `<div class="official-doc">${officialBodyHtml(item.body_html)}</div>`
         : `<div class="official-doc md">${mdToHtml(item.body_md ?? "")}</div>`,

@@ -1,5 +1,10 @@
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
+import { eventDateLabel } from "../../data/event_dates.js";
 import { booleanJa, escapeHtml, joinPresent } from "../html.js";
+import { details, dl, section } from "../parts/basic.js";
+import { eventLink } from "../parts/links.js";
+import { articleRefList } from "../parts/sources.js";
+import { videoLinks } from "../parts/videos.js";
 
 const CATEGORY_LABELS = {
   major: "主要",
@@ -15,7 +20,7 @@ export const promotionsSection = {
   label: "団体",
   placeholder: "団体名で検索",
   empty: "該当する団体がありません。",
-  build({ repo, parts, state, query }) {
+  build({ repo, state, query }) {
     const items = repo.richPromotions.filter((p) => query.promotionMatches(p) && itemPassesFilters(p, TAB_FILTERS.promotions, state));
     const ruleRows = (p) => [
       ["会場", escapeHtml(p.rules?.venue ?? "")],
@@ -32,12 +37,12 @@ export const promotionsSection = {
       const e = repo.eventsForPromotion(p.promotion_id);
       if (e.length === 0) return "";
       const shown = e.slice(0, 12);
-      return parts.section(`大会（${e.length}）`, `<ul class="plain-list cols">${shown.map((x) => `<li>${parts.eventLink(x.event_id, x.name)} <span class="muted small">${escapeHtml(repo.eventDateLabel(x))}</span></li>`).join("")}</ul>${e.length > shown.length ? `<p class="muted small"><a href="?tab=events&event_promo=${encodeURIComponent(p.promotion_id)}">ほか ${e.length - shown.length} 件</a></p>` : ""}`, "sec-events");
+      return section(`大会（${e.length}）`, `<ul class="plain-list cols">${shown.map((x) => `<li>${eventLink(repo, x.event_id, x.name)} <span class="muted small">${escapeHtml(eventDateLabel(x))}</span></li>`).join("")}</ul>${e.length > shown.length ? `<p class="muted small"><a href="?tab=events&event_promo=${encodeURIComponent(p.promotion_id)}">ほか ${e.length - shown.length} 件</a></p>` : ""}`, "sec-events");
     };
     const titlesBlock = (p) => {
       const t = repo.titlesForPromotion(p.promotion_id);
       if (t.length === 0) return "";
-      return parts.section("王座", `<ul class="plain-list">${t.map((x) => `<li>${escapeHtml(repo.titleDisplayName(x))} <span class="muted small">${escapeHtml(x.lineage?.length ?? 0)} 代</span></li>`).join("")}</ul>`, "sec-titles");
+      return section("王座", `<ul class="plain-list">${t.map((x) => `<li>${escapeHtml(repo.titleDisplayName(x))} <span class="muted small">${escapeHtml(x.lineage?.length ?? 0)} 代</span></li>`).join("")}</ul>`, "sec-titles");
     };
     return {
       items,
@@ -50,12 +55,12 @@ export const promotionsSection = {
         <div class="rec-aside"><span class="muted small">大会 ${repo.eventsForPromotion(p.promotion_id).length}</span></div>`,
       renderBody: (p) => `
         <p class="summary">${escapeHtml(p.summary || "概要未入力")}</p>
-        ${parts.dl(ruleRows(p), "dl-inline")}
-        ${parts.articleRefList(p.source_article_ids)}
-        ${parts.videoLinks("promotion", p.promotion_id)}
+        ${dl(ruleRows(p), "dl-inline")}
+        ${articleRefList(repo, p.source_article_ids)}
+        ${videoLinks(repo, "promotion", p.promotion_id)}
         ${eventsBlock(p)}
         ${titlesBlock(p)}
-        ${parts.details([
+        ${details([
           ["promotion_id", `<code>${escapeHtml(p.promotion_id)}</code>`],
           ["英字名", escapeHtml(p.name_en ?? "")],
           ["カテゴリ", escapeHtml(p.category ?? "")],
