@@ -1,4 +1,9 @@
-import { normalizeFighterName } from "./names.js";
+import {
+  buildOfficialPlayerIndexes,
+  buildOfficialTournamentIndex,
+  findOfficialPlayer,
+  tournamentKeyForEvent,
+} from "./enrich/official.js";
 
 /**
  * DataEnricher — 各エンティティ (fighter/bout/event/video/article) に、別ソース由来の
@@ -30,16 +35,14 @@ export class DataEnricher {
 
   #nameMatchIndex;
   #fightRecordIndex;
-  #officialPlayerIndex;
-  #officialPlayerNormIndex;
+  #officialPlayerIndexes;
   #officialTournamentIndex;
 
   // repo データ更新後にキャッシュ済みインデックスを破棄して再計算させる
   reset() {
     this.#nameMatchIndex = null;
     this.#fightRecordIndex = null;
-    this.#officialPlayerIndex = null;
-    this.#officialPlayerNormIndex = null;
+    this.#officialPlayerIndexes = null;
     this.#officialTournamentIndex = null;
   }
 
@@ -106,46 +109,19 @@ export class DataEnricher {
     };
   }
 
-  // display_name → officialPlayer
+  // 公式選手の名前索引 (完全一致 + 表記ゆれ)。規則は enrich/official.js
   get #officialPlayers() {
-    if (this.#officialPlayerIndex) return this.#officialPlayerIndex;
-    this.#officialPlayerIndex = new Map();
-    this.#officialPlayerNormIndex = new Map();
-    const ambiguousNorm = new Set();
-    for (const p of this.repo.officialPlayers) {
-      if (!p.name) continue;
-      this.#officialPlayerIndex.set(p.name, p);
-      const key = normalizeFighterName(p.name);
-      // 同じ正規化キーに複数の公式選手がいる場合は曖昧として除外する
-      if (this.#officialPlayerNormIndex.has(key) && this.#officialPlayerNormIndex.get(key).name !== p.name) {
-        ambiguousNorm.add(key);
-      }
-      this.#officialPlayerNormIndex.set(key, p);
-    }
-    for (const key of ambiguousNorm) this.#officialPlayerNormIndex.delete(key);
-    return this.#officialPlayerIndex;
+    this.#officialPlayerIndexes ??= buildOfficialPlayerIndexes(this.repo.officialPlayers);
+    return this.#officialPlayerIndexes;
   }
 
-  // 完全一致を優先し、取れなければ表記ゆれを吸収した正規化キーで突き合わせる
   #officialPlayerByName(name) {
-    if (!name) return undefined;
-    const exact = this.#officialPlayers.get(name);
-    if (exact) return exact;
-    return this.#officialPlayerNormIndex.get(normalizeFighterName(name));
+    return findOfficialPlayer(this.#officialPlayers, name);
   }
 
-  // event_id → officialTournament (normalized id matching)
+  // 正規化した id → officialTournament
   get #officialTournaments() {
-    if (this.#officialTournamentIndex) return this.#officialTournamentIndex;
-    this.#officialTournamentIndex = new Map();
-    for (const t of this.repo.officialTournaments) {
-      const normalized = t.id
-        .replace("maxbout-", "max-bout-")
-        .replace(/-light$/, "-lightweight")
-        .replace(/-middle$/, "-middleweight")
-        .replace(/-heavy$/, "-heavyweight");
-      this.#officialTournamentIndex.set(normalized, t);
-    }
+    this.#officialTournamentIndex ??= buildOfficialTournamentIndex(this.repo.officialTournaments);
     return this.#officialTournamentIndex;
   }
 
@@ -234,8 +210,7 @@ export class DataEnricher {
   }
 
   enrichEvent(event) {
-    // event_id は max-bout-6-middleweight-gp / -tournament のように形式の接尾辞が付く
-    const ot = this.#officialTournaments.get(event.event_id.replace(/-(?:gp|tournament)$/, ""));
+    const ot = this.#officialTournaments.get(tournamentKeyForEvent(event.event_id));
     if (!ot) return event;
     return { ...event, official_data: ot };
   }
