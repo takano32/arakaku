@@ -9,6 +9,7 @@ from __future__ import annotations
 #   本文の抽出と行の組み立ては arakaku/notes/html.py・arakaku/sources/documents.py、
 #   言及の分類は arakaku/sources/mentions.py。
 # 不変条件: 出力は決定的にするため documents/mentions をソートしてから書き出す。
+#   note と YouTube のどちらかが 0 件 (キャッシュが無い) なら書かずにエラーで止まる。
 #   fetched_at は本文 (content_hash) が前回と同じ行では前回の値を引き継ぐ。
 # 関連スキル: .agents/skills/arakaku-source-pipeline。
 
@@ -32,8 +33,16 @@ SOURCE_MENTIONS_CSV = DATA_SRC / "source_mentions.csv"
 
 
 def main() -> int:
-    documents = note_documents(read_csv(ARTICLES_CSV), NOTE_HTML_DIR, now_iso())
-    documents.extend(youtube_documents(read_csv(VIDEOS_CSV), iter_cached_videos(), now_iso()))
+    notes = note_documents(read_csv(ARTICLES_CSV), NOTE_HTML_DIR, now_iso())
+    videos = youtube_documents(read_csv(VIDEOS_CSV), iter_cached_videos(), now_iso())
+    # キャッシュが無い (新しい clone など) と 0 件になり、正本の本文 DB を空で上書きしてしまう (T.112.4.1)。
+    empty = [name for name, docs in (("note", notes), ("YouTube", videos)) if not docs]
+    if empty:
+        raise SystemExit(
+            f"[error] no cached {' / '.join(empty)} sources under tmp/; "
+            f"refusing to overwrite {SOURCE_DOCUMENTS_CSV.name} and {SOURCE_MENTIONS_CSV.name} (run make cache-sources)"
+        )
+    documents = notes + videos
     keep_unchanged_fetched_at(documents, read_csv(SOURCE_DOCUMENTS_CSV, missing_ok=True))
 
     mentions = []
