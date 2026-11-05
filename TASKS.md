@@ -404,7 +404,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
     - `textparse.py` を `arakaku/notes/patterns.py` に移す（中身はすべて note の語彙で、使う側は notes/・sources/mentions・review/mention_result_candidates だけ）
     - `validation/__init__.py` が約 40 の名前を再公開している。`Report`・`run`・`validate_docs_data`・`locate_error` に絞り、test_20・21・30 はサブモジュールから import する
     - `notes/crawl.py:226,235,249` が純粋なはずのモジュールから標準エラーに進捗を出している。`log` を引数で受け取るようにする
-- [ ] T.112.2 ビューアの JS を分割し、Node の単体テストを足す
+- [x] T.112.2 ビューアの JS を分割し、Node の単体テストを足す（2026-11-05。子はすべて完了。JS のテストは 115 件から 256 件）
   - [x] T.112.2.1 Node の単体テストを `tests/js/` に移し、`make validate` で `node --test tests/js/test_*.mjs` として走らせる（9642088、2026-11-05）
   - [x] T.112.2.2 `data/repository.js` から大会の日付・王座の系譜・出典の検索・名鑑だけの試合・選手の一覧・重複選手の統合・索引を切り出す（ec420bd・b00be6e・b0c5f5f・4883888・94ecf0b・1b4d003・680f0e6、2026-11-05）
   - [x] T.112.2.3 `data/enricher.js` を `data/enrich/`（official・fighter・bout・media）に分ける（33de0fc・1c7b5d4・00a25cf・c9df281、2026-11-05）
@@ -413,14 +413,14 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [x] T.112.2.6 `ui/sections/admin.js` を管理タブごとのモジュールに分ける（a1d209a、2026-11-05）
   - [x] T.112.2.7 `app/state.js` から URL の読み書きと履歴の同期を分ける（c277e50、2026-11-05）
   - [x] T.112.2.8 `ui/shell.js` から検索窓・テーマ切り替え・トースト・動画埋め込み、ナビ・統計・警告・絞り込み・ツールバーの描画、一覧の描画（`ui/render/list_view.js`）を分ける（8d2a971・b9736d8・3d7e35e、2026-11-05）
-  - [ ] T.112.2.9 `ui/list.js`（315 行）から判断を純粋なモジュールとして `ui/list/` に切り出す。DOM を持つのは `RecordList` だけにする。import 元で直すのは `ui/render/list_view.js:4` だけ
+  - [x] T.112.2.9 `ui/list.js`（315 行）から判断を純粋なモジュールとして `ui/list/` に切り出す。DOM を持つのは `RecordList` だけにする。import 元で直すのは `ui/render/list_view.js:4` だけ（9a46d1b〜f7a2ecc、マージ 5f83094、2026-11-05）。`RecordList` は `ui/list/record_list.js` に移した（`ui/list.js` は無くなった）。`OpenState.isOpen` の fallback は関数で受け取る（`defaultOpen` を覚えていない行でだけ呼ぶため）
     - `ui/list/paging.js`: `initialCount(total, chunk)`（84 行目）、`refreshTarget(rendered, chunk, total)` = `min(max(rendered, chunk), total)`（100 行目）、`keysUnchanged(rows, items, keyOf, target)`（101 行目）、`nextEnd(rendered, n, total)`（117 行目）、`statusText({count, loading, emptyMessage})` → `{text, hidden, isLoading}`、`moreLabel(remaining)`（205〜216 行目）
     - `ui/list/cursor.js`: `nextCursor(cursor, delta, total, isCursorable)`（164〜170 行目。-1 から始まることと見出し行を飛ばすことを含む）、`edgeCursor(edge, total, isCursorable)`（172〜178 行目。範囲外の添字を返すことがあり、`setCursor` が丸める）、`clampIndex(i, total)`（181 行目）
     - `ui/list/open_state.js`: DOM を持たない小さい `OpenState`（キーから真偽への Map。`isOpen(key, fallback)`・`set`・`toggle`。132〜155 行目）
     - `ui/list/row_html.js`: `rowShellHtml()`（241〜247 行目のテンプレート）、`toggleLabel(open, title)`（293〜295 行目）、`renderErrorHtml(message)` と `safeRender(fn, item, what)`（218〜225 行目）
     - `#onRowsClick`（300〜314 行目）は list.js に残し、`INTERACTIVE_SELECTOR = "a, button, summary, input, select, textarea, label"` だけを export する
     - テスト: `test_list_paging.mjs`、`test_list_cursor.mjs`（-1 からの両方向、見出し行の飛ばし、端、丸め、空の一覧）、`test_list_row_html.mjs`（テンプレートの文字列そのもの、タイトルの有無での aria-label、エラーの HTML で `<` がエスケープされること）、`test_list_open_state.mjs`
-  - [ ] T.112.2.10 `data/repository.js`（382 行。getter 39、メソッド 42。外から使われるのは getter 20、メソッド約 35）を小さくする
+  - [x] T.112.2.10 `data/repository.js`（382 行。getter 39、メソッド 42。外から使われるのは getter 20、メソッド約 35）を小さくする（953587f〜c0493c9、マージ 5f83094、2026-11-05）。消した getter は 3 つ。`articleLinks` は `ui/sections/tsushin.js:46` が `findManyByField("articleLinks", …)` で文字列から引いているので残した。`DataEnricher` は 11 個の検索だけを受け取る
     - 呼ぶところが無い getter を 4 つ消す: `sourceDocumentBodies`（123 行目）・`articleLinks`（124 行目）・`boutParticipants`（125 行目）・`titleReigns`（127 行目）。ほかの生データの getter は、`findById` が `this[collectionName]` で引くので残す
     - `enricher`（49 行目）と `sourceReferenceForVideo`（304 行目）を private にする
     - 新しい `data/raw_repository.js`: `class RawRepository`（data、private の IndexCache、`raw()`、残りの生データの getter、`findById`・`findManyByField`、find 系・`videoById`・`numbersFighterById`・`findYoutubeArchive`・`findNoteArchive` の 1 行メソッド、`promotionIdByName`）。`DataRepository extends RawRepository` には、加工済みの getter、`numbersOnly`、加工済みの find 系、memo、`revision`・`invalidate` を残す
@@ -428,13 +428,13 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
     - 新しい `data/source_documents.js`: `withBodies(docs, bodyById)`（212〜226 行目）
     - モジュールの `nextRevision` カウンタは残す（QueryMatcher が `repo.revision` でキャッシュするので、新しいインスタンスが同じ番号を使ってはいけない）
     - 最後に、できれば `DataEnricher` にリポジトリ全体ではなく、必要な検索だけをまとめたオブジェクトを渡す（`findEvent`・`findBout`・`numbersFighterById`・`promotionIdByName`・`findYoutubeArchive`・`findNoteArchive`・`videoLinksForVideo`・`numbersNameMatches`・`numbersFightRecords`・`officialPlayers`・`officialTournaments`）。リポジトリと enricher の相互参照が消え、enricher.js を偽物でテストできる
-  - [ ] T.112.2.11 `data/loader.js`・`ui/keyboard.js`・`config.js`・`main.js` を見直す
+  - [x] T.112.2.11 `data/loader.js`・`ui/keyboard.js`・`config.js`・`main.js` を見直す（10b6126〜f7ab6b3、マージ 5f83094、2026-11-05）。`loadKeys` の配列の検査は足していない（T.112.4.16）。`showFatalError` は `ui/render/alerts.js`、Service Worker は `app/sw_client.js`
     - `data/loader.js`: `applyLoadedText(key, text)`（解析、「配列 JSON ではありません」の検査、失敗時の扱い。132〜140 行目）を切り出してテストする。fetch と rAF はクラスに残す。`loadKeys` に配列の検査が無い件は T.112.4.16 で直し、ここで黙ってそろえない
     - `ui/keyboard.js`: キーの組み合わせから操作名を返す純粋な表 `keyToAction({key, shiftKey, ctrlKey, metaKey, altKey, inInput, dialogOpen, onControl, hasQuery})`（45〜134 行目）を切り出し、普通のオブジェクトでテストする。クラスは操作を呼ぶだけにする。`document.querySelector("#search")` ではなく `searchBox.focus` を受け取る
     - `config.js`: フェーズの一覧・`TAB_DATA_KEYS`・`REQUIRED_TAB_DATA_KEYS` のキーがすべて `DATA_FILES` にあること、タブの ID が `SECTIONS` にあること、`MENTION_TYPE_ORDER` が labels のキーに含まれることを確かめるテストを 1 つ足す
     - `main.js`: `app/sw_client.js` に `registerServiceWorker({ onDataUpdated })` と、1 セッションに 1 回の更新バナーを移す（メッセージ型 `DATA_UPDATED` は `docs/sw.js` と同期する）。`showFatalError(host, error)` を切り出し、main.js は組み立てだけにする
     - `data/filters.js` はすでに純粋でテストもあるので、分けない
-  - [ ] T.112.2.12 各タブの `build()` を DOM なしでテストする
+  - [x] T.112.2.12 各タブの `build()` を DOM なしでテストする（82eed7d・3e81fdb ほか 16 コミット、マージ 5f83094、2026-11-05）。偽物ではなく、小さい手書きのデータの上に本物の `DataRepository` を作るフィクスチャにした（規則を二重に持たないため）
     - `tests/js/fixtures/fake_repo.mjs` を作る。`fakeRepo()` はタブが使う約 45 のメンバーを持ち、中身は 2 団体、3 大会（1 つは名鑑だけ）、4 試合、4 選手（1 組は統合）、2 王座、3 動画、3 文書、4 言及、名鑑と公式の行。`fakeState()` は `FILTER_STATE_KEYS` をすべて ""、`loadedDataKeys` を Set にする
     - タブごとに 1 ファイル。次を確かめる
       - `items` の選び方: 本物の `QueryMatcher(state, () => repo)` での検索、絞り込み 1 つ、フォーカスでちょうど 1 件、存在しないフォーカスで 0 件
@@ -442,7 +442,7 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
       - `renderHead` と `renderBody` の 2〜3 個の正規表現（例: 試合の head に `data-event-id`、body に「出典候補」）
     - あわせて、`titles.js` の `championLabel` を export してテストする。`tsushin.js` の `cleanNoteBody`・`noteDate`、`official.js` の `officialBodyHtml`、`common.js` の `focusedOrFiltered`・`code` もテストする
     - 実データでの網羅は validate_json.js に任せる
-  - [ ] T.112.2.13 `scripts/validate_json.js`（319 行）は今のままでも読めるので、分けるのは役に立つ場合だけにする（分けるなら `scripts/validate_viewer/` の下に registry・loader・repository・search・rendering）。検査は弱めない。あわせて、直接のテストが無いモジュールにテストを足す
+  - [x] T.112.2.13 `scripts/validate_json.js`（319 行）は今のままでも読めるので、分けるのは役に立つ場合だけにする（分けるなら `scripts/validate_viewer/` の下に registry・loader・repository・search・rendering）。検査は弱めない。あわせて、直接のテストが無いモジュールにテストを足す（0724f0e・1c239eb・4509ebe、マージ 5f83094、2026-11-05）。validate_json.js は今のままで読めるので分けていない
     - `ui/html.js`: `escapeHtml`、`boutResultText`（「1R …」の接頭辞の規則を含む）、`recordText`、`formatDate`、`externalLink` が `javascript:` を弾くこと
     - `data/reliability.js`: `isMinimalFighter`、各段階、`lowReliabilityLast` が安定であること
     - `app/state.js`: `patch` が `{}` で通知すること、`viewMode`、`hasFocus`
@@ -466,9 +466,9 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [x] T.112.2.17 【マージ前】`Makefile:18` の `node --test $(wildcard tests/js/test_*.mjs)` は、ワイルドカードが空だとテスト 0 件で成功してしまう（`test_*.mjs` は Node が自動で探す名前でもない）。`JS_TESTS := $(wildcard tests/js/test_*.mjs)` にして、`validate:` で `@test -n "$(JS_TESTS)" || { echo "no tests/js/test_*.mjs found"; exit 1; }` を `node --test $(JS_TESTS)` の前に置く（7666183、2026-11-05）。JS_TESTS を空にすると make が止まることを確かめた
   - [x] T.112.2.18 【マージ前】`tests/js/test_source_lookup.mjs:44-49` のテスト名は「url の無い動画が url の無い文書に当たってしまわない」だが、47 行目の検査は当たることを求めている。今の約束どおりの名前（例:「url が無い動画は url 欄の無い文書に当たる（線形 find の === と同じ約束）」）に改める。動作そのものは T.112.4.20 で直す（2de2bf6、2026-11-05）
   - [x] T.112.2.19 【マージ前】`data/fighter_merge.js:10` の JSDoc に「入力のオブジェクトは変更しない」とあるが、28 行目は統合しない行に `merged_fighter_ids` を書き込んでいる（test_fighter_merge.mjs:34 もそれを確かめている）。コメントを「統合しない行はその場で merged_fighter_ids を付ける」に直す。書き込みそのものは T.112.4.19 で直す（ff06c97、2026-11-05）
-  - [ ] T.112.2.20 どこからも import されていない export を整理する。`data/enrich/bout.js:7` の `fightRecordKey` は export をやめる。`ui/parts/sources.js:33` の `sourceDocumentDetail` と `:82` の `sourceReferenceSummary` は、export をやめるか、test_parts_sources.mjs に検査を 1 つずつ足す（`RELIABILITY`・`winRatePercent`・`officialBodyHtml`・`cleanNoteBody` は以前からある。後の 2 つは T.112.2.12 でテストする）
-  - [ ] T.112.2.21 `ui/sections/numbers_fighters.js:2` が、enrich の内部モジュールである `data/enrich/fighter.js` から `numbersAchievementLabels` を import している。これを `data/labels.js` に移し、`enrich/fighter.js:108` とタブの両方でそこから import する。test_enrich_fighter.mjs:68-72 の 3 つの検査も一緒に移す
-  - [ ] T.112.2.22 細かい整理。`ui/render/filters.js` と `data/filters.js` は名前が同じなので、前者を `ui/render/filter_chips.js` に改名する。`test_parts_bouts.mjs` の中で `links.js` を検査している部分を `test_parts_links.mjs` に分ける。`events.js` の `EVENT_TYPE_LABELS` と `promotions.js` の `CATEGORY_LABELS` が `filters.js` の選択肢のラベルと重複しているので、1 か所にまとめる（表示が変わらないことを `cmp/dump.mjs` で確かめる）。`data/query.js:24` の正規表現の文字の書き換えは、同じ文字であることを確かめたので、そのままにする
+  - [x] T.112.2.20 どこからも import されていない export を整理する。`data/enrich/bout.js:7` の `fightRecordKey` は export をやめる。`ui/parts/sources.js:33` の `sourceDocumentDetail` と `:82` の `sourceReferenceSummary` は、export をやめるか、test_parts_sources.mjs に検査を 1 つずつ足す（`RELIABILITY`・`winRatePercent`・`officialBodyHtml`・`cleanNoteBody` は以前からある。後の 2 つは T.112.2.12 でテストする）（92805f1・0aa6177、マージ 5f83094、2026-11-05）
+  - [x] T.112.2.21 `ui/sections/numbers_fighters.js:2` が、enrich の内部モジュールである `data/enrich/fighter.js` から `numbersAchievementLabels` を import している。これを `data/labels.js` に移し、`enrich/fighter.js:108` とタブの両方でそこから import する。test_enrich_fighter.mjs:68-72 の 3 つの検査も一緒に移す（5c2e3c6、マージ 5f83094、2026-11-05）
+  - [x] T.112.2.22 細かい整理。`ui/render/filters.js` と `data/filters.js` は名前が同じなので、前者を `ui/render/filter_chips.js` に改名する。`test_parts_bouts.mjs` の中で `links.js` を検査している部分を `test_parts_links.mjs` に分ける。`events.js` の `EVENT_TYPE_LABELS` と `promotions.js` の `CATEGORY_LABELS` が `filters.js` の選択肢のラベルと重複しているので、1 か所にまとめる（表示が変わらないことを `cmp/dump.mjs` で確かめる）。`data/query.js:24` の正規表現の文字の書き換えは、同じ文字であることを確かめたので、そのままにする（cdeca9e・60d489e・ffbc6e3・bf1e5d2、マージ 5f83094、2026-11-05）
 - [ ] T.112.3 2 つの作業を master に取り込み、ドキュメントとスキルを新しい構成に合わせる
   - [x] T.112.3.1 2 つのブランチを master にマージする（変えたファイルは重ならない）。マージ後に make check と、変更の無い作業ツリーで make check-generated を通し、`make build` の docs/data がマージ前の master と一致することを確かめる（57caec7・636aef3、2026-11-05）。make check（JS 115 件と pytest）と make check-generated が通り、docs/data はマージ前と一致
   - [ ] T.112.3.2 古いパスを指すドキュメントを直す（`grep -rn "arakaku/utils\|arakaku.utils\|mapping.py\|ui/parts.js\|enricher.js\|sections/admin.js\|test_filters.mjs\|test_markdown.mjs\|readFromURL\|writeToURL\|#renderList\|#renderNav\|#renderFilters"` で洗い出す）。報告で分かっている行:
@@ -513,7 +513,9 @@ T.88 の調査（T.102 の説明）から分けた。イーサン・ドンスタ
   - [ ] T.112.4.19 【ビューア】`data/fighter_merge.js:28` が、統合しない選手の入力のオブジェクトに `merged_fighter_ids` を書き込んでいる。名鑑・公式のデータが無い 43 人（130 人中）では、それが `state.data.fighters` の生の行なので、「生の JSON は読むだけ」という約束が選手タブを描いた時点で破れる。`Object.assign({}, f, { merged_fighter_ids: [f.fighter_id] })` にし、test_fighter_merge.mjs:34-35 を直す（`findFighter(id) !== findRichFighter(id)` になるが、同一性に頼っているところは無い）
   - [ ] T.112.4.20 【ビューア・潜在】`data/source_lookup.js:18,48` の `forVideo` は、`doc.url`・`video.url` を生の値で登録して引く。そのため url の無い動画が、url の無い最初の YouTube の文書に当たる（`undefined === undefined`）。今は url の無い文書も動画も 0 件。`remember()` で `null` と `""` を登録せず、`forVideo` で `!video.url` のときは url で引かない。T.112.2.18 のテストも合わせて直す
   - [ ] T.112.4.21 【ビューア】`mention=` は値を検査しない（`VALID_FILTER_VALUES` に `mentionType` が無い）。そのため `?tab=mentions&mention=bogus` は 0 件（「該当する言及がありません」）なのに、select は一致する選択肢が無いので「すべての言及」と表示する。`isValidParam` で `MENTION_TYPE_ORDER` と照らし合わせる
-  - [ ] T.112.4.22 【ビューア・性能】言及タブでは、`ui/render/filters.js:58` の `sortMentionTypes` が、状態が変わるたび（1 文字打つたび）に 2,527 件の言及を写して並べ替える。`repo.revision` で覚えておく
+  - [ ] T.112.4.22 【ビューア・性能】言及タブでは、`ui/render/filter_chips.js`（旧 `ui/render/filters.js:58`）の `sortMentionTypes` が、状態が変わるたび（1 文字打つたび）に 2,527 件の言及を写して並べ替える。`repo.revision` で覚えておく
   - [x] T.112.4.23 【Python】`notes/matchups.py:81-96` の `extract_promotion_profile_fighters` は `nfkc(line)` に対して照合するが、NFKC で全角の括弧「（）」が「()」になるのに、コードは `（[^）]*）` を取り除き、MAXバウトの形式は `第N回名前（` を探している。そのため実データで、役割の注記が取れずに選手 ID に結びつかない（note-emperor の「むらき(ターゲットライト級王座統一)」「ユーナ・ガナ(2階級王者)」）。MAXバウトの王者の形式も一致せず、note-max-bout の団体紹介記事に選手のリンクが付かない。直すと article_links.csv が変わる（2026-11-05、Python 側の残りのリファクタリングで見つかった）（005661c・c7b06c3・3622dce、2026-11-05）。団体紹介の note から歴代王者へのリンクが 10 本増えた（note の行と照らして確かめた）
   - [x] T.112.4.24 【Python・潜在】`sources/documents.py:89` は、videos.csv に無い動画の ID を `youtube_<元の ID>` で作るが、videos.csv の ID は `youtube_<slugify した ID>`（小文字）。今は videos.csv に無い動画の文書は無いので表に出ない。`arakaku.youtube` の ID の作り方を共有する（e039e46・fd81ce3、2026-11-05）。今のデータでは変わらない
+  - [ ] T.112.4.25 【ビューア】`ui/sections/official_misc.js:47` が、`item.month` が数字かどうかを確かめずに「月」を付ける。実際の official_history.json に `month: "春"` があり、沿革の行が「春月」になる。数字のときだけ「月」を付ける。`test_section_official_misc.mjs` は今の出力（`1995 / 創世期 / 春月`）を固定しているので、合わせて直す（2026-11-05、ビューア側の残りのリファクタリングで見つかった）
+  - [ ] T.112.4.26 【ビューア・設計】`ui/sections/tsushin.js:46` は `repo.findManyByField("articleLinks", …)` で、getter を文字列でしか参照していない。そのため T.112.2.10 の設計で「使われていない」と誤って数えられた。名前つきのメソッド（例: `repo.articleLinksForArticle(id)`）にして、文字列での参照をなくす（test_section_tsushin.mjs が壊れたときに気づける）
 - [x] T.112.5 `.claude/worktrees/` を .gitignore に入れる（47f4ec7、2026-11-05）。今は master の作業ツリーで `.claude/` が未追跡として出ていて、`git add -A` で worktree を誤ってコミットするおそれがある
