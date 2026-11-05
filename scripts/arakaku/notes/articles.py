@@ -86,7 +86,7 @@ def article_row(note: CsvRow) -> dict[str, str]:
     art_type, promo, article_notes = classify_article(filename, title_raw, note.get("description", ""))
     return {
         "article_id": filename.replace(".html", ""),
-        "title": title_raw.split("｜")[0].strip() if "｜" in title_raw else title_raw,
+        "title": title_raw.split("｜")[0].strip(),
         "url": note.get("webpage_url", ""),
         "source_type": "official_note",
         "article_type": art_type,
