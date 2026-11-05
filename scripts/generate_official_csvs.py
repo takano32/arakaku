@@ -6,15 +6,25 @@ import json
 
 # 役割: 公式サイト（別リポジトリ takano32/arakaku-site）の JSON エクスポートを
 #       official_players / official_tournaments / official_matches / official_history の
-#       4 CSV に転記する。camelCase の公式キーを snake_case 列へマッピングするだけの薄い層。
+#       4 CSV に転記する入口。キーの写し方は arakaku/official/csvs.py にあり、ここは読み書きだけをする。
 # アーキ上の位置: generate-stage1 で実行。入力 tmp/arakaku-site/data/*.json は git 管理外で、
 #       事前に公式リポジトリから取得しておく必要がある（無ければ load() で例外）。出力 CSV は
 #       build_official_json.py が読み、ビューアが「公式データ」レイヤとして参照する。
 # 不変条件: official_* は公式由来の比較データであり、本リポジトリの canonical CSV とは別系統。
-#       人手検証済みの値が優先される（AGENTS.md のパイプライン方針）。各 generate_* の fields と
-#       dict キーは write_csv の DictWriter で厳密一致させること。
+#       人手検証済みの値が優先される（AGENTS.md のパイプライン方針）。1 つ読んでは 1 つ書く
+#       (途中の JSON が無ければ、それより前の CSV だけが書き換わる)。
 # 関連スキル: .agents/skills/arakaku-data-curator
 from arakaku.io import write_csv
+from arakaku.official.csvs import (
+    HISTORY_FIELDS,
+    MATCH_FIELDS,
+    PLAYER_FIELDS,
+    TOURNAMENT_FIELDS,
+    history_rows,
+    match_rows,
+    player_rows,
+    tournament_rows,
+)
 from arakaku.paths import DATA_SRC, OFFICIAL_SITE_DIR
 
 # 公式サイトの JSON エクスポート置き場（git 管理外、要事前取得）。
@@ -26,93 +36,26 @@ def load(filename: str) -> list:
 
 
 def generate_players() -> None:
-    fields = [
-        "id", "name", "name_kana", "nickname", "organization",
-        "weight_class", "age", "height", "wins", "losses", "draws",
-        "debut", "nationality", "gym", "bio", "slug",
-    ]
-    rows = [
-        {
-            "id": p["id"],
-            "name": p.get("name", ""),
-            "name_kana": p.get("nameKana", ""),
-            "nickname": p.get("nickname", ""),
-            "organization": p.get("organization", ""),
-            "weight_class": p.get("weightClass", ""),
-            "age": str(p.get("age", "")),
-            "height": str(p.get("height", "")),
-            "wins": str(p.get("wins", "")),
-            "losses": str(p.get("losses", "")),
-            "draws": str(p.get("draws", "")),
-            "debut": p.get("debut", ""),
-            "nationality": p.get("nationality", ""),
-            "gym": p.get("gym", ""),
-            "bio": p.get("bio", ""),
-            "slug": p.get("slug", ""),
-        }
-        for p in load("players.json")
-    ]
-    write_csv(DATA_SRC / "official_players.csv", fields, rows)
+    rows = player_rows(load("players.json"))
+    write_csv(DATA_SRC / "official_players.csv", PLAYER_FIELDS, rows)
     print(f"[done] {len(rows)} player rows written")
 
 
 def generate_tournaments() -> None:
-    fields = ["id", "name", "date", "video_id", "champion", "runner_up"]
-    rows = [
-        {
-            "id": t["id"],
-            "name": t.get("name", ""),
-            "date": t.get("date", ""),
-            "video_id": t.get("videoId", ""),
-            "champion": t.get("champion", ""),
-            "runner_up": t.get("runnerUp", ""),
-        }
-        for t in load("tournaments.json")
-    ]
-    write_csv(DATA_SRC / "official_tournaments.csv", fields, rows)
+    rows = tournament_rows(load("tournaments.json"))
+    write_csv(DATA_SRC / "official_tournaments.csv", TOURNAMENT_FIELDS, rows)
     print(f"[done] {len(rows)} tournament rows written")
 
 
 def generate_matches() -> None:
-    fields = [
-        "id", "event", "date", "fighter1", "fighter2",
-        "result", "method", "round", "weight_class", "youtube_id", "notes",
-    ]
-    rows = [
-        {
-            "id": m["id"],
-            "event": m.get("event", ""),
-            "date": m.get("date", ""),
-            "fighter1": m.get("fighter1", ""),
-            "fighter2": m.get("fighter2", ""),
-            "result": m.get("result", ""),
-            "method": m.get("method", ""),
-            "round": m.get("round", ""),
-            "weight_class": m.get("weightClass", ""),
-            "youtube_id": m.get("youtubeId", ""),
-            "notes": m.get("notes", ""),
-        }
-        for m in load("matches.json")
-    ]
-    write_csv(DATA_SRC / "official_matches.csv", fields, rows)
+    rows = match_rows(load("matches.json"))
+    write_csv(DATA_SRC / "official_matches.csv", MATCH_FIELDS, rows)
     print(f"[done] {len(rows)} match rows written")
 
 
 def generate_history() -> None:
-    fields = ["year", "era", "month", "title", "description"]
-    rows = []
-    for entry in load("history.json"):
-        year = str(entry.get("year", ""))
-        era = entry.get("era", "")
-        for event in entry.get("events", []):
-            rows.append({
-                "year": year,
-                "era": era,
-                "month": event.get("month", ""),
-                "title": event.get("title", ""),
-                "description": event.get("description", ""),
-            })
-    write_csv(DATA_SRC / "official_history.csv", fields, rows)
+    rows = history_rows(load("history.json"))
+    write_csv(DATA_SRC / "official_history.csv", HISTORY_FIELDS, rows)
     print(f"[done] {len(rows)} history rows written")
 
 
