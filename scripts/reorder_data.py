@@ -3,7 +3,7 @@ from __future__ import annotations
 #       title_reigns）を時系列＋安定タイ・ブレイクで並べ替え、その場で上書き保存する。
 #       決定的な行順を保証し、再生成時の git diff を小さく保つための整列パス。
 #       並べ替えキーは arakaku/derive/ordering.py にあり、ここは読み書きだけをする。
-# アーキ上の位置: generate-stage1 の最後で実行（Makefile の reorder-data ターゲット）。
+# アーキ上の位置: generate-stage2 のあとに 1 回実行（Makefile の reorder-data ターゲット。article_links.csv を読むため）。
 #       事実データは一切変更せず行の並びだけを変える。bouts は events の日付に依存するため、
 #       events を整列して作る event_date_map を使う＝events より後に並べる必要がある。
 # 不変条件: 列順は read_csv 直後の既存ヘッダ（list(rows[0].keys())）を再利用し、列の
