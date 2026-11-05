@@ -27,3 +27,5 @@ VALID_INFERRED_CONFIDENCES = {'high', 'medium', 'low'}
 VALID_MENTION_TYPES = {'event', 'matchup', 'match_result', 'result', 'note_url', 'youtube_url'}  # match_result: build_source_documents.classify_mention (vs + result on one line)
 VALID_NAME_MATCH_METHODS = {'exact_display_name', 'normalized_display_name', 'generated_candidate'}
 VALID_ARTICLE_STATUSES = {'unparsed'}
+# notes/articles.py (classify_article) と notes/crawl.py (infer_article_type) が出す値 (T.112.4.10)
+VALID_ARTICLE_TYPES = {'event_card', 'event_result', 'promotion_profile', 'note_article', 'youtube_description_source'}

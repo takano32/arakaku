@@ -12,7 +12,7 @@ from typing import Any
 from .common import collect_ids, is_http_url, require_field
 from .report import Report
 from .rules import round_time_problems
-from .vocab import VALID_METHODS, VALID_VIDEO_LINK_STATUSES, VALID_VIDEO_TYPES
+from .vocab import VALID_ARTICLE_TYPES, VALID_METHODS, VALID_VIDEO_LINK_STATUSES, VALID_VIDEO_TYPES
 
 
 def validate_articles(report: Report, articles: list[Any]) -> set[str]:
@@ -23,6 +23,9 @@ def validate_articles(report: Report, articles: list[Any]) -> set[str]:
             url = require_field(report, x, 'articles.json', i, 'url')
             if url and not is_http_url(url):
                 report.error(f"articles.json[{i}]: invalid url: {url}")
+            article_type = x.get('article_type')
+            if article_type and article_type not in VALID_ARTICLE_TYPES:
+                report.error(f"articles.json[{i}]: unknown article_type: {article_type}")
     return ids
 
 
