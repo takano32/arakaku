@@ -30,7 +30,7 @@ This runs `scripts/reorder_data.py`, which reads and writes the files; the sort 
 - `articles.csv`: Sort by `(published_at, article_id)`.
 - `videos.csv`: `videos.csv` has no date column; sort by `upload_date` from `archives/youtube.csv` (joined on `platform_video_id` = `display_id`), then `video_id`.
 - `source_documents.csv`: Sort by `(published_at, source_id)`.
-- `title_reigns.csv`: Primary sort by `title_id`, then by `reign_order` (sorted as 0 if not numeric; `validate_json.py` reports a non-numeric `reign_order` as an error).
+- `title_reigns.csv`: Primary sort by `title_id`, then by `reign_order` (numeric values in numeric order, an empty value as 0, a non-numeric value after all numeric ones in string order, the same rule as `build/titles.py`; `validate_json.py` reports a non-numeric `reign_order` as an error).
 
 ### 2. Client-Side Reversal
 
