@@ -26,7 +26,7 @@ def clean_fighter_name(raw: str) -> str:
     _, s = strip_name_prefix(raw.strip())
     s = s.strip()
     s = re.sub(r"【[^】]*】", "", s).strip()   # strip win-loss records
-    s = re.sub(r"（[^）]*）", "", s).strip()   # strip role suffixes
+    s = re.sub(r"[（(][^）)]*[）)]", "", s).strip()   # strip role suffixes (全角・半角の括弧。T.112.6.11)
     return s
 
 
