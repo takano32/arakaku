@@ -1,12 +1,16 @@
 # 役割: note.com の記事 HTML から必要な部分だけを取り出す。
-#   note_content_text = 記事タイトル (h1)・投稿日時 (time)・本文 (#note-body) をテキスト化する
-#   (source_documents.csv の content_text)。#note-body の無いページ (クリエイターのトップページ) は
-#   meta description を本文にする。
-# アーキ上の位置: arakaku/sources/documents.py (build_source_documents.py) が使う。
+#   note_content_text   = 記事タイトル (h1)・投稿日時 (time)・本文 (#note-body) をテキスト化する
+#     (source_documents.csv の content_text)。#note-body の無いページ (クリエイターのトップページ) は
+#     meta description を本文にする。
+#   parse_note_metadata = <title> / canonical URL / meta description / JSON-LD の datePublished だけを拾う
+#     (archives/note.csv 用。本文は取らない: アーカイブは表示・検索用メタデータに限る)。
+# アーキ上の位置: arakaku/sources/documents.py (build_source_documents.py) と
+#   arakaku/sources/archives.py (archive_metadata.py) が使う。
 # 不変条件:
 #   - ページの部品や「あなたへのおすすめ」を混ぜない (h1 / time / #note-body 以外は捨てる)。
 #   - 切り出しは生 HTML のまま行い、strip_tags() で既存と同じ改行規則のテキストにする
 #     (br / p / div / li / 見出しの終わりで改行、script / style は捨てる)。
+#   - 記事の公開日は JSON-LD の datePublished の日付部分 (日本時間の YYYY-MM-DD) だけを残す (T.77)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline。
 from __future__ import annotations
 
@@ -89,3 +93,50 @@ def note_content_text(raw_html: str) -> str:
         return normalize_text(html.unescape(parser.description))
     fragments = ["".join(parser.parts.get(key, [])) for key in ("h1", "time", "body")]
     return strip_tags("\n".join(fragments))
+
+
+# note 記事 HTML から <title> / canonical URL / meta[name=description] だけを拾う最小パーサ。
+class NoteMetadataParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.in_title = False
+        self.title_parts: list[str] = []
+        self.canonical_url = ""
+        self.description = ""
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr = {name.lower(): value or "" for name, value in attrs}
+        if tag.lower() == "title":
+            self.in_title = True
+        elif tag.lower() == "link" and attr.get("rel") == "canonical":
+            self.canonical_url = attr.get("href", "")
+        elif tag.lower() == "meta" and attr.get("name") == "description":
+            self.description = html.unescape(attr.get("content", ""))
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() == "title":
+            self.in_title = False
+
+    def handle_data(self, data: str) -> None:
+        if self.in_title:
+            self.title_parts.append(data)
+
+    @property
+    def title(self) -> str:
+        return html.unescape("".join(self.title_parts)).strip()
+
+
+# 記事の公開日は構造化データ (JSON-LD) の datePublished にある (例: 2026-07-31T09:42:15.000+09:00)。
+DATE_PUBLISHED_RE = re.compile(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})')
+
+
+def parse_note_metadata(raw_html: str) -> dict[str, str]:
+    parser = NoteMetadataParser()
+    parser.feed(raw_html)
+    published = DATE_PUBLISHED_RE.search(raw_html)
+    return {
+        "title": parser.title,
+        "webpage_url": parser.canonical_url,
+        "description": parser.description,
+        "published_at": published.group(1) if published else "",
+    }

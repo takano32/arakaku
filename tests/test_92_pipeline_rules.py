@@ -24,15 +24,12 @@ def test_card_notes_are_recognised_from_their_opening(generate_articles):
     assert generate_articles.classify_article('note-z.html', 'おめでとうございます', '誕生日です')[0] == 'note_article'
 
 
-@pytest.fixture
-def archive_metadata(repo_root):
-    return load_module('archive_metadata', repo_root / 'scripts' / 'archive_metadata.py')
+def test_note_publish_date_comes_from_json_ld():
+    from arakaku.notes.html import parse_note_metadata
 
-
-def test_note_publish_date_comes_from_json_ld(archive_metadata):
     html = '<title>T｜アラカク通信のーと</title><script>{"datePublished":"2026-07-31T09:42:15.000+09:00"}</script>'
-    assert archive_metadata.parse_note_metadata(html)['published_at'] == '2026-07-31'
-    assert archive_metadata.parse_note_metadata('<title>x</title>')['published_at'] == ''
+    assert parse_note_metadata(html)['published_at'] == '2026-07-31'
+    assert parse_note_metadata('<title>x</title>')['published_at'] == ''
 
 
 def event_note_dates(repo_root):
