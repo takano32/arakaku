@@ -18,7 +18,7 @@ json validation passed: 0 warning(s)
 
 GitHub Actions の Test と Deploy Pages はどちらも `make check` と `make check-generated` を通ったときだけ成功・デプロイします。
 
-viewer は T.56（2026-10-24）で作り直しました。構成は README の「viewer の構成」、機能の一覧は `docs/VIEWER_FEATURES.md` を見てください。
+viewer は T56（2026-10-24）で作り直しました。構成は README の「viewer の構成」、機能の一覧は `docs/VIEWER_FEATURES.md` を見てください。
 
 **通常ビュー（PUBLIC_TABS、キーボード 1〜8）:** 公式 / 通信 / 試合 / 選手 / 大会 / 団体 / 王座 / 動画
 
@@ -26,7 +26,7 @@ viewer は T.56（2026-10-24）で作り直しました。構成は README の�
 
 行は開閉式で、note 本文や YouTube 概要欄は「本文を表示」「概要欄を表示」で開きます。
 
-作業の記録と残タスクは `TASKS.md`（完了した親タスクは `tasks/T.N.md`）にあります。
+作業の記録と残タスクは `TASKS.md`（完了した親タスクは `tasks/TN.md`）にあります。
 
 ---
 
@@ -49,9 +49,9 @@ PY
 
 ---
 
-## 2026-06 までの作業記録（T.56 前の旧 viewer）
+## 2026-06 までの作業記録（T56 前の旧 viewer）
 
-> この節から「全コミット履歴の作業サマリ」までは 2026-06-15 までの記録で、ファイル名などは T.56 で作り直す前の旧 viewer のものです（`data-loader.js`・`data-enricher.js`・`core/`・`tabs/`・`style.css` などはもうありません）。それ以降の作業は `TASKS.md` と `tasks/` を見てください。
+> この節から「全コミット履歴の作業サマリ」までは 2026-06-15 までの記録で、ファイル名などは T56 で作り直す前の旧 viewer のものです（`data-loader.js`・`data-enricher.js`・`core/`・`tabs/`・`style.css` などはもうありません）。それ以降の作業は `TASKS.md` と `tasks/` を見てください。
 
 ### Phase 24: 名鑑の実データを折りたたみから可視位置へ (2026-06-15)
 
@@ -167,7 +167,7 @@ PRIMARY ストリーミング（Phase 1）中の無駄な再描画を削減し�
 - 既存問題も同時修正: `#streamKey` の `await getJSONParser()` が CDN 障害時に `load()` 全体を reject させ、描画済みの公式タブごと全画面エラーで消していた → `.catch(() => null)` で通常 fetch+parse にフォールバック
 - 既存問題: `main.js` の `lite-youtube-embed` 静的 CDN import が boot（Phase 0 含む）全体をブロック → await しない動的 import に変更（カスタム要素は後から定義されても自動アップグレードされる）
 - ストリーミング中の flush ごとに公式タブが同一内容で再描画され、開いた `<details>` が閉じる問題 → descriptor に任意フィールド `itemsSource`（描画元の生配列）を追加し、参照同一なら再描画をスキップ（`tab-registry.js`、公式タブのみ宣言）
-- `validate_json.js` に `officialPages` / `officialNews` の配列・非空 assert を追加。なお `load()` のキー網羅 assert がストリーミングキーに対して実質無効な既存問題は `TASKS.md` の T.38 に記録
+- `validate_json.js` に `officialPages` / `officialNews` の配列・非空 assert を追加。なお `load()` のキー網羅 assert がストリーミングキーに対して実質無効な既存問題は `TASKS.md` の T38 に記録
 
 ### Phase 13: 共有テキスト解析モジュール・ビルド最適化 (2026-06-13)
 
@@ -275,7 +275,7 @@ PRIMARY ストリーミング（Phase 1）中の無駄な再描画を削減し�
   - Astro 固有構文除去：Tailwind class, frontmatter, JSX map 式展開, `{base}` 補間
 - **`scripts/build_official_pages_json.py`** (`make build`):
   - CSV → `docs/data/official_news.json` / `docs/data/official_pages.json`
-  - `tmp/arakaku-site/public/` の画像を Base64 データ URI として埋め込む（T.79 で廃止。今は埋め込まず、viewer が `/` 始まりのパスを公式サイトへ書き換える）
+  - `tmp/arakaku-site/public/` の画像を Base64 データ URI として埋め込む（T79 で廃止。今は埋め込まず、viewer が `/` 始まりのパスを公式サイトへ書き換える）
 - **`scripts/download_official_data.sh`**: `public/` ディレクトリも取得するよう拡張
 - `maxbout.astro`（データ駆動）と `index.astro`（ナビ専用）は対象外
 
@@ -288,7 +288,7 @@ PUBLIC_TABS の先頭（左端）に `["official", "公式"]` を追加しまし
   - Node.js が `https:` 静的 import を解釈できないため、module-level dynamic import + `.catch(() => {})` パターンで lazy 初期化
   - ロード前はエスケープテキストで fallback 表示
 - キーボードショートカットのヒントを `1〜6` → `1〜7` に更新
-- タブ数が増えたため、将来「公式ページ」「公式ニュース」への分割を `TASKS.md` の T.42 に記録済み
+- タブ数が増えたため、将来「公式ページ」「公式ニュース」への分割を `TASKS.md` の T42 に記録済み
 
 ---
 
@@ -578,7 +578,7 @@ make refresh-sources
 
 ### viewer
 
-viewer のファイル構成は README の「viewer の構成」、機能は `docs/VIEWER_FEATURES.md` が正本です（T.56 で作り直し）。
+viewer のファイル構成は README の「viewer の構成」、機能は `docs/VIEWER_FEATURES.md` が正本です（T56 で作り直し）。
 
 ### GitHub Actions
 

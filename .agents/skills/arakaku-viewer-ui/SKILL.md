@@ -5,7 +5,7 @@ description: Use this skill when editing the ARAKAKU GitHub Pages viewer, includ
 
 # Unofficial ARAKAKU Database Viewer UI Skill
 
-Use this skill when working on the static viewer (rebuilt in T.56).
+Use this skill when working on the static viewer (rebuilt in T56).
 
 Viewer files:
 

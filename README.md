@@ -199,7 +199,7 @@ JSON は viewer 用の生成物です。
 │   └── VIEWER_FEATURES.md   # viewer の機能一覧（旧→新の対応と検証状況）
 ├── review/                 # 自動抽出・推定・反映前レビュー用CSV
 ├── scripts/                # build / validate / import / extraction scripts（arakaku/ は共有ヘルパ）
-├── tasks/                  # 完了した親タスクの記録（T.N.md）
+├── tasks/                  # 完了した親タスクの記録（TN.md）
 ├── tests/                  # pytest（js/ は viewer の Node テスト）
 ├── tmp/                    # ローカルキャッシュ（中身はコミットしない）
 │   ├── arakaku-site/        # 公式サイトのソース（download_official_data.sh）
@@ -207,7 +207,7 @@ JSON は viewer 用の生成物です。
 │   └── youtube-api/         # YouTube Data API video JSON cache
 ├── AGENTS.md               # データとコードの作業ルール（CLAUDE.md から読み込む）
 ├── CLAUDE.md               # Claude Code 向けの行動指針
-├── TASKS.md                # 作業台帳（T.N で採番）
+├── TASKS.md                # 作業台帳（TN で採番）
 ├── HANDOFF.md / CODEX.md / GEMINI.md  # 各エージェント向けの引き継ぎメモ
 ├── CHRONICLE.md            # 2026-06 までの開発経緯（以降は TASKS.md）
 ├── OPERATIONS_CHECKLIST.md # 更新作業のチェックリスト
@@ -324,7 +324,7 @@ JSON は viewer の配信 API です。`database.json` のような全テーブ�
 
 大会データです。
 
-大会ID、団体ID、大会名、概要、参照記事などを管理します。架空の団体で開催日はどこにも書かれていないので、開催日の列は持ちません。`published_at` 列はほとんど空で、並べ替えの最後の手がかりにだけ使います。`events.json` の `result_published_at`（その大会の結果 note のうち最も早い投稿日、T.77）と `note_published_at`（その大会に結ばれた note のうち最も早い投稿日）は、`articles.csv` と `article_links.csv` から `build_json.py` が導きます。
+大会ID、団体ID、大会名、概要、参照記事などを管理します。架空の団体で開催日はどこにも書かれていないので、開催日の列は持ちません。`published_at` 列はほとんど空で、並べ替えの最後の手がかりにだけ使います。`events.json` の `result_published_at`（その大会の結果 note のうち最も早い投稿日、T77）と `note_published_at`（その大会に結ばれた note のうち最も早い投稿日）は、`articles.csv` と `article_links.csv` から `build_json.py` が導きます。
 
 `event_id` は、試合・動画リンク・出典言及との結合キーになります。
 
@@ -438,7 +438,7 @@ Numbers 上の選手名と既存 `fighters.csv` の推定対応を管理しま�
 
 動画そのもののデータです。
 
-YouTube などの動画 URL、動画タイトル、動画種別、重複候補などを管理します。チャンネル名・公開日は `archives/youtube.csv` から、紐づけ状態（`link_status`）はリンク表から `build_json.py` が導くので CSV には持ちません（T.75 で列を削除）。
+YouTube などの動画 URL、動画タイトル、動画種別、重複候補などを管理します。チャンネル名・公開日は `archives/youtube.csv` から、紐づけ状態（`link_status`）はリンク表から `build_json.py` が導くので CSV には持ちません（T75 で列を削除）。
 
 動画は試合や大会に直接埋め込まず、独立した動画データとして扱います。
 
@@ -813,9 +813,9 @@ Node.js 20 deprecation warning 対応のため、Pages artifact 系 action は v
 - `アラカク選手名鑑.numbers` を三分割CSVに変換し、Numbers由来プロフィール・名前突合・個人成績をクライアントサイド比較用データとして追加
 - YouTube / note cache metadata を `data-src/archives/*.csv` に永続化し、`youtube_archives.json` / `note_archives.json` を viewer の補助表示・検索へ連携
 - 団体公式サイト (`kobayashi856/arakaku-site`) のデータを `official_*` CSV として取り込み、公式タブと選手プロフィール補完に連携
-- データ信頼性の階層（名鑑 > 公式 > 通信 > YouTube > 未登録）を `core/reliability.js`（T.56 以降は `docs/assets/js/data/reliability.js`）に定義し、enricher の重ね合わせ・低信頼の末尾寄せ・絞り込みの「その他/最小登録」判定へ適用
+- データ信頼性の階層（名鑑 > 公式 > 通信 > YouTube > 未登録）を `core/reliability.js`（T56 以降は `docs/assets/js/data/reliability.js`）に定義し、enricher の重ね合わせ・低信頼の末尾寄せ・絞り込みの「その他/最小登録」判定へ適用
 - 全タブ共通の設定駆動フィルタ（`filters.js` の `TAB_FILTERS`、URL は英語トークン）と、名鑑=青/公式=緑の出所カラーリング、公式bio表示、表記ゆれ重複選手のビューア統合を追加
-- viewer を見た目から作り直し（T.56）: 左ナビ + 開閉する行の一覧、CDN 依存なし（自前の段階描画一覧・YouTube ファサード・ファイル単位の段階ロード）、ライト / ダーク配色、スマートフォン対応。データ層（`docs/assets/js/data/`）は旧実装と同じ規則を保つ
+- viewer を見た目から作り直し（T56）: 左ナビ + 開閉する行の一覧、CDN 依存なし（自前の段階描画一覧・YouTube ファサード・ファイル単位の段階ロード）、ライト / ダーク配色、スマートフォン対応。データ層（`docs/assets/js/data/`）は旧実装と同じ規則を保つ
 
 ---
 

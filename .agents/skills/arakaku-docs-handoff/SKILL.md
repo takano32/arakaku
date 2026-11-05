@@ -87,7 +87,7 @@ HANDOFF.md
   Current project state and recent work summary.
 
 TASKS.md
-  Work ledger. Every task is numbered T.N / T.N.M / T.N.M.K; completed parent tasks move to tasks/T.N.md.
+  Work ledger. Every task is numbered TN / TN.M / TN.M.K; completed parent tasks move to tasks/TN.md.
 
 OPERATIONS_CHECKLIST.md
   Routine checks, sync steps, and troubleshooting.

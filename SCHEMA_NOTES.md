@@ -248,7 +248,7 @@ The frontend loads the smaller per-view JSON files; consumers who need the full 
 
 The viewer remains a static GitHub Pages app under `docs/`.
 
-Current structure (rebuilt in T.56; no CDN or framework dependency):
+Current structure (rebuilt in T56; no CDN or framework dependency):
 
 - `docs/index.html`, `docs/assets/app.css`, `docs/sw.js`
 - `docs/assets/js/main.js`, `docs/assets/js/config.js` (`DATA_FILES`, tabs, load phases)
