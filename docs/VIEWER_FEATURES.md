@@ -33,7 +33,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 
 | No. | 機能 | 旧実装 | 新実装 | 状態 | 備考 |
 |---|---|---|---|---|---|
-| B1 | フリーテキスト検索（150ms デバウンス、✕ クリア、Esc でクリア、入力でフォーカス解除） | `event-controller.js` | `ui/search_box.js SearchBox`（`#search` / `#search-clear`）、`ui/shell.js clearSearch()` | 変更 | ブラウザ（「テール」で 1 件、クリアで 131 件、URL `q=`）。T.66 で全角半角・ひらがなカタカナ・大文字小文字を同一視（`data/query.js normalizeSearchText`）、空白区切りは AND、選手は団体名でも引ける、日本語入力の変換中は検索しない。validate_json.js で検査 |
+| B1 | フリーテキスト検索（150ms デバウンス、✕ クリア、Esc でクリア、入力でフォーカス解除） | `event-controller.js` | `ui/search_box.js SearchBox`（`#search` / `#search-clear`）、`ui/shell.js clearSearch()` | 変更 | ブラウザ（「テール」で 1 件、クリアで 131 件、URL `q=`）。T.66 で全角半角・ひらがなカタカナ・大文字小文字を同一視（`data/query.js normalizeSearchText`）、空白区切りは AND、選手は団体名でも引ける、日本語入力の変換中は検索しない。validate_json.js で検査。T.112.4.14 で、検索語が空のときの Esc（検索欄でも全体でも）は何もしない（フォーカスと履歴を残す）。T.112.4.15 で、打ちかけの検索（150ms の遅延待ち）は選手・大会・試合へのリンクを押すと取り消す。どちらもブラウザで確認 |
 | B2 | 小文字化した連結文字列への部分一致 | `query-matcher.js #matchQuery` | `data/query.js #matchQuery` | 検証済 | Node 旧新比較 |
 | B3〜B10 | 各エンティティの検索対象テキスト（選手 / 試合 / 大会 / 団体 / 動画 / 王座 / 言及 / 出典本文） | `query-matcher.js` | `data/search_text.js`（`sourceReferenceSearchText` を含む。公式タブ・名鑑系・公式系の管理タブにも `includes` で検索を追加） | 検証済 | Node 旧新比較（21 語 × 3 言及種別で全エンティティの一致結果が同一）。公式 / 名鑑選手 / 名前対応 / 名鑑記録 / 公式選手 / 公式(その他) は旧実装では検索対象外だったが新実装では検索できる（追加） |
 | B11 | 検索キャッシュは `repo.revision` で破棄 | `query-matcher.js #cachedText` | `data/query.js #cachedText` | 検証済 | コード同一 |
@@ -43,7 +43,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | B15 | 配列フィールドはいずれか一致で通過 | `filters.js` | `data/filters.js` | 検証済 | `tests/js/test_filters.mjs` |
 | B16 | 派生フィルタ項目（動画の団体/階級、通信の団体/階級、公式選手の団体） | `data-enricher.js enrichVideo`, `tab-renderers.js #withNoteFilterFields / officialPlayers` | `data/enrich/media.js deriveVideoFilterFields`, `ui/sections/tsushin.js withFilterFields`, `ui/sections/official_players.js` | 検証済 | ブラウザ（通信・動画・公式選手で絞り込み） |
 | B17 | 同じボタンの再クリックで解除 | `event-controller.js` | `ui/shell.js bind()` | 検証済 | ブラウザ |
-| B18 | 出典言及の種別セレクト（`MENTION_TYPE_ORDER` → ja 順、「日本語 / コード」） | `view-controller.js renderMentionFilters` | `ui/render/filter_chips.js FiltersRenderer / sortMentionTypes`（`#mention-type`） | 検証済 | ブラウザ（`?tab=mentions&mention=result` → 315 件）。T.86 で `match_result`（vs と結果のある行）を並び順に追加 |
+| B18 | 出典言及の種別セレクト（`MENTION_TYPE_ORDER` → ja 順、「日本語 / コード」） | `view-controller.js renderMentionFilters` | `ui/render/filter_chips.js FiltersRenderer / sortMentionTypes`（`#mention-type`） | 検証済 | ブラウザ（`?tab=mentions&mention=result` → 315 件）。T.86 で `match_result`（vs と結果のある行）を並び順に追加。T.112.4.21 で、知らない `mention=` の値は URL から捨てる（一覧と select が食い違わない）。種別の一覧は `repo.revision` が変わったときだけ作り直す（T.112.4.22） |
 | B19 | `itemPassesFilters` の Node ユニットテスト | `scripts/test_filters.mjs` | `tests/js/test_filters.mjs`（import 先は `data/filters.js`） | 検証済 | `make check` |
 
 ## C. URL 同期・共有リンク
@@ -75,7 +75,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | E3 | 配列 JSON の SAX ストリーミング（flush ごとの invalidate + rAF でまとめた再描画） | `data-loader.js #streamKey / #schedulePatch` | `data/loader.js #loadKeyProgressive / #schedulePatch` | 変更 | CDN の `@streamparser/json` を使わず、ファイル単位で届き次第反映する（invalidate + rAF でまとめた再描画は同じ）。理由: 一覧は新しい順なので部分配列の描画は先頭が入れ替わり続けて読みにくく、CDN 障害時の分岐も不要になる。最大のファイルでも 1MB 弱で、ファイル単位でも段階的に件数が増えていく |
 | E4 | タブ別遅延ロード `TAB_DATA_KEYS` | `data-loader.js` | `config.js TAB_DATA_KEYS`, `data/loader.js loadForTab` | 検証済 | ブラウザ（通信で本文、出典言及で言及が後から届く）、validate_json.js |
 | E5 | 描画ゲート `REQUIRED_TAB_DATA_KEYS` と「読み込み中 / 読み込み待ち」、通信タブはプレビュー先行 | `view-controller.js renderContent`, `tab-renderers.js renderNoteArticleCard` | `config.js REQUIRED_TAB_DATA_KEYS`, `ui/render/list_view.js listGate`, `ui/sections/tsushin.js`（本文未着時は「本文を読み込み中…」とプレビュー） | 検証済 | ブラウザ |
-| E6 | 失敗はキー単位で fallback + `dataLoadErrors` + loaded 扱い | `data-loader.js #streamKeySafe / loadKeys` | `data/loader.js #loadKeyProgressive / loadKeys` | 検証済 | validate_json.js（存在しないファイルを混ぜても `load()` が落ちず記録される） |
+| E6 | 失敗はキー単位で fallback + `dataLoadErrors` + loaded 扱い | `data-loader.js #streamKeySafe / loadKeys` | `data/loader.js #loadKeyProgressive / loadKeys` | 検証済 | validate_json.js（存在しないファイルを混ぜても `load()` が落ちず記録される）。T.112.4.16 で、まとめて読む `loadKeys`（Phase 0 と `loadAll`）も `applyLoadedText` で形を検査する（配列のはずのファイルが配列でなければ読み込みエラー） |
 | E7 | 「データ読み込み失敗」カード（`role="alert"`） | `view-controller.js renderDataLoadErrors` | `ui/render/alerts.js AlertsRenderer`（`#alerts`） | 検証済 | コード（Node で `dataLoadErrors` の記録を確認。実データでは失敗が無いので表示は未発生） |
 | E8 | 致命的失敗のカード | `event-controller.js renderLoadError` | `main.js`, `ui/render/alerts.js showFatalError`（`#list-host` にアラート） | 検証済 | コード |
 | E9 | 空フォールバックの形 | `core/data-parser.js` | `data/parser.js` | 検証済 | validate_json.js |
@@ -94,7 +94,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | F3 | ストリーミング中に開いた `<details>` が閉じない | `tab-registry.js #itemsSourceUnchanged` | `ui/list/record_list.js refresh()`（キー列が同じなら HTML が変わった行だけ差し替える） | 検証済 | コード。公式タブはデータ到着ごとの再描画でも行の HTML が同一なので触られない |
 | F4 | 選手タブは名鑑順の確定を待って 1 回だけ描画 | `tab-registry.js #SORT_KEYS` | `ui/render/list_view.js listGate`（`sortReady`） | 検証済 | コード・ブラウザ |
 | F5 | 読み込み中は「読み込み中…」、完了後の 0 件は空欄 | `ui/virtual-list.js setLoading` | `ui/list/record_list.js setStatus`、`ui/list/paging.js statusText`（0 件時は「該当する○○がありません。」と文言を出す） | 変更 | 空欄ではなくセクションごとの空文言を出す（分かりやすさのため） |
-| F6 | 行の描画エラーをカードにして続行 | `ui/virtual-list.js #paint`, `tab-registry.js` | `ui/list/row_html.js safeRender`（`.render-error`）、`ui/render/list_view.js ListView`（build 失敗のアラート） | 検証済 | コード。validate_json.js で全行が例外なく描けることも確認 |
+| F6 | 行の描画エラーをカードにして続行 | `ui/virtual-list.js #paint`, `tab-registry.js` | `ui/list/row_html.js safeRender`（`.render-error`）、`ui/render/list_view.js ListView`（build 失敗のアラート） | 検証済 | コード。validate_json.js で全行が例外なく描けることも確認。T.112.4.17 で、build が失敗したときはツールバーの件数を消す |
 | F7 | データ更新はスクロール位置を保ち、タブ切替・フォーカスは先頭へ | `tab-registry.js`, `keyboard-nav.js` | `ui/list/record_list.js refresh`, `ui/shell.js switchTab / #jump`, `ui/render/list_view.js ListView` | 検証済 | ブラウザ |
 | F8 | 行カーソル（j/k、g/G、Enter、o） | `ui/virtual-list.js`, `ui/keyboard-nav.js` | `ui/list/record_list.js`（`moveCursor / setCursorToEdge / toggleCursor`、移動先の計算は `ui/list/cursor.js`）, `ui/keyboard.js`（`keyToAction`） | 変更 | Enter は「行を開く / 閉じる」、`o` は行内の「詳細」の開閉（旧: Enter = 行内の最初のリンクを実行、o = 詳細）。行が開閉式になったため。ブラウザで確認。T.64 でカーソル移動時に行へフォーカスを移し、フォーカス中のボタン・リンク・チップ・summary では Enter / Space をブラウザの既定動作（押下）に任せる（以前はキーボードだけでは押せなかった） |
 
@@ -142,7 +142,7 @@ T.56「ビューアを今の見た目にとらわれずに作り直す（機能�
 | H12 | 名前対応カード | `tab-renderers.js renderNumbersNameMatchCard` | `ui/sections/numbers_name_matches.js`（対応先を選手リンクに） | 検証済 | ブラウザ（106 件） |
 | H13 | 名鑑記録カード | `tab-renderers.js renderNumbersFightRecordCard` | `ui/sections/numbers_fight_records.js` | 検証済 | ブラウザ（561 件、MAXバウト絞り込みで 107 件） |
 | H14 | 公式選手カード | `tab-renderers.js renderOfficialPlayerCard` | `ui/sections/official_players.js` | 検証済 | ブラウザ（108 件） |
-| H15 | 公式（その他）タブ | `tab-renderers.js officialMisc` | `ui/sections/official_misc.js` | 検証済 | ブラウザ（28 件） |
+| H15 | 公式（その他）タブ | `tab-renderers.js officialMisc` | `ui/sections/official_misc.js` | 検証済 | ブラウザ（28 件）。T.112.4.25 で、沿革の月は数字のときだけ「月」を付ける（実データは 春・夏・冬・通年） |
 | H16 | 出所バッジの色（名鑑 = 青、公式 = 緑）と管理カードの左色帯 | `style.css` | `app.css .badge-numbers / .badge-official / .badge-note / .badge-gold`, `.rec-src-numbers / .rec-src-official / .rec-src-note` | 検証済 | ブラウザ。note = 紫、実績・王座戦 = 金を追加。ライト / ダーク両方 |
 | H17 | 共通部品（出典記事参照、動画参照、出典候補サマリ、関連試合、定義リスト、折りたたみ） | `services/source-renderers.js`, `services/related-renderers.js`, `ui/component-builder.js` | `ui/parts/*.js` | 検証済 | ブラウザ・Node（全行描画）。候補の重複排除・確度順・上位 5 件・「上位5件 / N件」は同じ |
 | H18 | YouTube 埋め込みファサードとサムネイル 404 回避 | `services/source-renderers.js renderVideoEmbed`, `main.js (lite-youtube-embed)` | `ui/parts/videos.js videoFacade`, `ui/video_embed.js activateVideoFacade` | 変更 | 自前のファサード（画像 + 再生ボタン → クリックで `youtube-nocookie` の iframe）。`thumbnail_sizes` から存在が確実なサイズ（maxres → sd → hq）を選ぶので 404 が出ない。ブラウザで確認 |
