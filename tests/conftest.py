@@ -41,11 +41,6 @@ def text_module():
 
 
 @pytest.fixture
-def build_json_module(repo_root: Path):
-    return load_module("build_json", repo_root / "scripts" / "build_json.py")
-
-
-@pytest.fixture
 def validate_json_module(repo_root: Path):
     return load_module("validate_json", repo_root / "scripts" / "validate_json.py")
 
