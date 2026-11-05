@@ -6,8 +6,10 @@ from conftest import load_module
 
 
 @pytest.fixture
-def crawler(repo_root):
-    return load_module('crawl_note_articles', repo_root / 'scripts' / 'crawl_note_articles.py')
+def crawler():
+    import arakaku.notes.crawl
+
+    return arakaku.notes.crawl
 
 
 def test_invalid_api_json_is_a_failure_not_the_end_of_the_list(crawler):
@@ -15,12 +17,11 @@ def test_invalid_api_json_is_a_failure_not_the_end_of_the_list(crawler):
         crawler.parse_json_notes('<html>rate limited</html>')
 
 
-def test_api_fetch_error_raises(crawler, monkeypatch):
+def test_api_fetch_error_raises(crawler):
     def boom(url, sleep=0.5):
         raise OSError('network down')
-    monkeypatch.setattr(crawler, 'fetch_text', boom)
     with pytest.raises(crawler.FetchFailed):
-        crawler.crawl_note_api_pages('xyz1090', 3, 0)
+        crawler.crawl_note_api_pages('xyz1090', 3, 0, fetch=boom)
 
 
 def test_only_note_article_keys_become_rows(crawler):

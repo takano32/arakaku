@@ -2,41 +2,37 @@
 from __future__ import annotations
 
 import argparse
-import csv
-import html
-import json
-import re
 import sys
 import time
-import urllib.parse
 import urllib.request
-import xml.etree.ElementTree as ET
-from email.utils import parsedate_to_datetime
 from pathlib import Path
-from typing import Any
 
-from arakaku.io import write_csv
-from arakaku.paths import ROOT
+from arakaku.io import read_raw_csv, write_csv
+from arakaku.notes.crawl import (
+    DEFAULT_CREATOR,
+    FetchFailed,
+    crawl_note_api_pages,
+    merge_articles,
+    parse_html_links,
+    parse_rss,
+)
+from arakaku.paths import DATA_SRC
 
 # 役割: 公式 note クリエイターの記事を RSS / HTML リンク / 非公式 API から発見し、
-#   data-src/articles.csv に「未登録 URL の行だけ」追記するクローラ。
+#   data-src/articles.csv に「未登録 URL の行だけ」追記するクローラの入口 (取得と CSV の読み書き)。
 # アーキ上の位置: 取得パイプラインの入口。ここで articles.csv に増えた行を起点に
-#   cache_note_html.py -> build_source_documents.py が本文を取りに行く。
+#   cache_note_html.py -> build_source_documents.py が本文を取りに行く。一覧の解析と追記規則は
+#   arakaku/notes/crawl.py。
 # 不変条件: 既存行は URL 正規化キーで重複判定し、絶対に上書き/削除しない (事実保護)。
-#   発見した行は status="unparsed" で追記し、本文確定は下流に任せる。article_type /
-#   promotion_id はタイトルからの推測なので後段レビュー対象。
+#   API の取得が途中で失敗しても追記はする (既存行は変えない) が、取りこぼしがありうるので
+#   終了コード 1 で終わる (T.103)。
 # 関連スキル: .agents/skills/arakaku-source-pipeline/SKILL.md。
-ARTICLES_CSV = ROOT / "data-src" / "articles.csv"
+ARTICLES_CSV = DATA_SRC / "articles.csv"
 
-DEFAULT_CREATOR = "xyz1090"
 DEFAULT_RSS_URL = f"https://note.com/{DEFAULT_CREATOR}/rss"
 DEFAULT_HTML_URL = f"https://note.com/{DEFAULT_CREATOR}"
 
 USER_AGENT = "arakaku-note-crawler/1.0 (+https://github.com/takano32/arakaku)"
-
-NOTE_ARTICLE_RE = re.compile(r"https://note\.com/[^/\s\"')）]+/n/[A-Za-z0-9_-]+")
-NOTE_ID_RE = re.compile(r"/n/([A-Za-z0-9_-]+)")
-NOTE_KEY_URL_RE = re.compile(r"/n/n[0-9a-f]{12}(?:[/?#]|$)")
 
 
 def fetch_text(url: str, *, sleep: float = 0.5) -> str:
@@ -58,296 +54,6 @@ def fetch_text(url: str, *, sleep: float = 0.5) -> str:
     return body
 
 
-def normalize_url(url: str) -> str:
-    # クエリ/フラグメント/末尾スラッシュを落とした正規形。merge_articles の重複判定キー
-    # でもあるので、ここの正規化ルールが緩むと重複行や取りこぼしの原因になる。
-    url = html.unescape(url.strip())
-    url = url.split("?")[0].split("#")[0]
-    return url.rstrip("/")
-
-
-def article_id_from_url(url: str) -> str:
-    match = NOTE_ID_RE.search(url)
-    if match:
-        return f"note-{match.group(1).lower()}"
-
-    safe = re.sub(r"[^A-Za-z0-9_-]+", "-", url).strip("-").lower()
-    return f"note-{safe[-40:]}"
-
-
-def date_from_rss(value: str) -> str:
-    value = value.strip()
-
-    if not value:
-        return ""
-
-    try:
-        return parsedate_to_datetime(value).date().isoformat()
-    except Exception:
-        return ""
-
-
-def normalize_date(value: str) -> str:
-    value = str(value or "").strip()
-
-    if not value:
-        return ""
-
-    # note API often returns ISO datetime.
-    if re.match(r"^\d{4}-\d{2}-\d{2}", value):
-        return value[:10]
-
-    return date_from_rss(value)
-
-
-def infer_promotion_id(title: str) -> str:
-    if "ターゲット" in title:
-        return "target"
-    if "エンペラー" in title:
-        return "emperor"
-    if "マウンテン・ヒーローズ" in title or "マウンテンヒーローズ" in title:
-        return "mh"
-    if "MAXバウト" in title:
-        return "max_bout"
-    if "エリートスピリッツ" in title:
-        return "elite_spirits"
-    return ""
-
-
-def infer_article_type(title: str) -> str:
-    if "試合結果" in title or "結果" in title:
-        return "event_result"
-    if "対戦カード" in title or "見どころ" in title:
-        return "event_card"
-    if "歴代王者" in title or "王座" in title:
-        return "title_history"
-    if "ルール" in title or "団体" in title:
-        return "promotion_profile"
-    return "note_article"
-
-
-def make_article_row(
-    *,
-    title: str,
-    url: str,
-    published_at: str = "",
-    notes: str,
-) -> dict[str, str]:
-    title = html.unescape(str(title or "")).strip()
-    url = normalize_url(url)
-
-    return {
-        "article_id": article_id_from_url(url),
-        "title": title or f"note article {article_id_from_url(url).removeprefix('note-')}",
-        "url": url,
-        "source_type": "official_note",
-        "article_type": infer_article_type(title),
-        "promotion_id": infer_promotion_id(title),
-        "published_at": normalize_date(published_at),
-        "last_checked_at": "",
-        "status": "unparsed",
-        "notes": notes,
-    }
-
-
-def parse_rss(xml_text: str) -> list[dict[str, str]]:
-    root = ET.fromstring(xml_text)
-    items = root.findall(".//item")
-
-    rows: list[dict[str, str]] = []
-
-    for item in items:
-        title = (item.findtext("title") or "").strip()
-        link = normalize_url(item.findtext("link") or "")
-        pub_date = date_from_rss(item.findtext("pubDate") or "")
-
-        if not link or "/n/" not in link:
-            continue
-
-        rows.append(
-            make_article_row(
-                title=title,
-                url=link,
-                published_at=pub_date,
-                notes="Crawled from note RSS.",
-            )
-        )
-
-    return rows
-
-
-def parse_html_links(html_text: str) -> list[dict[str, str]]:
-    urls = sorted({normalize_url(url) for url in NOTE_ARTICLE_RE.findall(html_text)})
-
-    rows: list[dict[str, str]] = []
-
-    for url in urls:
-        rows.append(
-            make_article_row(
-                title=f"note article {article_id_from_url(url).removeprefix('note-')}",
-                url=url,
-                notes="Crawled from note HTML link list; title needs review.",
-            )
-        )
-
-    return rows
-
-
-# API レスポンス JSON の入れ子構造を全 dict まで再帰的に平坦化して列挙する。
-# note の API スキーマに依存せず「note っぽいオブジェクト」を拾う best-effort 戦略。
-def iter_json_objects(value: Any):
-    if isinstance(value, dict):
-        yield value
-        for child in value.values():
-            yield from iter_json_objects(child)
-    elif isinstance(value, list):
-        for child in value:
-            yield from iter_json_objects(child)
-
-
-def row_from_note_object(obj: dict[str, Any]) -> dict[str, str] | None:
-    key = obj.get("key") or obj.get("noteKey")
-    urlname = obj.get("user", {}).get("urlname") if isinstance(obj.get("user"), dict) else None
-
-    url = obj.get("url") or obj.get("noteUrl") or obj.get("shareUrl") or ""
-
-    if not url and key:
-        creator = urlname or DEFAULT_CREATOR
-        url = f"https://note.com/{creator}/n/{key}"
-
-    if not url or "/n/" not in str(url):
-        return None
-    # API の JSON は入れ子を全部たどるので、記事以外の key (32 桁の英数字。開くと 404) も拾ってしまう。
-    # 記事の ID は n + 12 桁の 16 進数なので、それ以外は捨てる (T.86)。
-    if not NOTE_KEY_URL_RE.search(str(url)):
-        return None
-
-    title = obj.get("name") or obj.get("title") or ""
-    published_at = obj.get("publishAt") or obj.get("publishedAt") or obj.get("createdAt") or ""
-
-    return make_article_row(
-        title=str(title),
-        url=str(url),
-        published_at=str(published_at),
-        notes="Crawled from note JSON/API.",
-    )
-
-
-class FetchFailed(Exception):
-    """An API page could not be read; the listing is incomplete (T.103)."""
-
-
-def parse_json_notes(json_text: str) -> list[dict[str, str]]:
-    try:
-        data = json.loads(json_text)
-    except json.JSONDecodeError as exc:
-        # レート制限のエラーページなどを「記事なし (一覧の終わり)」と取り違えないよう失敗にする (T.103)。
-        raise FetchFailed(f"invalid JSON: {exc}") from exc
-
-    rows: list[dict[str, str]] = []
-    seen_urls: set[str] = set()
-
-    for obj in iter_json_objects(data):
-        row = row_from_note_object(obj)
-        if not row:
-            continue
-
-        url = normalize_url(row["url"])
-        if url in seen_urls:
-            continue
-
-        rows.append(row)
-        seen_urls.add(url)
-
-    return rows
-
-
-def crawl_note_api_pages(creator: str, page_limit: int, sleep: float) -> list[dict[str, str]]:
-    # These endpoints are intentionally best-effort. note may change them.
-    url_templates = [
-        "https://note.com/api/v2/creators/{creator}/contents?kind=note&page={page}",
-        "https://note.com/api/v2/creators/{creator}/contents?kind=magazine&page={page}",
-    ]
-
-    rows: list[dict[str, str]] = []
-    seen_urls: set[str] = set()
-
-    for template in url_templates:
-        for page in range(1, page_limit + 1):
-            url = template.format(creator=urllib.parse.quote(creator), page=page)
-            print(f"[fetch api] {url}", file=sys.stderr)
-
-            try:
-                text = fetch_text(url, sleep=sleep)
-                page_rows = parse_json_notes(text)
-            except Exception as exc:
-                raise FetchFailed(f"api fetch failed: {url}: {exc}") from exc
-
-            if not page_rows:
-                print(f"[api rows] page={page} rows=0; stop", file=sys.stderr)
-                break
-
-            added_this_page = 0
-
-            for row in page_rows:
-                normalized = normalize_url(row["url"])
-                if normalized in seen_urls:
-                    continue
-
-                rows.append(row)
-                seen_urls.add(normalized)
-                added_this_page += 1
-
-            print(f"[api rows] page={page} rows={len(page_rows)} added={added_this_page}", file=sys.stderr)
-
-            if added_this_page == 0:
-                break
-
-    return rows
-
-
-def read_articles(path: Path) -> tuple[list[dict[str, str]], list[str]]:
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        return list(reader), list(reader.fieldnames or [])
-
-
-def merge_articles(
-    existing: list[dict[str, str]],
-    discovered: list[dict[str, str]],
-) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
-    known_urls = {normalize_url(row.get("url", "")) for row in existing if row.get("url")}
-    known_ids = {row.get("article_id", "") for row in existing if row.get("article_id")}
-
-    # existing をその場で破壊的に append し、追記分だけを added にも積んで返す。
-    # URL 既知ならスキップ、article_id 衝突時は -2, -3... を付けて一意化する。
-    added: list[dict[str, str]] = []
-
-    for row in discovered:
-        url = normalize_url(row["url"])
-        if url in known_urls:
-            continue
-
-        article_id = row["article_id"]
-        base_id = article_id
-        counter = 2
-
-        while article_id in known_ids:
-            article_id = f"{base_id}-{counter}"
-            counter += 1
-
-        row = dict(row)
-        row["article_id"] = article_id
-        row["url"] = url
-
-        existing.append(row)
-        added.append(row)
-        known_urls.add(url)
-        known_ids.add(article_id)
-
-    return existing, added
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Crawl official note articles and append missing rows to data-src/articles.csv.",
@@ -365,29 +71,26 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    existing, fieldnames = read_articles(args.articles)
+    existing, fieldnames = read_raw_csv(args.articles)
 
     discovered: list[dict[str, str]] = []
 
     print(f"[fetch rss] {args.rss_url}", file=sys.stderr)
-    rss_text = fetch_text(args.rss_url, sleep=args.sleep)
-    rss_rows = parse_rss(rss_text)
+    rss_rows = parse_rss(fetch_text(args.rss_url, sleep=args.sleep))
     discovered.extend(rss_rows)
     print(f"[rss rows] {len(rss_rows)}", file=sys.stderr)
 
     if args.use_html:
         print(f"[fetch html] {args.html_url}", file=sys.stderr)
-        html_text = fetch_text(args.html_url, sleep=args.sleep)
-        html_rows = parse_html_links(html_text)
+        html_rows = parse_html_links(fetch_text(args.html_url, sleep=args.sleep))
         discovered.extend(html_rows)
         print(f"[html rows] {len(html_rows)}", file=sys.stderr)
 
     failed = False
     if args.use_api:
         try:
-            api_rows = crawl_note_api_pages(args.creator, args.page_limit, args.sleep)
+            api_rows = crawl_note_api_pages(args.creator, args.page_limit, args.sleep, fetch_text)
         except FetchFailed as exc:
-            # 途中までの一覧でも追記はしてよい (既存行は変えない) が、取りこぼしがありうるので失敗で終わる。
             print(f"[error] {exc}", file=sys.stderr)
             failed, api_rows = True, []
         discovered.extend(api_rows)
