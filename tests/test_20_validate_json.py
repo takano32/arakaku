@@ -1,23 +1,24 @@
 from __future__ import annotations
 
-from arakaku.validation import (
-    Report,
-    collect_ids,
-    locate_error,
-    round_time_problems,
-    validate_aliases,
-    validate_article_links,
+from arakaku.validation.common import collect_ids
+from arakaku.validation.entities import (
     validate_articles,
-    validate_bout_titles,
     validate_bouts,
+    validate_fighter_snapshots,
+    validate_title_reigns,
+)
+from arakaku.validation.links import validate_aliases, validate_article_links
+from arakaku.validation.locate import locate_error
+from arakaku.validation.official import validate_official_pages
+from arakaku.validation.report import Report
+from arakaku.validation.rules import (
+    round_time_problems,
+    validate_bout_titles,
     validate_cross_tables,
     validate_dates,
     validate_enums,
-    validate_fighter_snapshots,
-    validate_official_pages,
-    validate_source_documents,
-    validate_title_reigns,
 )
+from arakaku.validation.sources import validate_source_documents
 
 
 def test_collect_ids_detects_duplicate_ids(report: Report):
