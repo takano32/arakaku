@@ -23,6 +23,11 @@ MATCH_FIELDS = [
 HISTORY_FIELDS = ["year", "era", "month", "title", "description"]
 
 
+def _text(value: Any) -> str:
+    """数値を文字列にする。JSON の null と欠けたキーは空 (以前は str(None) で "None" になった。T.112.6.22)。"""
+    return "" if value is None else str(value)
+
+
 def player_rows(players: list[dict[str, Any]]) -> list[dict[str, str]]:
     return [
         {
@@ -32,11 +37,11 @@ def player_rows(players: list[dict[str, Any]]) -> list[dict[str, str]]:
             "nickname": p.get("nickname", ""),
             "organization": p.get("organization", ""),
             "weight_class": p.get("weightClass", ""),
-            "age": str(p.get("age", "")),
-            "height": str(p.get("height", "")),
-            "wins": str(p.get("wins", "")),
-            "losses": str(p.get("losses", "")),
-            "draws": str(p.get("draws", "")),
+            "age": _text(p.get("age")),
+            "height": _text(p.get("height")),
+            "wins": _text(p.get("wins")),
+            "losses": _text(p.get("losses")),
+            "draws": _text(p.get("draws")),
             "debut": p.get("debut", ""),
             "nationality": p.get("nationality", ""),
             "gym": p.get("gym", ""),
@@ -84,7 +89,7 @@ def history_rows(history: list[dict[str, Any]]) -> list[dict[str, str]]:
     """年ごとの項目 (year・era・events) を、出来事 1 件につき 1 行に開く。"""
     rows = []
     for entry in history:
-        year = str(entry.get("year", ""))
+        year = _text(entry.get("year"))
         era = entry.get("era", "")
         for event in entry.get("events", []):
             rows.append({
