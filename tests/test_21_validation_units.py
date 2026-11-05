@@ -190,3 +190,9 @@ def test_duplicate_title_and_snapshot_ids_are_reported_once(report):
         "titles.json[1]: duplicate title_id: t",
         "fighter_snapshots.json[1]: duplicate snapshot_id: s",
     ]
+
+
+def test_non_numeric_reign_order_is_an_error(report):
+    from arakaku.validation.entities import validate_title_reigns
+    validate_title_reigns(report, [{"reign_id": "r", "title_id": "t", "reign_order": "x"}], {"t"}, set(), set(), set(), set())
+    assert "title_reigns.json[0]: reign_order is not a number: x" in report.errors

@@ -187,3 +187,11 @@ def test_numbers_and_official_builders_parse_integers():
     assert list(official.json_builders([], [], [], [])) == ["official_players.json", "official_tournaments.json", "official_matches.json", "official_history.json"]
     assert list(official.pages_json_builders([], [])) == ["official_news.json", "official_pages.json"]
     assert list(numbers.json_builders([], [], [])) == ["numbers_fighters.json", "numbers_name_matches.json", "numbers_fight_records.json"]
+
+
+
+def test_build_titles_does_not_crash_on_a_non_numeric_reign_order():
+    # 以前は int と str を比べて TypeError で build ごと止まった。数字の順のあとに文字列の順で並べる (T.112.4.6)。
+    reigns = [{"reign_id": f"r{order}", "title_id": "t", "reign_order": order} for order in ("x", "10", "2", "")]
+    [title] = titles.build_titles([{"title_id": "t", "promotion_id": "target", "division": "ライト級"}], reigns)
+    assert [r["reign_id"] for r in title["lineage"]] == ["r", "r2", "r10", "rx"]
