@@ -1,5 +1,6 @@
 import { escapeHtml } from "../html.js";
 import { clampIndex, edgeCursor, nextCursor } from "./cursor.js";
+import { OpenState } from "./open_state.js";
 import { initialCount, keysUnchanged, moreLabel, nextEnd, refreshTarget, statusText } from "./paging.js";
 
 /**
@@ -33,7 +34,7 @@ export class RecordList {
   #chunk;
   #rendered = 0;
   #rows = []; // index → { key, el, head, body, open }
-  #openState = new Map(); // key → boolean (明示的に開閉した行)
+  #openState = new OpenState(); // 明示的に開閉した行の記憶
   #cursor = -1;
   #loading = false;
   #emptyMessage = "該当するレコードがありません。";
@@ -133,20 +134,20 @@ export class RecordList {
 
   isOpen(index) {
     const item = this.#items[index];
-    const key = this.#desc.keyOf(item);
-    if (this.#openState.has(key)) return this.#openState.get(key);
-    return Boolean(this.#desc.defaultOpen?.(item));
+    return this.#openState.isOpen(this.#desc.keyOf(item), () => this.#defaultOpen(item));
   }
 
   toggle(index, force) {
     const item = this.#items[index];
     if (!item || this.#desc.isHeader?.(item)) return false;
-    const key = this.#desc.keyOf(item);
-    const next = force ?? !this.isOpen(index);
-    this.#openState.set(key, next);
+    const next = this.#openState.toggle(this.#desc.keyOf(item), () => this.#defaultOpen(item), force);
     const row = this.#rows[index];
     if (row) this.#applyOpen(row, index, next);
     return next;
+  }
+
+  #defaultOpen(item) {
+    return Boolean(this.#desc.defaultOpen?.(item));
   }
 
   /** 指定キーの行を開く (フォーカス表示などで使う) */
