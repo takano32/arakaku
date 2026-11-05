@@ -111,7 +111,7 @@ Each module in `ui/sections/` exports `{ id, label, placeholder, empty, build(ct
 
 - `state.subscribe(() => shell.render())` is the only re-render path. `render()` is idempotent and calls each renderer in turn: `NavRenderer` updates `aria-current`, `FiltersRenderer` re-renders only when its fingerprint changes, `ListView` rebuilds only when tab / `repo.revision` / fingerprint / gate changed.
 - Render gate (`ListView`, `listGate`): `REQUIRED_TAB_DATA_KEYS[tab]` missing → 「読み込み待ち…」/「読み込み中…」 status; the fighters tab additionally waits for `numbersFighters` + `numbersNameMatches` so the 名鑑 order is final before the first paint.
-- Counts (`ui/render/stats.js` `dataCounts`): 試合/動画 use raw lengths (+ numbers-only rows once `numbersFightRecords` is loaded); 選手 uses `richFighters.length` only after fighters/numbersFighters/numbersNameMatches/officialPlayers are loaded; 出典 / 出典候補 show `…` until loaded.
+- Counts (`ui/render/stats.js` `dataCounts`): 大会/試合/動画 use raw lengths, and 大会/試合 add the numbers-only events / bouts once `numbersFightRecords` is loaded; 選手 uses `richFighters.length` only after fighters/numbersFighters/numbersNameMatches/officialPlayers are loaded; 出典 / 出典候補 show `…` until loaded.
 - Deep links (`ListView`): when `state.hasFocus` and the section yields exactly one item, the row is opened and the page scrolled to top — once per focus key, after the data has arrived.
 
 ---
