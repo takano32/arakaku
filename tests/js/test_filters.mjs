@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { itemPassesFilters, OTHER_VALUE } from "../../docs/assets/js/data/filters.js";
+import { EVENT_TYPE_LABELS, PROMOTION_CATEGORY_LABELS, itemPassesFilters, OTHER_VALUE } from "../../docs/assets/js/data/filters.js";
 
 const divisionGroup = {
   type: "division",
@@ -85,4 +85,11 @@ test("matchPrefix のグループは前方一致で照合し、「その他」�
   assert.equal(pass({ division: "ヘビー級101kg" }, { div: "heavyweight" }, [prefixGroup]), true);
   assert.equal(pass({ division: "ヘビー級101kg" }, { div: OTHER_VALUE }, [prefixGroup]), false);
   assert.equal(pass({ division: "ヘビー級101kg" }, { div: "heavyweight" }), false);
+});
+
+test("大会の種別・団体の区分の表示ラベルは絞り込みの選択肢と同じ", () => {
+  assert.deepEqual(EVENT_TYPE_LABELS, { numbered_event: "通常大会", tournament: "トーナメント", special_event: "特別大会" });
+  assert.deepEqual(PROMOTION_CATEGORY_LABELS, {
+    major: "主要", special_event_series: "特別大会シリーズ", minor: "マイナー", event_series: "イベントシリーズ", unclassified: "未分類",
+  });
 });

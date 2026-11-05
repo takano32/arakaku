@@ -25,7 +25,7 @@ export function cleanNoteBody(text, title) {
 }
 
 // 本文の日付行 (「2025年4月29日 11:08」) を拾う
-function noteDate(text) {
+export function noteDate(text) {
   const m = /(\d{4}年\d{1,2}月\d{1,2}日)/.exec(text ?? "");
   return m ? m[1] : "";
 }

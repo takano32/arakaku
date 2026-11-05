@@ -1,7 +1,7 @@
 import { DEFAULT_ADMIN_TAB, DEFAULT_TAB } from "../config.js";
 import { TAB_FILTERS } from "../data/filters.js";
 import { AlertsRenderer } from "./render/alerts.js";
-import { FiltersRenderer } from "./render/filters.js";
+import { FiltersRenderer } from "./render/filter_chips.js";
 import { ListView } from "./render/list_view.js";
 import { NavRenderer } from "./render/nav.js";
 import { StatsRenderer } from "./render/stats.js";

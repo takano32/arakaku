@@ -2,6 +2,7 @@
  * データ側のコード値を画面に出す日本語ラベルへ変換する辞書。
  * キー文字列は生成 JSON (docs/data/*.json) のコード値と一致していなければならない。
  * 未知コードは素通しし、null/undefined のときだけ既定にフォールバックする（articleType の既定は空文字）。
+ * 名鑑の実績マーカーの表示ラベル (numbersAchievementLabels) もここに置く (補完とタブの両方が使う)。
  */
 const VIDEO_TYPES = {
   full_fight: "Full Fight",
@@ -75,3 +76,14 @@ export const labels = {
   fighterResult: (v) => FIGHTER_RESULTS[v] ?? v ?? "不明",
   side: (v) => SIDES[v] ?? v ?? "",
 };
+
+// 名鑑の実績マーカーを表示用ラベル配列にする。belt_marker/tournament_win_marker は生値が
+// 既に絵文字 (👑 / 🏆x3) を含むので、絵文字を二重に付けず「王座/優勝」ラベルを前置するだけにする。
+export function numbersAchievementLabels(achievements) {
+  const a = achievements ?? {};
+  const out = [];
+  if (a.belt_marker) out.push(`王座 ${a.belt_marker}`);
+  if (a.tournament_win_marker) out.push(`優勝 ${a.tournament_win_marker}`);
+  if (a.white_glove_count) out.push(`白グローブ ${a.white_glove_count}回`);
+  return out;
+}

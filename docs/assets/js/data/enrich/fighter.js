@@ -1,3 +1,5 @@
+import { numbersAchievementLabels } from "../labels.js";
+
 /**
  * 選手の補完規則 (純関数)。DataEnricher が名鑑 (nf = numbers_fighters の行) と公式 (op = official_players
  * の行) の突合結果を渡し、信頼性の低い順 base(通信/YouTube) → 公式 → 名鑑 に重ねて 1 人分の rich fighter を作る。
@@ -6,17 +8,6 @@
 
 // 公式 YouTube 動画から機械的に作った選手の仮の要約。補完の有無に関わらず表示しない。
 const PLACEHOLDER_SUMMARY = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
-
-// 名鑑の実績マーカーを表示用ラベル配列にする。belt_marker/tournament_win_marker は生値が
-// 既に絵文字 (👑 / 🏆x3) を含むので、絵文字を二重に付けず「王座/優勝」ラベルを前置するだけにする。
-export function numbersAchievementLabels(achievements) {
-  const a = achievements ?? {};
-  const out = [];
-  if (a.belt_marker) out.push(`王座 ${a.belt_marker}`);
-  if (a.tournament_win_marker) out.push(`優勝 ${a.tournament_win_marker}`);
-  if (a.white_glove_count) out.push(`白グローブ ${a.white_glove_count}回`);
-  return out;
-}
 
 /** fighter_id → 名鑑の名前対応 (matched でも candidate でも引ける。同じ ID は最初の対応を使う)。 */
 export function buildNameMatchIndex(numbersNameMatches) {

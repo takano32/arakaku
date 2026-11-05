@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-// 画面内リンク (ui/parts/links.js) と試合の表記 (ui/parts/bouts.js) のユニットテスト (DOM 不要・依存ゼロ、node:test)。
+// 試合の表記 (ui/parts/bouts.js) のユニットテスト (DOM 不要・依存ゼロ、node:test)。
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { boutLink, eventLink, fighterLink } from "../../docs/assets/js/ui/parts/links.js";
 import {
   boutDecisionLine,
   boutMatchup,
@@ -27,15 +26,6 @@ const bout = {
   fighters: [{ fighter_id: "a", name: "選手A", side: "red", result: "win" }, { fighter_id: "b", name: "選手<B>", side: "blue", result: "loss" }],
   winner_id: "a", winner: "選手A", loser_id: "b", loser: "選手<B>", result: { round: 2, time: "1:30", method_raw: "KO", method_normalized: "KO", technique: "右フック" },
 };
-
-test("選手・大会リンクは data-* 属性付きのボタン、ID が無ければ名前だけ", () => {
-  assert.equal(fighterLink(repo, "b"), '<button type="button" class="link link-fighter" data-fighter-id="b" data-fighter-name="選手&lt;B&gt;">選手&lt;B&gt;</button>');
-  assert.equal(fighterLink(repo, "", "不明"), '<span class="name">不明</span>');
-  assert.equal(fighterLink(repo, "zzz", "別名"), '<button type="button" class="link link-fighter" data-fighter-id="zzz" data-fighter-name="zzz">zzz</button>');
-  assert.equal(eventLink(repo, "target-10"), '<button type="button" class="link link-event" data-event-id="target-10" data-event-name="ターゲット No.10">ターゲット No.10</button>');
-  assert.equal(eventLink(repo, "", "未設定"), '<span class="name">未設定</span>');
-  assert.equal(boutLink("b&1", "<i>詳細</i>"), '<button type="button" class="link link-bout" data-bout-id="b&amp;1"><i>詳細</i></button>');
-});
 
 test("対戦カードは fighters[] を最優先し、勝者を winner で囲む (勝敗不明なら囲まない)", () => {
   const html = boutMatchup(repo, bout);

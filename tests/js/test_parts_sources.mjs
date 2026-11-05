@@ -10,9 +10,11 @@ import {
   referenceMentionBadges,
   referenceSortValue,
   sourceBody,
+  sourceDocumentDetail,
   sourceDocumentLink,
   sourceMentionLink,
   sourceReferenceCounts,
+  sourceReferenceSummary,
   sourceReferences,
   splitTokens,
   uniqueSourceReferences,
@@ -67,4 +69,24 @@ test("出典候補の折りたたみは確度順の上位 5 件だけ出し、�
   assert.match(html, /<p class="muted small">line 3<\/p>/);
   assert.match(sourceReferences(repo, refs.slice(0, 2), "候補"), /<summary>候補 <span class="fold-count">2件<\/span>/);
   assert.match(sourceReferences(repo, [{ candidate_id: "x", source_id: "zz" }]), /候補 unknown/);
+});
+
+test("文書の本文の折りたたみは note 本文で本文があるときだけ", () => {
+  assert.equal(sourceDocumentDetail({ source_type: "note_article", content_text: "a<b" }), '<details class="fold fold-inline"><summary>本文を表示</summary><div class="fold-body"><pre class="pre">a&lt;b</pre></div></details>');
+  assert.equal(sourceDocumentDetail({ source_type: "youtube_description", content_text: "x" }), "");
+  assert.equal(sourceDocumentDetail({ source_type: "note_article", content_text: "" }), "");
+  assert.equal(sourceDocumentDetail(undefined), "");
+});
+
+test("出典候補 1 件の要約: 文書へのリンク・確度・種別・一致テキストの先頭 3 件・行番号", () => {
+  const html = sourceReferenceSummary(repo, {
+    source_id: "s1", source_type: "note_article", source_title: "候補題", source_url: "https://note.com/x/n/a1",
+    confidence: "", mention_types: "event:2", matched_texts: "一 | 二 | 三 | 四", line_numbers: "7 | 14",
+  });
+  assert.match(html, /^<div class="item item-reference">/);
+  assert.match(html, /note本文 \/ <span class="ref"><a href="https:\/\/note\.com\/x\/n\/a1"[^>]*>候補題<\/a><details class="fold fold-inline">/);
+  assert.match(html, /<span class="badge badge-soft">候補 unknown<\/span><span class="badge">大会 2<\/span>/);
+  assert.match(html, /<p class="small">一 \/ 二 \/ 三<\/p>/);
+  assert.match(html, /<p class="muted small">line 7 \| 14<\/p>/);
+  assert.doesNotMatch(sourceReferenceSummary(repo, { source_id: "none", source_type: "note_article" }), /line |<p class="small">/);
 });

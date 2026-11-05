@@ -1,7 +1,8 @@
 // 役割: docs/data/*.json 専用の Service Worker。stale-while-revalidate でキャッシュを即返ししつつ
 //   裏で ETag/Last-Modified 条件付き再取得し、更新があればクライアントに DATA_UPDATED を通知する。
-// アーキ上の位置: main.js が "./sw.js" を register する。DATA_UPDATED メッセージは main.js が受け取り
-//   「再読み込み」バナーを表示する (メッセージ型名は main.js と同期必須)。GitHub Pages 静的配信が前提。
+// アーキ上の位置: assets/js/app/sw_client.js が "./sw.js" を register する。DATA_UPDATED メッセージは
+//   sw_client.js が受け取り「再読み込み」バナーを表示する (メッセージ型名は sw_client.js の DATA_UPDATED と
+//   同期必須)。GitHub Pages 静的配信が前提。
 // 不変条件: fetch をフックするのは pathname に "/data/" を含み ".json" で終わる要求のみ — HTML/JS/CSS は
 //   素通しさせる (古い viewer コードがキャッシュに固定されるのを防ぐ)。スキーマ非互換な変更時は CACHE 名の
 //   バージョンを上げると activate 時に旧キャッシュが一掃される。上げるのは、新しい viewer JS が古い JSON を

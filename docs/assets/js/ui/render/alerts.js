@@ -4,6 +4,7 @@ import { escapeHtml } from "../html.js";
 /**
  * データ読み込み失敗の表示 (#alerts)。dataLoadErrors (キー → メッセージ) をファイル名付きで一覧にする。
  * 読み込めなかったデータは空として扱われている旨を添える。
+ * あわせて、読み込み全体の失敗 (DataLoader.load() の reject) を一覧の場所 (#list-host) に出す。
  */
 
 export function alertsHtml(errors) {
@@ -33,4 +34,14 @@ export class AlertsRenderer {
     }
     if (el.innerHTML !== html) el.innerHTML = html;
   }
+}
+
+/** 読み込み全体が失敗したときに一覧の代わりに出す HTML。 */
+export function fatalErrorHtml(message) {
+  return `<div class="alert" role="alert"><p class="alert-title">読み込みに失敗しました</p><p>${escapeHtml(message)}</p></div>`;
+}
+
+/** 読み込み全体の失敗を host (#list-host) に出す。host が無ければ何もしない。 */
+export function showFatalError(host, error) {
+  if (host) host.innerHTML = fatalErrorHtml(error.message);
 }

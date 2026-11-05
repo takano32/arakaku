@@ -1,7 +1,7 @@
 import { DEFAULT_TAB, REQUIRED_TAB_DATA_KEYS } from "../../config.js";
 import { FILTER_STATE_KEYS } from "../../data/filters.js";
 import { escapeHtml } from "../html.js";
-import { RecordList } from "../list.js";
+import { RecordList } from "../list/record_list.js";
 import { SECTIONS } from "../sections/index.js";
 
 /**

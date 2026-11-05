@@ -1,5 +1,5 @@
 import { TAB_FILTERS, itemPassesFilters } from "../../data/filters.js";
-import { numbersAchievementLabels } from "../../data/enrich/fighter.js";
+import { numbersAchievementLabels } from "../../data/labels.js";
 import { escapeHtml, joinPresent, recordText } from "../html.js";
 import { badge, badges, details, dl } from "../parts/basic.js";
 import { code } from "./common.js";

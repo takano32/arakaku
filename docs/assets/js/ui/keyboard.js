@@ -1,5 +1,53 @@
 import { PUBLIC_TABS } from "../config.js";
 
+// フォーカス中なら Enter / Space をブラウザの既定動作 (押下) に任せる要素。
+const CONTROL_SELECTOR = "a, button, summary, iframe, [contenteditable]";
+
+// 押すと既定動作を止めて呼ぶ操作 (キー → 操作名)。
+const KEY_ACTIONS = {
+  j: "cursorDown",
+  ArrowDown: "cursorDown",
+  k: "cursorUp",
+  ArrowUp: "cursorUp",
+  g: "cursorFirst",
+  G: "cursorLast",
+  Enter: "toggleRow",
+  o: "toggleDetails",
+  h: "prevTab",
+  ArrowLeft: "prevTab",
+  l: "nextTab",
+  ArrowRight: "nextTab",
+  c: "copyUrl",
+  r: "reload",
+  "/": "focusSearch",
+};
+
+/**
+ * キーの組み合わせと画面の状況から、行う操作を決める (純関数。DOM を読まないので Node でテストできる)。
+ * @param {{ key: string, shiftKey?: boolean, ctrlKey?: boolean, metaKey?: boolean, altKey?: boolean,
+ *           inInput?: boolean, dialogOpen?: boolean, onControl?: boolean, hasQuery?: boolean }} input
+ *   inInput: input/textarea/select にフォーカス中、dialogOpen: ヘルプが開いている、
+ *   onControl: イベントの対象がボタン・リンク・summary など (CONTROL_SELECTOR) の中、hasQuery: 検索語がある
+ * @returns {{ name: string, preventDefault: boolean, tabIndex?: number } | null}  null なら何もしない
+ */
+export function keyToAction({ key, shiftKey, ctrlKey, metaKey, altKey, inInput, dialogOpen, onControl, hasQuery }) {
+  if (inInput) return key === "Escape" ? { name: "blurInput", preventDefault: false } : null;
+  if (key === "Escape") {
+    if (dialogOpen) return { name: "closeHelp", preventDefault: false };
+    // 検索語があるときだけ消す。無いときに消すと選手などの絞り込みまで外れて履歴も積まれていた (T.102)。
+    return hasQuery ? { name: "clearSearch", preventDefault: false } : null;
+  }
+  if (key === "?") return { name: "toggleHelp", preventDefault: true };
+  if (dialogOpen) return null;
+  if (ctrlKey || metaKey || altKey) return null;
+  if ((key === "Enter" || key === " ") && onControl) return null;
+  if (key === " ") return { name: shiftKey ? "scrollUp" : "scrollDown", preventDefault: true };
+  if (Object.hasOwn(KEY_ACTIONS, key)) return { name: KEY_ACTIONS[key], preventDefault: true };
+  const num = parseInt(key, 10);
+  if (num >= 1 && num <= PUBLIC_TABS.length) return { name: "tab", preventDefault: false, tabIndex: num - 1 };
+  return null;
+}
+
 /**
  * グローバルな keydown ハンドラ (Vim 風ショートカット)。
  *   j/k/↓/↑ 行カーソル、g/G 先頭/末尾、Enter 行の開閉、o 行内の「詳細」の開閉、
@@ -7,11 +55,12 @@ import { PUBLIC_TABS } from "../config.js";
  *   c URL コピー、r 再読み込み、Esc 検索クリア/ヘルプを閉じる、? ヘルプ。
  * input/textarea/select にフォーカス中は Esc で blur するだけで他のキーは奪わない。修飾キー付きは無視。
  * ボタン・リンク・summary にフォーカス中の Enter / Space は奪わない (キーボードだけで押せるように)。
+ * どのキーで何をするかは keyToAction が決め、このクラスは画面の状況を集めて操作を呼ぶだけ。
  */
 export class KeyboardNav {
   /**
-   * @param {{ switchTab(tabId: string): void, list(): import("./list.js").RecordList|null,
-   *           clearSearch(): void, toast(msg: string): void, state: { tab: string } }} app
+   * @param {{ switchTab(tabId: string): void, list(): import("./list/record_list.js").RecordList|null,
+   *           clearSearch(): void, focusSearch(): void, toast(msg: string): void, state: { tab: string, query: string } }} app
    */
   constructor(app) {
     this.app = app;
@@ -44,51 +93,36 @@ export class KeyboardNav {
 
   #onKeyDown(e) {
     const tag = document.activeElement?.tagName;
-    const inInput = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-    if (inInput) {
-      if (e.key === "Escape") document.activeElement.blur();
-      return;
-    }
-
     const dialog = document.querySelector("#help");
-    if (e.key === "Escape") {
-      if (dialog?.open) { dialog.close(); return; }
-      // 検索語があるときだけ消す。無いときに消すと選手などの絞り込みまで外れて履歴も積まれていた (T.102)。
-      if (this.app.state.query) this.app.clearSearch();
-      return;
-    }
-    if (e.key === "?") { e.preventDefault(); this.#toggleHelp(); return; }
-    if (dialog?.open) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    // フォーカス中のボタン・リンク・summary では Enter / Space をブラウザの既定動作 (押下) に任せる。
-    if ((e.key === "Enter" || e.key === " ") && e.target.closest?.("a, button, summary, iframe, [contenteditable]")) return;
+    const action = keyToAction({
+      key: e.key,
+      shiftKey: e.shiftKey,
+      ctrlKey: e.ctrlKey,
+      metaKey: e.metaKey,
+      altKey: e.altKey,
+      inInput: tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT",
+      dialogOpen: Boolean(dialog?.open),
+      onControl: Boolean(e.target.closest?.(CONTROL_SELECTOR)),
+      hasQuery: Boolean(this.app.state.query),
+    });
+    if (!action) return;
+    if (action.preventDefault) e.preventDefault();
+    this.#run(action, dialog);
+  }
 
+  #run(action, dialog) {
     const list = this.app.list();
-    switch (e.key) {
-      case "j":
-      case "ArrowDown":
-        e.preventDefault();
-        list?.moveCursor(1);
-        break;
-      case "k":
-      case "ArrowUp":
-        e.preventDefault();
-        list?.moveCursor(-1);
-        break;
-      case "g":
-        e.preventDefault();
-        list?.setCursorToEdge("first");
-        break;
-      case "G":
-        e.preventDefault();
-        list?.setCursorToEdge("last");
-        break;
-      case "Enter":
-        e.preventDefault();
-        list?.toggleCursor();
-        break;
-      case "o": {
-        e.preventDefault();
+    switch (action.name) {
+      case "blurInput": document.activeElement.blur(); break;
+      case "closeHelp": dialog.close(); break;
+      case "clearSearch": this.app.clearSearch(); break;
+      case "toggleHelp": this.#toggleHelp(); break;
+      case "cursorDown": list?.moveCursor(1); break;
+      case "cursorUp": list?.moveCursor(-1); break;
+      case "cursorFirst": list?.setCursorToEdge("first"); break;
+      case "cursorLast": list?.setCursorToEdge("last"); break;
+      case "toggleRow": list?.toggleCursor(); break;
+      case "toggleDetails": {
         if (!list) break;
         const row = list.getCursorEl();
         if (!row) break;
@@ -97,40 +131,22 @@ export class KeyboardNav {
         if (details) details.open = !details.open;
         break;
       }
-      case "h":
-      case "ArrowLeft":
-        e.preventDefault();
-        this.#switchTabBy(-1);
-        break;
-      case "l":
-      case "ArrowRight":
-        e.preventDefault();
-        this.#switchTabBy(1);
-        break;
-      case "c":
-        e.preventDefault();
+      case "prevTab": this.#switchTabBy(-1); break;
+      case "nextTab": this.#switchTabBy(1); break;
+      case "copyUrl":
         navigator.clipboard?.writeText(location.href)
           .then(() => this.app.toast("URLをコピーしました"))
           .catch(() => this.app.toast("コピーに失敗しました"));
         break;
-      case " ":
-        e.preventDefault();
-        window.scrollBy({ top: e.shiftKey ? -window.innerHeight * 0.6 : window.innerHeight * 0.6, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      case "scrollUp":
+      case "scrollDown": {
+        const top = action.name === "scrollUp" ? -window.innerHeight * 0.6 : window.innerHeight * 0.6;
+        window.scrollBy({ top, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
         break;
-      case "r":
-        e.preventDefault();
-        location.reload();
-        break;
-      case "/":
-        e.preventDefault();
-        document.querySelector("#search")?.focus();
-        break;
-      default: {
-        const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= PUBLIC_TABS.length) {
-          this.app.switchTab(PUBLIC_TABS[num - 1][0]);
-        }
       }
+      case "reload": location.reload(); break;
+      case "focusSearch": this.app.focusSearch(); break;
+      case "tab": this.app.switchTab(PUBLIC_TABS[action.tabIndex][0]); break;
     }
   }
 }
