@@ -54,8 +54,8 @@ def source_result_candidates_module(repo_root: Path):
 
 
 @pytest.fixture
-def source_reference_candidates_module(repo_root: Path):
-    return load_module("source_reference_candidates", repo_root / "scripts" / "make_source_reference_candidates.py")
+def source_reference_candidates_module():
+    return importlib.import_module("arakaku.review.reference_candidates")
 
 
 @pytest.fixture
