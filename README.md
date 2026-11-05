@@ -505,7 +505,7 @@ note 記事などの出典記事データです。`archives/note.csv` から `ge
 
 記事ID、タイトル、URL、記事種別、団体ID、公開日、状態などを管理します。
 
-記事種別 `article_type` は `event_card` / `event_result` / `promotion_profile` / `note_article` / `youtube_description_source` のいずれかで、それ以外は `validate_json.py` がエラーにします。`crawl_note_articles.py` が見つけた歴代王者・団体紹介の記事は `promotion_profile` になります。
+記事種別 `article_type` は `event_card` / `event_result` / `promotion_profile` / `note_article` / `youtube_description_source` のいずれかで、それ以外は `validate_json.py` がエラーにします。`crawl_note_articles.py` が見つけた記事のうち、結果・対戦カードではなくタイトルに 歴代王者 / 王座 / ルール / 団体 を含むものは `promotion_profile` になります。
 
 削除済み・非公開・404 の記事がある場合でも、必要に応じてレコードは保持します。  
 本文キャッシュに失敗した記事は、`source_documents.csv` には入りません。
