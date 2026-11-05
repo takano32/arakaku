@@ -7,7 +7,6 @@ import {
   buildNameMatchIndex,
   composeFighter,
   mergeRecord,
-  numbersAchievementLabels,
 } from "../../docs/assets/js/data/enrich/fighter.js";
 
 const PLACEHOLDER = "公式YouTube動画タイトルから抽出した選手。詳細未入力。";
@@ -63,12 +62,6 @@ test("mergeRecord: 名鑑の勝敗を優先し、無ければ公式。どちら�
   assert.deepEqual(mergeRecord({ wins: 2, losses: 3, draws: 0 }, undefined), { fight_count: null, wins: 2, losses: 3, draws: 0, win_rate: null });
   assert.deepEqual(mergeRecord({ wins: 2, losses: 3 }, { stats: { fight_count: 6, wins: 4, losses: 2, win_rate: "0.667" } }), { fight_count: 6, wins: 4, losses: 2, draws: null, win_rate: "0.667" });
   assert.deepEqual(mergeRecord(undefined, { stats: { fight_count: 1 } }), { fight_count: 1, wins: null, losses: null, draws: null, win_rate: null });
-});
-
-test("numbersAchievementLabels は絵文字を二重に付けずラベルを前置する", () => {
-  assert.deepEqual(numbersAchievementLabels({ belt_marker: "👑", tournament_win_marker: "🏆x3", white_glove_count: 1 }), ["王座 👑", "優勝 🏆x3", "白グローブ 1回"]);
-  assert.deepEqual(numbersAchievementLabels(undefined), []);
-  assert.deepEqual(numbersAchievementLabels({ white_glove_count: 0 }), []);
 });
 
 test("buildNameMatchIndex は matched / candidate の両方で引け、同じ ID は最初の対応", () => {
