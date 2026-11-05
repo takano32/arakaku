@@ -37,3 +37,11 @@ def test_load_json_raises_on_invalid_json(io_module, tmp_path):
     with pytest.raises(ValueError, match="invalid JSON"):
         io_module.load_json(tmp_path / "broken.json", [])
     assert io_module.load_json(tmp_path / "absent.json", []) == []
+
+
+def test_read_json_raises_on_missing_file(io_module, tmp_path):
+    # 必須の入力が無いのに空として扱うと、review の CSV を見出しだけで上書きしてしまう (T.112.1.11)。
+    with pytest.raises(FileNotFoundError, match="run make build"):
+        io_module.read_json(tmp_path / "absent.json")
+    (tmp_path / "ok.json").write_text("[1]", encoding="utf-8")
+    assert io_module.read_json(tmp_path / "ok.json") == [1]
