@@ -30,7 +30,7 @@ export const officialSection = {
   build({ repo, query }) {
     const pages = repo.officialPages.map((p) => ({ _kind: "page", ...p }));
     const news = [...repo.officialNews]
-      .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
+      .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "", "ja"))
       .map((n) => ({ _kind: "news", ...n }));
     const items = [...pages, ...news].filter((item) =>
       query.includes(item._kind === "page"
